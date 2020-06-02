@@ -1,0 +1,7 @@
+apiVersion: saas.3scale.net/v1alpha1
+kind: AutoSSL
+metadata:
+  name: example-autossl
+spec:
+  # Add fields here
+  size: 3
