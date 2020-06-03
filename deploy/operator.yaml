@@ -16,8 +16,7 @@ spec:
       serviceAccountName: 3scale-saas-operator
       containers:
         - name: 3scale-saas-operator
-          # Replace this with the built image name
-          image: "REPLACE_IMAGE"
+          image: "quay.io/3scale/3scale-saas-operator:v0.1.0"
           imagePullPolicy: "Always"
           volumeMounts:
           - mountPath: /tmp/ansible-operator/runner

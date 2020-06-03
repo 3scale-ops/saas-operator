@@ -1,2 +1,17 @@
 ---
-# tasks file for autossl
+
+- name: Manage Deployment for AutoSSL {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'autossl-deployment.yaml') }}"
+
+- name: Manage Service for AutoSSL {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'autossl-service.yaml') }}"
+
+- name: Manage PodMonitor for AutoSSL {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'autossl-podmonitor.yaml') }}"
+
+- name: Manage GrafanaDashboard for AutoSSL {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'autossl-grafanadashboard.yaml') }}"
