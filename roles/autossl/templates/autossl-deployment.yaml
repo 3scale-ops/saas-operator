@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autossl
+  namespace: "{{ meta.namespace }}"
+  labels:
+    app: autossl
+    part-of: 3scale-saas
+spec:
+  replicas: {{ replicas }}
+  selector:
+    matchLabels:
+      deployment: autossl
+  strategy:
+    rollingUpdate:
+      # Never go below desired, increase the
+      # max number of pods instead
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: autossl
+        part-of: 3scale-saas
+        deployment: autossl
+    spec:
+      volumes:
+        - name: autossl-cache
+          emptyDir: {}
+        - name: nginx-cache
+          emptyDir: {}
+      imagePullSecrets:
+        - name: "{{ image.pull_secret_name | default(image_pull_secret_name) }}"
+      containers:
+        - name: autossl
+          image: "{{ image.name | default(image_name) }}:{{ image.version | default(image_version) }}"
+          ports:
+            - name: http
+              containerPort: 8081
+              protocol: TCP
+            - name: https
+              containerPort: 8444
+              protocol: TCP
+            - name: http-no-pp # no proxy protocol
+              containerPort: 8080
+              protocol: TCP
+            - name: https-no-pp # no proxy protocol
+              containerPort: 8443
+              protocol: TCP
+            - name: metrics
+              containerPort: 9145
+              protocol: TCP
+          env:
+            - name: ACME_STAGING
+              value: "{{ acme_staging }}"
+            - name: CONTACT_EMAIL
+              value: "{{ contact_email }}"
+            - name: PROXY_ENDPOINT
+              value: "{{ proxy_endpoint }}"
+            - name: STORAGE_ADAPTER
+              value: redis
+            - name: REDIS_HOST
+              value: "{{ redis_host }}"
+            - name: REDIS_PORT
+              value: "{{ redis_port }}"
+            - name: VERIFICATION_ENDPOINT
+              value: "{{ verification_endpoint }}"
+            - name: LOG_LEVEL
+              value: "{{ log_level }}"
+            - name: DOMAIN_WHITELIST
+              value: "{{ domain_whitelist }}"
+            - name: DOMAIN_BLACKLIST
+              value: "{{ domain_blacklist }}"
+          resources:
+            requests:
+              memory: "{{ resources.requests.memory | default(resources_requests_memory) }}"
+              cpu: "{{ resources.requests.cpu | default(resources_requests_cpu) }}"
+            limits:
+              memory: "{{ resources.limits.memory | default(resources_limits_memory) }}"
+              cpu: "{{ resources.limits.cpu | default(resources_limits_cpu) }}"
+          terminationMessagePath: /dev/termination-log
+          imagePullPolicy: Always
+          terminationGracePeriodSeconds: 30
+          volumeMounts:
+            - name: autossl-cache
+              mountPath: /etc/resty-auto-ssl/
+            - name: nginx-cache
+              mountPath: /var/lib/nginx
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 9145
+              scheme: HTTP
+            initialDelaySeconds: {{ liveness_probe.initial_delay_seconds | default(liveness_probe_initial_delay_seconds) }}
+            timeoutSeconds: {{ liveness_probe.timeout_seconds | default(liveness_probe_timeout_seconds) }}
+            periodSeconds: {{ liveness_probe.period_seconds | default (liveness_probe_period_seconds) }}
+            successThreshold: {{ liveness_probe.success_threshold | default(liveness_probe_success_threshold) }}
+            failureThreshold: {{ liveness_probe.failure_threshold | default(liveness_probe_failure_threshold) }}
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 9145
+              scheme: HTTP
+            initialDelaySeconds: {{ readiness_probe.initial_delay_seconds | default(readiness_probe_initial_delay_seconds) }}
+            timeoutSeconds: {{ readiness_probe.timeout_seconds | default(readiness_probe_timeout_seconds) }}
+            periodSeconds: {{ readiness_probe.period_seconds | default(readiness_probe_period_seconds) }}
+            successThreshold: {{ readiness_probe.success_threshold | default(readiness_probe_success_threshold) }}
+            failureThreshold: {{ readiness_probe.failure_threshold | default(readiness_probe_failure_threshold) }}

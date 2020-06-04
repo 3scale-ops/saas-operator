@@ -1,7 +1,19 @@
 apiVersion: saas.3scale.net/v1alpha1
 kind: AutoSSL
 metadata:
-  name: example-autossl
+  name: example
 spec:
-  # Add fields here
-  size: 3
+  image:
+    version: v1.0.0
+  replicas: 1
+  contactEmail: example@3scale.net
+  proxyEndpoint: https://multitenant-admin.example.3scale.net
+  verificationEndpoint: https://multitenant-admin.example.3scale.net/swagger/spec.json
+  domainWhitelist: autossl.example.3scale.net
+  redisHost: example-autossl-redis.ng.0001.use1.cache.amazonaws.com
+  externalDnsHostname: mtssl-edge-a.example.3scale.net,mtssl-edge-b.example.3scale.net,autossl.example.3scale.net
+  loadBalancer:
+    accessLogEnabled: true
+    accessLogEmitInterval: 5
+    accessLogS3BucketName: s3-bucket-example-logs
+    accessLogS3BucketPrefix: example-cluster/autossl
