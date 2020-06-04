@@ -30,7 +30,7 @@ spec:
         - name: nginx-cache
           emptyDir: {}
       imagePullSecrets:
-        - name: {{ image.pull_secret_name | default(image_pull_secret_name) }}
+        - name: "{{ image.pull_secret_name | default(image_pull_secret_name) }}"
       containers:
         - name: autossl
           image: "{{ image.name | default(image_name) }}:{{ image.version | default(image_version) }}"
@@ -58,7 +58,7 @@ spec:
             - name: PROXY_ENDPOINT
               value: "{{ proxy_endpoint }}"
             - name: STORAGE_ADAPTER
-              value: "{{ storage_adapter }}"
+              value: redis
             - name: REDIS_HOST
               value: "{{ redis_host }}"
             - name: REDIS_PORT

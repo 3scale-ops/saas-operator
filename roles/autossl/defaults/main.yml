@@ -6,14 +6,9 @@ image_name: "quay.io/3scale/autossl"
 image_version: "latest"
 image_pull_secret_name: "quay-pull-secret"
 acme_staging: ""
-contact_email: "3scale-operations@redhat.com"
-proxy_endpoint: "https://multitenant-admin.dev.3sca.net"
-storage_adapter: "redis"
-redis_host: "dev-saas-autossl-ec-redis.ng.0001.use1.cache.amazonaws.com"
 redis_port: "6379"
-verification_endpoint: "https://multitenant-admin.dev.3sca.net/swagger/spec.json"
 log_level: "warn"
-domain_whitelist: "autossl.dev.3sca.net"
+domain_whitelist: ""
 domain_blacklist: ""
 liveness_probe_initial_delay_seconds: 25
 liveness_probe_timeout_seconds: 1
@@ -31,7 +26,6 @@ resources_limits_cpu: "100m"
 resources_limits_memory: "100Mi"
 
 ## Service
-external_dns_hostname: "mtssl-edge-a.dev.3sca.net,mtssl-edge-b.dev.3sca.net,autossl.dev.3sca.net"
 load_balancer_proxy_protocol: "*"
 load_balancer_cross_zone_load_balancing_enabled: true
 load_balancer_connection_draining_enabled: true
@@ -40,10 +34,6 @@ load_balancer_connection_healthcheck_healthy_threshold: 2
 load_balancer_connection_healthcheck_unhealthy_threshold: 2
 load_balancer_connection_healthcheck_interval: 5
 load_balancer_connection_healthcheck_timeout: 3
-load_balancer_access_log_enabled: true
-load_balancer_access_log_emit_interval: 5
-load_balancer_access_log_s3_bucket_name: "dev-s3-logs"
-load_balancer_access_log_s3_bucket_prefix: "dev-ocp4-3/autossl"
 
 ## GrafanaDashboard
 grafana_dashboard_label_key: "monitoring-key"
