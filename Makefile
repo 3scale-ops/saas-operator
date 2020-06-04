@@ -4,6 +4,13 @@
 
 MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 THISDIR_PATH := $(patsubst %/,%,$(abspath $(dir $(MKFILE_PATH))))
+UNAME := $(shell uname)
+
+ifeq (${UNAME}, Linux)
+  INPLACE_SED=sed -i
+else ifeq (${UNAME}, Darwin)
+  INPLACE_SED=sed -i ""
+endif
 
 VERSION ?= v0.1.0
 REGISTRY ?= quay.io
@@ -31,7 +38,9 @@ operator-create: namespace-create ## OPERATOR DEPLOY - Create/Update Operator ob
 	$(KUBE_CLIENT) apply -f deploy/service_account.yaml -n $(NAMESPACE)
 	$(KUBE_CLIENT) apply -f deploy/role.yaml -n $(NAMESPACE)
 	$(KUBE_CLIENT) apply -f deploy/role_binding.yaml -n $(NAMESPACE)
+	$(INPLACE_SED) 's|REPLACE_IMAGE|$(IMAGE):$(VERSION)|g' deploy/operator.yaml
 	$(KUBE_CLIENT) apply -f deploy/operator.yaml -n $(NAMESPACE)
+	$(INPLACE_SED) 's|$(IMAGE):$(VERSION)|REPLACE_IMAGE|g' deploy/operator.yaml
 
 operator-delete: ## OPERATOR DEPLOY - Delete Operator objects (except CRD/namespace for caution)
 	$(KUBE_CLIENT) delete -f deploy/operator.yaml -n $(NAMESPACE) || true
