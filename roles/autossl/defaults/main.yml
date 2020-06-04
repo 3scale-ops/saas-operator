@@ -3,7 +3,7 @@
 ## Deployment
 replicas: 1
 image_name: "quay.io/3scale/autossl"
-image_version: "v1.0.0"
+image_version: "latest"
 image_pull_secret_name: "quay-pull-secret"
 acme_staging: ""
 contact_email: "3scale-operations@redhat.com"
