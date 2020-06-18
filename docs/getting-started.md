@@ -5,7 +5,7 @@
 * Operator initial creation:
 
 ```bash
-$ operator-sdk new 3scale-saas-operator --api-version=saas.3scale.net/v1alpha1 --kind=AutoSSL --type=ansible
+$ operator-sdk new threescale-saas-operator --api-version=saas.3scale.net/v1alpha1 --kind=AutoSSL --type=ansible
 ```
 
 * New API addition:
@@ -25,7 +25,7 @@ $ make operator-image-update
 
 * Deploy operator (namespace, CRD, service account, role, role binding and operator deployment):
 ```bash
-$ make operator-create
+$ make operator-deploy
 ```
 * Create any CR resource
 * Once tested, delete created operator objects (except CRD/namespace for caution):

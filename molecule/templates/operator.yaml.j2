@@ -2,20 +2,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: 3scale-saas-operator
+  name: threescale-saas-operator
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: 3scale-saas-operator
+      name: threescale-saas-operator
   template:
     metadata:
       labels:
-        name: 3scale-saas-operator
+        name: threescale-saas-operator
     spec:
-      serviceAccountName: 3scale-saas-operator
+      serviceAccountName: threescale-saas-operator
       containers:
-        - name: 3scale-saas-operator
+        - name: threescale-saas-operator
           # Replace this with the built image name
           image: "{{ image }}"
           imagePullPolicy: "{{ pull_policy }}"
@@ -32,7 +32,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
-              value: "3scale-saas-operator"
+              value: "threescale-saas-operator"
             - name: ANSIBLE_GATHERING
               value: explicit
           livenessProbe:

@@ -2,20 +2,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: 3scale-saas-operator
+  name: threescale-saas-operator
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: 3scale-saas-operator
+      name: threescale-saas-operator
   template:
     metadata:
       labels:
-        name: 3scale-saas-operator
+        name: threescale-saas-operator
     spec:
-      serviceAccountName: 3scale-saas-operator
+      serviceAccountName: threescale-saas-operator
       containers:
-        - name: 3scale-saas-operator
+        - name: threescale-saas-operator
           image: REPLACE_IMAGE
           imagePullPolicy: "Always"
           volumeMounts:
@@ -31,15 +31,18 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
-              value: "3scale-saas-operator"
+              value: "threescale-saas-operator"
             - name: ANSIBLE_GATHERING
               value: explicit
           livenessProbe:
             httpGet:
               path: /healthz
               port: 6789
-            initialDelaySeconds: 5
-            periodSeconds: 3
+            initialDelaySeconds: 20
+            timeoutSeconds: 5
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 3
       volumes:
         - name: runner
           emptyDir: {}
