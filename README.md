@@ -8,9 +8,9 @@ A Kubernetes Operator based on the Operator SDK to manage 3scale SaaS (hosted ve
 
 Current 3scale SaaS controllers supported:
 * AutoSSL
+* Backend
 
 Future 3scale SaaS controllers to be added:
-* Backend
 * System
 * Zync
 * Apicast
@@ -18,13 +18,17 @@ Future 3scale SaaS controllers to be added:
 * CORSProxy
 * PostFix
 
+## Requirements
+
+* [prometheus-operator](https://github.com/coreos/prometheus-operator) v0.17.0+
+* [grafana-operator](https://github.com/integr8ly/grafana-operator) v3.0.0+
+* [secrets-manager](https://github.com/tuenti/secrets-manager) v1.0.2+
+
 ## Documentation
 
 * [Getting started](docs/getting-started.md)
-
-## CRD Reference
-
 * [AutoSSL Custom Resource Reference](docs/autossl-crd-reference.md)
+* [Backend Custom Resource Reference](docs/backend-crd-reference.md)
 
 ## License
 

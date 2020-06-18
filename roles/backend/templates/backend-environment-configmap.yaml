@@ -1,0 +1,13 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: backend-environment
+  namespace: "{{ meta.namespace }}"
+  labels:
+    app: 3scale-api-management
+    threescale_component: backend
+data:
+  RACK_ENV: "{{ config.rack_env | default(config_rack_env) }}"
+  MASTER_SERVICE_ID: "{{ config.master_service_id | default(config_master_service_id) }}"
+  OAUTH_MAX_TOKEN_SIZE: "{{ config.oauth_max_token_size | default(config_oauth_max_token_size) }}"
+  LEGACY_REFERRER_FILTERS: "{{ config.legacy_referrer_filters | default(config_legacy_referrer_filters) }}"

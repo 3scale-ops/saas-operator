@@ -1,0 +1,20 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: backend
+  namespace: "{{ meta.namespace }}"
+  labels:
+    app: 3scale-api-management
+    threescale_component: backend
+spec:
+  host: "{{ listener.route_host | default(listener_route_host) }}" 
+  port:
+    targetPort: http
+  tls:
+    insecureEdgeTerminationPolicy: Redirect
+    termination: edge
+  to:
+    kind: Service
+    name: backend-listener
+    weight: 100
+  wildcardPolicy: None

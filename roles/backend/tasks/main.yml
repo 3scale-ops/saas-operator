@@ -1,2 +1,74 @@
 ---
-# tasks file for backend
+
+- name: Manage backend-environment ConfigMap for CR {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'backend-environment-configmap.yaml') }}"
+
+- name: Manage backend-redis SecretDefinition for CR {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'backend-redis-secretdefinition.yaml') }}"
+
+- name: Manage backend-system-events-hook SecretDefinition for CR {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'backend-system-events-hook-secretdefinition.yaml') }}"
+
+- name: Manage backend-internal-api SecretDefinition for CR {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'backend-internal-api-secretdefinition.yaml') }}"
+
+- name: Manage backend-error-monitoring SecretDefinition for CR {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'backend-error-monitoring-secretdefinition.yaml') }}"
+  when: error_monitoring_enabled|bool == true
+
+- name: Manage backend-listener Deployment for CR {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'backend-listener-deployment.yaml') }}"
+
+- name: Manage backend-worker Deployment for CR {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'backend-worker-deployment.yaml') }}"
+
+- name: Manage backend-cron Deployment for CR {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'backend-cron-deployment.yaml') }}"
+
+- name: Manage backend-listener Service for CR {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'backend-listener-service.yaml') }}"
+
+- name: Manage backend-listener PodMonitor for CR {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'backend-listener-podmonitor.yaml') }}"
+
+- name: Manage backend Route for CR {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'backend-route.yaml') }}"
+
+- name: Manage backend-worker PodMonitor for CR {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'backend-worker-podmonitor.yaml') }}"
+
+- name: Manage backend GrafanaDashboard for CR {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'backend-grafanadashboard.yaml') }}"
+
+- name: Manage backend-storage Main GrafanaDashboard for CR {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'backend-storage-main-grafanadashboard.yaml') }}"
+
+- name: Manage backend-storage Redis GrafanaDashboard for CR {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'backend-storage-redis-grafanadashboard.yaml') }}"
+
+- name: Manage backend-storage Node GrafanaDashboard for CR {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'backend-storage-node-grafanadashboard.yaml') }}"
+
+- name: Manage backend-storage Twemproxy GrafanaDashboard for CR {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'backend-storage-twemproxy-grafanadashboard.yaml') }}"
+
+- name: Manage backend-storage Sentinel GrafanaDashboard for CR {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'backend-storage-sentinel-grafanadashboard.yaml') }}"
