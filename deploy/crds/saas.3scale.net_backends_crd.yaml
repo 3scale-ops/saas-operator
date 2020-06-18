@@ -1,4 +1,4 @@
-apiVersion: apiextensions.k8s.io/v1
+apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: backends.saas.3scale.net
@@ -10,13 +10,253 @@ spec:
     plural: backends
     singular: backend
   scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      type: object
+      description: Backend is the Schema for Backend instance
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          type: object
+          description: BackendSpec defines the desired state of Backend
+          required:
+          - secret
+          properties:
+            image:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Image name (docker repository)
+                tag:
+                  type: string
+                  description: Image tag
+                pullSecretName:
+                  type: string
+                  description: Quay pull secret for private repository
+            grafanaDashboard:
+              type: object
+              properties:
+                label:
+                  type: object
+                  properties:
+                    key:
+                      type: string
+                      description: Label key used by grafana-operator for dashboard discovery
+                    value:
+                      type: string
+                      description: Label value used by grafana-operator for dashboard discovery
+            config:
+              type: object
+              properties:
+                rackEnv:
+                  type: string
+                  description: Rack environment (used for example for error-monitoring ID)
+                masterServiceId:
+                  type: integer
+                  description: Master service account ID in Porta
+                oauthMaxTokenSize:
+                  type: integer
+                  description: Oauth Max token size (bytes)
+                legacyReferrerFilters:
+                  type: boolean
+                  description: Enable (true) or disable (false) Legacy Referrer Filters
+            secret:
+              type: object
+              required:
+              - redisVaultPath
+              - systemEventsHookVaultPath
+              - internalApiVaultPath
+              properties:
+                redisVaultPath:
+                  type: string
+                  description: Vault Path with backend-redis secret definition
+                systemEventsHookVaultPath:
+                  type: string
+                  description: Vault Path with backend-system-events-hook secret definition
+                internalApiVaultPath:
+                  type: string
+                  description: Vault Path with backend-internal-api secret definition
+                errorMonitoringVaultPath:
+                  type: string
+                  description: Vault Path with backend-error-monitoring secret definition
+            errorMonitoringEnabled:
+              type: boolean
+              description: Mount (true) or not (false) backend-error-monitoring Secret on deployments
+            listener:
+              type: object
+              properties:
+                routeHost:
+                  type: string
+                  description: Host to configure on backend listener Route
+                logFormat:
+                  type: string
+                  description: Log format (text/json)
+                listenerWorkers:
+                  type: integer
+                  description: Number of worker processes per listener pod
+                redisAsync:
+                  type: boolean
+                  description: Enable (true) or disable (false) redis async mode
+                replicas:
+                  type: integer
+                  description: Number of replicas
+                resources:
+                  type: object
+                  properties:
+                    requests:
+                      type: object
+                      properties:
+                        cpu:
+                          description: Override CPU requests
+                        memory:
+                          description: Override Memory requests
+                    limits:
+                      type: object
+                      properties:
+                        cpu:
+                          description: Override CPU limits
+                        memory:
+                          description: Override Memory limits
+                livenessProbe:
+                  type: object
+                  properties:
+                    initialDelaySeconds:
+                      type: integer
+                      description: Override liveness probe initial delay (seconds)
+                    timeoutSeconds:
+                      type: integer
+                      description: Override liveness probe timeout (seconds)
+                    periodSeconds:
+                      type: integer
+                      description: Override liveness probe period (seconds)
+                    successThreshold:
+                      type: integer
+                      description: Override liveness probe success threshold
+                    failureThreshold:
+                      type: integer
+                      description: Override liveness probe failure threshold
+                readinessProbe:
+                  type: object
+                  properties:
+                    initialDelaySeconds:
+                      type: integer
+                      description: Override readiness probe initial delay (seconds)
+                    timeoutSeconds:
+                      type: integer
+                      description: Override readiness probe timeout (seconds)
+                    periodSeconds:
+                      type: integer
+                      description: Override readiness probe period (seconds)
+                    successThreshold:
+                      type: integer
+                      description: Override readiness probe success threshold
+                    failureThreshold:
+                      type: integer
+                      description: Override readiness probe failure threshold
+            worker:
+              type: object
+              properties:
+                logFormat:
+                  type: string
+                  description: Log format (text/json)
+                redisAsync:
+                  type: boolean
+                  description: Enable (true) or disable (false) redis async mode
+                replicas:
+                  type: integer
+                  description: Number of replicas
+                resources:
+                  type: object
+                  properties:
+                    requests:
+                      type: object
+                      properties:
+                        cpu:
+                          description: Override CPU requests
+                        memory:
+                          description: Override Memory requests
+                    limits:
+                      type: object
+                      properties:
+                        cpu:
+                          description: Override CPU limits
+                        memory:
+                          description: Override Memory limits
+                livenessProbe:
+                  type: object
+                  properties:
+                    initialDelaySeconds:
+                      type: integer
+                      description: Override liveness probe initial delay (seconds)
+                    timeoutSeconds:
+                      type: integer
+                      description: Override liveness probe timeout (seconds)
+                    periodSeconds:
+                      type: integer
+                      description: Override liveness probe period (seconds)
+                    successThreshold:
+                      type: integer
+                      description: Override liveness probe success threshold
+                    failureThreshold:
+                      type: integer
+                      description: Override liveness probe failure threshold
+                readinessProbe:
+                  type: object
+                  properties:
+                    initialDelaySeconds:
+                      type: integer
+                      description: Override readiness probe initial delay (seconds)
+                    timeoutSeconds:
+                      type: integer
+                      description: Override readiness probe timeout (seconds)
+                    periodSeconds:
+                      type: integer
+                      description: Override readiness probe period (seconds)
+                    successThreshold:
+                      type: integer
+                      description: Override readiness probe success threshold
+                    failureThreshold:
+                      type: integer
+                      description: Override readiness probe failure threshold
+            cron:
+              type: object
+              properties:
+                replicas:
+                  type: integer
+                  description: Number of replicas
+                resources:
+                  type: object
+                  properties:
+                    requests:
+                      type: object
+                      properties:
+                        cpu:
+                          description: Override CPU requests
+                        memory:
+                          description: Override Memory requests
+                    limits:
+                      type: object
+                      properties:
+                        cpu:
+                          description: Override CPU limits
+                        memory:
+                          description: Override Memory limits
+  version: v1alpha1
   versions:
   - name: v1alpha1
-    schema:
-      openAPIV3Schema:
-        type: object
-        x-kubernetes-preserve-unknown-fields: true
     served: true
     storage: true
-    subresources:
-      status: {}
