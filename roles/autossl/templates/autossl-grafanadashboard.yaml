@@ -1,7 +1,7 @@
 apiVersion: integreatly.org/v1alpha1
 kind: GrafanaDashboard
 metadata:
-  name: autossl
+  name: threescale-autossl
   namespace: "{{ meta.namespace }}"
   labels:
     app: autossl
@@ -9,7 +9,7 @@ metadata:
     "{{ grafana_dashboard.label.key | default(grafana_dashboard_label_key) }}": "{{ grafana_dashboard.label.value | default(grafana_dashboard_label_value) }}"
     monitoring-key: middleware
 spec:
-  name: "{{ meta.namespace }}-3scale-autossl.json"
+  name: "{{ meta.namespace }}-threescale-autossl.json"
   json: >
     {
       "annotations": {
@@ -1872,24 +1872,26 @@ spec:
           },
           {
             "allValue": null,
-            "datasource": "$datasource",
-            "definition": "label_values(kube_pod_info{pod=~'autossl-.*',namespace='{{ meta.namespace }}'}, namespace)",
+            "current": {
+              "tags": [],
+              "text": "{{ meta.namespace }}",
+              "value": "{{ meta.namespace }}"
+            },
             "hide": 0,
             "includeAll": false,
             "label": "namespace",
             "multi": false,
             "name": "namespace",
-            "options": [],
-            "query": "label_values(kube_pod_info{pod=~'autossl-.*',namespace='{{ meta.namespace }}'}, namespace)",
-            "refresh": 1,
-            "regex": "",
+            "options": [
+              {
+                "selected": true,
+                "text": "{{ meta.namespace }}",
+                "value": "{{ meta.namespace }}"
+              }
+            ],
+            "query": "{{ meta.namespace }}",
             "skipUrlSync": false,
-            "sort": 1,
-            "tagValuesQuery": "",
-            "tags": [],
-            "tagsQuery": "",
-            "type": "query",
-            "useTags": false
+            "type": "custom"
           }
         ]
       },
