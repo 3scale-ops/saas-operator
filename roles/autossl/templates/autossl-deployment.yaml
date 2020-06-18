@@ -29,11 +29,13 @@ spec:
           emptyDir: {}
         - name: nginx-cache
           emptyDir: {}
+{% if image.pull_secret_name is defined %}
       imagePullSecrets:
         - name: "{{ image.pull_secret_name | default(image_pull_secret_name) }}"
+{% endif %}
       containers:
         - name: autossl
-          image: "{{ image.name | default(image_name) }}:{{ image.version | default(image_version) }}"
+          image: "{{ image.name | default(image_name) }}:{{ image.tag | default(image_tag) }}"
           ports:
             - name: http
               containerPort: 8081

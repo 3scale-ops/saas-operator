@@ -12,7 +12,7 @@ metadata:
 spec:
   image:
     name: quay.io/3scale/autossl
-    version: v1.0.0
+    tag: v1.0.0
     pullSecretName: quay-pull-secret
   replicas: 2
   logLevel: debug
@@ -68,8 +68,8 @@ spec:
 | **Field** | **Type** | **Required** | **Default value** | **Description** |
 |:---:|:---:|:---:|:---:|:---:|
 | `image.name` | `string` | No | `quay.io/3scale/autossl` | Image name (docker repository) |
-| `image.version` | `string` | No | `latest` | Image version |
-| `image.pullSecretName` | `string` | Yes | `quay-pull-secret` | Quay pull secret for private repository |
+| `image.tag` | `string` | No | `latest` | Image tag |
+| `image.pullSecretName` | `string` | No | - | Quay pull secret for private repository |
 | `replicas` | `int` | No | `1` | Number of replicas |
 | `logLevel` | `string` | No | `warn` | Nginx log level |
 | `acmeStaging` | `string` | No | - | Let's Encrypt Acme staging enabled (any value) |

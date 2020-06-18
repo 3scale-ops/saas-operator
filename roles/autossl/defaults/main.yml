@@ -3,8 +3,7 @@
 ## Deployment
 replicas: 1
 image_name: "quay.io/3scale/autossl"
-image_version: "latest"
-image_pull_secret_name: "quay-pull-secret"
+image_tag: "latest"
 acme_staging: ""
 redis_port: "6379"
 log_level: "warn"
