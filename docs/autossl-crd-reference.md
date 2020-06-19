@@ -1,5 +1,26 @@
 # AutoSSL Custom Resource Reference
 
+## Simple CR Example
+
+```yaml
+apiVersion: saas.3scale.net/v1alpha1
+kind: AutoSSL
+metadata:
+  name: simple-example
+spec:
+  image:
+    tag: v1.0.0
+    pullSecretName: quay-pull-secret
+  replicas: 1
+  env:
+    contactEmail: example@3scale.net
+    proxyEndpoint: https://multitenant-admin.example.3scale.net
+    verificationEndpoint: https://multitenant-admin.example.3scale.net/swagger/spec.json
+    domainWhitelist: autossl.example.3scale.net
+    redisHost: example-autossl-redis.ng.0001.use1.cache.amazonaws.com
+  externalDnsHostname: mtssl-edge-a.example.3scale.net,mtssl-edge-b.example.3scale.net,autossl.example.3scale.net
+```
+
 ## Full CR Example
 
 Most of the fields do not need to be specified (can use default values), this is just an example of everything that can be overriden under your own risk:
@@ -8,7 +29,7 @@ Most of the fields do not need to be specified (can use default values), this is
 apiVersion: saas.3scale.net/v1alpha1
 kind: AutoSSL
 metadata:
-  name: example
+  name: full-example
 spec:
   image:
     name: quay.io/3scale/autossl

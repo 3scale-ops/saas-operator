@@ -5,6 +5,7 @@ metadata:
 spec:
   image:
     tag: v1.0.0
+    pullSecretName: quay-pull-secret
   replicas: 1
   env:
     contactEmail: example@3scale.net

@@ -1,5 +1,30 @@
 # Backend Custom Resource Reference
 
+## Simple CR Example
+
+```yaml
+apiVersion: saas.3scale.net/v1alpha1
+kind: Backend
+metadata:
+  name: simple-example
+spec:
+  image:
+    tag: v2.101.1
+  config:
+    rackEnv: example
+  secret:
+    redisVaultPath: secret/data/openshift/cluster-example/3scale/backend-redis
+    systemEventsHookVaultPath: secret/data/openshift/cluster-example/3scale/backend-system-events-hook
+    internalApiVaultPath: secret/data/openshift/cluster-example/3scale/backend-internal-api
+  listener:
+    routeHost: backend-example.3scale.net
+    replicas: 1
+  worker:
+    replicas: 1
+  cron:
+    replicas: 1
+```
+
 ## Full CR Example
 
 Most of the fields do not need to be specified (can use default values), this is just an example of everything that can be overriden under your own risk:
@@ -8,7 +33,7 @@ Most of the fields do not need to be specified (can use default values), this is
 apiVersion: saas.3scale.net/v1alpha1
 kind: Backend
 metadata:
-  name: example
+  name: full-example
 spec:
   image:
     name: quay.io/3scale/apisonator
