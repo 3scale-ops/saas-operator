@@ -7,3 +7,12 @@
 - name: "Manage Zync SecretDefinition for CR {{ meta.name }} on Namespace {{ meta.namespace }}"
   k8s:
     definition: "{{ lookup('template', 'zync-secretdefinition.yaml') }}"
+
+
+- name: Manage PodMonitor for Zync-Que {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'zync-que-podmonitor.yaml') }}"
+
+- name: Manage PodMonitor for Zync {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'zync-podmonitor.yaml') }}"
