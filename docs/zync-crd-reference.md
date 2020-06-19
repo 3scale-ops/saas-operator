@@ -1,5 +1,27 @@
 # Zync Custom Resource Reference
 
+## Simple CR Example
+
+```yaml
+apiVersion: saas.3scale.net/v1alpha1
+kind: Zync
+metadata:
+  name: simple-example
+spec:
+  image:
+    tag: new-feature
+  secret:
+    zyncDatabaseVaultPath: secret/data/openshift/stg-saas-ocp/stg-saas-3scale-zync
+  zync:
+    replicas: 1
+    env:
+      dbWaitSleepSeconds: 60
+    resources:
+      limits:
+        cpu: 1
+        memory: 1G
+```
+
 ## Full CR Example
 
 Most of the fields do not need to be specified (can use default values), this is just an example of everything that can be overriden under your own risk:
@@ -8,7 +30,7 @@ Most of the fields do not need to be specified (can use default values), this is
 apiVersion: saas.3scale.net/v1alpha1
 kind: Zync
 metadata:
-  name: example
+  name: full-example
 spec:
   image:
     name: quay.io/3scale/zync
@@ -69,28 +91,6 @@ spec:
     label:
       key: discovery
       value: enabled
-```
-
-## Simple CR Example
-
-```yaml
-apiVersion: saas.3scale.net/v1alpha1
-kind: Zync
-metadata:
-  name: simple-example
-spec:
-  image:
-    tag: new-feature
-  secret:
-    zyncDatabaseVaultPath: secret/data/openshift/stg-saas-ocp/stg-saas-3scale-zync
-  zync:
-    replicas: 1
-    env:
-      dbWaitSleepSeconds: 60
-    resources:
-      limits:
-        cpu: 1
-        memory: 1G
 ```
 
 ## CR Spec
