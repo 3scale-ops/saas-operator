@@ -17,9 +17,9 @@ spec:
   zync:
     replicas: 3
     env:
-      svc_db_sleep_seconds: 10
-      rails_log_to_stdout: "true"
-      zync_rails_env: "staging"
+      dbWaitSleepSeconds: 10
+      railsEnv: "staging"
+      railsLogsToStdout: "true"
     resources:
       requests:
         cpu: 300m
@@ -42,8 +42,8 @@ spec:
   que:
     replicas: 2
     env:
-      rails_log_to_stdout: "true"
-      zync_rails_env: "staging"
+      railsEnv: "staging"
+      railsLogsToStdout: "true"
     resources:
       requests:
         cpu: 250m
@@ -82,7 +82,7 @@ spec:
   zync:
     replicas: 1
     env:
-      svc_db_sleep_seconds: 60
+      dbWaitSleepSeconds: 60
     resources:
       limits:
         cpu: 1
@@ -96,9 +96,9 @@ spec:
 |             `zync.image.name`             | `string` |      No      | `quay.io/3scale/zync` |            Image name (docker repository) for zync             |
 |             `zync.image.tag`              | `string` |      No      |       `nightly`       |                       Image tag for zync                       |
 |        `zync.image.pullSecretName`        | `string` |      No      |  `quay-pull-secret`   |        Quay pull secret for private repository for zync        |
-| `zync.env.zync.env.svc_db_sleep_seconds ` |  `int`   |      No      |         `30`          |        Sleep delay while waiting for the zync database         |
-|      `zync.env.rails_log_to_stdout`       | `string` |      No      |        `false`        |            Rails log to std output toggle for zync             |
-|           `zync.env.rails_env`            | `string` |      No      |       `staging`       |                   Rails environment for zync                   |
+|  `zync.env.zync.env.dbWaitSleepSeconds `  |  `int`   |      No      |         `30`          |        Sleep delay while waiting for the zync database         |
+|            `zync.env.railsEnv`            | `string` |      No      |       `staging`       |                   Rails environment for zync                   |
+|       `zync.env.railsLogsToStdout`        | `string` |      No      |        `false`        |            Rails log to std output toggle for zync             |
 |              `zync.replicas`              |  `int`   |      No      |          `3`          |                  Number of replicas for zync                   |
 |       `zync.resources.requests.cpu`       | `string` |      No      |        `250m`         |                 Override CPU requests for zync                 |
 |     `zync.resources.requests.memory`      | `string` |      No      |        `250Mi`        |               Override Memory requests for zync                |
@@ -118,8 +118,8 @@ spec:
 |              `que.image.tag`              | `string` |      No      |       `nightly`       |                     Image tag for zync-que                     |
 |        `que.image.pullSecretName`         | `string` |      No      |  `quay-pull-secret`   |      Quay pull secret for private repository for zync-que      |
 |              `que.replicas`               |  `int`   |      No      |          `3`          |                Number of replicas for zync-que                 |
-|       `que.env.rails_log_to_stdout`       | `string` |      No      |        `false`        |           Rail log to std output toggle for zync-que           |
-|            `que.env.rails_env`            | `string` |      No      |       `staging`       |                 Rails environment for zync-que                 |
+|            `que.env.railsEnv`             | `string` |      No      |       `staging`       |                 Rails environment for zync-que                 |
+|        `que.env.railsLogsToStdout`        | `string` |      No      |        `false`        |           Rail log to std output toggle for zync-que           |
 |       `que.resources.requests.cpu`        | `string` |      No      |        `250m`         |               Override CPU requests for zync-que               |
 |      `que.resources.requests.memory`      | `string` |      No      |        `250Mi`        |             Override Memory requests for zync-que              |
 |        `que.resources.limits.cpu`         | `string` |      No      |        `750m`         |                Override CPU limits for zync-que                |
