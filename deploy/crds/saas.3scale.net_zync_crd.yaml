@@ -68,7 +68,7 @@ spec:
                         type: integer
                         description: Sleep delay while waiting for the zync database
                       railsLogsToStdout:
-                        type: string
+                        type: boolean
                         description: Rails log to std output toggle for zync
                       railsEnv:
                         type: string
@@ -138,7 +138,7 @@ spec:
                     type: object
                     properties:
                       railsLogsToStdout:
-                        type: string
+                        type: boolean
                         description: Rails log to std output toggle for zync
                       railsEnv:
                         type: string
