@@ -1,0 +1,55 @@
+---
+## Zync Deployment common
+image_name: "quay.io/3scale/zync"
+image_tag: "nightly"
+
+## Zync Deployment
+zync_replicas: 3
+### Zync Deployment Env
+zync_env_rails_log_to_stdout: "false"
+zync_env_rails_env: staging
+zync_env_db_wait_sleep_seconds: 30
+### Zync Deployment Resources
+zync_resources_requests_cpu: "250m"
+zync_resources_requests_memory: "250Mi"
+zync_resources_limits_cpu: "750m"
+zync_resources_limits_memory: "512Mi"
+### Zync Deployment Liveness Probe
+zync_liveness_probe_initial_delay_seconds: 10
+zync_liveness_probe_timeout_seconds: 30
+zync_liveness_probe_period_seconds: 10
+zync_liveness_probe_success_threshold: 1
+zync_liveness_probe_failure_threshold: 3
+### Zync Deployment Readiness Probe
+zync_readiness_probe_initial_delay_seconds: 30
+zync_readiness_probe_timeout_seconds: 10
+zync_readiness_probe_period_seconds: 10
+zync_readiness_probe_success_threshold: 1
+zync_readiness_probe_failure_threshold: 3
+
+## Zync-Que Deployment
+que_replicas: 3
+### Zync Deployment Env
+que_env_rails_log_to_stdout: "false"
+que_env_rails_env: staging
+### Zync-Que Deployment Resources
+que_resources_requests_cpu: "250m"
+que_resources_requests_memory: "250Mi"
+que_resources_limits_cpu: "750m"
+que_resources_limits_memory: "512Mi"
+### Zync-Que Deployment Liveness Probe
+que_liveness_probe_initial_delay_seconds: 10
+que_liveness_probe_timeout_seconds: 30
+que_liveness_probe_period_seconds: 10
+que_liveness_probe_success_threshold: 1
+que_liveness_probe_failure_threshold: 3
+### Zync-Que Deployment Readiness Probe
+que_readiness_probe_initial_delay_seconds: 30
+que_readiness_probe_timeout_seconds: 10
+que_readiness_probe_period_seconds: 10
+que_readiness_probe_success_threshold: 1
+que_readiness_probe_failure_threshold: 3
+
+## GrafanaDashboard
+grafana_dashboard_label_key: "monitoring-key"
+grafana_dashboard_label_value: "middleware"

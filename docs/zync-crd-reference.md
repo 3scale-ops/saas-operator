@@ -114,7 +114,7 @@ spec:
 |    `zync.livenessProbe.periodSeconds`     |  `int`   |      No      |         `10`          |          Override liveness period (seconds) for zync           |
 |   `zync.livenessProbe.successThreshold`   |  `int`   |      No      |          `1`          |          Override liveness success threshold for zync          |
 |   `zync.livenessProbe.failureThreshold`   |  `int`   |      No      |          `3`          |          Override liveness failure threshold for zync          |
-| `zync.readinessProbe.initialDelaySeconds` |  `int`   |      No      |         `60`          |      Override readiness initial delay (seconds) for zync       |
+| `zync.readinessProbe.initialDelaySeconds` |  `int`   |      No      |         `30`          |      Override readiness initial delay (seconds) for zync       |
 |   `zync.readinessProbe.timeoutSeconds`    |  `int`   |      No      |         `10`          |         Override readiness timeout (seconds) for zync          |
 |    `zync.readinessProbe.periodSeconds`    |  `int`   |      No      |         `10`          |          Override readiness period (seconds) for zync          |
 |  `zync.readinessProbe.successThreshold`   |  `int`   |      No      |          `1`          |         Override readiness success threshold for zync          |
@@ -134,7 +134,7 @@ spec:
 |     `que.livenessProbe.periodSeconds`     |  `int`   |      No      |         `10`          |        Override liveness period (seconds) for zync-que         |
 |   `que.livenessProbe.successThreshold`    |  `int`   |      No      |          `1`          |        Override liveness success threshold for zync-que        |
 |   `que.livenessProbe.failureThreshold`    |  `int`   |      No      |          `3`          |        Override liveness failure threshold for zync-que        |
-| `que.readinessProbe.initialDelaySeconds`  |  `int`   |      No      |         `60`          |    Override readiness initial delay (seconds) for zync-que     |
+| `que.readinessProbe.initialDelaySeconds`  |  `int`   |      No      |         `30`          |    Override readiness initial delay (seconds) for zync-que     |
 |    `que.readinessProbe.timeoutSeconds`    |  `int`   |      No      |         `10`          |       Override readiness timeout (seconds) for zync-que        |
 |    `que.readinessProbe.periodSeconds`     |  `int`   |      No      |         `10`          |        Override readiness period (seconds) for zync-que        |
 |   `que.readinessProbe.successThreshold`   |  `int`   |      No      |          `1`          |       Override readiness success threshold for zync-que        |
