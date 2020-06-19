@@ -1,0 +1,132 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zync
+  namespace: "{{ meta.namespace }}"
+  labels:
+    app: 3scale-api-management
+    threescale_component: zync
+    threescale_component_element: zync
+spec:
+  replicas: {{ zync_replicas }}
+  selector:
+    matchLabels:
+      deployment: zync
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: 3scale-api-management
+        deployment: zync
+        threescale_component: zync
+        threescale_component_element: zync
+    spec:
+{% if image.pull_secret_name is defined %}
+      imagePullSecrets:
+        - name: "{{ image.pull_secret_name }}"
+{% endif %}
+      initContainers:
+      # initContainers > zync-db-svc
+        - name: zync-db-svc
+          image: "{{ image.name | default(image_name) }}:{{ image.version | default(image_tag) }}"
+          imagePullPolicy: Always
+          command:
+            - bash
+            - -c
+            - bundle exec sh -c "until rake boot:db; do sleep $SLEEP_SECONDS; done"
+        ## initContainers > zync-db-svc > env
+          env:
+            - name: SLEEP_SECONDS
+              value: "{{ zync.env.db_wait_sleep_seconds | default(zync_env_db_wait_sleep_seconds) }}"
+          ### secret/zync
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  key: DB_URL
+                  name: zync
+        ## initContainers > zync-db-svc > resources
+          resources:
+            requests:
+              memory: "{{ zync.resources.requests.memory | default(zync_resources_requests_memory) }}"
+              cpu: "{{ zync.resources.requests.cpu | default(zync_resources_requests_cpu) }}"
+            limits:
+              memory: "{{ zync.resources.limits.memory | default(zync_resources_limits_memory) }}"
+              cpu: "{{ zync.resources.limits.cpu | default(zync_resources_limits_cpu) }}"
+      containers:
+      # containers > zync
+        - name: zync
+          image: "{{ image.name | default(image_name) }}:{{ image.version | default(image_tag) }}"
+          imagePullPolicy: Always
+        ## containers > zync > ports
+          ports:
+          - name: http
+            containerPort: 8080
+            protocol: TCP
+          - name: metrics
+            containerPort: 9393
+            protocol: TCP
+        ## containers > zync > resources
+          resources:
+            requests:
+              memory: "{{ zync.resources.requests.memory | default(zync_resources_requests_memory) }}"
+              cpu: "{{ zync.resources.requests.cpu | default(zync_resources_requests_cpu) }}"
+            limits:
+              memory: "{{ zync.resources.limits.memory | default(zync_resources_limits_memory) }}"
+              cpu: "{{ zync.resources.limits.cpu | default(zync_resources_limits_cpu) }}"
+          terminationMessagePath: /dev/termination-log
+        ## containers > zync > probes
+          livenessProbe:
+            httpGet:
+              path: /status/live
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: {{ zync.liveness_probe.initial_delay_seconds | default(zync_liveness_probe_initial_delay_seconds) }}
+            timeoutSeconds: {{ zync.liveness_probe.timeout_seconds | default(zync_liveness_probe_timeout_seconds) }}
+            periodSeconds: {{ zync.liveness_probe.period_seconds | default (zync_liveness_probe_period_seconds) }}
+            successThreshold: {{ zync.liveness_probe.success_threshold | default(zync_liveness_probe_success_threshold) }}
+            failureThreshold: {{ zync.liveness_probe.failure_threshold | default(zync_liveness_probe_failure_threshold) }}
+          readinessProbe:
+            httpGet:
+              path: /status/ready
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: {{ zync.readiness_probe.initial_delay_seconds | default(zync_readiness_probe_initial_delay_seconds) }}
+            timeoutSeconds: {{ zync.readiness_probe.timeout_seconds | default(zync_readiness_probe_timeout_seconds) }}
+            periodSeconds: {{ zync.readiness_probe.period_seconds | default(zync_readiness_probe_period_seconds) }}
+            successThreshold: {{ zync.readiness_probe.success_threshold | default(zync_readiness_probe_success_threshold) }}
+            failureThreshold: {{ zync.readiness_probe.failure_threshold | default(zync_readiness_probe_failure_threshold) }}
+        ## containers > zync > env
+          env:
+          - name: RAILS_LOG_TO_STDOUT
+            value: "{{ zync.env.rails_log_to_stdout | default(zync_env_rails_log_to_stdout) }}"
+          - name: RAILS_ENV
+            value: "{{ zync.env.rails_env | default(zync_env_rails_env) }}"
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          ### secret/zync
+          - name: DATABASE_URL
+            valueFrom:
+              secretKeyRef:
+                key: DB_URL
+                name: zync
+          - name: SECRET_KEY_BASE
+            valueFrom:
+              secretKeyRef:
+                key: SECRET_KEY_BASE
+                name: zync
+          - name: ZYNC_AUTHENTICATION_TOKEN
+            valueFrom:
+              secretKeyRef:
+                key: ZYNC_AUTHENTICATION_TOKEN
+                name: zync
