@@ -77,16 +77,16 @@ kind: Zync
 metadata:
   name: simple-example
 spec:
+  image:
+    tag: new-feature
   zync:
-    image:
-      tag: new-feature
     replicas: 1
+    env:
+      svc_db_sleep_seconds: 60
     resources:
       limits:
         cpu: 1
         memory: 1G
-      env:
-        svc_db_sleep_seconds: 60
 ```
 
 ## CR Spec
