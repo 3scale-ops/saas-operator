@@ -12,7 +12,7 @@ else ifeq (${UNAME}, Darwin)
   INPLACE_SED=sed -i ""
 endif
 
-VERSION ?= v0.2.0
+TAG ?= v0.2.0
 REGISTRY ?= quay.io
 ORG ?= 3scale
 PROJECT ?= 3scale-saas-operator
@@ -22,10 +22,10 @@ NAMESPACE ?= 3scale-example
 
 ## Operator ##
 operator-image-build: ## OPERATOR IMAGE - Build operator Docker image
-	operator-sdk build $(IMAGE):$(VERSION)
+	operator-sdk build $(IMAGE):$(TAG)
 
 operator-image-push: ## OPERATOR IMAGE - Push operator Docker image to remote registry
-	docker push $(IMAGE):$(VERSION)
+	docker push $(IMAGE):$(TAG)
 
 operator-image-update: operator-image-build operator-image-push ## OPERATOR IMAGE - Build and Push Operator Docker image to remote registry
 
@@ -39,9 +39,9 @@ operator-deploy: namespace-create ## OPERATOR DEPLOY - Deploy Operator objects (
 	$(KUBE_CLIENT) apply -f deploy/service_account.yaml -n $(NAMESPACE)
 	$(KUBE_CLIENT) apply -f deploy/role.yaml -n $(NAMESPACE)
 	$(KUBE_CLIENT) apply -f deploy/role_binding.yaml -n $(NAMESPACE)
-	$(INPLACE_SED) 's|REPLACE_IMAGE|$(IMAGE):$(VERSION)|g' deploy/operator.yaml
+	$(INPLACE_SED) 's|REPLACE_IMAGE|$(IMAGE):$(TAG)|g' deploy/operator.yaml
 	$(KUBE_CLIENT) apply -f deploy/operator.yaml -n $(NAMESPACE)
-	$(INPLACE_SED) 's|$(IMAGE):$(VERSION)|REPLACE_IMAGE|g' deploy/operator.yaml
+	$(INPLACE_SED) 's|$(IMAGE):$(TAG)|REPLACE_IMAGE|g' deploy/operator.yaml
 
 operator-delete: ## OPERATOR DEPLOY - Delete Operator objects (except CRD/namespace for caution)
 	$(KUBE_CLIENT) delete -f deploy/operator.yaml -n $(NAMESPACE) || true

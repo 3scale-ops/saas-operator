@@ -36,7 +36,7 @@ commands:
       - run:
           name: Build and Push Operator Image
           command: |
-              make operator-image-update VERSION=${CIRCLE_TAG:-master}
+              make operator-image-update TAG=${CIRCLE_TAG:-master}
 jobs:
   release:
     machine:
