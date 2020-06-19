@@ -1,0 +1,9 @@
+apiVersion: saas.3scale.net/v1alpha1
+kind: Zync
+metadata:
+  name: simple
+spec:
+  zync:
+    replicas: 1
+    env:
+      dbWaitSleepSeconds: 1
