@@ -1,0 +1,5 @@
+---
+
+- name: Echo custom resource name and namespace
+  debug:
+    msg:  CR {{ meta.name }} on Namespace {{ meta.namespace }}
