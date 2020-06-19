@@ -54,25 +54,25 @@ spec:
               protocol: TCP
           env:
             - name: ACME_STAGING
-              value: "{{ acme_staging }}"
+              value: "{{ env.acme_staging | default(env_acme_staging) }}"
             - name: CONTACT_EMAIL
-              value: "{{ contact_email }}"
+              value: "{{ env.contact_email }}"
             - name: PROXY_ENDPOINT
-              value: "{{ proxy_endpoint }}"
+              value: "{{ env.proxy_endpoint }}"
             - name: STORAGE_ADAPTER
               value: redis
             - name: REDIS_HOST
-              value: "{{ redis_host }}"
+              value: "{{ env.redis_host }}"
             - name: REDIS_PORT
-              value: "{{ redis_port }}"
+              value: "{{ env.redis_port | default(env_redis_port) }}"
             - name: VERIFICATION_ENDPOINT
-              value: "{{ verification_endpoint }}"
+              value: "{{ env.verification_endpoint }}"
             - name: LOG_LEVEL
-              value: "{{ log_level }}"
+              value: "{{ env.log_level | default(env_log_level) }}"
             - name: DOMAIN_WHITELIST
-              value: "{{ domain_whitelist }}"
+              value: "{{ env.domain_whitelist | default(env_domain_whitelist) }}"
             - name: DOMAIN_BLACKLIST
-              value: "{{ domain_blacklist }}"
+              value: "{{ env.domain_blacklist | default(env_domain_blacklist) }}"
           resources:
             requests:
               memory: "{{ resources.requests.memory | default(resources_requests_memory) }}"

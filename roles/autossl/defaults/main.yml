@@ -4,11 +4,11 @@
 replicas: 1
 image_name: "quay.io/3scale/autossl"
 image_tag: "latest"
-acme_staging: ""
-redis_port: "6379"
-log_level: "warn"
-domain_whitelist: ""
-domain_blacklist: ""
+env_acme_staging: ""
+env_redis_port: "6379"
+env_log_level: "warn"
+env_domain_whitelist: ""
+env_domain_blacklist: ""
 liveness_probe_initial_delay_seconds: 25
 liveness_probe_timeout_seconds: 1
 liveness_probe_period_seconds: 10
