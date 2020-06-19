@@ -94,15 +94,23 @@ spec:
                   type: object
                   properties:
                     cpu:
+                      type: string
+                      pattern: "[0-9]+m?"
                       description: Override CPU requests
                     memory:
+                      type: string
+                      pattern: "[0-9]+([kKmMgGtTpPeE]i?)?$"
                       description: Override Memory requests
                 limits:
                   type: object
                   properties:
                     cpu:
+                      type: string
+                      pattern: "[0-9]+m?"
                       description: Override CPU limits
                     memory:
+                      type: string
+                      pattern: "[0-9]+([kKmMgGtTpPeE]i?)?$"
                       description: Override Memory limits
             livenessProbe:
               type: object

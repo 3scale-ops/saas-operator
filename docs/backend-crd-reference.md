@@ -50,11 +50,11 @@ spec:
       failureThreshold: 3
     resources:
       requests:
-        cpu: 500m
-        memory: 550Mi
+        cpu: "500m"
+        memory: "550Mi"
       limits:
-        cpu: 1
-        memory: 700Mi
+        cpu: "1"
+        memory: "700Mi"
   worker:
     replicas: 2
     env:
@@ -74,20 +74,20 @@ spec:
       failureThreshold: 5
     resources:
       requests:
-        cpu: 150m
-        memory: 50Mi
+        cpu: "150m"
+        memory: "50Mi"
       limits:
-        cpu: 1
-        memory: 300Mi
+        cpu: "1"
+        memory: "300Mi"
   cron:
     replicas: 1
     resources:
       requests:
-        cpu: 50m
-        memory: 40Mi
+        cpu: "50m"
+        memory: "40Mi"
       limits:
-        cpu: 150m
-        memory: 80Mi
+        cpu: "150m"
+        memory: "80Mi"
 ```
 
 ## CR Spec
@@ -113,10 +113,10 @@ spec:
 | `listener.env.logFormat` | `string` | No | `json` | Log format (`text`/`json`) |
 | `listener.env.listenerWorkers` | `int` | No | `16` | Number of worker processes per listener pod |
 | `listener.env.redisAsync` | `bool` | No | `false` | Enable (`true`) or disable (`false`) redis async mode |
-| `listener.resources.requests.cpu` | - | No | `500m` | Override CPU requests |
-| `listener.resources.requests.memory` | - | No | `550Mi` | Override Memory requests |
-| `listener.resources.limits.cpu` | - | No | `1` | Override CPU limits |
-| `listener.resources.limits.memory` | - | No | `700Mi` | Override Memory limits |
+| `listener.resources.requests.cpu` | `string` | No | `500m` | Override CPU requests |
+| `listener.resources.requests.memory` | `string` | No | `550Mi` | Override Memory requests |
+| `listener.resources.limits.cpu` | `string` | No | `1` | Override CPU limits |
+| `listener.resources.limits.memory` | `string` | No | `700Mi` | Override Memory limits |
 | `listener.livenessProbe.initialDelaySeconds` | `int` | No | `30` | Override liveness initial delay (seconds) |
 | `listener.livenessProbe.timeoutSeconds` | `int` | No | `1` | Override liveness timeout (seconds) |
 | `listener.livenessProbe.periodSeconds` | `int` | No | `10` | Override liveness period (seconds) |
@@ -130,10 +130,10 @@ spec:
 | `worker.replicas` | `int` | No | `1` | Number of replicas |
 | `worker.env.logFormat` | `string` | No | `json` | Log format (`text`/`json`) |
 | `worker.env.redisAsync` | `bool` | No | `false` | Enable (`true`) or disable (`false`) redis async mode |
-| `worker.resources.requests.cpu` | - | No | `150m` | Override CPU requests |
-| `worker.resources.requests.memory` | - | No | `50Mi` | Override Memory requests |
-| `worker.resources.limits.cpu` | - | No | `1` | Override CPU limits |
-| `worker.resources.limits.memory` | - | No | `300Mi` | Override Memory limits |
+| `worker.resources.requests.cpu` | `string` | No | `150m` | Override CPU requests |
+| `worker.resources.requests.memory` | `string` | No | `50Mi` | Override Memory requests |
+| `worker.resources.limits.cpu` | `string` | No | `1` | Override CPU limits |
+| `worker.resources.limits.memory` | `string` | No | `300Mi` | Override Memory limits |
 | `worker.livenessProbe.initialDelaySeconds` | `int` | No | `10` | Override liveness initial delay (seconds) |
 | `worker.livenessProbe.timeoutSeconds` | `int` | No | `3` | Override liveness timeout (seconds) |
 | `worker.livenessProbe.periodSeconds` | `int` | No | `15` | Override liveness period (seconds) |
@@ -145,7 +145,7 @@ spec:
 | `worker.readinessProbe.successThreshold` | `int` | No | `1` | Override readiness success threshold |
 | `worker.readinessProbe.failureThreshold` | `int` | No | `5` | Override readiness failure threshold |
 | `cron.replicas` | `int` | No | `1` | Number of replicas |
-| `cron.resources.requests.cpu` | - | No | `50m` | Override CPU requests |
-| `cron.resources.requests.memory` | - | No | `40Mi` | Override Memory requests |
-| `cron.resources.limits.cpu` | - | No | `150m` | Override CPU limits |
-| `cron.resources.limits.memory` | - | No | `80Mi` | Override Memory limits |
+| `cron.resources.requests.cpu` | `string` | No | `50m` | Override CPU requests |
+| `cron.resources.requests.memory` | `string` | No | `40Mi` | Override Memory requests |
+| `cron.resources.limits.cpu` | `string` | No | `150m` | Override CPU limits |
+| `cron.resources.limits.memory` | `string` | No | `80Mi` | Override Memory limits |
