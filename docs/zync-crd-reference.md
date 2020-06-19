@@ -20,8 +20,8 @@ spec:
     replicas: 3
     env:
       dbWaitSleepSeconds: 10
-      railsEnv: "staging"
-      railsLogsToStdout: "true"
+      railsEnv: staging
+      railsLogsToStdout: true
     resources:
       requests:
         cpu: 300m
@@ -44,8 +44,8 @@ spec:
   que:
     replicas: 2
     env:
-      railsEnv: "staging"
-      railsLogsToStdout: "true"
+      railsEnv: staging
+      railsLogsToStdout: true
     resources:
       requests:
         cpu: 250m
@@ -97,10 +97,10 @@ spec:
 
 |                 **Field**                 | **Type** | **Required** |   **Default value**   |                        **Description**                         |
 | :---------------------------------------: | :------: | :----------: | :-------------------: | :------------------------------------------------------------: |
-|             `zync.image.name`             | `string` |      No      | `quay.io/3scale/zync` |            Image name (docker repository) for zync             |
-|             `zync.image.tag`              | `string` |      No      |       `nightly`       |                       Image tag for zync                       |
-|        `zync.image.pullSecretName`        | `string` |      No      |  `quay-pull-secret`   |        Quay pull secret for private repository for zync        |
-|    `zync.secret.zyncDatabaseVaultPath`    | `string` |     Yes      |           -           |           Vault path with the zync database secrets            |
+|               `image.name`                | `string` |      No      | `quay.io/3scale/zync` |            Image name (docker repository) for zync             |
+|                `image.tag`                | `string` |      No      |       `nightly`       |                       Image tag for zync                       |
+|          `image.pullSecretName`           | `string` |      No      |           -           |    Pull secret for private container repository if required    |
+|      `secret.zyncDatabaseVaultPath`       | `string` |     Yes      |           -           |           Vault path with the zync database secrets            |
 |  `zync.env.zync.env.dbWaitSleepSeconds `  |  `int`   |      No      |         `30`          |        Sleep delay while waiting for the zync database         |
 |            `zync.env.railsEnv`            | `string` |      No      |       `staging`       |                   Rails environment for zync                   |
 |       `zync.env.railsLogsToStdout`        | `string` |      No      |        `false`        |            Rails log to std output toggle for zync             |
@@ -119,9 +119,6 @@ spec:
 |    `zync.readinessProbe.periodSeconds`    |  `int`   |      No      |         `10`          |          Override readiness period (seconds) for zync          |
 |  `zync.readinessProbe.successThreshold`   |  `int`   |      No      |          `1`          |         Override readiness success threshold for zync          |
 |  `zync.readinessProbe.failureThreshold`   |  `int`   |      No      |          `3`          |         Override readiness failure threshold for zync          |
-|             `que.image.name`              | `string` |      No      | `quay.io/3scale/zync` |          Image name (docker repository) for zync-que           |
-|              `que.image.tag`              | `string` |      No      |       `nightly`       |                     Image tag for zync-que                     |
-|        `que.image.pullSecretName`         | `string` |      No      |  `quay-pull-secret`   |      Quay pull secret for private repository for zync-que      |
 |              `que.replicas`               |  `int`   |      No      |          `3`          |                Number of replicas for zync-que                 |
 |            `que.env.railsEnv`             | `string` |      No      |       `staging`       |                 Rails environment for zync-que                 |
 |        `que.env.railsLogsToStdout`        | `string` |      No      |        `false`        |           Rail log to std output toggle for zync-que           |
