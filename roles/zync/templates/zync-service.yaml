@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: zync
+  namespace: "{{ meta.namespace }}"
+  labels:
+    app: 3scale-api-management
+    threescale_component: zync
+    threescale_component_element: zync
+spec:
+  selector:
+    deployment: zync
+  ports:
+    - name: zync
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
