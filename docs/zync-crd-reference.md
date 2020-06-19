@@ -14,6 +14,8 @@ spec:
     name: quay.io/3scale/zync
     tag: nightly
     pullSecretName: quay-pull-secret
+  secret:
+    zyncDatabaseVaultPath: secret/data/openshift/stg-saas-ocp/stg-saas-3scale-zync
   zync:
     replicas: 3
     env:
@@ -79,6 +81,8 @@ metadata:
 spec:
   image:
     tag: new-feature
+  secret:
+    zyncDatabaseVaultPath: secret/data/openshift/stg-saas-ocp/stg-saas-3scale-zync
   zync:
     replicas: 1
     env:
@@ -96,6 +100,7 @@ spec:
 |             `zync.image.name`             | `string` |      No      | `quay.io/3scale/zync` |            Image name (docker repository) for zync             |
 |             `zync.image.tag`              | `string` |      No      |       `nightly`       |                       Image tag for zync                       |
 |        `zync.image.pullSecretName`        | `string` |      No      |  `quay-pull-secret`   |        Quay pull secret for private repository for zync        |
+|    `zync.secret.zyncDatabaseVaultPath`    | `string` |     Yes      |           -           |           Vault path with the zync database secrets            |
 |  `zync.env.zync.env.dbWaitSleepSeconds `  |  `int`   |      No      |         `30`          |        Sleep delay while waiting for the zync database         |
 |            `zync.env.railsEnv`            | `string` |      No      |       `staging`       |                   Rails environment for zync                   |
 |       `zync.env.railsLogsToStdout`        | `string` |      No      |        `false`        |            Rails log to std output toggle for zync             |

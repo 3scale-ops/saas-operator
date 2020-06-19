@@ -3,6 +3,8 @@ kind: Zync
 metadata:
   name: simple
 spec:
+  secret:
+    zyncDatabaseVaultPath: secret/data/openshift/stg-saas-ocp/stg-saas-3scale-zync
   zync:
     replicas: 1
     env:

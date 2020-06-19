@@ -32,6 +32,8 @@ spec:
           spec:
             type: object
             description: ZyncSpec defines the desired state of Zync
+            required:
+              - secret
             properties:
               image:
                 type: object
@@ -45,6 +47,14 @@ spec:
                   pullSecretName:
                     type: string
                     description: Quay pull secret for private repository
+              secret:
+                type: object
+                required:
+                  - zyncDatabaseVaultPath
+                properties:
+                  zyncDatabaseVaultPath:
+                    type: string
+                    description: Vault Path with zync database secret definition
               zync:
                 type: object
                 properties:
