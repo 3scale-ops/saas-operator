@@ -102,18 +102,22 @@ spec:
                 routeHost:
                   type: string
                   description: Host to configure on backend listener Route
-                logFormat:
-                  type: string
-                  description: Log format (text/json)
-                listenerWorkers:
-                  type: integer
-                  description: Number of worker processes per listener pod
-                redisAsync:
-                  type: boolean
-                  description: Enable (true) or disable (false) redis async mode
                 replicas:
                   type: integer
                   description: Number of replicas
+                env:
+                  type: object
+                  description: Environment variables
+                  properties:
+                    logFormat:
+                      type: string
+                      description: Log format (text/json)
+                    listenerWorkers:
+                      type: integer
+                      description: Number of worker processes per listener pod
+                    redisAsync:
+                      type: boolean
+                      description: Enable (true) or disable (false) redis async mode
                 resources:
                   type: object
                   properties:
@@ -170,15 +174,19 @@ spec:
             worker:
               type: object
               properties:
-                logFormat:
-                  type: string
-                  description: Log format (text/json)
-                redisAsync:
-                  type: boolean
-                  description: Enable (true) or disable (false) redis async mode
                 replicas:
                   type: integer
                   description: Number of replicas
+                env:
+                  type: object
+                  description: Environment variables
+                  properties:
+                    logFormat:
+                      type: string
+                      description: Log format (text/json)
+                    redisAsync:
+                      type: boolean
+                      description: Enable (true) or disable (false) redis async mode
                 resources:
                   type: object
                   properties:

@@ -96,14 +96,14 @@ spec:
                   name: backend-environment
                   key: RACK_ENV
             - name: CONFIG_WORKERS_LOGGER_FORMATTER
-              value: "{{ worker.log_format | default(worker_log_format) }}"
+              value: "{{ worker.env.log_format | default(worker_env_log_format) }}"
             - name: CONFIG_MASTER_SERVICE_ID
               valueFrom:
                 configMapKeyRef:
                   name: backend-environment
                   key: MASTER_SERVICE_ID
             - name: CONFIG_REDIS_ASYNC
-              value: "{{ worker.redis_async | default(worker_redis_async) }}"
+              value: "{{ worker.env.redis_async | default(worker_env_redis_async) }}"
             - name: CONFIG_EVENTS_HOOK
               valueFrom:
                 secretKeyRef:

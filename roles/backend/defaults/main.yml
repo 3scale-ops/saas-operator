@@ -19,10 +19,10 @@ config_legacy_referrer_filters: "true"
 
 ## Listener
 listener_route_host: "backend-example.3scale.net"
-listener_log_format: "json"
-listener_workers: 16
-listener_redis_async: "false"
 listener_replicas: 1
+listener_env_log_format: "json"
+listener_env_listener_workers: 16
+listener_env_redis_async: "false"
 listener_liveness_probe_initial_delay_seconds: 30
 listener_liveness_probe_timeout_seconds: 1
 listener_liveness_probe_period_seconds: 10
@@ -39,9 +39,9 @@ listener_resources_limits_cpu: "1"
 listener_resources_limits_memory: "700Mi"
 
 ## Worker
-worker_log_format: "json"
-worker_redis_async: "false"
 worker_replicas: 1
+worker_env_log_format: "json"
+worker_env_redis_async: "false"
 worker_liveness_probe_initial_delay_seconds: 10
 worker_liveness_probe_timeout_seconds: 3
 worker_liveness_probe_period_seconds: 15

@@ -13,8 +13,8 @@ spec:
     internalApiVaultPath: secret/data/openshift/cluster-example/3scale/backend-internal-api
   listener:
     routeHost: backend-example.3scale.net
-    replicas: 2
+    replicas: 1
   worker:
-    replicas: 2
+    replicas: 1
   cron:
     replicas: 1

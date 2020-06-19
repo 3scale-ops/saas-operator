@@ -103,7 +103,7 @@ spec:
                   name: backend-environment
                   key: RACK_ENV
             - name: CONFIG_REQUEST_LOGGERS
-              value: "{{ listener.log_format | default(listener_log_format) }}"
+              value: "{{ listener.env.log_format | default(listener_env_log_format) }}"
             - name: CONFIG_LEGACY_REFERRER_FILTERS
               valueFrom:
                 configMapKeyRef:
@@ -115,9 +115,9 @@ spec:
                   name: backend-environment
                   key: OAUTH_MAX_TOKEN_SIZE
             - name: CONFIG_REDIS_ASYNC
-              value: "{{ listener.redis_async | default(listener_redis_async) }}"
+              value: "{{ listener.env.redis_async | default(listener_env_redis_async) }}"
             - name: LISTENER_WORKERS
-              value: '{{ listener.listener_workers | default(listener_workers) }}'
+              value: '{{ listener.env.listener_workers | default(listener_env_listener_workers) }}'
             - name: CONFIG_INTERNAL_API_USER
               valueFrom:
                 secretKeyRef:
