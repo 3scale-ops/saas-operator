@@ -27,3 +27,7 @@
 - name: Manage PodMonitor for Zync {{ meta.name }} on Namespace {{ meta.namespace }}
   k8s:
     definition: "{{ lookup('template', 'zync-podmonitor.yaml') }}"
+
+- name: Manage Grafana Dashboard for Zync {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'zync-grafanadashboard.yaml') }}"
