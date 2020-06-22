@@ -51,7 +51,6 @@ spec:
               cpu: "{{ que.resources.limits.cpu | default(que_resources_limits_cpu) }}"
         ## containers > zync-que > probes
           livenessProbe:
-            failureThreshold: 3
             httpGet:
               path: /metrics
               port: 9394
