@@ -8,3 +8,8 @@
   group: saas.3scale.net
   kind: Backend
   role: backend
+
+- version: v1alpha1
+  group: saas.3scale.net
+  kind: Zync
+  role: zync
