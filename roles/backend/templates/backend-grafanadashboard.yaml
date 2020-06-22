@@ -1,15 +1,14 @@
 apiVersion: integreatly.org/v1alpha1
 kind: GrafanaDashboard
 metadata:
-  name: threescale-autossl
+  name: threescale-backend
   namespace: "{{ meta.namespace }}"
   labels:
-    app: autossl
-    part-of: 3scale-saas
+    app: 3scale-api-management
+    threescale_component: backend
     "{{ grafana_dashboard.label.key | default(grafana_dashboard_label_key) }}": "{{ grafana_dashboard.label.value | default(grafana_dashboard_label_value) }}"
-    monitoring-key: middleware
 spec:
-  name: "{{ meta.namespace }}-threescale-autossl.json"
+  name: "{{ meta.namespace }}-threescale-backend.json"
   json: >
     {
       "annotations": {
@@ -41,7 +40,7 @@ spec:
           },
           "id": 20,
           "panels": [],
-          "title": "Application",
+          "title": "Listeners",
           "type": "row"
         },
         {
@@ -57,193 +56,7 @@ spec:
             "x": 0,
             "y": 1
           },
-          "id": 22,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "options": {},
-          "percentage": false,
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [
-            {
-              "alias": "error",
-              "color": "#C4162A"
-            }
-          ],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(increase(autossl_domains_allowed{namespace='$namespace', pod=~'autossl.*'}[24h])) by (status)",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{ '{{' }}status{{ '}}' }}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Domain validations (last 24h)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": "$datasource",
-          "fill": 1,
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 1
-          },
-          "id": 24,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "options": {},
-          "percentage": false,
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [
-            {
-              "alias": "error",
-              "color": "#C4162A"
-            },
-            {
-              "alias": "ok",
-              "color": "#37872D"
-            }
-          ],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(increase(autossl_letsencrypt_requests{namespace='$namespace', pod=~'autossl.*'}[24h])) by (status)",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{ '{{' }}status{{ '}}' }}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Let's encrypt issued certificates (last 24h)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": "$datasource",
-          "fill": 1,
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 9
-          },
-          "id": 26,
+          "id": 39,
           "legend": {
             "avg": false,
             "current": false,
@@ -268,21 +81,54 @@ spec:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(nginx_http_connections{namespace='$namespace', pod=~'autossl.*'}) by (state)",
+              "expr": "sum(rate(apisonator_listener_response_codes{namespace=\"$namespace\",request_type=\"authorize\"}[1m]))",
               "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{ '{{' }}state{{ '}}' }}",
+              "interval": "1m",
+              "intervalFactor": 10,
+              "legendFormat": "authorize",
               "refId": "A"
+            },
+            {
+              "expr": "sum(rate(apisonator_listener_response_codes{namespace=\"$namespace\",request_type=\"authrep\"}[1m]))",
+              "format": "time_series",
+              "interval": "1m",
+              "intervalFactor": 10,
+              "legendFormat": "authrep",
+              "refId": "B"
+            },
+            {
+              "expr": "sum(rate(apisonator_listener_response_codes{namespace=\"$namespace\",request_type=\"report\"}[1m]))",
+              "format": "time_series",
+              "interval": "1m",
+              "intervalFactor": 10,
+              "legendFormat": "report",
+              "refId": "C"
+            },
+            {
+              "expr": "sum(rate(apisonator_listener_response_codes{namespace=\"$namespace\",request_type=\"authorize_oauth\"}[1m]))",
+              "format": "time_series",
+              "interval": "1m",
+              "intervalFactor": 10,
+              "legendFormat": "authorize_oauth",
+              "refId": "D"
+            },
+            {
+              "expr": "sum(rate(apisonator_listener_response_codes{namespace=\"$namespace\",request_type=\"authrep_oauth\"}[1m]))",
+              "format": "time_series",
+              "interval": "1m",
+              "intervalFactor": 10,
+              "legendFormat": "authrep_oauth",
+              "refId": "E"
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Autossl Connections",
+          "title": "Listener requests per second (by request type)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -295,7 +141,8 @@ spec:
           },
           "yaxes": [
             {
-              "format": "short",
+              "decimals": 0,
+              "format": "reqps",
               "label": null,
               "logBase": 1,
               "max": null,
@@ -327,12 +174,14 @@ spec:
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 9
+            "y": 1
           },
-          "id": 28,
+          "id": 41,
           "legend": {
             "avg": false,
             "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
             "max": false,
             "min": false,
             "show": true,
@@ -348,32 +197,60 @@ spec:
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
-          "seriesOverrides": [
-            {
-              "alias": "errors",
-              "color": "#C4162A"
-            }
-          ],
+          "seriesOverrides": [],
           "spaceLength": 10,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(nginx_metric_errors_total{namespace='$namespace', pod=~'autossl.*'})",
+              "expr": "sum(rate(apisonator_listener_response_codes{namespace=\"$namespace\",resp_code=\"2xx\"}[1m]))",
               "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "errors",
+              "interval": "1m",
+              "intervalFactor": 10,
+              "legendFormat": "2XX",
               "refId": "A"
+            },
+            {
+              "expr": "sum(rate(apisonator_listener_response_codes{namespace=\"$namespace\",resp_code=\"403\"}[1m]))",
+              "format": "time_series",
+              "interval": "1m",
+              "intervalFactor": 10,
+              "legendFormat": "403",
+              "refId": "B"
+            },
+            {
+              "expr": "sum(rate(apisonator_listener_response_codes{namespace=\"$namespace\",resp_code=\"404\"}[1m]))",
+              "format": "time_series",
+              "interval": "1m",
+              "intervalFactor": 10,
+              "legendFormat": "404",
+              "refId": "C"
+            },
+            {
+              "expr": "sum(rate(apisonator_listener_response_codes{namespace=\"$namespace\",resp_code=\"409\"}[1m]))",
+              "format": "time_series",
+              "interval": "1m",
+              "intervalFactor": 10,
+              "legendFormat": "409",
+              "refId": "D"
+            },
+            {
+              "expr": "sum(rate(apisonator_listener_response_codes{namespace=\"$namespace\",resp_code=\"5xx\"}[1m]))",
+              "format": "time_series",
+              "interval": "1m",
+              "intervalFactor": 10,
+              "legendFormat": "5XX",
+              "refId": "E"
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Prometheus Metrics Errors",
+          "title": "Listener requests per second (by response code)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -386,7 +263,8 @@ spec:
           },
           "yaxes": [
             {
-              "format": "short",
+              "decimals": 0,
+              "format": "reqps",
               "label": null,
               "logBase": 1,
               "max": null,
@@ -408,12 +286,1191 @@ spec:
           }
         },
         {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "$datasource",
+          "fill": 1,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 9
+          },
+          "id": 43,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "options": {},
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(rate(apisonator_listener_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"authorize\"}[1m])) by (le)",
+              "format": "heatmap",
+              "interval": "1m",
+              "intervalFactor": 10,
+              "legendFormat": "{{ '{{' }} le {{ '}}' }}",
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Authorize requests per second (by response time bucket in seconds)",
+          "tooltip": {
+            "shared": true,
+            "sort": 2,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "decimals": 0,
+              "format": "reqps",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "cards": {
+            "cardPadding": null,
+            "cardRound": null
+          },
+          "color": {
+            "cardColor": "#FADE2A",
+            "colorScale": "sqrt",
+            "colorScheme": "interpolateOranges",
+            "exponent": 0.5,
+            "mode": "opacity"
+          },
+          "dataFormat": "tsbuckets",
+          "datasource": "$datasource",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 9
+          },
+          "heatmap": {},
+          "hideZeroBuckets": false,
+          "highlightCards": true,
+          "id": 45,
+          "legend": {
+            "show": false
+          },
+          "links": [],
+          "options": {},
+          "reverseYBuckets": false,
+          "targets": [
+            {
+              "expr": "sum(rate(apisonator_listener_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"authorize\"}[1m])) by (le)",
+              "format": "heatmap",
+              "interval": "1m",
+              "intervalFactor": 10,
+              "legendFormat": "{{ '{{' }} le {{ '}}' }}",
+              "refId": "A"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Authorize requests per second heatmap (by response time bucket in seconds)",
+          "tooltip": {
+            "show": true,
+            "showHistogram": false
+          },
+          "type": "heatmap",
+          "xAxis": {
+            "show": true
+          },
+          "xBucketNumber": null,
+          "xBucketSize": null,
+          "yAxis": {
+            "decimals": 0,
+            "format": "s",
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true,
+            "splitFactor": null
+          },
+          "yBucketBound": "auto",
+          "yBucketNumber": null,
+          "yBucketSize": null
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "$datasource",
+          "fill": 1,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 17
+          },
+          "id": 47,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "options": {},
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(rate(apisonator_listener_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"authrep\"}[1m])) by (le)",
+              "format": "heatmap",
+              "interval": "1m",
+              "intervalFactor": 10,
+              "legendFormat": "{{ '{{' }} le {{ '}}' }}",
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Authrep requests per second (by response time bucket in seconds)",
+          "tooltip": {
+            "shared": true,
+            "sort": 2,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "decimals": 0,
+              "format": "reqps",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "cards": {
+            "cardPadding": null,
+            "cardRound": null
+          },
+          "color": {
+            "cardColor": "#5794F2",
+            "colorScale": "sqrt",
+            "colorScheme": "interpolateOranges",
+            "exponent": 0.5,
+            "mode": "opacity"
+          },
+          "dataFormat": "tsbuckets",
+          "datasource": "$datasource",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 17
+          },
+          "heatmap": {},
+          "hideZeroBuckets": false,
+          "highlightCards": true,
+          "id": 59,
+          "legend": {
+            "show": false
+          },
+          "links": [],
+          "options": {},
+          "reverseYBuckets": false,
+          "targets": [
+            {
+              "expr": "sum(rate(apisonator_listener_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"authrep\"}[1m])) by (le)",
+              "format": "heatmap",
+              "interval": "1m",
+              "intervalFactor": 10,
+              "legendFormat": "{{ '{{' }} le {{ '}}' }}",
+              "refId": "A"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Authrep requests per second heatmap (by response time bucket in seconds)",
+          "tooltip": {
+            "show": true,
+            "showHistogram": false
+          },
+          "type": "heatmap",
+          "xAxis": {
+            "show": true
+          },
+          "xBucketNumber": null,
+          "xBucketSize": null,
+          "yAxis": {
+            "decimals": 0,
+            "format": "s",
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true,
+            "splitFactor": null
+          },
+          "yBucketBound": "auto",
+          "yBucketNumber": null,
+          "yBucketSize": null
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "$datasource",
+          "fill": 1,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 25
+          },
+          "id": 50,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "options": {},
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(rate(apisonator_listener_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"report\"}[1m])) by (le)",
+              "format": "heatmap",
+              "interval": "1m",
+              "intervalFactor": 10,
+              "legendFormat": "{{ '{{' }} le {{ '}}' }}",
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Report requests per second (by response time bucket in seconds)",
+          "tooltip": {
+            "shared": true,
+            "sort": 2,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "decimals": 0,
+              "format": "reqps",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "cards": {
+            "cardPadding": null,
+            "cardRound": null
+          },
+          "color": {
+            "cardColor": "#F2495C",
+            "colorScale": "sqrt",
+            "colorScheme": "interpolateOranges",
+            "exponent": 0.5,
+            "mode": "opacity"
+          },
+          "dataFormat": "tsbuckets",
+          "datasource": "$datasource",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 25
+          },
+          "heatmap": {},
+          "hideZeroBuckets": false,
+          "highlightCards": true,
+          "id": 58,
+          "legend": {
+            "show": false
+          },
+          "links": [],
+          "options": {},
+          "reverseYBuckets": false,
+          "targets": [
+            {
+              "expr": "sum(rate(apisonator_listener_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"report\"}[1m])) by (le)",
+              "format": "heatmap",
+              "interval": "1m",
+              "intervalFactor": 10,
+              "legendFormat": "{{ '{{' }} le {{ '}}' }}",
+              "refId": "A"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Report requests per second heatmap (by response time bucket in seconds)",
+          "tooltip": {
+            "show": true,
+            "showHistogram": false
+          },
+          "type": "heatmap",
+          "xAxis": {
+            "show": true
+          },
+          "xBucketNumber": null,
+          "xBucketSize": null,
+          "yAxis": {
+            "decimals": 0,
+            "format": "s",
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true,
+            "splitFactor": null
+          },
+          "yBucketBound": "auto",
+          "yBucketNumber": null,
+          "yBucketSize": null
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "$datasource",
+          "fill": 1,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 33
+          },
+          "id": 60,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "options": {},
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(rate(apisonator_listener_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"authorize_oauth\"}[1m])) by (le)",
+              "format": "heatmap",
+              "interval": "1m",
+              "intervalFactor": 10,
+              "legendFormat": "{{ '{{' }} le {{ '}}' }}",
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Authorize (oauth) requests per second (by response time bucket in seconds)",
+          "tooltip": {
+            "shared": true,
+            "sort": 2,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "decimals": 0,
+              "format": "reqps",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "cards": {
+            "cardPadding": null,
+            "cardRound": null
+          },
+          "color": {
+            "cardColor": "#FF9830",
+            "colorScale": "sqrt",
+            "colorScheme": "interpolateOranges",
+            "exponent": 0.5,
+            "mode": "opacity"
+          },
+          "dataFormat": "tsbuckets",
+          "datasource": "$datasource",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 33
+          },
+          "heatmap": {},
+          "hideZeroBuckets": false,
+          "highlightCards": true,
+          "id": 61,
+          "legend": {
+            "show": false
+          },
+          "links": [],
+          "options": {},
+          "reverseYBuckets": false,
+          "targets": [
+            {
+              "expr": "sum(rate(apisonator_listener_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"authorize_oauth\"}[1m])) by (le)",
+              "format": "heatmap",
+              "interval": "1m",
+              "intervalFactor": 10,
+              "legendFormat": "{{ '{{' }} le {{ '}}' }}",
+              "refId": "A"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Authorize (oauth) requests per second heatmap (by response time bucket in seconds)",
+          "tooltip": {
+            "show": true,
+            "showHistogram": false
+          },
+          "type": "heatmap",
+          "xAxis": {
+            "show": true
+          },
+          "xBucketNumber": null,
+          "xBucketSize": null,
+          "yAxis": {
+            "decimals": 0,
+            "format": "s",
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true,
+            "splitFactor": null
+          },
+          "yBucketBound": "auto",
+          "yBucketNumber": null,
+          "yBucketSize": null
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "$datasource",
+          "fill": 1,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 41
+          },
+          "id": 62,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "options": {},
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(rate(apisonator_listener_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"authrep_oauth\"}[1m])) by (le)",
+              "format": "heatmap",
+              "interval": "1m",
+              "intervalFactor": 10,
+              "legendFormat": "{{ '{{' }} le {{ '}}' }}",
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Authrep (oauth) requests per second (by response time bucket in seconds)",
+          "tooltip": {
+            "shared": true,
+            "sort": 2,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "decimals": 0,
+              "format": "reqps",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "cards": {
+            "cardPadding": null,
+            "cardRound": null
+          },
+          "color": {
+            "cardColor": "#B877D9",
+            "colorScale": "sqrt",
+            "colorScheme": "interpolateOranges",
+            "exponent": 0.5,
+            "mode": "opacity"
+          },
+          "dataFormat": "tsbuckets",
+          "datasource": "$datasource",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 41
+          },
+          "heatmap": {},
+          "hideZeroBuckets": false,
+          "highlightCards": true,
+          "id": 63,
+          "legend": {
+            "show": false
+          },
+          "links": [],
+          "options": {},
+          "reverseYBuckets": false,
+          "targets": [
+            {
+              "expr": "sum(rate(apisonator_listener_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"authrep_oauth\"}[1m])) by (le)",
+              "format": "heatmap",
+              "interval": "1m",
+              "intervalFactor": 10,
+              "legendFormat": "{{ '{{' }} le {{ '}}' }}",
+              "refId": "A"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Authrep (oauth) requests per second heatmap (by response time bucket in seconds)",
+          "tooltip": {
+            "show": true,
+            "showHistogram": false
+          },
+          "type": "heatmap",
+          "xAxis": {
+            "show": true
+          },
+          "xBucketNumber": null,
+          "xBucketSize": null,
+          "yAxis": {
+            "decimals": 0,
+            "format": "s",
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true,
+            "splitFactor": null
+          },
+          "yBucketBound": "auto",
+          "yBucketNumber": null,
+          "yBucketSize": null
+        },
+        {
           "collapsed": false,
           "gridPos": {
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 17
+            "y": 49
+          },
+          "id": 52,
+          "panels": [],
+          "title": "Workers",
+          "type": "row"
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "$datasource",
+          "fill": 1,
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 50
+          },
+          "id": 49,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "options": {},
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(rate(apisonator_worker_job_count{namespace=\"$namespace\"} [1m])) by (type)",
+              "format": "time_series",
+              "interval": "1m",
+              "intervalFactor": 10,
+              "legendFormat": "{{ '{{' }} type {{ '}}' }}",
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Jobs per second (by job type)",
+          "tooltip": {
+            "shared": true,
+            "sort": 2,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "decimals": 0,
+              "format": "ops",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "$datasource",
+          "fill": 1,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 58
+          },
+          "id": 54,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "options": {},
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(rate(apisonator_worker_job_runtime_seconds_bucket{namespace=\"$namespace\",type=\"ReportJob\"}[1m])) by (le)",
+              "format": "heatmap",
+              "interval": "1m",
+              "intervalFactor": 10,
+              "legendFormat": "{{ '{{' }} le {{ '}}' }}",
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Report jobs per second (by runtime bucket in seconds)",
+          "tooltip": {
+            "shared": true,
+            "sort": 2,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "decimals": 0,
+              "format": "ops",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "cards": {
+            "cardPadding": null,
+            "cardRound": null
+          },
+          "color": {
+            "cardColor": "#5794F2",
+            "colorScale": "sqrt",
+            "colorScheme": "interpolateOranges",
+            "exponent": 0.5,
+            "mode": "opacity"
+          },
+          "dataFormat": "tsbuckets",
+          "datasource": "$datasource",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 58
+          },
+          "heatmap": {},
+          "hideZeroBuckets": false,
+          "highlightCards": true,
+          "id": 55,
+          "legend": {
+            "show": false
+          },
+          "links": [],
+          "options": {},
+          "reverseYBuckets": false,
+          "targets": [
+            {
+              "expr": "sum(rate(apisonator_worker_job_runtime_seconds_bucket{namespace=\"$namespace\",type=\"ReportJob\"}[1m])) by (le)",
+              "format": "heatmap",
+              "interval": "1m",
+              "intervalFactor": 10,
+              "legendFormat": "{{ '{{' }} le {{ '}}' }}",
+              "refId": "A"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Report jobs per second heatmap (by runtime bucket in seconds)",
+          "tooltip": {
+            "show": true,
+            "showHistogram": false
+          },
+          "type": "heatmap",
+          "xAxis": {
+            "show": true
+          },
+          "xBucketNumber": null,
+          "xBucketSize": null,
+          "yAxis": {
+            "decimals": 0,
+            "format": "s",
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true,
+            "splitFactor": null
+          },
+          "yBucketBound": "auto",
+          "yBucketNumber": null,
+          "yBucketSize": null
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "$datasource",
+          "fill": 1,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 66
+          },
+          "id": 56,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "options": {},
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(rate(apisonator_worker_job_runtime_seconds_bucket{namespace=\"$namespace\",type=\"NotifyJob\"}[1m])) by (le)",
+              "format": "heatmap",
+              "interval": "1m",
+              "intervalFactor": 10,
+              "legendFormat": "{{ '{{' }} le {{ '}}' }}",
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Notify jobs per second (by runtime bucket in seconds)",
+          "tooltip": {
+            "shared": true,
+            "sort": 2,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "decimals": 0,
+              "format": "ops",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "cards": {
+            "cardPadding": null,
+            "cardRound": null
+          },
+          "color": {
+            "cardColor": "#b4ff00",
+            "colorScale": "sqrt",
+            "colorScheme": "interpolateOranges",
+            "exponent": 0.5,
+            "mode": "opacity"
+          },
+          "dataFormat": "tsbuckets",
+          "datasource": "$datasource",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 66
+          },
+          "heatmap": {},
+          "hideZeroBuckets": false,
+          "highlightCards": true,
+          "id": 57,
+          "legend": {
+            "show": false
+          },
+          "links": [],
+          "options": {},
+          "reverseYBuckets": false,
+          "targets": [
+            {
+              "expr": "sum(rate(apisonator_worker_job_runtime_seconds_bucket{namespace=\"$namespace\",type=\"NotifyJob\"}[1m])) by (le)",
+              "format": "heatmap",
+              "interval": "1m",
+              "intervalFactor": 10,
+              "legendFormat": "{{ '{{' }} le {{ '}}' }}",
+              "refId": "A"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Notify jobs per second heatmap (by runtime bucket in seconds)",
+          "tooltip": {
+            "show": true,
+            "showHistogram": false
+          },
+          "type": "heatmap",
+          "xAxis": {
+            "show": true
+          },
+          "xBucketNumber": null,
+          "xBucketSize": null,
+          "yAxis": {
+            "decimals": 0,
+            "format": "s",
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true,
+            "splitFactor": null
+          },
+          "yBucketBound": "auto",
+          "yBucketNumber": null,
+          "yBucketSize": null
+        },
+        {
+          "collapsed": false,
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 74
           },
           "id": 13,
           "panels": [],
@@ -443,7 +1500,7 @@ spec:
             "h": 3,
             "w": 6,
             "x": 0,
-            "y": 18
+            "y": 75
           },
           "hideTimeOverride": true,
           "id": 30,
@@ -485,7 +1542,7 @@ spec:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "kube_deployment_status_replicas_available{namespace='$namespace',deployment=~'autossl.*'}",
+              "expr": "sum(kube_deployment_status_replicas_available{namespace='$namespace',deployment=~'backend-.*'})",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -514,7 +1571,7 @@ spec:
           "colors": [
             "#299c46",
             "rgba(237, 129, 40, 0.89)",
-            "#d44a3a"
+            "#F2495C"
           ],
           "datasource": "$datasource",
           "decimals": 0,
@@ -530,7 +1587,7 @@ spec:
             "h": 3,
             "w": 6,
             "x": 6,
-            "y": 18
+            "y": 75
           },
           "hideTimeOverride": true,
           "id": 32,
@@ -571,7 +1628,7 @@ spec:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "kube_deployment_status_replicas_unavailable{namespace='$namespace',deployment=~'autossl.*'}",
+              "expr": "sum(kube_deployment_status_replicas_unavailable{namespace='$namespace',deployment=~'backend-.*'})",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -615,7 +1672,7 @@ spec:
             "h": 3,
             "w": 6,
             "x": 12,
-            "y": 18
+            "y": 75
           },
           "hideTimeOverride": true,
           "id": 37,
@@ -657,7 +1714,7 @@ spec:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "count(count(container_memory_usage_bytes{namespace='$namespace',pod=~'autossl.*'}) by (node))",
+              "expr": "count(count(container_memory_usage_bytes{namespace='$namespace',pod=~'backend-.*'}) by (node))",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -701,7 +1758,7 @@ spec:
             "h": 3,
             "w": 6,
             "x": 18,
-            "y": 18
+            "y": 75
           },
           "hideTimeOverride": true,
           "id": 36,
@@ -742,7 +1799,7 @@ spec:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "max(sum(delta(kube_pod_container_status_restarts_total{namespace='$namespace',pod=~'autossl.*'}[5m])) by (pod))",
+              "expr": "max(sum(delta(kube_pod_container_status_restarts_total{namespace='$namespace',pod=~'backend-.*'}[5m])) by (pod))",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "",
@@ -775,7 +1832,7 @@ spec:
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 21
+            "y": 78
           },
           "id": 11,
           "legend": {
@@ -804,30 +1861,30 @@ spec:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "kube_deployment_status_replicas{namespace='$namespace',deployment=~'autossl.*'}",
+              "expr": "kube_deployment_status_replicas{namespace='$namespace',deployment=~'backend-.*'}",
               "format": "time_series",
               "intervalFactor": 2,
-              "legendFormat": "total-pods",
+              "legendFormat": "{{ '{{' }}deployment{{ '}}' }}-total-pods",
               "legendLink": null,
               "refId": "A",
               "step": 10
             },
             {
-              "expr": "kube_deployment_status_replicas_available{namespace='$namespace',deployment=~'autossl.*'}",
+              "expr": "kube_deployment_status_replicas_available{namespace='$namespace',deployment=~'backend-.*'}",
               "format": "time_series",
               "intervalFactor": 1,
-              "legendFormat": "avail-pods",
+              "legendFormat": "{{ '{{' }}deployment{{ '}}' }}-avail-pods",
               "refId": "B"
             },
             {
-              "expr": "kube_deployment_status_replicas_unavailable{namespace='$namespace',deployment=~'autossl.*'}",
+              "expr": "kube_deployment_status_replicas_unavailable{namespace='$namespace',deployment=~'backend-.*'}",
               "format": "time_series",
               "intervalFactor": 1,
-              "legendFormat": "unavail-pods",
+              "legendFormat": "{{ '{{' }}deployment{{ '}}' }}-unavail-pods",
               "refId": "C"
             },
             {
-              "expr": "count(count(container_memory_usage_bytes{namespace='$namespace',pod=~'autossl.*'}) by (node))",
+              "expr": "count(count(container_memory_usage_bytes{namespace='$namespace',pod=~'backend-.*'}) by (node))",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "used-hosts",
@@ -887,7 +1944,7 @@ spec:
             "h": 6,
             "w": 24,
             "x": 0,
-            "y": 28
+            "y": 85
           },
           "id": 9,
           "legend": {
@@ -916,7 +1973,7 @@ spec:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(delta(kube_pod_container_status_restarts_total{namespace='$namespace',pod=~'autossl.*'}[5m])) by (pod)",
+              "expr": "sum(delta(kube_pod_container_status_restarts_total{namespace='$namespace',pod=~'backend-.*'}[5m])) by (pod)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "{{ '{{' }}pod{{ '}}' }}",
@@ -970,7 +2027,7 @@ spec:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 34
+            "y": 91
           },
           "id": 4,
           "panels": [],
@@ -989,7 +2046,7 @@ spec:
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 35
+            "y": 92
           },
           "id": 0,
           "legend": {
@@ -1016,7 +2073,7 @@ spec:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{namespace=~'$namespace', pod=~'autossl.*'}) by (pod)",
+              "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{namespace=~'$namespace', pod=~'backend-.*'}) by (pod)",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{ '{{' }}pod{{ '}}' }}",
@@ -1072,7 +2129,7 @@ spec:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 42
+            "y": 99
           },
           "id": 5,
           "panels": [],
@@ -1093,7 +2150,7 @@ spec:
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 43
+            "y": 100
           },
           "id": 1,
           "legend": {
@@ -1210,7 +2267,7 @@ spec:
               "decimals": 2,
               "link": true,
               "linkTooltip": "Drill down",
-              "linkUrl": "/d/6581e46e4e5c7ba40a07646395ef7b55/3scale-compute-resources-pod?var-namespace=$namespace&var-pod=$__cell",
+              "linkUrl": "/d/6581e46e4e5c7ba40a07646395ef7b55/kubernetes-compute-resources-pod?var-namespace=$namespace&var-pod=$__cell",
               "pattern": "pod",
               "thresholds": [],
               "type": "number",
@@ -1230,7 +2287,7 @@ spec:
           ],
           "targets": [
             {
-              "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{namespace=~'$namespace', pod=~'autossl.*'}) by (pod)",
+              "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{namespace=~'$namespace', pod=~'backend-.*'}) by (pod)",
               "format": "table",
               "instant": true,
               "intervalFactor": 2,
@@ -1239,7 +2296,7 @@ spec:
               "step": 10
             },
             {
-              "expr": "sum(kube_pod_container_resource_requests_cpu_cores{namespace=~'$namespace', pod=~'autossl.*'}) by (pod)",
+              "expr": "sum(kube_pod_container_resource_requests_cpu_cores{namespace=~'$namespace', pod=~'backend-.*'}) by (pod)",
               "format": "table",
               "instant": true,
               "intervalFactor": 2,
@@ -1248,7 +2305,7 @@ spec:
               "step": 10
             },
             {
-              "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{namespace=~'$namespace', pod=~'autossl.*'}) by (pod) / sum(kube_pod_container_resource_requests_cpu_cores{namespace=~'$namespace', pod=~'autossl.*'}) by (pod)",
+              "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{namespace=~'$namespace', pod=~'backend-.*'}) by (pod) / sum(kube_pod_container_resource_requests_cpu_cores{namespace=~'$namespace', pod=~'backend-.*'}) by (pod)",
               "format": "table",
               "instant": true,
               "intervalFactor": 2,
@@ -1257,7 +2314,7 @@ spec:
               "step": 10
             },
             {
-              "expr": "sum(kube_pod_container_resource_limits_cpu_cores{namespace=~'$namespace', pod=~'autossl.*'}) by (pod)",
+              "expr": "sum(kube_pod_container_resource_limits_cpu_cores{namespace=~'$namespace', pod=~'backend-.*'}) by (pod)",
               "format": "table",
               "instant": true,
               "intervalFactor": 2,
@@ -1266,7 +2323,7 @@ spec:
               "step": 10
             },
             {
-              "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{namespace=~'$namespace', pod=~'autossl.*'}) by (pod) / sum(kube_pod_container_resource_limits_cpu_cores{namespace=~'$namespace', pod=~'autossl.*'}) by (pod)",
+              "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{namespace=~'$namespace', pod=~'backend-.*'}) by (pod) / sum(kube_pod_container_resource_limits_cpu_cores{namespace=~'$namespace', pod=~'backend-.*'}) by (pod)",
               "format": "table",
               "instant": true,
               "intervalFactor": 2,
@@ -1318,7 +2375,7 @@ spec:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 50
+            "y": 107
           },
           "id": 6,
           "panels": [],
@@ -1337,7 +2394,7 @@ spec:
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 51
+            "y": 108
           },
           "id": 2,
           "legend": {
@@ -1364,7 +2421,7 @@ spec:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(container_memory_usage_bytes{namespace=~'$namespace', pod=~'autossl.*', container!=''}) by (pod)",
+              "expr": "sum(container_memory_usage_bytes{namespace=~'$namespace', pod=~'backend-.*', container!=''}) by (pod)",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{ '{{' }}pod{{ '}}' }}",
@@ -1420,7 +2477,7 @@ spec:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 58
+            "y": 115
           },
           "id": 7,
           "panels": [],
@@ -1441,7 +2498,7 @@ spec:
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 59
+            "y": 116
           },
           "id": 3,
           "legend": {
@@ -1558,7 +2615,7 @@ spec:
               "decimals": 2,
               "link": true,
               "linkTooltip": "Drill down",
-              "linkUrl": "/d/6581e46e4e5c7ba40a07646395ef7b55/3scale-compute-resources-pod?var-namespace=$namespace&var-pod=$__cell",
+              "linkUrl": "/d/6581e46e4e5c7ba40a07646395ef7b55/kubernetes-compute-resources-pod?var-namespace=$namespace&var-pod=$__cell",
               "pattern": "pod",
               "thresholds": [],
               "type": "number",
@@ -1578,7 +2635,7 @@ spec:
           ],
           "targets": [
             {
-              "expr": "sum(container_memory_usage_bytes{namespace=~'$namespace', pod=~'autossl.*', container!=''}) by (pod)",
+              "expr": "sum(container_memory_usage_bytes{namespace=~'$namespace', pod=~'backend-.*', container!=''}) by (pod)",
               "format": "table",
               "instant": true,
               "intervalFactor": 2,
@@ -1587,7 +2644,7 @@ spec:
               "step": 10
             },
             {
-              "expr": "sum(kube_pod_container_resource_requests_memory_bytes{namespace=~'$namespace', pod=~'autossl.*'}) by (pod)",
+              "expr": "sum(kube_pod_container_resource_requests_memory_bytes{namespace=~'$namespace', pod=~'backend-.*'}) by (pod)",
               "format": "table",
               "instant": true,
               "intervalFactor": 2,
@@ -1596,7 +2653,7 @@ spec:
               "step": 10
             },
             {
-              "expr": "sum(container_memory_usage_bytes{namespace=~'$namespace', pod=~'autossl.*', container!=''}) by (pod) / sum(kube_pod_container_resource_requests_memory_bytes{namespace=~'$namespace', pod=~'autossl.*'}) by (pod)",
+              "expr": "sum(container_memory_usage_bytes{namespace=~'$namespace', pod=~'backend-.*', container!=''}) by (pod) / sum(kube_pod_container_resource_requests_memory_bytes{namespace=~'$namespace', pod=~'backend-.*'}) by (pod)",
               "format": "table",
               "instant": true,
               "intervalFactor": 2,
@@ -1605,7 +2662,7 @@ spec:
               "step": 10
             },
             {
-              "expr": "sum(kube_pod_container_resource_limits_memory_bytes{namespace=~'$namespace', pod=~'autossl.*'}) by (pod)",
+              "expr": "sum(kube_pod_container_resource_limits_memory_bytes{namespace=~'$namespace', pod=~'backend-.*'}) by (pod)",
               "format": "table",
               "instant": true,
               "intervalFactor": 2,
@@ -1614,7 +2671,7 @@ spec:
               "step": 10
             },
             {
-              "expr": "sum(container_memory_usage_bytes{namespace=~'$namespace', pod=~'autossl.*', container!=''}) by (pod) / sum(kube_pod_container_resource_limits_memory_bytes{namespace=~'$namespace', pod=~'autossl.*'}) by (pod)",
+              "expr": "sum(container_memory_usage_bytes{namespace=~'$namespace', pod=~'backend-.*', container!=''}) by (pod) / sum(kube_pod_container_resource_limits_memory_bytes{namespace=~'$namespace', pod=~'backend-.*'}) by (pod)",
               "format": "table",
               "instant": true,
               "intervalFactor": 2,
@@ -1666,7 +2723,7 @@ spec:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 66
+            "y": 123
           },
           "id": 15,
           "panels": [],
@@ -1684,7 +2741,7 @@ spec:
             "h": 6,
             "w": 24,
             "x": 0,
-            "y": 67
+            "y": 124
           },
           "id": 17,
           "legend": {
@@ -1711,7 +2768,7 @@ spec:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(irate(container_network_receive_bytes_total{namespace=~'$namespace', pod=~'autossl.*'}[5m])) by (pod)",
+              "expr": "sum(irate(container_network_receive_bytes_total{namespace=~'$namespace', pod=~'backend-.*'}[5m])) by (pod)",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{ '{{' }}pod{{ '}}' }}",
@@ -1743,7 +2800,7 @@ spec:
               "label": null,
               "logBase": 1,
               "max": null,
-              "min": 0,
+              "min": "0",
               "show": true
             },
             {
@@ -1771,7 +2828,7 @@ spec:
             "h": 6,
             "w": 24,
             "x": 0,
-            "y": 73
+            "y": 130
           },
           "id": 18,
           "legend": {
@@ -1798,7 +2855,7 @@ spec:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(irate(container_network_transmit_bytes_total{namespace=~'$namespace', pod=~'autossl.*'}[5m])) by (pod)",
+              "expr": "sum(irate(container_network_transmit_bytes_total{namespace=~'$namespace', pod=~'backend-.*'}[5m])) by (pod)",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{ '{{' }}pod{{ '}}' }}",
@@ -1829,7 +2886,7 @@ spec:
               "label": null,
               "logBase": 1,
               "max": null,
-              "min": 0,
+              "min": "0",
               "show": true
             },
             {
@@ -1852,8 +2909,7 @@ spec:
       "style": "dark",
       "tags": [
         "3scale",
-        "autossl",
-        "system"
+        "backend"
       ],
       "templating": {
         "list": [
@@ -1925,6 +2981,6 @@ spec:
         ]
       },
       "timezone": "",
-      "title": "{{ meta.namespace }} / 3scale System AutoSSL",
+      "title": "{{ meta.namespace }} / 3scale Backend",
       "version": 1
     }

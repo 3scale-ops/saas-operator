@@ -1,0 +1,65 @@
+---
+
+## Image
+image_name: "quay.io/3scale/apisonator"
+image_tag: "nightly"
+
+## GrafanaDashboard
+grafana_dashboard_label_key: "monitoring-key"
+grafana_dashboard_label_value: "middleware"
+
+## Error Monitoring (bugsnag)
+error_monitoring_enabled: false
+
+## Config
+config_rack_env: "dev"
+config_master_service_id: "6"
+config_oauth_max_token_size: "7888"
+config_legacy_referrer_filters: "true"
+
+## Listener
+listener_route_host: "backend-example.3scale.net"
+listener_replicas: 1
+listener_env_log_format: "json"
+listener_env_listener_workers: 16
+listener_env_redis_async: "false"
+listener_liveness_probe_initial_delay_seconds: 30
+listener_liveness_probe_timeout_seconds: 1
+listener_liveness_probe_period_seconds: 10
+listener_liveness_probe_success_threshold: 1
+listener_liveness_probe_failure_threshold: 3
+listener_readiness_probe_initial_delay_seconds: 30
+listener_readiness_probe_timeout_seconds: 5
+listener_readiness_probe_period_seconds: 10
+listener_readiness_probe_success_threshold: 1
+listener_readiness_probe_failure_threshold: 3
+listener_resources_requests_cpu: "500m"
+listener_resources_requests_memory: "550Mi"
+listener_resources_limits_cpu: "1"
+listener_resources_limits_memory: "700Mi"
+
+## Worker
+worker_replicas: 1
+worker_env_log_format: "json"
+worker_env_redis_async: "false"
+worker_liveness_probe_initial_delay_seconds: 10
+worker_liveness_probe_timeout_seconds: 3
+worker_liveness_probe_period_seconds: 15
+worker_liveness_probe_success_threshold: 1
+worker_liveness_probe_failure_threshold: 5
+worker_readiness_probe_initial_delay_seconds: 10
+worker_readiness_probe_timeout_seconds: 5
+worker_readiness_probe_period_seconds: 30
+worker_readiness_probe_success_threshold: 1
+worker_readiness_probe_failure_threshold: 5
+worker_resources_requests_cpu: "150m"
+worker_resources_requests_memory: "50Mi"
+worker_resources_limits_cpu: "1"
+worker_resources_limits_memory: "300Mi"
+
+## Cron
+cron_replicas: 1
+cron_resources_requests_cpu: "50m"
+cron_resources_requests_memory: "40Mi"
+cron_resources_limits_cpu: "150m"
+cron_resources_limits_memory: "80Mi"

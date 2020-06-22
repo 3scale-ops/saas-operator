@@ -8,7 +8,11 @@ workflows:
               only: /^v.*/
             branches:
               ignore: /.*/
-
+      - release-master:
+          filters:
+            branches:
+              only:
+                - master
 commands:
   docker-login:
     steps:
@@ -21,7 +25,7 @@ commands:
       - run:
           name: Install operator-sdk
           command: |
-            export OPERATOR_SDK_RELEASE_VERSION=v0.18.0
+            export OPERATOR_SDK_RELEASE_VERSION=v0.18.1
             curl -OJL https://github.com/operator-framework/operator-sdk/releases/download/${OPERATOR_SDK_RELEASE_VERSION}/operator-sdk-${OPERATOR_SDK_RELEASE_VERSION}-x86_64-linux-gnu
             chmod +x operator-sdk-${OPERATOR_SDK_RELEASE_VERSION}-x86_64-linux-gnu && sudo cp operator-sdk-${OPERATOR_SDK_RELEASE_VERSION}-x86_64-linux-gnu /usr/local/bin/operator-sdk && rm operator-sdk-${OPERATOR_SDK_RELEASE_VERSION}-x86_64-linux-gnu
   build-push-operator-image:
@@ -32,9 +36,14 @@ commands:
       - run:
           name: Build and Push Operator Image
           command: |
-              make operator-image-update VERSION=${CIRCLE_TAG}
+              make operator-image-update TAG=${CIRCLE_TAG:-master}
 jobs:
   release:
+    machine:
+      image: circleci/classic:latest
+    steps:
+      - build-push-operator-image
+  release-master:
     machine:
       image: circleci/classic:latest
     steps:

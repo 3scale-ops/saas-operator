@@ -1,7 +1,7 @@
 ---
 galaxy_info:
   author: 3scale SRE team
-  description: 3scale autossl component
+  description: 3scale backend component
   company: Red Hat
   license: license (GPLv2, CC-BY, etc)
   min_ansible_version: 2.9
