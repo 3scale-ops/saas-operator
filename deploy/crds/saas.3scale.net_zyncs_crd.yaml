@@ -55,9 +55,9 @@ spec:
             secret:
               type: object
               required:
-                - zyncDatabaseVaultPath
+                - vaultPath
               properties:
-                zyncDatabaseVaultPath:
+                vaultPath:
                   type: string
                   description: Vault Path with zync database secret definition
             zync:

@@ -4,7 +4,7 @@ metadata:
   name: example
 spec:
   secret:
-    zyncDatabaseVaultPath: secret/data/openshift/example-cluster/example-zync-secret
+    vaultPath: secret/data/openshift/cluster-example/3scale/zync
   zync:
     replicas: 1
     resources:
