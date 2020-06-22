@@ -8,7 +8,7 @@ metadata:
     threescale_component: zync
     threescale_component_element: zync
 spec:
-  replicas: {{ zync_replicas }}
+  replicas: {{ zync.replicas | default(zync_replicas) }}
   selector:
     matchLabels:
       deployment: zync
