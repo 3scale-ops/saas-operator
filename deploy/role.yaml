@@ -115,6 +115,7 @@ rules:
   resources:
   - '*'
   - backends
+  - zyncs
   verbs:
   - create
   - delete
