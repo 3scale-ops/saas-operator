@@ -1,9 +1,5 @@
 ---
 
-- name: Echo custom resource name and namespace
-  debug:
-    msg:  CR {{ meta.name }} on Namespace {{ meta.namespace }}
-
 - name: "Manage Zync SecretDefinition for CR {{ meta.name }} on Namespace {{ meta.namespace }}"
   k8s:
     definition: "{{ lookup('template', 'zync-secretdefinition.yaml') }}"
