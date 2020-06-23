@@ -18,8 +18,8 @@ spec:
       dbWaitSleepSeconds: 60
     resources:
       limits:
-        cpu: 1
-        memory: 1G
+        cpu: "1"
+        memory: "1G"
 ```
 
 ## Full CR Example
@@ -46,11 +46,11 @@ spec:
       railsLogsToStdout: true
     resources:
       requests:
-        cpu: 300m
-        memory: 128Mi
+        cpu: "300m"
+        memory: "128Mi"
       limits:
-        cpu: 500m
-        memory: 196Mi
+        cpu: "500m"
+        memory: "196Mi"
     livenessProbe:
       initialDelaySeconds: 25
       timeoutSeconds: 2
@@ -70,11 +70,11 @@ spec:
       railsLogsToStdout: true
     resources:
       requests:
-        cpu: 250m
-        memory: 256Mi
+        cpu: "250m"
+        memory: "256Mi"
       limits:
-        cpu: 300m
-        memory: 320Mi
+        cpu: "300m"
+        memory: "320Mi"
     livenessProbe:
       initialDelaySeconds: 25
       timeoutSeconds: 2
