@@ -13,3 +13,7 @@ spec:
     env:
       dbWaitSleepSeconds: 1
       railsEnv: staging
+  que:
+    replicas: 1
+    env:
+      railsEnv: staging

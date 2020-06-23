@@ -39,7 +39,7 @@ spec:
   secret:
     vaultPath: secret/data/openshift/dev-example-4-3/3scale-zync
   zync:
-    replicas: 3
+    replicas: 2
     env:
       dbWaitSleepSeconds: 10
       railsEnv: dev
@@ -104,7 +104,7 @@ spec:
 |      `zync.env.dbWaitSleepSeconds `       |  `int`   |      No      |         `30`          |        Sleep delay while waiting for the zync database         |
 |            `zync.env.railsEnv`            | `string` |      No      |         `dev`         |                   Rails environment for zync                   |
 |       `zync.env.railsLogsToStdout`        | `string` |      No      |        `false`        |            Rails log to std output toggle for zync             |
-|              `zync.replicas`              |  `int`   |      No      |          `3`          |                  Number of replicas for zync                   |
+|              `zync.replicas`              |  `int`   |      No      |          `2`          |                  Number of replicas for zync                   |
 |       `zync.resources.requests.cpu`       | `string` |      No      |        `250m`         |                 Override CPU requests for zync                 |
 |     `zync.resources.requests.memory`      | `string` |      No      |        `250Mi`        |               Override Memory requests for zync                |
 |        `zync.resources.limits.cpu`        | `string` |      No      |        `750m`         |                  Override CPU limits for zync                  |
@@ -119,7 +119,7 @@ spec:
 |    `zync.readinessProbe.periodSeconds`    |  `int`   |      No      |         `10`          |          Override readiness period (seconds) for zync          |
 |  `zync.readinessProbe.successThreshold`   |  `int`   |      No      |          `1`          |         Override readiness success threshold for zync          |
 |  `zync.readinessProbe.failureThreshold`   |  `int`   |      No      |          `3`          |         Override readiness failure threshold for zync          |
-|              `que.replicas`               |  `int`   |      No      |          `3`          |                Number of replicas for zync-que                 |
+|              `que.replicas`               |  `int`   |      No      |          `2`          |                Number of replicas for zync-que                 |
 |            `que.env.railsEnv`             | `string` |      No      |         `dev`         |                 Rails environment for zync-que                 |
 |        `que.env.railsLogsToStdout`        | `string` |      No      |        `false`        |           Rail log to std output toggle for zync-que           |
 |       `que.resources.requests.cpu`        | `string` |      No      |        `250m`         |               Override CPU requests for zync-que               |
