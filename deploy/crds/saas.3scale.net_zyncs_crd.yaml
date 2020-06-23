@@ -12,11 +12,6 @@ spec:
   scope: Namespaced
   subresources:
     status: {}
-  version: v1alpha1
-  versions:
-  - name: v1alpha1
-    served: true
-    storage: true
   validation:
     openAPIV3Schema:
       type: object
@@ -215,3 +210,8 @@ spec:
                     value:
                       type: string
                       description: Label value used by grafana-operator for dashboard discovery
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
