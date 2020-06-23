@@ -12,7 +12,7 @@ else ifeq (${UNAME}, Darwin)
   INPLACE_SED=sed -i ""
 endif
 
-TAG ?= v0.2.0
+TAG ?= v0.3.0
 REGISTRY ?= quay.io
 ORG ?= 3scale
 PROJECT ?= 3scale-saas-operator
