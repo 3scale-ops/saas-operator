@@ -41,9 +41,9 @@ spec:
                 name:
                   type: string
                   description: Image name (docker repository)
-                version:
+                tag:
                   type: string
-                  description: Image version
+                  description: Image tag
                 pullSecretName:
                   type: string
                   description: Quay pull secret for private repository

@@ -31,7 +31,7 @@ spec:
       initContainers:
       # initContainers > zync-db-svc
         - name: zync-db-svc
-          image: "{{ image.name | default(image_name) }}:{{ image.version | default(image_tag) }}"
+          image: "{{ image.name | default(image_name) }}:{{ image.tag | default(image_tag) }}"
           imagePullPolicy: Always
           command:
             - bash
@@ -58,7 +58,7 @@ spec:
       containers:
       # containers > zync
         - name: zync
-          image: "{{ image.name | default(image_name) }}:{{ image.version | default(image_tag) }}"
+          image: "{{ image.name | default(image_name) }}:{{ image.tag | default(image_tag) }}"
           imagePullPolicy: Always
         ## containers > zync > ports
           ports:
