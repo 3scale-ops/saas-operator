@@ -9,10 +9,10 @@ A Kubernetes Operator based on the Operator SDK to manage 3scale SaaS (hosted ve
 Current 3scale SaaS controllers supported:
 * AutoSSL
 * Backend
+* Zync
 
 Future 3scale SaaS controllers to be added:
 * System
-* Zync
 * Apicast
 * MappingService
 * CORSProxy
@@ -29,6 +29,7 @@ Future 3scale SaaS controllers to be added:
 * [Getting started](docs/getting-started.md)
 * [AutoSSL Custom Resource Reference](docs/autossl-crd-reference.md)
 * [Backend Custom Resource Reference](docs/backend-crd-reference.md)
+* [Zync Custom Resource Reference](docs/zync-crd-reference.md)
 
 ## License
 

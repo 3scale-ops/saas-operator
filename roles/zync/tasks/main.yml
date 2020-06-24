@@ -1,0 +1,29 @@
+---
+
+- name: "Manage Zync SecretDefinition for CR {{ meta.name }} on Namespace {{ meta.namespace }}"
+  k8s:
+    definition: "{{ lookup('template', 'zync-secretdefinition.yaml') }}"
+
+- name: Manage Deployment for Zync-Que {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'zync-que-deployment.yaml') }}"
+
+- name: Manage PodMonitor for Zync-Que {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'zync-que-podmonitor.yaml') }}"
+
+- name: Manage Deployment for Zync {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'zync-deployment.yaml') }}"
+
+- name: Manage Service for Zync {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'zync-service.yaml') }}"
+
+- name: Manage PodMonitor for Zync {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'zync-podmonitor.yaml') }}"
+
+- name: Manage Grafana Dashboard for Zync {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'zync-grafanadashboard.yaml') }}"

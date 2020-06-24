@@ -1,0 +1,16 @@
+apiVersion: saas.3scale.net/v1alpha1
+kind: Zync
+metadata:
+  name: example
+spec:
+  secret:
+    vaultPath: secret/data/openshift/cluster-example/3scale/zync
+  zync:
+    replicas: 1
+    resources:
+      limits:
+        cpu: "1"
+    env:
+      dbWaitSleepSeconds: 1
+  que:
+    replicas: 1

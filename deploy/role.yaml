@@ -114,7 +114,6 @@ rules:
   - saas.3scale.net
   resources:
   - '*'
-  - backends
   verbs:
   - create
   - delete
