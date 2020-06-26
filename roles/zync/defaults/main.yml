@@ -4,7 +4,7 @@ image_name: "quay.io/3scale/zync"
 image_tag: "nightly"
 
 ## Zync Deployment
-zync_replicas: 3
+zync_replicas: 2
 ### Zync Deployment Env
 zync_env_rails_log_to_stdout: false
 zync_env_rails_env: dev
@@ -27,7 +27,7 @@ zync_readiness_probe_success_threshold: 1
 zync_readiness_probe_failure_threshold: 3
 
 ## Zync-Que Deployment
-que_replicas: 3
+que_replicas: 2
 ### Zync Deployment Env
 que_env_rails_log_to_stdout: false
 que_env_rails_env: dev
