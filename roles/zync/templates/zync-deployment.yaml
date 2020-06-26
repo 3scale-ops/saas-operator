@@ -28,33 +28,6 @@ spec:
       imagePullSecrets:
         - name: "{{ image.pull_secret_name }}"
 {% endif %}
-      initContainers:
-      # initContainers > zync-db-svc
-        - name: zync-db-svc
-          image: "{{ image.name | default(image_name) }}:{{ image.tag | default(image_tag) }}"
-          imagePullPolicy: Always
-          command:
-            - bash
-            - -c
-            - bundle exec sh -c "until rake boot:db; do sleep $SLEEP_SECONDS; done"
-        ## initContainers > zync-db-svc > env
-          env:
-            - name: SLEEP_SECONDS
-              value: "{{ zync.env.db_wait_sleep_seconds | default(zync_env_db_wait_sleep_seconds) }}"
-          ### secret/zync
-            - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  key: DB_URL
-                  name: zync
-        ## initContainers > zync-db-svc > resources
-          resources:
-            requests:
-              memory: "{{ zync.resources.requests.memory | default(zync_resources_requests_memory) }}"
-              cpu: "{{ zync.resources.requests.cpu | default(zync_resources_requests_cpu) }}"
-            limits:
-              memory: "{{ zync.resources.limits.memory | default(zync_resources_limits_memory) }}"
-              cpu: "{{ zync.resources.limits.cpu | default(zync_resources_limits_cpu) }}"
       containers:
       # containers > zync
         - name: zync
