@@ -14,8 +14,6 @@ spec:
     vaultPath: secret/data/openshift/dev-example-4-3/3scale-zync
   zync:
     replicas: 1
-    env:
-      dbWaitSleepSeconds: 60
     resources:
       limits:
         cpu: "1"
@@ -41,7 +39,6 @@ spec:
   zync:
     replicas: 2
     env:
-      dbWaitSleepSeconds: 10
       railsEnv: dev
       railsLogsToStdout: true
     resources:
@@ -101,7 +98,6 @@ spec:
 |                `image.tag`                | `string` |      No      |       `nightly`       |                       Image tag for zync                       |
 |          `image.pullSecretName`           | `string` |      No      |           -           |    Pull secret for private container repository if required    |
 |            `secret.vaultPath`             | `string` |     Yes      |           -           |                Vault path with the zync secrets                |
-|      `zync.env.dbWaitSleepSeconds `       |  `int`   |      No      |         `30`          |        Sleep delay while waiting for the zync database         |
 |            `zync.env.railsEnv`            | `string` |      No      |         `dev`         |                   Rails environment for zync                   |
 |       `zync.env.railsLogsToStdout`        | `string` |      No      |        `false`        |            Rails log to std output toggle for zync             |
 |              `zync.replicas`              |  `int`   |      No      |          `2`          |                  Number of replicas for zync                   |

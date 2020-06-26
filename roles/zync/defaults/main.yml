@@ -8,7 +8,6 @@ zync_replicas: 3
 ### Zync Deployment Env
 zync_env_rails_log_to_stdout: false
 zync_env_rails_env: dev
-zync_env_db_wait_sleep_seconds: 30
 ### Zync Deployment Resources
 zync_resources_requests_cpu: "250m"
 zync_resources_requests_memory: "250Mi"

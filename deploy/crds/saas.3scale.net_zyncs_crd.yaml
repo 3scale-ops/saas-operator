@@ -64,9 +64,6 @@ spec:
                 env:
                   type: object
                   properties:
-                    dbWaitSleepSeconds:
-                      type: integer
-                      description: Sleep delay while waiting for the zync database
                     railsLogsToStdout:
                       type: boolean
                       description: Rails log to std output toggle for zync
