@@ -74,7 +74,7 @@ spec:
         ## containers > zync > env
           env:
           - name: RAILS_LOG_TO_STDOUT
-            value: "{{ zync.env.rails_log_to_stdout | default(zync_env_rails_log_to_stdout) }}"
+            value: "true"
           - name: RAILS_ENV
             value: "{{ zync.env.rails_env | default(zync_env_rails_env) }}"
           - name: POD_NAME
