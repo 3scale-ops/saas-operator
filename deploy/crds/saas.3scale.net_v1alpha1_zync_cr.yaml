@@ -10,7 +10,5 @@ spec:
     resources:
       limits:
         cpu: "1"
-    env:
-      dbWaitSleepSeconds: 1
   que:
     replicas: 1
