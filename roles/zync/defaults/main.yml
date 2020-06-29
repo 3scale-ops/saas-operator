@@ -7,7 +7,7 @@ image_tag: "nightly"
 zync_replicas: 2
 ### Zync Deployment Env
 zync_env_rails_log_to_stdout: false
-zync_env_rails_env: dev
+zync_env_rails_env: "development"
 ### Zync Deployment Resources
 zync_resources_requests_cpu: "250m"
 zync_resources_requests_memory: "250Mi"
@@ -30,7 +30,7 @@ zync_readiness_probe_failure_threshold: 3
 que_replicas: 2
 ### Zync Deployment Env
 que_env_rails_log_to_stdout: false
-que_env_rails_env: dev
+que_env_rails_env: "development"
 ### Zync-Que Deployment Resources
 que_resources_requests_cpu: "250m"
 que_resources_requests_memory: "250Mi"
