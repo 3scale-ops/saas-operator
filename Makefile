@@ -37,6 +37,7 @@ operator-deploy: namespace-create ## OPERATOR DEPLOY - Deploy Operator objects (
 	$(KUBE_CLIENT) apply -f deploy/crds/saas.3scale.net_autossls_crd.yaml --validate=false || true
 	$(KUBE_CLIENT) apply -f deploy/crds/saas.3scale.net_backends_crd.yaml --validate=false || true
 	$(KUBE_CLIENT) apply -f deploy/crds/saas.3scale.net_zyncs_crd.yaml --validate=false || true
+	$(KUBE_CLIENT) apply -f deploy/crds/saas.3scale.net_corsproxies_crd.yaml --validate=false || true
 	$(KUBE_CLIENT) apply -f deploy/service_account.yaml -n $(NAMESPACE)
 	$(KUBE_CLIENT) apply -f deploy/role.yaml -n $(NAMESPACE)
 	$(KUBE_CLIENT) apply -f deploy/role_binding.yaml -n $(NAMESPACE)
