@@ -95,7 +95,7 @@ spec:
                   properties:
                     cpu:
                       type: string
-                      pattern: "[0-9]+m?"
+                      pattern: "[0-9]+m?$"
                       description: Override CPU requests
                     memory:
                       type: string
@@ -106,7 +106,7 @@ spec:
                   properties:
                     cpu:
                       type: string
-                      pattern: "[0-9]+m?"
+                      pattern: "[0-9]+m?$"
                       description: Override CPU limits
                     memory:
                       type: string
