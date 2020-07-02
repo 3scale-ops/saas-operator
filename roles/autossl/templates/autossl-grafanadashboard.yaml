@@ -7,7 +7,6 @@ metadata:
     app: autossl
     part-of: 3scale-saas
     "{{ grafana_dashboard.label.key | default(grafana_dashboard_label_key) }}": "{{ grafana_dashboard.label.value | default(grafana_dashboard_label_value) }}"
-    monitoring-key: middleware
 spec:
   name: "{{ meta.namespace }}-threescale-autossl.json"
   json: >
