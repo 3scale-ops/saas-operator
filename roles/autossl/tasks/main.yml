@@ -1,17 +1,17 @@
 ---
 
-- name: Manage Deployment for AutoSSL {{ meta.name }} on Namespace {{ meta.namespace }}
+- name: Manage autossl Deployment for AutoSSL {{ meta.name }} on Namespace {{ meta.namespace }}
   k8s:
     definition: "{{ lookup('template', 'autossl-deployment.yaml') }}"
 
-- name: Manage Service for AutoSSL {{ meta.name }} on Namespace {{ meta.namespace }}
+- name: Manage autossl Service for AutoSSL {{ meta.name }} on Namespace {{ meta.namespace }}
   k8s:
     definition: "{{ lookup('template', 'autossl-service.yaml') }}"
 
-- name: Manage PodMonitor for AutoSSL {{ meta.name }} on Namespace {{ meta.namespace }}
+- name: Manage autossl PodMonitor for AutoSSL {{ meta.name }} on Namespace {{ meta.namespace }}
   k8s:
     definition: "{{ lookup('template', 'autossl-podmonitor.yaml') }}"
 
-- name: Manage GrafanaDashboard for AutoSSL {{ meta.name }} on Namespace {{ meta.namespace }}
+- name: Manage autossl GrafanaDashboard for AutoSSL {{ meta.name }} on Namespace {{ meta.namespace }}
   k8s:
     definition: "{{ lookup('template', 'autossl-grafanadashboard.yaml') }}"
