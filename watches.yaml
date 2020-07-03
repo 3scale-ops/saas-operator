@@ -13,3 +13,8 @@
   group: saas.3scale.net
   kind: Zync
   role: zync
+
+- version: v1alpha1
+  group: saas.3scale.net
+  kind: CORSProxy
+  role: corsproxy

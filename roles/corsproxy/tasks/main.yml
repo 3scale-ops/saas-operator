@@ -1,0 +1,25 @@
+---
+
+- name: Manage cors-proxy-system-database SecretDefinition for CORSProxy {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'cors-proxy-system-database-secretdefinition.yaml') }}"
+
+- name: Manage cors-proxy Deployment for CORSProxy {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'cors-proxy-deployment.yaml') }}"
+
+- name: Manage cors-proxy Service for CORSProxy {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'cors-proxy-service.yaml') }}"
+
+- name: Manage cors-proxy Ingress for CORSProxy {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'cors-proxy-ingress.yaml') }}"
+
+- name: Manage cors-proxy PodMonitor for CORSProxy {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'cors-proxy-podmonitor.yaml') }}"
+
+- name: Manage cors-proxy GrafanaDashboard for CORSProxy {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'cors-proxy-grafanadashboard.yaml') }}"

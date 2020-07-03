@@ -10,12 +10,12 @@ Current 3scale SaaS controllers supported:
 * AutoSSL
 * Backend
 * Zync
+* CORSProxy
 
 Future 3scale SaaS controllers to be added:
 * System
 * Apicast
 * MappingService
-* CORSProxy
 * PostFix
 
 ## Requirements
@@ -30,6 +30,7 @@ Future 3scale SaaS controllers to be added:
 * [AutoSSL Custom Resource Reference](docs/autossl-crd-reference.md)
 * [Backend Custom Resource Reference](docs/backend-crd-reference.md)
 * [Zync Custom Resource Reference](docs/zync-crd-reference.md)
+* [CORSProxy Custom Resource Reference](docs/corsproxy-crd-reference.md)
 
 ## License
 
