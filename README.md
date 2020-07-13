@@ -11,6 +11,7 @@ Current 3scale SaaS controllers supported:
 * Backend
 * Zync
 * CORSProxy
+* EchoAPI
 
 Future 3scale SaaS controllers to be added:
 * System
@@ -23,6 +24,8 @@ Future 3scale SaaS controllers to be added:
 * [prometheus-operator](https://github.com/coreos/prometheus-operator) v0.17.0+
 * [grafana-operator](https://github.com/integr8ly/grafana-operator) v3.0.0+
 * [secrets-manager](https://github.com/tuenti/secrets-manager) v1.0.2+
+* [marin3r](https://github.com/3scale/marin3r) v0.4.0+
+* [aws-nlb-helper-operator](https://github.com/3scale/aws-nlb-helper-operator) v0.2.0+
 
 ## Documentation
 
@@ -31,6 +34,7 @@ Future 3scale SaaS controllers to be added:
 * [Backend Custom Resource Reference](docs/backend-crd-reference.md)
 * [Zync Custom Resource Reference](docs/zync-crd-reference.md)
 * [CORSProxy Custom Resource Reference](docs/corsproxy-crd-reference.md)
+* [EchoAPI Custom Resource Reference](docs/echoapi-crd-reference.md)
 
 ## License
 
