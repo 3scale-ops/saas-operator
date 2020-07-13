@@ -1,0 +1,24 @@
+---
+
+## Deployment
+replicas: 2
+image_name: "quay.io/3scale/echoapi"
+image_tag: "latest"
+liveness_probe_initial_delay_seconds: 5
+liveness_probe_timeout_seconds: 5
+liveness_probe_period_seconds: 10
+liveness_probe_success_threshold: 1
+liveness_probe_failure_threshold: 3
+readiness_probe_initial_delay_seconds: 5
+readiness_probe_timeout_seconds: 5
+readiness_probe_period_seconds: 30
+readiness_probe_success_threshold: 1
+readiness_probe_failure_threshold: 3
+resources_requests_cpu: "50m"
+resources_requests_memory: "40Mi"
+resources_limits_cpu: "150m"
+resources_limits_memory: "80Mi"
+
+## Service
+load_balancer_proxy_protocol: true
+load_balancer_cross_zone_load_balancing_enabled: true

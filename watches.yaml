@@ -18,3 +18,8 @@
   group: saas.3scale.net
   kind: CORSProxy
   role: corsproxy
+
+- version: v1alpha1
+  group: saas.3scale.net
+  kind: EchoAPI
+  role: echoapi
