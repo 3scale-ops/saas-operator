@@ -12,3 +12,7 @@
 - name: Manage echo-api Service for EchoAPI {{ meta.name }} on Namespace {{ meta.namespace }}
   k8s:
     definition: "{{ lookup('template', 'echo-api-service.yaml') }}"
+
+- name: Manage echo-api PodMonitor for EchoAPI {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'echo-api-podmonitor.yaml') }}"
