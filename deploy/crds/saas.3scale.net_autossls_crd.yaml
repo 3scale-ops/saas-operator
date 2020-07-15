@@ -178,18 +178,6 @@ spec:
                 connectionHealthcheckTimeout:
                   type: integer
                   description: Connection healthcheck timeout (seconds)
-                accessLogEnabled:
-                  type: boolean
-                  description: Enable (true) or disable (false) s3 access logs
-                accessLogEmitInterval:
-                  type: integer
-                  description: Access logs emit interval (minutes)
-                accessLogS3BucketName:
-                  type: string
-                  description: Access logs s3 bucket name
-                accessLogS3BucketPrefix:
-                  type: string
-                  description: Access logs s3 bucket prefix
             grafanaDashboard:
               type: object
               properties:

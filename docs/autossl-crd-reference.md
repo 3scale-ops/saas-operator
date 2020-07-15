@@ -75,10 +75,6 @@ spec:
     connectionHealthcheckUnhealthyThreshold: 2
     connectionHealthcheckInterval: 5
     connectionHealthcheckTimeout: 3
-    accessLogEnabled: true
-    accessLogEmitInterval: 5
-    accessLogS3BucketName: s3-bucket-example-logs
-    accessLogS3BucketPrefix: example-cluster/autossl
   grafanaDashboard:
     label:
       key: discovery
@@ -125,9 +121,5 @@ spec:
 | `loadBalancer.connectionHealthcheckUnhealthyThreshold` | `int` | No | `2` | Connection healthcheck unhealthy threshold |
 | `loadBalancer.connectionHealthcheckInterval` | `int` | No | `5` | Connection healthcheck interval (seconds) |
 | `loadBalancer.connectionHealthcheckTimeout` | `int` | No | `3` | Connection healthcheck timeout (seconds) |
-| `loadBalancer.accessLogEnabled` | `bool` | No | - | Enable (`true`) or disable (`false`) s3 access logs |
-| `loadBalancer.accessLogEmitInterval` | `int` | No | - | Access logs emit interval (minutes) |
-| `loadBalancer.accessLogS3BucketName` | `string` | No | (only if enabled) | Access logs s3 bucket name |
-| `loadBalancer.accessLogS3BucketPrefix` | `string` | No | (only if enabled) | Access logs s3 bucket prefix |
 | `grafanaDashboard.label.key` | `string` | No | `monitoring-key` | Label `key` used by grafana-operator for dashboard discovery |
 | `grafanaDashboard.label.value` | `string` | No | `middleware` | Label `value` used by grafana-operator for dashboard discovery |
