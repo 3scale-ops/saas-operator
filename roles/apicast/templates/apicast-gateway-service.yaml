@@ -1,0 +1,33 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "apicast-{{ apicast_env }}"
+  namespace: "{{ meta.namespace }}"
+  labels:
+    app: 3scale-api-management
+    threescale_component: "apicast-{{ apicast_env }}"
+    threescale_component_element: gateway
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: "apicast-{{ apicast_env }}.{{ external_dns_domain }}"
+    service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: "{{ vars[apicast_env].load_balancer.proxy_protocol | default (load_balancer_proxy_protocol) }}"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "{{ vars[apicast_env].load_balancer.cross_zone_load_balancing_enabled | default (load_balancer_cross_zone_load_balancing_enabled) }}"
+    service.beta.kubernetes.io/aws-load-balancer-connection-draining-enabled: "{{ vars[apicast_env].load_balancer.connection_draining_enabled | default (load_balancer_connection_draining_enabled) }}"
+    service.beta.kubernetes.io/aws-load-balancer-connection-draining-timeout: "{{ vars[apicast_env].load_balancer.connection_draining_timeout | default (load_balancer_connection_draining_timeout) }}"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-healthy-threshold: "{{ vars[apicast_env].load_balancer.connection_healthcheck_healthy_threshold | default (load_balancer_connection_healthcheck_healthy_threshold) }}"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-unhealthy-threshold: "{{ vars[apicast_env].load_balancer.connection_healthcheck_unhealthy_threshold | default (load_balancer_connection_healthcheck_unhealthy_threshold) }}"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-interval: "{{ vars[apicast_env].load_balancer.connection_healthcheck_interval | default (load_balancer_connection_healthcheck_interval) }}"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-timeout: "{{ vars[apicast_env].load_balancer.connection_healthcheck_timeout | default (load_balancer_connection_healthcheck_timeout) }}"
+spec:
+  type: LoadBalancer
+  ports:
+    - name: gateway-http
+      protocol: TCP
+      port: 80
+      targetPort: gateway-http
+    - name: gateway-https
+      protocol: TCP
+      port: 443
+      targetPort: gateway-https
+  selector:
+    deployment: "apicast-{{ apicast_env }}"

@@ -1,0 +1,46 @@
+---
+- set_fact:
+    apicast_env: staging
+
+- name: Manage staging Deployment for Apicast {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'apicast-deployment.yaml') }}"
+
+- name: Manage staging gateway Service for Apicast {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'apicast-gateway-service.yaml') }}"
+
+- name: Manage staging management Service for Apicast {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'apicast-management-service.yaml') }}"
+
+- name: Manage staging PodMonitor for Apicast {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'apicast-podmonitor.yaml') }}"
+
+- set_fact:
+    apicast_env: production
+
+- name: Manage production Deployment for Apicast {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'apicast-deployment.yaml') }}"
+
+- name: Manage production gateway Service for Apicast {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'apicast-gateway-service.yaml') }}"
+
+- name: Manage production management Service for Apicast {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'apicast-management-service.yaml') }}"
+
+- name: Manage production PodMonitor for Apicast {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'apicast-podmonitor.yaml') }}"
+
+- name: Manage application GrafanaDashboard for Apicast {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'apicast-grafanadashboard.yaml') }}"
+
+- name: Manage services GrafanaDashboard for Apicast {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'apicast-services-grafanadashboard.yaml') }}"
