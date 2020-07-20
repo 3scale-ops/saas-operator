@@ -12,7 +12,8 @@ else ifeq (${UNAME}, Darwin)
   INPLACE_SED=sed -i ""
 endif
 
-TAG ?= v0.5.2
+CURRENT_GIT_REF := $(shell git describe --always --dirty)
+TAG ?= $(CURRENT_GIT_REF)
 REGISTRY ?= quay.io
 ORG ?= 3scale
 PROJECT ?= 3scale-saas-operator
