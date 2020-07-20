@@ -7,12 +7,24 @@ metadata:
     app: 3scale-api-management
     threescale_component: backend
     threescale_component_element: listener
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: "{{ listener.external_dns_hostname }}"
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "{{ listener.load_balancer.cross_zone_load_balancing_enabled | default (listener_load_balancer_cross_zone_load_balancing_enabled) }}"
+{% if listener.load_balancer.eip_allocations is defined %}
+    service.beta.kubernetes.io/aws-load-balancer-eip-allocations: "{{ listener.load_balancer.eip_allocations }}"
+{% endif %}
+    aws-nlb-helper.3scale.net/enable-targetgroups-proxy-protocol: "{{ listener.load_balancer.proxy_protocol | default (listener_load_balancer_proxy_protocol) }}"
 spec:
   ports:
     - name: http
-      port: 3000
       protocol: TCP
-      targetPort: 3000
+      port: 80
+      targetPort: backend-http
+    - name: https
+      protocol: TCP
+      port: 443
+      targetPort: backend-https
   selector:
     deployment: backend-listener
-  type: ClusterIP
+  type: LoadBalancer
