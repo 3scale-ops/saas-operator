@@ -26,6 +26,8 @@ spec:
         threescale_component_element: listener
 {% if listener.marin3r.enabled == true %}
         marin3r.3scale.net/status: "enabled"
+{% else %}
+        marin3r.3scale.net/status: "disabled"
 {% endif %}
       annotations:
 {# This is a hack to reverse the ansible operator -/_ convertion of dict keys #}
