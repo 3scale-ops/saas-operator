@@ -102,7 +102,6 @@ spec:
               required:
               - externalDnsHostname
               - marin3r
-              - deploymentAnnotations
               properties:
                 externalDnsHostname:
                   type: string
@@ -115,11 +114,11 @@ spec:
                     enabled:
                       type: boolean
                       description:  Enable (true) or disable (false) marin3r
-                deploymentAnnotations:
-                  additionalProperties:
-                    type: string
-                  description: Map of deployment annotations
-                  type: object
+                    annotations:
+                      additionalProperties:
+                        type: string
+                      description: Map of marin3r annotations
+                      type: object
                 loadBalancer:
                   type: object
                   properties:

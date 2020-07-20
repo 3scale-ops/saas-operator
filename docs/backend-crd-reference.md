@@ -20,9 +20,9 @@ spec:
     externalDnsHostname: backend.example.3scale.net
     marin3r:
       enabled: true
-    deploymentAnnotations:
-      marin3r.3scale.net/node-id: backend-listener
-      marin3r.3scale.net/ports: backend-listener-http:38080,backend-listener-https:38443,envoy-metrics:9901
+      annotations:
+        marin3r.3scale.net/node-id: backend-listener
+        marin3r.3scale.net/ports: backend-listener-http:38080,backend-listener-https:38443,envoy-metrics:9901
     replicas: 1
   worker:
     replicas: 1
@@ -63,9 +63,9 @@ spec:
     externalDnsHostname: backend.example.3scale.net
     marin3r:
       enabled: true
-    deploymentAnnotations:
-      marin3r.3scale.net/node-id: backend-listener
-      marin3r.3scale.net/ports: backend-listener-http:38080,backend-listener-https:38443,envoy-metrics:9901
+      annotations:
+        marin3r.3scale.net/node-id: backend-listener
+        marin3r.3scale.net/ports: backend-listener-http:38080,backend-listener-https:38443,envoy-metrics:9901
     loadBalancer:
       proxyProtocol: true
       crossZoneLoadBalancingEnabled: true
@@ -149,7 +149,7 @@ spec:
 | `errorMonitoringEnabled` | `bool` | No | `false` | Mount (`true`) or not (`false`) backend-error-monitoring Secret on deployments |
 | `listener.externalDnsHostname` | `string` | Yes | - | DNS hostnames to manage on AWS Route53 by external-dns |
 | `listener.marin3r.enabled` | `boolean` | Yes | - | Enable (`true`) or disable (`false`) marin3r |
-| `listener.deploymentAnnotations.{}` | `map` | Yes | - | Map of deployment annotations |
+| `listener.marin3r.anotations.{}` | `map` | No | - | Map of marin3r annotations |
 | `listener.loadBalancer.proxyProtocol` | `boolean` | No | `true` | Enable (`true`) or disable (`false`) proxy protocol with aws-nlb-helper-operator |
 | `listener.loadBalancer.crossZoneLoadBalancingEnabled` | `bool` | No | `true` | Enable (`true`) or disable (`false`) cross zone load balancing |
 | `listener.loadBalancer.eipAllocations` | `string` | No | - | Optional Elastic IPs allocations |

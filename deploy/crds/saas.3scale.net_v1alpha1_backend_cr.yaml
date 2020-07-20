@@ -15,9 +15,9 @@ spec:
     externalDnsHostname: backend.example.3scale.net
     marin3r:
       enabled: true
-    deploymentAnnotations:
-      marin3r.3scale.net/node-id: backend-listener
-      marin3r.3scale.net/ports: backend-listener-http:38080,backend-listener-https:38443,envoy-metrics:9901
+      annotations:
+        marin3r.3scale.net/node-id: backend-listener
+        marin3r.3scale.net/ports: backend-listener-http:38080,backend-listener-https:38443,envoy-metrics:9901
     replicas: 1
   worker:
     replicas: 1
