@@ -24,6 +24,15 @@ spec:
         deployment: backend-listener
         threescale_component: backend
         threescale_component_element: listener
+{% if listener.marin3r.enabled == true %}
+        marin3r.3scale.net/status: "enabled"
+{% endif %}
+      annotations:
+{# This is a hack to reverse the ansible operator -/_ convertion of dict keys #}
+{%- for key in listener.deployment_annotations -%}
+{% set key_replace = key | replace('_','-') %}
+        {{ key_replace }}: {{ listener.deployment_annotations[key] | safe }}
+{% endfor %}
     spec:
 {% if image.pull_secret_name is defined %}
       imagePullSecrets:
