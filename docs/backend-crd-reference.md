@@ -17,7 +17,12 @@ spec:
     systemEventsHookVaultPath: secret/data/openshift/cluster-example/3scale/backend-system-events-hook
     internalApiVaultPath: secret/data/openshift/cluster-example/3scale/backend-internal-api
   listener:
-    routeHost: backend-example.3scale.net
+    externalDnsHostname: backend.example.3scale.net
+    marin3r:
+      enabled: true
+    deploymentAnnotations:
+      marin3r.3scale.net/node-id: backend-listener
+      marin3r.3scale.net/ports: backend-listener-http:38080,backend-listener-https:38443,envoy-metrics:9901
     replicas: 1
   worker:
     replicas: 1
@@ -55,7 +60,16 @@ spec:
     errorMonitoringVaultPath: secret/data/openshift/cluster-example/3scale/backend-error-monitoring
   errorMonitoringEnabled: false
   listener:
-    routeHost: backend-example.3scale.net
+    externalDnsHostname: backend.example.3scale.net
+    marin3r:
+      enabled: true
+    deploymentAnnotations:
+      marin3r.3scale.net/node-id: backend-listener
+      marin3r.3scale.net/ports: backend-listener-http:38080,backend-listener-https:38443,envoy-metrics:9901
+    loadBalancer:
+      proxyProtocol: true
+      crossZoneLoadBalancingEnabled: true
+      eipAllocations: "eipalloc-080ecfaf74a799b24,eipalloc-098963e814413a5d1,eipalloc-02bd497572f4321a0"
     replicas: 2
     env:
       logFormat: json
@@ -133,7 +147,12 @@ spec:
 | `secret.internalApiVaultPath` | `string` | Yes | - | Vault Path with backend-internal-api secret definition |
 | `secret.errorMonitoringVaultPath` | `string` | No | - | Vault Path with backend-error-monitoring secret definition |
 | `errorMonitoringEnabled` | `bool` | No | `false` | Mount (`true`) or not (`false`) backend-error-monitoring Secret on deployments |
-| `listener.routeHost` | `string` | No | `backend-example.3scale.net` | Host to configure on backend listener Route |
+| `listener.externalDnsHostname` | `string` | Yes | - | DNS hostnames to manage on AWS Route53 by external-dns |
+| `listener.marin3r.enabled` | `boolean` | Yes | - | Enable (`true`) or disable (`false`) marin3r |
+| `listener.deploymentAnnotations.{}` | `map` | Yes | - | Map of deployment annotations |
+| `listener.loadBalancer.proxyProtocol` | `boolean` | No | `true` | Enable (`true`) or disable (`false`) proxy protocol with aws-nlb-helper-operator |
+| `listener.loadBalancer.crossZoneLoadBalancingEnabled` | `bool` | No | `true` | Enable (`true`) or disable (`false`) cross zone load balancing |
+| `listener.loadBalancer.eipAllocations` | `string` | No | - | Optional Elastic IPs allocations |
 | `listener.replicas` | `int` | No | `1` | Number of replicas |
 | `listener.env.logFormat` | `string` | No | `json` | Log format (`text`/`json`) |
 | `listener.env.listenerWorkers` | `int` | No | `16` | Number of worker processes per listener pod |
