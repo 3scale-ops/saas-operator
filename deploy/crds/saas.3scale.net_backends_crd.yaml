@@ -34,6 +34,7 @@ spec:
           description: BackendSpec defines the desired state of Backend
           required:
           - secret
+          - listener
           properties:
             image:
               type: object
@@ -98,10 +99,39 @@ spec:
               description: Mount (true) or not (false) backend-error-monitoring Secret on deployments
             listener:
               type: object
+              required:
+              - externalDnsHostname
+              - marin3r
+              - deploymentAnnotations
               properties:
-                routeHost:
+                externalDnsHostname:
                   type: string
-                  description: Host to configure on backend listener Route
+                  description: DNS hostnames to manage on AWS Route53 by external-dns
+                marin3r:
+                  type: object
+                  required:
+                  - enabled
+                  properties:
+                    enabled:
+                      type: boolean
+                      description:  Enable (true) or disable (false) marin3r
+                deploymentAnnotations:
+                  additionalProperties:
+                    type: string
+                  description: Map of deployment annotations
+                  type: object
+                loadBalancer:
+                  type: object
+                  properties:
+                    proxyProtocol:
+                      type: boolean
+                      description:  Enable (true) or disable (false) proxy protocol with aws-nlb-helper-operator
+                    crossZoneLoadBalancingEnabled:
+                      type: boolean
+                      description: Enable (true) or disable (false) cross zone load balancing
+                    eipAllocations:
+                      type: string
+                      description: Optional Elastic IPs allocations
                 replicas:
                   type: integer
                   description: Number of replicas
