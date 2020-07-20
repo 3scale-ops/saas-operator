@@ -36,6 +36,20 @@ Future 3scale SaaS controllers to be added:
 * [CORSProxy Custom Resource Reference](docs/corsproxy-crd-reference.md)
 * [EchoAPI Custom Resource Reference](docs/echoapi-crd-reference.md)
 
+## Development
+
+To run the operator locally you need to install some ansible dependencies first:
+
+* ansible-runner: `sudo dnf install python-ansible-runner`
+* ansible-runner-http: `pip install python-ansible-runner`
+* openshift ansible module: `pip install openshift`
+
+You can then run the operator with the following command:
+
+```bash
+operator-sdk run --local --watch-namespace <namespace>
+```
+
 ## License
 
 3scale SaaS Operator is under Apache 2.0 license. See the [LICENSE](LICENSE) file for details.
