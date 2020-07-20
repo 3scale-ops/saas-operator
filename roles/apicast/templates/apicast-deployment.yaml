@@ -67,15 +67,17 @@ spec:
             - name: APICAST_CONFIGURATION_LOADER
               value: lazy
             - name: APICAST_CONFIGURATION_CACHE
-              value: "{{ vars[apicast_env].env.configuration_cache }}"
+              value: "{{ vars[apicast_env].env.apicast_configuration_cache }}"
             - name: APICAST_EXTENDED_METRICS
               value: "true"
             - name: THREESCALE_DEPLOYMENT_ENV
               value: "{{ apicast_env }}"
             - name: THREESCALE_PORTAL_ENDPOINT
               value: "{{ vars[apicast_env].env.threescale_portal_endpoint }}"
+            - name: APICAST_LOG_LEVEL
+              value: "{{ vars[apicast_env].env.apicast_log_level | default(apicast_log_level) }}"
             - name: APICAST_OIDC_LOG_LEVEL
-              value: notice
+              value: "{{ vars[apicast_env].env.apicast_oidc_log_level | default(apicast_oidc_log_level) }}"
             - name: APICAST_RESPONSE_CODES
               value: "true"
           resources:

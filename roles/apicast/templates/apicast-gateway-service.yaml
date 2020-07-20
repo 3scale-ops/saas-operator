@@ -9,7 +9,7 @@ metadata:
     threescale_component: "apicast-{{ apicast_env }}"
     threescale_component_element: gateway
   annotations:
-    external-dns.alpha.kubernetes.io/hostname: "apicast-{{ apicast_env }}.{{ external_dns_domain }}"
+    external-dns.alpha.kubernetes.io/hostname: "{{ vars[apicast_env].external_dns_hostname }}"
     service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: "{{ vars[apicast_env].load_balancer.proxy_protocol | default (load_balancer_proxy_protocol) }}"
     service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "{{ vars[apicast_env].load_balancer.cross_zone_load_balancing_enabled | default (load_balancer_cross_zone_load_balancing_enabled) }}"
     service.beta.kubernetes.io/aws-load-balancer-connection-draining-enabled: "{{ vars[apicast_env].load_balancer.connection_draining_enabled | default (load_balancer_connection_draining_enabled) }}"

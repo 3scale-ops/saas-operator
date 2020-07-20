@@ -37,18 +37,18 @@ spec:
           required:
             - production
             - staging
-            - externalDnsDomain
           properties:
-            externalDnsDomain:
-              type: string
-              description: DNS domain to manage on AWS Route53 by external-dns
             production:
               type: object
               required:
                 - image
                 - env
                 - marin3r
+                - externalDnsHostname
               properties:
+                externalDnsHostname:
+                  type: string
+                  description: DNS hostname to manage on AWS Route53 by external-dns
                 image:
                   type: object
                   required:
@@ -75,12 +75,18 @@ spec:
                   type: object
                   description: Environment variables
                   required:
-                    - configurationCache
+                    - apicastConfigurationCache
                     - threescalePortalEndpoint
                   properties:
-                    configurationCache:
+                    apicastConfigurationCache:
                       type: string
                       description: Configuration cache seconds
+                    apicastLogLevel:
+                      type: string
+                      description: Specifies the log level for the OpenResty logs
+                    apicastOIDCLogLevel:
+                      type: string
+                      description: Allows to set the log level for the logs related to OpenID Connect integration
                     threescalePortalEndpoint:
                       type: string
                       description: 3scale portal endpoint
@@ -186,7 +192,11 @@ spec:
                 - image
                 - env
                 - marin3r
+                - externalDnsHostname
               properties:
+                externalDnsHostname:
+                  type: string
+                  description: DNS hostname to manage on AWS Route53 by external-dns
                 image:
                   type: object
                   required:
@@ -208,12 +218,18 @@ spec:
                   type: object
                   description: Environment variables
                   required:
-                    - configurationCache
+                    - apicastConfigurationCache
                     - threescalePortalEndpoint
                   properties:
-                    configurationCache:
+                    apicastConfigurationCache:
                       type: string
                       description: Configuration cache seconds
+                    apicastLogLevel:
+                      type: string
+                      description: Specifies the log level for the OpenResty logs
+                    apicastOIDCLogLevel:
+                      type: string
+                      description: Allows to set the log level for the logs related to OpenID Connect integration
                     threescalePortalEndpoint:
                       type: string
                       description: 3scale portal endpoint
