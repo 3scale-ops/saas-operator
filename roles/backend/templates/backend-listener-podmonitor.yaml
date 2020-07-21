@@ -13,6 +13,10 @@ spec:
       path: /metrics
       port: metrics
       scheme: http
+    - interval: 60s
+      path: /stats/prometheus
+      port: envoy-metrics
+      scheme: http
   selector:
     matchLabels:
       app: 3scale-api-management

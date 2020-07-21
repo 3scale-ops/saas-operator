@@ -41,10 +41,6 @@
   k8s:
     definition: "{{ lookup('template', 'backend-listener-podmonitor.yaml') }}"
 
-- name: Manage backend Route for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
-  k8s:
-    definition: "{{ lookup('template', 'backend-route.yaml') }}"
-
 - name: Manage backend-worker PodMonitor for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
   k8s:
     definition: "{{ lookup('template', 'backend-worker-podmonitor.yaml') }}"
