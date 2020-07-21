@@ -66,11 +66,6 @@ spec:
                 replicas:
                   type: integer
                   description: Number of replicas
-                podAnnotations:
-                  additionalProperties:
-                    type: string
-                  description: Map of deployment annotations
-                  type: object
                 env:
                   type: object
                   description: Environment variables
@@ -98,6 +93,11 @@ spec:
                     enabled:
                       type: boolean
                       description: Enable (true) or disable (false) marin3r
+                    annotations:
+                      additionalProperties:
+                        type: string
+                      description: Map of marin3r annotations
+                      type: object
                 resources:
                   type: object
                   properties:
@@ -241,6 +241,11 @@ spec:
                     enabled:
                       type: boolean
                       description: Enable (true) or disable (false) marin3r
+                    annotations:
+                      additionalProperties:
+                        type: string
+                      description: Map of marin3r annotations
+                      type: object
                 resources:
                   type: object
                   properties:

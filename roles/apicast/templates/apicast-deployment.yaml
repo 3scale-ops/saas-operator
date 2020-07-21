@@ -27,16 +27,16 @@ spec:
         threescale_component_element: gateway
 {% if vars[apicast_env].marin3r.enabled == true %}
         marin3r.3scale.net/status: "enabled"
-{% else %}
-        marin3r.3scale.net/status: "disabled"
-{% endif %}
-{% if vars[apicast_env].pod_annotations is defined %}
+{% if vars[apicast_env].marin3r.annotations is defined %}
       annotations:
 {# This is a hack to reverse the ansible operator -/_ convertion of dict keys #}
-{%- for key in vars[apicast_env].pod_annotations -%}
+{%- for key in vars[apicast_env].marin3r.annotations -%}
 {% set key_replace = key | replace('_','-') %}
-        {{ key_replace }}: {{ vars[apicast_env].pod_annotations[key] | safe }}
+        {{ key_replace }}: {{ vars[apicast_env].marin3r.annotations[key] | safe }}
 {% endfor %}
+{% endif %}
+{% else %}
+        marin3r.3scale.net/status: "disabled"
 {% endif %}
     spec:
 {% if image.pull_secret_name is defined %}
