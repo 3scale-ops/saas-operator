@@ -75,12 +75,15 @@ spec:
                   properties:
                     apicastConfigurationCache:
                       type: string
+                      pattern: "[0-9]+$"
                       description: Configuration cache seconds
                     apicastLogLevel:
                       type: string
+                      enum: [debug, info, notice, warn, error, crit, alert, emerg]
                       description: Specifies the log level for the OpenResty logs
                     apicastOIDCLogLevel:
                       type: string
+                      enum: [debug, info, notice, warn, error, crit, alert, emerg]
                       description: Allows to set the log level for the logs related to OpenID Connect integration
                     threescalePortalEndpoint:
                       type: string
@@ -223,12 +226,15 @@ spec:
                   properties:
                     apicastConfigurationCache:
                       type: string
+                      pattern: "[0-9]+$"
                       description: Configuration cache seconds
                     apicastLogLevel:
                       type: string
+                      enum: [debug, info, notice, warn, error, crit, alert, emerg]
                       description: Specifies the log level for the OpenResty logs
                     apicastOIDCLogLevel:
                       type: string
+                      enum: [debug, info, notice, warn, error, crit, alert, emerg]
                       description: Allows to set the log level for the logs related to OpenID Connect integration
                     threescalePortalEndpoint:
                       type: string

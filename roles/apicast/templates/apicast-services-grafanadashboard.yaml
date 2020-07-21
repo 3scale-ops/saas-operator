@@ -8,7 +8,7 @@ metadata:
     threescale_component: apicast
     "{{ grafana_dashboard.label.key | default(grafana_dashboard_label_key) }}": "{{ grafana_dashboard.label.value | default(grafana_dashboard_label_value) }}"
 spec:
-  name: threescale-apicast-services.json
+  name: "{{ meta.namespace }}-threescale-apicast-services.json"
   json: >
     {
       "annotations": {

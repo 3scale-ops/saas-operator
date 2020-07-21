@@ -14,7 +14,7 @@ spec:
       tag: apicast-v3.8.0-r3
     replicas: 1
     env:
-      configurationCache: "30"
+      apicastConfigurationCache: "30"
       threescalePortalEndpoint: "http://mapping-service/config"
     marin3r:
       enabled: true
@@ -27,7 +27,7 @@ spec:
       tag: apicast-v3.8.0-r3
     replicas: 1
     env:
-      configurationCache: "300"
+      apicastConfigurationCache: "300"
       threescalePortalEndpoint: "http://mapping-service/config"
     marin3r:
       enabled: true
@@ -54,7 +54,7 @@ spec:
       pullSecretName: quay-pull-secret
     replicas: 1
     env:
-      configurationCache: "30"
+      apicastConfigurationCache: "30"
       threescalePortalEndpoint: "http://mapping-service/config"
       apicastLogLevel: debug
       apicsatOIDCLogLevel: debug
@@ -77,7 +77,7 @@ spec:
       failureThreshold: 5
     resources:
       requests:
-        cpu: 500m"
+        cpu: "500m"
         memory: "64Mi"
       limits:
         cpu: "1"
@@ -91,7 +91,7 @@ spec:
       pullSecretName: quay-pull-secret
     replicas: 1
     env:
-      configurationCache: "300"
+      apicastConfigurationCache: "300"
       threescalePortalEndpoint: "http://mapping-service/config"
       apicastLogLevel: debug
       apicsatOIDCLogLevel: debug
@@ -114,7 +114,7 @@ spec:
       failureThreshold: 5
     resources:
       requests:
-        cpu: 500m"
+        cpu: "500m"
         memory: "64Mi"
       limits:
         cpu: "1"
@@ -149,7 +149,7 @@ spec:
 |                   `staging.env.apicastLogLevel`                   | `string`  |      No      |                `warn`                 |                           Openresty log level                            |
 |                 `staging.env.apicastOIDCLogLevel`                 | `string`  |      No      |               `notice`                |                   OpenID Connect integration log level                   |
 |                     `staging.marin3r.enabled`                     | `boolean` |     Yes      |                   -                   |               Enable (`true`) or disable (`false`) marin3r               |
-|                  `staging.marin3r.anotations.{}`                  |   `map`   |      No      |                   -                   |                        Map of marin3r annotations                        |
+|                 `staging.marin3r.annotations.{}`                  |   `map`   |      No      |                   -                   |                        Map of marin3r annotations                        |
 |                 `staging.resources.requests.cpu`                  | `string`  |      No      |                `500m`                 |                          Override CPU requests                           |
 |                `staging.resources.requests.memory`                | `string`  |      No      |                `64Mi`                 |                         Override Memory requests                         |
 |                  `staging.resources.limits.cpu`                   | `string`  |      No      |                  `1`                  |                           Override CPU limits                            |
@@ -182,7 +182,7 @@ spec:
 |                 `production.env.apicastLogLevel`                  | `string`  |      No      |                `warn`                 |                           Openresty log level                            |
 |               `production.env.apicastOIDCLogLevel`                | `string`  |      No      |               `notice`                |                   OpenID Connect integration log level                   |
 |                   `production.marin3r.enabled`                    | `boolean` |     Yes      |                   -                   |               Enable (`true`) or disable (`false`) marin3r               |
-|                `production.marin3r.anotations.{}`                 |   `map`   |      No      |                   -                   |                        Map of marin3r annotations                        |
+|                `production.marin3r.annotations.{}`                |   `map`   |      No      |                   -                   |                        Map of marin3r annotations                        |
 |                `production.resources.requests.cpu`                | `string`  |      No      |                `500m`                 |                          Override CPU requests                           |
 |              `production.resources.requests.memory`               | `string`  |      No      |                `64Mi`                 |                         Override Memory requests                         |
 |                 `production.resources.limits.cpu`                 | `string`  |      No      |                  `1`                  |                           Override CPU limits                            |
