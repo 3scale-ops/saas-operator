@@ -1,0 +1,23 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: "apicast-{{ apicast_env }}"
+  namespace: "{{ meta.namespace }}"
+  labels:
+    app: 3scale-api-management
+    threescale_component: "apicast-{{ apicast_env }}"
+    threescale_component_element: gateway
+spec:
+  podMetricsEndpoints:
+    - interval: 30s
+      path: /metrics
+      port: metrics
+      scheme: http
+    - interval: 60s
+      path: /stats/prometheus
+      port: envoy-metrics
+      scheme: http
+  selector:
+    matchLabels:
+      deployment: "apicast-{{ apicast_env }}"
+

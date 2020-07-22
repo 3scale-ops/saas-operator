@@ -35,6 +35,21 @@ Future 3scale SaaS controllers to be added:
 * [Zync Custom Resource Reference](docs/zync-crd-reference.md)
 * [CORSProxy Custom Resource Reference](docs/corsproxy-crd-reference.md)
 * [EchoAPI Custom Resource Reference](docs/echoapi-crd-reference.md)
+* [Apicast Custom Resource Reference](docs/apicast-crd-reference.md)
+
+## Development
+
+To run the operator locally you need to install some ansible dependencies first:
+
+* ansible-runner: `sudo dnf install python-ansible-runner`
+* ansible-runner-http: `pip install python-ansible-runner`
+* openshift ansible module: `pip install openshift`
+
+You can then run the operator with the following command:
+
+```bash
+operator-sdk run --local --watch-namespace <namespace>
+```
 
 ## License
 
