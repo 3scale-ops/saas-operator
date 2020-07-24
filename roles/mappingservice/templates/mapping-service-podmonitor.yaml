@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: mapping-service
+  namespace: "{{ meta.namespace }}"
+  labels:
+    app: mapping-service
+    part-of: 3scale-saas
+spec:
+  podMetricsEndpoints:
+    - interval: 30s
+      path: /metrics
+      port: metrics
+  selector:
+    matchLabels:
+      deployment: mapping-service

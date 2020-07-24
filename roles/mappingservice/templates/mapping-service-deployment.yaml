@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mapping-service
+  namespace: "{{ meta.namespace }}"
+  labels:
+    app: mapping-service
+    part-of: 3scale-saas
+spec:
+  replicas: {{ replicas }}
+  selector:
+    matchLabels:
+      deployment: mapping-service
+  strategy:
+    rollingUpdate:
+      # Never go below desired, increase the
+      # max number of pods instead
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: mapping-service
+        part-of: 3scale-saas
+        deployment: mapping-service
+    spec:
+{% if image.pull_secret_name is defined %}
+      imagePullSecrets:
+        - name: "{{ image.pull_secret_name | default(image_pull_secret_name) }}"
+{% endif %}
+      containers:
+        - name: mapping-service
+          image: "{{ image.name | default(image_name) }}:{{ image.tag }}"
+          ports:
+            - name: mapping
+              containerPort: 8093
+            - name: management
+              containerPort: 8090
+            - name: metrics
+              containerPort: 9421
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            # This avoids having to configure some apicast
+            # required params that are never going to be used
+            - name: APICAST_CONFIGURATION_LOADER
+              value: lazy
+            - name: API_HOST
+              value: "{{ env.api_host }}"
+{% if env.preview_base_domain is defined %}
+            - name: PREVIEW_BASE_DOMAIN
+              value: "{{ env.preview_base_domain }}"
+{% endif %}
+            - name: MASTER_ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: system-master-access-token
+                  key: access-token
+            - name: APICAST_LOG_LEVEL
+              value: "{{ env.apicast_log_level | default(apicast_log_level) }}"
+          resources:
+            requests:
+              memory: "{{ resources.requests.memory | default(resources_requests_memory) }}"
+              cpu: "{{ resources.requests.cpu | default(resources_requests_cpu) }}"
+            limits:
+              memory: "{{ resources.limits.memory | default(resources_limits_memory) }}"
+              cpu: "{{ resources.limits.cpu | default(resources_limits_cpu) }}"
+          livenessProbe:
+            tcpSocket:
+              port: mapping
+            initialDelaySeconds: {{ liveness_probe.initial_delay_seconds | default(liveness_probe_initial_delay_seconds) }}
+            timeoutSeconds: {{ liveness_probe.timeout_seconds | default(liveness_probe_timeout_seconds) }}
+            periodSeconds: {{ liveness_probe.period_seconds | default (liveness_probe_period_seconds) }}
+            successThreshold: {{ liveness_probe.success_threshold | default(liveness_probe_success_threshold) }}
+            failureThreshold: {{ liveness_probe.failure_threshold | default(liveness_probe_failure_threshold) }}
+          readinessProbe:
+            httpGet:
+              path: /status/ready
+              port: management
+              scheme: HTTP
+            initialDelaySeconds: {{ readiness_probe.initial_delay_seconds | default(readiness_probe_initial_delay_seconds) }}
+            timeoutSeconds: {{ readiness_probe.timeout_seconds | default(readiness_probe_timeout_seconds) }}
+            periodSeconds: {{ readiness_probe.period_seconds | default(readiness_probe_period_seconds) }}
+            successThreshold: {{ readiness_probe.success_threshold | default(readiness_probe_success_threshold) }}
+            failureThreshold: {{ readiness_probe.failure_threshold | default(readiness_probe_failure_threshold) }}

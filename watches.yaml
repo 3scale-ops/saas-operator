@@ -28,3 +28,8 @@
   group: saas.3scale.net
   kind: Apicast
   role: apicast
+
+- version: v1alpha1
+  group: saas.3scale.net
+  kind: MappingService
+  role: mappingservice
