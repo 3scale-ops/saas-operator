@@ -1,33 +1,33 @@
 ---
-- version: v1alpha1
-  group: saas.3scale.net
-  kind: AutoSSL
-  role: autossl
+# - version: v1alpha1
+#   group: saas.3scale.net
+#   kind: AutoSSL
+#   role: autossl
 
-- version: v1alpha1
-  group: saas.3scale.net
-  kind: Backend
-  role: backend
+# - version: v1alpha1
+#   group: saas.3scale.net
+#   kind: Backend
+#   role: backend
 
-- version: v1alpha1
-  group: saas.3scale.net
-  kind: Zync
-  role: zync
+# - version: v1alpha1
+#   group: saas.3scale.net
+#   kind: Zync
+#   role: zync
 
-- version: v1alpha1
-  group: saas.3scale.net
-  kind: CORSProxy
-  role: corsproxy
+# - version: v1alpha1
+#   group: saas.3scale.net
+#   kind: CORSProxy
+#   role: corsproxy
 
-- version: v1alpha1
-  group: saas.3scale.net
-  kind: EchoAPI
-  role: echoapi
+# - version: v1alpha1
+#   group: saas.3scale.net
+#   kind: EchoAPI
+#   role: echoapi
 
-- version: v1alpha1
-  group: saas.3scale.net
-  kind: Apicast
-  role: apicast
+# - version: v1alpha1
+#   group: saas.3scale.net
+#   kind: Apicast
+#   role: apicast
 
 - version: v1alpha1
   group: saas.3scale.net

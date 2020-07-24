@@ -2,20 +2,20 @@
 
 - name: Manage mapping-service SecretDefinition for MappingService {{ meta.name }} on Namespace {{ meta.namespace }}
   k8s:
-    definition: "{{ lookup('template', 'system-master-access-token-secretdefinition.yaml') }}"
+    definition: "{{ lookup('template', 'mappingservice-system-master-access-token-secretdefinition.yaml') }}"
 
 - name: Manage mapping-service Deployment for MappingService {{ meta.name }} on Namespace {{ meta.namespace }}
   k8s:
-    definition: "{{ lookup('template', 'mapping-service-deployment.yaml') }}"
+    definition: "{{ lookup('template', 'mappingservice-deployment.yaml') }}"
 
 - name: Manage mapping-service Service for MappingService {{ meta.name }} on Namespace {{ meta.namespace }}
   k8s:
-    definition: "{{ lookup('template', 'mapping-service-service.yaml') }}"
+    definition: "{{ lookup('template', 'mappingservice-service.yaml') }}"
 
 - name: Manage mapping-service PodMonitor for MappingService {{ meta.name }} on Namespace {{ meta.namespace }}
   k8s:
-    definition: "{{ lookup('template', 'mapping-service-podmonitor.yaml') }}"
+    definition: "{{ lookup('template', 'mappingservice-podmonitor.yaml') }}"
 
 - name: Manage mapping-service GrafanaDashboard for MappingService {{ meta.name }} on Namespace {{ meta.namespace }}
   k8s:
-    definition: "{{ lookup('template', 'mapping-service-grafanadashboard.yaml') }}"
+    definition: "{{ lookup('template', 'mappingservice-grafanadashboard.yaml') }}"
