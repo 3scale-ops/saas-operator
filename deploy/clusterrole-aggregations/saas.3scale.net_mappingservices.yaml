@@ -1,7 +1,7 @@
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: aggregate-mappingservice-admin-edit
+  name: aggregate-mappingservices-admin-edit
   labels:
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
@@ -9,7 +9,7 @@ rules:
 - apiGroups:
     - saas.3scale.net
   resources:
-    - mappingservice
+    - mappingservices
   verbs:
     - get
     - list
@@ -23,7 +23,7 @@ rules:
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: aggregate-mappingservice-view
+  name: aggregate-mappingservices-view
   labels:
     rbac.authorization.k8s.io/aggregate-to-view: "true"
     rbac.authorization.k8s.io/aggregate-to-cluster-reader: "true"
@@ -31,7 +31,7 @@ rules:
 - apiGroups:
     - saas.3scale.net
   resources:
-    - mappingservice
+    - mappingservices
   verbs:
     - get
     - list
