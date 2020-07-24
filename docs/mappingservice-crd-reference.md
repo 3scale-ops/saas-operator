@@ -13,9 +13,9 @@ spec:
   replicas: 2
   env:
     apiHost: http://system:3000
-    previewBaseDomain: stg-saas.3scale.net
+    previewBaseDomain: example.3scale.net
   secret:
-    systemAdminTokenVaultPath: secret/data/openshift/stg-saas-ocp/3scale/mappingservice-system-master-access-token
+    systemAdminTokenVaultPath: secret/data/openshift/cluster-example/3scale/mappingservice-system-master-access-token
 ```
 
 ## Full CR Example
@@ -35,8 +35,10 @@ spec:
   replicas: 2
   env:
     apiHost: http://system:3000
-    previewBaseDomain: stg-saas.3scale.net
+    previewBaseDomain: example.3scale.net
     apicastLogLevel: debug
+  secret:
+    systemAdminTokenVaultPath: secret/data/openshift/cluster-example/3scale/mappingservice-system-master-access-token
   livenessProbe:
     initialDelaySeconds: 25
     timeoutSeconds: 2

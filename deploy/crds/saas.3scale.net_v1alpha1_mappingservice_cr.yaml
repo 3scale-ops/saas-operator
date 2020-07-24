@@ -8,6 +8,6 @@ spec:
   replicas: 1
   env:
     apiHost: http://system:3000
-    previewBaseDomain: stg-saas.3scale.net
+    previewBaseDomain: example.3scale.net
   secret:
-    systemAdminTokenVaultPath: secret/data/openshift/stg-saas-ocp/3scale/mappingservice-system-master-access-token
+    systemAdminTokenVaultPath: secret/data/openshift/cluster-example/3scale/mappingservice-system-master-access-token
