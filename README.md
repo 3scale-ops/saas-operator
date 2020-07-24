@@ -7,16 +7,18 @@
 A Kubernetes Operator based on the Operator SDK to manage 3scale SaaS (hosted version) on **Kubernetes/OpenShift**.
 
 Current 3scale SaaS controllers supported:
+
 * AutoSSL
 * Backend
 * Zync
 * CORSProxy
 * EchoAPI
-
-Future 3scale SaaS controllers to be added:
-* System
 * Apicast
 * MappingService
+
+Future 3scale SaaS controllers to be added:
+
+* System
 * PostFix
 
 ## Requirements
@@ -36,6 +38,7 @@ Future 3scale SaaS controllers to be added:
 * [CORSProxy Custom Resource Reference](docs/corsproxy-crd-reference.md)
 * [EchoAPI Custom Resource Reference](docs/echoapi-crd-reference.md)
 * [Apicast Custom Resource Reference](docs/apicast-crd-reference.md)
+* [MappingService Custom Resource Reference](docs/mappingservice-crd-reference.md)
 
 ## Development
 

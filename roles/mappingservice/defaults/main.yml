@@ -1,0 +1,24 @@
+---
+
+## Deployment
+replicas: 1
+image_name: "quay.io/3scale/apicast-cloud-hosted"
+apicast_log_level: warn
+liveness_probe_initial_delay_seconds: 5
+liveness_probe_timeout_seconds: 5
+liveness_probe_period_seconds: 10
+liveness_probe_success_threshold: 1
+liveness_probe_failure_threshold: 3
+readiness_probe_initial_delay_seconds: 5
+readiness_probe_timeout_seconds: 5
+readiness_probe_period_seconds: 30
+readiness_probe_success_threshold: 1
+readiness_probe_failure_threshold: 3
+resources_requests_cpu: "500m"
+resources_requests_memory: "64Mi"
+resources_limits_cpu: "1"
+resources_limits_memory: "128Mi"
+
+## GrafanaDashboard
+grafana_dashboard_label_key: "monitoring-key"
+grafana_dashboard_label_value: "middleware"
