@@ -113,12 +113,19 @@ rules:
   - saas.3scale.net
   resources:
   - apicasts
+  - apicasts/status
   - autossls
+  - autossls/status
   - backends
+  - backends/status
   - corsproxies
+  - corsproxies/status
   - echoapis
+  - echoapis/status
   - mappingservices
+  - mappingservices/status
   - zyncs
+  - zyncs/status
   verbs:
   - create
   - delete
