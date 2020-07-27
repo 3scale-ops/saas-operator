@@ -77,6 +77,10 @@
   k8s:
     definition: "{{ lookup('template', 'backend-listener-service.yaml') }}"
 
+- name: Manage backend-listener-internal Service for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'backend-listener-internal-service.yaml') }}"
+
 - name: Manage backend-listener PodMonitor for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
   k8s:
     definition: "{{ lookup('template', 'backend-listener-podmonitor.yaml') }}"

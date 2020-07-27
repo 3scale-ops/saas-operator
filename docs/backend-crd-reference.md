@@ -22,7 +22,7 @@ spec:
       enabled: true
       annotations:
         marin3r.3scale.net/node-id: backend-listener
-        marin3r.3scale.net/ports: backend-listener-http:38080,backend-listener-https:38443,envoy-metrics:9901
+        marin3r.3scale.net/ports: backend-listener-http:38080,http-internal:38081,backend-listener-https:38443,envoy-metrics:9901
     replicas: 1
   worker:
     replicas: 1
@@ -65,7 +65,7 @@ spec:
       enabled: true
       annotations:
         marin3r.3scale.net/node-id: backend-listener
-        marin3r.3scale.net/ports: backend-listener-http:38080,backend-listener-https:38443,envoy-metrics:9901
+        marin3r.3scale.net/ports: backend-listener-http:38080,http-internal:38081,backend-listener-https:38443,envoy-metrics:9901
     loadBalancer:
       proxyProtocol: true
       crossZoneLoadBalancingEnabled: true
