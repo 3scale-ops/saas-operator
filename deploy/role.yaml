@@ -112,7 +112,13 @@ rules:
 - apiGroups:
   - saas.3scale.net
   resources:
-  - '*'
+  - apicasts
+  - autossls
+  - backends
+  - corsproxies
+  - echoapis
+  - mappingservice
+  - zyncs
   verbs:
   - create
   - delete
