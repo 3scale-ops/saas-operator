@@ -14,9 +14,9 @@ spec:
   externalDnsHostname: echo-api.example.3scale.net
   marin3r:
     enabled: true
-  deploymentAnnotations:
-    marin3r.3scale.net/node-id: echo-api
-    marin3r.3scale.net/ports: echo-api-http:38080,echo-api-https:38443,envoy-metrics:9901
+    annotations:
+      marin3r.3scale.net/node-id: echo-api
+      marin3r.3scale.net/ports: echo-api-http:38080,echo-api-https:38443,envoy-metrics:9901
 ```
 
 ## Full CR Example
@@ -56,9 +56,9 @@ spec:
   externalDnsHostname: echo-api.example.3scale.net
   marin3r:
     enabled: true
-  deploymentAnnotations:
-    marin3r.3scale.net/node-id: echo-api
-    marin3r.3scale.net/ports: echo-api-http:38080,echo-api-https:38443,envoy-metrics:9901
+    annotations:
+      marin3r.3scale.net/node-id: echo-api
+      marin3r.3scale.net/ports: echo-api-http:38080,echo-api-https:38443,envoy-metrics:9901
   loadBalancer:
     proxyProtocol: true
     crossZoneLoadBalancingEnabled: true
@@ -88,6 +88,6 @@ spec:
 | `readinessProbe.failureThreshold` | `int` | No | `3` | Override readiness failure threshold |
 | `externalDnsHostname` | `string` | Yes | - | DNS hostnames to manage on AWS Route53 by external-dns |
 | `marin3r.enabled` | `boolean` | Yes | - | Enable (`true`) or disable (`false`) marin3r |
-| `deploymentAnnotations.{}` | `map` | Yes | - | Map of deployment annotations |
+| `marin3r.annotations.{}` | `map` | No | - | Map of marin3r annotations |
 | `loadBalancer.proxyProtocol` | `boolean` | No | `true` | Enable (`true`) or disable (`false`) proxy protocol with aws-nlb-helper-operator |
 | `loadBalancer.crossZoneLoadBalancingEnabled` | `bool` | No | `true` | Enable (`true`) or disable (`false`) cross zone load balancing |
