@@ -8,7 +8,9 @@ metadata:
     threescale_component: backend
     threescale_component_element: listener
 spec:
+{% if listener.pdb.min_available is not defined %}
   maxUnavailable: {{ listener.pdb.max_unavailable | default(listener_pdb_max_unavailable) }}
+{% endif %}
 {% if listener.pdb.min_available is defined %}
   minAvailable: {{ listener.pdb.min_available }}
 {% endif %}

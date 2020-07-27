@@ -142,7 +142,7 @@ spec:
                       description: Maximum number of unavailable pods (number or percentage of pods)
                     minAvailable:
                       type: string
-                      description: Minimum number of available pods (number or percentage of pods)
+                      description: Minimum number of available pods (number or percentage of pods), overrides maxUnavailable
                 hpa:
                   type: object
                   properties:
@@ -255,7 +255,7 @@ spec:
                       description: Maximum number of unavailable pods (number or percentage of pods)
                     minAvailable:
                       type: string
-                      description: Minimum number of available pods (number or percentage of pods)
+                      description: Minimum number of available pods (number or percentage of pods), overrides maxUnavailable
                 hpa:
                   type: object
                   properties:

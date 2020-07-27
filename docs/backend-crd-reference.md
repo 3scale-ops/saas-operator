@@ -79,7 +79,6 @@ spec:
     pdb:
       enabled: true
       maxUnavailable: "1"
-      minAvailable: "2"
     env:
       logFormat: json
       redisAsync: false
@@ -112,8 +111,7 @@ spec:
       resourceUtilization: 90
     pdb:
       enabled: true
-      maxUnavailable: "10%"
-      minAvailable: "2"
+      minAvailable: "80%"
     replicas: 2
     env:
       logFormat: json
@@ -173,8 +171,8 @@ spec:
 | `listener.loadBalancer.crossZoneLoadBalancingEnabled` | `bool` | No | `true` | Enable (`true`) or disable (`false`) cross zone load balancing |
 | `listener.loadBalancer.eipAllocations` | `string` | No | - | Optional Elastic IPs allocations |
 | `listener.pdb.enabled` | `boolean` | No | `true` | Enable (`true`) or disable (`false`) PodDisruptionBudget |
-| `listener.pdb.maxUnavailable` | `string` | No | `1` | Maximum number of unavailable pods (number or percentage of pods) |
-| `listener.pdb.minAvailable` | `string` | No | - | Minimum number of available pods (number or percentage of pods) |
+| `listener.pdb.maxUnavailable` | `string` | No | `1` | Maximum number of unavailable pods (number or percentage of pods) ** |
+| `listener.pdb.minAvailable` | `string` | No | - | Minimum number of available pods (number or percentage of pods), overrides maxUnavailable ** |
 | `listener.hpa.enabled` | `boolean` | No | `true` | Enable (`true`) or disable (`false`) HoritzontalPodAutoscaler |
 | `listener.hpa.minReplicas` | `int` | No | `2` | Minimum number of replicas |
 | `listener.hpa.maxReplicas` | `int` | No | `4` | Maximum number of replicas |
@@ -199,8 +197,8 @@ spec:
 | `listener.readinessProbe.successThreshold` | `int` | No | `1` | Override readiness success threshold |
 | `listener.readinessProbe.failureThreshold` | `int` | No | `3` | Override readiness failure threshold |
 | `worker.pdb.enabled` | `boolean` | No | `true` | Enable (`true`) or disable (`false`) PodDisruptionBudget |
-| `worker.pdb.maxUnavailable` | `string` | No | `1` | Maximum number of unavailable pods (number or percentage of pods) |
-| `worker.pdb.minAvailable` | `string` | No | - | Minimum number of available pods (number or percentage of pods) |
+| `worker.pdb.maxUnavailable` | `string` | No | `1` | Maximum number of unavailable pods (number or percentage of pods) ** |
+| `worker.pdb.minAvailable` | `string` | No | - | Minimum number of available pods (number or percentage of pods), overrides maxUnavailable ** |
 | `worker.hpa.enabled` | `boolean` | No | `true` | Enable (`true`) or disable (`false`) HoritzontalPodAutoscaler |
 | `worker.hpa.minReplicas` | `int` | No | `2` | Minimum number of replicas |
 | `worker.hpa.maxReplicas` | `int` | No | `4` | Maximum number of replicas |
@@ -228,3 +226,7 @@ spec:
 | `cron.resources.requests.memory` | `string` | No | `40Mi` | Override Memory requests |
 | `cron.resources.limits.cpu` | `string` | No | `150m` | Override CPU limits |
 | `cron.resources.limits.memory` | `string` | No | `80Mi` | Override Memory limits |
+
+** If you are already using `pdb.maxUnavailable` and want to use `pdb.minAvailable` (or the other way around), due to ansible operator limitation of doing patch operation (if objects already exist), operator will receive an error when managing PDB object because although the spec of the PDB resource it creates is correct, operator will try to patch an existing object which already has the other variable, and these two variables `pdb.maxUnavailable`/`pdb.minAvailable` are mutually exclusive and cannot coexists on the same PDB. To solve that situation:
+  - Configure `pdb.enabled=false` (so operator will delete associated PDB, and then re-enable it with `pdb.enabled=true` setting desired PDB field `pdb.minAvailable` or `pdb.maxUnavailable`. so operator will create it from scratch on next reconcile
+  - Or, delete manually associated PDB object, and operator will create it from scratch on next reconcile

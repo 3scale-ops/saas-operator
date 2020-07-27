@@ -8,7 +8,9 @@ metadata:
     threescale_component: backend
     threescale_component_element: worker
 spec:
+{% if worker.pdb.min_available is not defined %}
   maxUnavailable: {{ worker.pdb.max_unavailable | default(worker_pdb_max_unavailable) }}
+{% endif %}
 {% if worker.pdb.min_available is defined %}
   minAvailable: {{ worker.pdb.min_available }}
 {% endif %}
