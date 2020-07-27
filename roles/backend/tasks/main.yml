@@ -21,9 +21,29 @@
     definition: "{{ lookup('template', 'backend-error-monitoring-secretdefinition.yaml') }}"
   when: error_monitoring_enabled|bool == true
 
+- name: Convert listener.pdb.enabled boolean var into ansible listener_pdb_state state var for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
+  set_fact:
+    listener_pdb_state: "absent"
+  when: listener.pdb.enabled is defined and listener.pdb.enabled|bool == false
+
+- name: Manage backend-listener PodDisruptiveBudget for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    state: "{{ listener_pdb_state }}"
+    definition: "{{ lookup('template', 'backend-listener-pdb.yaml') }}"
+
 - name: Manage backend-listener Deployment for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
   k8s:
     definition: "{{ lookup('template', 'backend-listener-deployment.yaml') }}"
+
+- name: Convert worker.pdb.enabled boolean var into ansible worker_pdb_state state var for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
+  set_fact:
+    worker_pdb_state: "absent"
+  when: worker.pdb.enabled is defined and worker.pdb.enabled|bool == false
+
+- name: Manage backend-worker PodDisruptiveBudget for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    state: "{{ worker_pdb_state }}"
+    definition: "{{ lookup('template', 'backend-worker-pdb.yaml') }}"
 
 - name: Manage backend-worker Deployment for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
   k8s:

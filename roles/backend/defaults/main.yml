@@ -18,6 +18,8 @@ config_oauth_max_token_size: "7888"
 config_legacy_referrer_filters: "true"
 
 ## Listener
+listener_pdb_state: "present"
+listener_pdb_max_unavailable: 1
 listener_load_balancer_proxy_protocol: true
 listener_load_balancer_cross_zone_load_balancing_enabled: true
 listener_replicas: 2
@@ -40,6 +42,8 @@ listener_resources_limits_cpu: "1"
 listener_resources_limits_memory: "700Mi"
 
 ## Worker
+worker_pdb_state: "present"
+worker_pdb_max_unavailable: 1
 worker_replicas: 2
 worker_env_log_format: "json"
 worker_env_redis_async: "false"

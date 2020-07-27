@@ -1,0 +1,17 @@
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: backend-worker
+  namespace: "{{ meta.namespace }}"
+  labels:
+    app: 3scale-api-management
+    threescale_component: backend
+    threescale_component_element: worker
+spec:
+  maxUnavailable: {{ worker.pdb.max_unavailable | default(worker_pdb_max_unavailable) }}
+{% if worker.pdb.min_available is defined %}
+  minAvailable: {{ worker.pdb.min_available }}
+{% endif %}
+  selector:
+    matchLabels:
+      deployment: backend-worker
