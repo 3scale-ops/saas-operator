@@ -117,7 +117,7 @@ rules:
   - backends
   - corsproxies
   - echoapis
-  - mappingservice
+  - mappingservices
   - zyncs
   verbs:
   - create
