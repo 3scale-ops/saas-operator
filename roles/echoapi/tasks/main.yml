@@ -1,10 +1,5 @@
 ---
 
-
-- name: Fix deploymentAnnotations map var that may contain originally hyphens but ansible has converted to underscore
-  set_fact:
-    deployment_annotations_clean: "{{ deployment_annotations | regex_replace ('_','-') }}"
-
 - name: Manage echo-api Deployment for EchoAPI {{ meta.name }} on Namespace {{ meta.namespace }}
   k8s:
     definition: "{{ lookup('template', 'echo-api-deployment.yaml') }}"
