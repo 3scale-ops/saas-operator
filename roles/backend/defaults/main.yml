@@ -20,7 +20,7 @@ config_legacy_referrer_filters: "true"
 ## Listener
 listener_load_balancer_proxy_protocol: true
 listener_load_balancer_cross_zone_load_balancing_enabled: true
-listener_replicas: 1
+listener_replicas: 2
 listener_env_log_format: "json"
 listener_env_listener_workers: 16
 listener_env_redis_async: "false"
@@ -40,7 +40,7 @@ listener_resources_limits_cpu: "1"
 listener_resources_limits_memory: "700Mi"
 
 ## Worker
-worker_replicas: 1
+worker_replicas: 2
 worker_env_log_format: "json"
 worker_env_redis_async: "false"
 worker_liveness_probe_initial_delay_seconds: 10
