@@ -13,7 +13,9 @@ spec:
     rollingUpdate:
       maxSurge: 25%
       maxUnavailable: 25%
+{% if worker.hpa.enabled is defined and worker.hpa.enabled == false %}
   replicas: {{ worker.replicas | default(worker_replicas) }}
+{% endif %}
   selector:
     matchLabels:
       deployment: backend-worker

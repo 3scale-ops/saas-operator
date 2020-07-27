@@ -13,7 +13,9 @@ spec:
     rollingUpdate:
       maxSurge: 25%
       maxUnavailable: 25%
+{% if listener.hpa.enabled is defined and listener.hpa.enabled == false %}
   replicas: {{ listener.replicas | default(listener_replicas) }}
+{% endif %}
   selector:
     matchLabels:
       deployment: backend-listener
