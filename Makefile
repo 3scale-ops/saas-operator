@@ -34,6 +34,9 @@ namespace-create: # NAMESPACE MANAGEMENT - Create namespace for the operator
 	$(KUBE_CLIENT) create namespace $(NAMESPACE) || true
 	$(KUBE_CLIENT) label namespace $(NAMESPACE) monitoring-key=middleware || true
 
+operator-local-deploy: namespace-create ## OPERATOR LOCAL DEPLOY - Deploy Operator locally for dev purpose
+	operator-sdk run --local --watch-namespace $(NAMESPACE)
+
 operator-deploy: namespace-create ## OPERATOR DEPLOY - Deploy Operator objects (namespace, CRDs, service account, role, role binding and operator deployment)
 	$(KUBE_CLIENT) apply -f deploy/crds/saas.3scale.net_autossls_crd.yaml --validate=false || true
 	$(KUBE_CLIENT) apply -f deploy/crds/saas.3scale.net_backends_crd.yaml --validate=false || true
