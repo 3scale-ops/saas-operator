@@ -112,7 +112,6 @@ spec:
     pdb:
       enabled: true
       minAvailable: "80%"
-    replicas: 2
     env:
       logFormat: json
       redisAsync: false
@@ -166,7 +165,7 @@ spec:
 | `errorMonitoringEnabled` | `bool` | No | `false` | Mount (`true`) or not (`false`) backend-error-monitoring Secret on deployments |
 | `listener.externalDnsHostname` | `string` | Yes | - | DNS hostnames to manage on AWS Route53 by external-dns |
 | `listener.marin3r.enabled` | `boolean` | Yes | - | Enable (`true`) or disable (`false`) marin3r |
-| `listener.marin3r.anotations.{}` | `map` | No | - | Map of marin3r annotations |
+| `listener.marin3r.annotations.{}` | `map` | No | - | Map of marin3r annotations |
 | `listener.loadBalancer.proxyProtocol` | `boolean` | No | `true` | Enable (`true`) or disable (`false`) proxy protocol with aws-nlb-helper-operator |
 | `listener.loadBalancer.crossZoneLoadBalancingEnabled` | `bool` | No | `true` | Enable (`true`) or disable (`false`) cross zone load balancing |
 | `listener.loadBalancer.eipAllocations` | `string` | No | - | Optional Elastic IPs allocations |

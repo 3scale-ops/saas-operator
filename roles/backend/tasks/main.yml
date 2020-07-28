@@ -26,7 +26,7 @@
     listener_pdb_state: "absent"
   when: listener.pdb.enabled is defined and listener.pdb.enabled|bool == false
 
-- name: Manage backend-listener PodDisruptiveBudget for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
+- name: Manage backend-listener PodDisruptionBudget for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
   k8s:
     state: "{{ listener_pdb_state }}"
     definition: "{{ lookup('template', 'backend-listener-pdb.yaml') }}"
@@ -50,7 +50,7 @@
     worker_pdb_state: "absent"
   when: worker.pdb.enabled is defined and worker.pdb.enabled|bool == false
 
-- name: Manage backend-worker PodDisruptiveBudget for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
+- name: Manage backend-worker PodDisruptionBudget for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
   k8s:
     state: "{{ worker_pdb_state }}"
     definition: "{{ lookup('template', 'backend-worker-pdb.yaml') }}"
