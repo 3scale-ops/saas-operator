@@ -9,7 +9,7 @@ metadata:
     threescale_component_element: echo-api
 spec:
   podMetricsEndpoints:
-    - interval: 30s
+    - interval: 60s
       path: /stats/prometheus
       port: envoy-metrics
       relabelings:

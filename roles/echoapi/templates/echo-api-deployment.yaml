@@ -19,10 +19,19 @@ spec:
         app: echo-api
         threescale_component: echo-api
         threescale_component_element: echo-api
-{% if marin3r.enabled is defined and marin3r.enabled == true %}
+{% if marin3r.enabled == true %}
         marin3r.3scale.net/status: "enabled"
+{% if marin3r.annotations is defined %}
+      annotations:
+{# This is a hack to reverse the ansible operator -/_ convertion of dict keys #}
+{%- for key in marin3r.annotations -%}
+{% set key_replace = key | replace('_','-') %}
+        {{ key_replace }}: {{ marin3r.annotations[key] | safe }}
+{% endfor %}
 {% endif %}
-      annotations: {{ deployment_annotations_clean }}
+{% else %}
+        marin3r.3scale.net/status: "disabled"
+{% endif %}
     spec:
 {% if image.pull_secret_name is defined %}
       imagePullSecrets:
