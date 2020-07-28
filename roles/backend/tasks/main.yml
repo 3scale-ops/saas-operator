@@ -21,9 +21,49 @@
     definition: "{{ lookup('template', 'backend-error-monitoring-secretdefinition.yaml') }}"
   when: error_monitoring_enabled|bool == true
 
+- name: Convert listener.pdb.enabled boolean var into ansible listener_pdb_state state var for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
+  set_fact:
+    listener_pdb_state: "absent"
+  when: listener.pdb.enabled is defined and listener.pdb.enabled|bool == false
+
+- name: Manage backend-listener PodDisruptionBudget for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    state: "{{ listener_pdb_state }}"
+    definition: "{{ lookup('template', 'backend-listener-pdb.yaml') }}"
+
+- name: Convert listener.hpa.enabled boolean var into ansible listener_hpa_state state var for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
+  set_fact:
+    listener_hpa_state: "absent"
+  when: listener.hpa.enabled is defined and listener.hpa.enabled|bool == false
+
+- name: Manage backend-listener HoritzontalPodAutoscaler for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    state: "{{ listener_hpa_state }}"
+    definition: "{{ lookup('template', 'backend-listener-hpa.yaml') }}"
+
 - name: Manage backend-listener Deployment for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
   k8s:
     definition: "{{ lookup('template', 'backend-listener-deployment.yaml') }}"
+
+- name: Convert worker.pdb.enabled boolean var into ansible worker_pdb_state state var for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
+  set_fact:
+    worker_pdb_state: "absent"
+  when: worker.pdb.enabled is defined and worker.pdb.enabled|bool == false
+
+- name: Manage backend-worker PodDisruptionBudget for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    state: "{{ worker_pdb_state }}"
+    definition: "{{ lookup('template', 'backend-worker-pdb.yaml') }}"
+
+- name: Convert worker.hpa.enabled boolean var into ansible worker_hpa_state state var for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
+  set_fact:
+    worker_hpa_state: "absent"
+  when: worker.hpa.enabled is defined and worker.hpa.enabled|bool == false
+
+- name: Manage backend-worker HoritzontalPodAutoscaler for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    state: "{{ worker_hpa_state }}"
+    definition: "{{ lookup('template', 'backend-worker-hpa.yaml') }}"
 
 - name: Manage backend-worker Deployment for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
   k8s:
@@ -36,6 +76,10 @@
 - name: Manage backend-listener Service for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
   k8s:
     definition: "{{ lookup('template', 'backend-listener-service.yaml') }}"
+
+- name: Manage backend-listener-internal Service for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', 'backend-listener-internal-service.yaml') }}"
 
 - name: Manage backend-listener PodMonitor for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
   k8s:
