@@ -1,6 +1,17 @@
 ---
 - set_fact:
     apicast_env: staging
+    pdb_state: present
+
+- name: Convert staging.pdb.enabled boolean var into ansible pdb_state state var for Apicast {{ meta.name }} on Namespace {{ meta.namespace }}
+  set_fact:
+    pdb_state: "absent"
+  when: staging.pdb.enabled is defined and staging.pdb.enabled|bool == false
+
+- name: Manage staging PodDisruptiveBudget for Apicast {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    state: "{{ pdb_state }}"
+    definition: "{{ lookup('template', 'apicast-pdb.yaml') }}"
 
 - name: Manage staging Deployment for Apicast {{ meta.name }} on Namespace {{ meta.namespace }}
   k8s:
@@ -20,6 +31,17 @@
 
 - set_fact:
     apicast_env: production
+    pdb_state: present
+
+- name: Convert production.pdb.enabled boolean var into ansible pdb_state state var for Apicast {{ meta.name }} on Namespace {{ meta.namespace }}
+  set_fact:
+    pdb_state: "absent"
+  when: production.pdb.enabled is defined and production.pdb.enabled|bool == false
+
+- name: Manage production PodDisruptiveBudget for Apicast {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    state: "{{ pdb_state }}"
+    definition: "{{ lookup('template', 'apicast-pdb.yaml') }}"
 
 - name: Manage production Deployment for Apicast {{ meta.name }} on Namespace {{ meta.namespace }}
   k8s:

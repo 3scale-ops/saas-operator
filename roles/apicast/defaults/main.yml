@@ -1,6 +1,7 @@
 ---
 
 ## Deployment
+pdb_max_unavailable: 1
 replicas: 2
 image_name: "quay.io/3scale/apicast-cloud-hosted"
 apicast_log_level: warn

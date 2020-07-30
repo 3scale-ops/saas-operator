@@ -63,6 +63,18 @@ spec:
                     pullSecretName:
                       type: string
                       description: Quay pull secret for private repository
+                pdb:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Enable (true) or disable (false) PodDisruptionBudget
+                    maxUnavailable:
+                      type: string
+                      description: Maximum number of unavailable pods (number or percentage of pods)
+                    minAvailable:
+                      type: string
+                      description: Minimum number of available pods (number or percentage of pods), overrides maxUnavailable
                 replicas:
                   type: integer
                   description: Number of replicas
@@ -214,6 +226,18 @@ spec:
                     pullSecretName:
                       type: string
                       description: Quay pull secret for private repository
+                pdb:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Enable (true) or disable (false) PodDisruptionBudget
+                    maxUnavailable:
+                      type: string
+                      description: Maximum number of unavailable pods (number or percentage of pods)
+                    minAvailable:
+                      type: string
+                      description: Minimum number of available pods (number or percentage of pods), overrides maxUnavailable
                 replicas:
                   type: integer
                   description: Number of replicas
