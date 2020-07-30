@@ -1,0 +1,19 @@
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: "apicast-{{ apicast_env }}"
+  namespace: "{{ meta.namespace }}"
+  labels:
+    app: 3scale-api-management
+    threescale_component: "apicast-{{ apicast_env }}"
+    threescale_component_element: gateway
+spec:
+{% if vars[apicast_env].pdb.min_available is not defined %}
+  maxUnavailable: {{ vars[apicast_env].pdb.max_unavailable | default(pdb_max_unavailable) }}
+{% endif %}
+{% if vars[apicast_env].pdb.min_available is defined %}
+  minAvailable: {{ vars[apicast_env].pdb.min_available }}
+{% endif %}
+  selector:
+    matchLabels:
+      deployment: "apicast-{{ apicast_env }}"

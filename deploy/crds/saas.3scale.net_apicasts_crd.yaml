@@ -63,9 +63,44 @@ spec:
                     pullSecretName:
                       type: string
                       description: Quay pull secret for private repository
+                pdb:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Enable (true) or disable (false) PodDisruptionBudget
+                    maxUnavailable:
+                      type: string
+                      pattern: "^[0-9]+%?$"
+                      description: Maximum number of unavailable pods (number or percentage of pods)
+                    minAvailable:
+                      type: string
+                      pattern: "^[0-9]+%?$"
+                      description: Minimum number of available pods (number or percentage of pods), overrides maxUnavailable
+                hpa:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Enable (true) or disable (false) HoritzontalPodAutoscaler
+                    minReplicas:
+                      type: integer
+                      description: Minimum number of replicas
+                    maxReplicas:
+                      type: integer
+                      description: Maximum number of replicas
+                    resourceName:
+                      type: string
+                      description: Resource used for autoscale (cpu/memory)
+                      enum:
+                      - cpu
+                      - memory
+                    resourceUtilization:
+                      type: integer
+                      description: Percentage usage of the resource used for autoscale
                 replicas:
                   type: integer
-                  description: Number of replicas
+                  description: Number of replicas (ignored if hpa is enabled)
                 env:
                   type: object
                   description: Environment variables
@@ -214,9 +249,44 @@ spec:
                     pullSecretName:
                       type: string
                       description: Quay pull secret for private repository
+                pdb:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Enable (true) or disable (false) PodDisruptionBudget
+                    maxUnavailable:
+                      type: string
+                      pattern: "^[0-9]+%?$"
+                      description: Maximum number of unavailable pods (number or percentage of pods)
+                    minAvailable:
+                      type: string
+                      pattern: "^[0-9]+%?$"
+                      description: Minimum number of available pods (number or percentage of pods), overrides maxUnavailable
+                hpa:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Enable (true) or disable (false) HoritzontalPodAutoscaler
+                    minReplicas:
+                      type: integer
+                      description: Minimum number of replicas
+                    maxReplicas:
+                      type: integer
+                      description: Maximum number of replicas
+                    resourceName:
+                      type: string
+                      description: Resource used for autoscale (cpu/memory)
+                      enum:
+                      - cpu
+                      - memory
+                    resourceUtilization:
+                      type: integer
+                      description: Percentage usage of the resource used for autoscale
                 replicas:
                   type: integer
-                  description: Number of replicas
+                  description: Number of replicas (ignored if hpa is enabled)
                 env:
                   type: object
                   description: Environment variables
