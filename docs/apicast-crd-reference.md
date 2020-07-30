@@ -55,7 +55,12 @@ spec:
     pdb:
       enabled: true
       maxUnavailable: "1"
-    replicas: 1
+    hpa:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 4
+      resourceName: cpu
+      resourceUtilization: 90
     env:
       apicastConfigurationCache: "30"
       threescalePortalEndpoint: "http://mapping-service/config"
@@ -95,7 +100,12 @@ spec:
     pdb:
       enabled: true
       minAvailable: "80%"
-    replicas: 1
+    hpa:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 4
+      resourceName: cpu
+      resourceUtilization: 90
     env:
       apicastConfigurationCache: "300"
       threescalePortalEndpoint: "http://mapping-service/config"
@@ -152,7 +162,12 @@ spec:
 |                       `staging.pdb.enabled`                       | `boolean` |      No      |                `true`                 |                 Enable (`true`) or disable (`false`) PodDisruptionBudget                  |
 |                   `staging.pdb.maxUnavailable`                    | `string`  |      No      |                  `1`                  |             Maximum number of unavailable pods (number or percentage of pods)             |
 |                    `staging.pdb.minAvailable`                     | `string`  |      No      |                   -                   | Minimum number of available pods (number or percentage of pods), overrides maxUnavailable |
-|                        `staging.replicas`                         |   `int`   |      No      |                  `2`                  |                                    Number of replicas                                     |
+|                       `staging.hpa.enabled`                       | `boolean` |      No      |                `true`                 |               Enable (`true`) or disable (`false`) HoritzontalPodAutoscaler               |
+|                     `staging.hpa.minReplicas`                     |   `int`   |      No      |                  `2`                  |                                Minimum number of replicas                                 |
+|                     `staging.hpa.maxReplicas`                     |   `int`   |      No      |                  `4`                  |                                Maximum number of replicas                                 |
+|                    `staging.hpa.resourceName`                     | `string`  |      No      |                 `cpu`                 |                         Resource used for autoscale (cpu/memory)                          |
+|                 `staging.hpa.resourceUtilization`                 |   `int`   |      No      |                 `90`                  |                    Percentage usage of the resource used for autoscale                    |
+|                        `staging.replicas`                         |   `int`   |      No      |                  `2`                  |                      Number of replicas (ignored if hpa is enabled)                       |
 |              `staging.env.apicastConfigurationCache`              | `string`  |     Yes      |                   -                   |                             Apicast configurations cache TTL                              |
 |              `staging.env.threescalePortalEndpoint`               | `string`  |     Yes      |                   -                   |                        Endpoint to request proxy configurations to                        |
 |                   `staging.env.apicastLogLevel`                   | `string`  |      No      |                `warn`                 |                                    Openresty log level                                    |
@@ -188,7 +203,12 @@ spec:
 |                     `production.pdb.enabled`                      | `boolean` |      No      |                `true`                 |                 Enable (`true`) or disable (`false`) PodDisruptionBudget                  |
 |                  `production.pdb.maxUnavailable`                  | `string`  |      No      |                  `1`                  |             Maximum number of unavailable pods (number or percentage of pods)             |
 |                   `production.pdb.minAvailable`                   | `string`  |      No      |                   -                   | Minimum number of available pods (number or percentage of pods), overrides maxUnavailable |
-|                       `production.replicas`                       |   `int`   |      No      |                  `2`                  |                                    Number of replicas                                     |
+|                     `production.hpa.enabled`                      | `boolean` |      No      |                `true`                 |               Enable (`true`) or disable (`false`) HoritzontalPodAutoscaler               |
+|                   `production.hpa.minReplicas`                    |   `int`   |      No      |                  `2`                  |                                Minimum number of replicas                                 |
+|                   `production.hpa.maxReplicas`                    |   `int`   |      No      |                  `4`                  |                                Maximum number of replicas                                 |
+|                   `production.hpa.resourceName`                   | `string`  |      No      |                 `cpu`                 |                         Resource used for autoscale (cpu/memory)                          |
+|               `production.hpa.resourceUtilization`                |   `int`   |      No      |                 `90`                  |                    Percentage usage of the resource used for autoscale                    |
+|                       `production.replicas`                       |   `int`   |      No      |                  `2`                  |                      Number of replicas (ignored if hpa is enabled)                       |
 |            `production.env.apicastConfigurationCache`             | `string`  |     Yes      |                   -                   |                             Apicast configurations cache TTL                              |
 |             `production.env.threescalePortalEndpoint`             | `string`  |     Yes      |                   -                   |                        Endpoint to request proxy configurations to                        |
 |                 `production.env.apicastLogLevel`                  | `string`  |      No      |                `warn`                 |                                    Openresty log level                                    |

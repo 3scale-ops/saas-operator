@@ -17,7 +17,9 @@ spec:
       # max number of pods instead
       maxSurge: 1
       maxUnavailable: 0
+{% if vars[apicast_env].hpa.enabled is defined and vars[apicast_env].hpa.enabled == false %}
   replicas: {{ vars[apicast_env].replicas | default(replicas) }}
+{% endif %}
   template:
     metadata:
       labels:
