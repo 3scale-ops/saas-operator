@@ -1,7 +1,7 @@
 ---
 
 ## Deployment
-replicas: 1
+replicas: 2
 image_name: "quay.io/3scale/apicast-cloud-hosted"
 apicast_log_level: warn
 apicast_oidc_log_level: notice

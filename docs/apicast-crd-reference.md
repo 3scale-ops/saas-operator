@@ -143,7 +143,7 @@ spec:
 |                       `staging.image.name`                        | `string`  |      No      | `quay.io/3scale/apicast-cloud-hosted` |                      Image name (docker repository)                      |
 |                        `staging.image.tag`                        | `string`  |     Yes      |                   -                   |                                Image tag                                 |
 |                  `staging.image.pullSecretName`                   | `string`  |      No      |                   -                   |                 Quay pull secret for private repository                  |
-|                        `staging.replicas`                         |   `int`   |      No      |                  `1`                  |                            Number of replicas                            |
+|                        `staging.replicas`                         |   `int`   |      No      |                  `2`                  |                            Number of replicas                            |
 |              `staging.env.apicastConfigurationCache`              | `string`  |     Yes      |                   -                   |                     Apicast configurations cache TTL                     |
 |              `staging.env.threescalePortalEndpoint`               | `string`  |     Yes      |                   -                   |               Endpoint to request proxy configurations to                |
 |                   `staging.env.apicastLogLevel`                   | `string`  |      No      |                `warn`                 |                           Openresty log level                            |
@@ -176,7 +176,7 @@ spec:
 |                      `production.image.name`                      | `string`  |      No      | `quay.io/3scale/apicast-cloud-hosted` |                      Image name (docker repository)                      |
 |                      `production.image.tag`                       | `string`  |     Yes      |                   -                   |                                Image tag                                 |
 |                 `production.image.pullSecretName`                 | `string`  |      No      |                   -                   |                 Quay pull secret for private repository                  |
-|                       `production.replicas`                       |   `int`   |      No      |                  `1`                  |                            Number of replicas                            |
+|                       `production.replicas`                       |   `int`   |      No      |                  `2`                  |                            Number of replicas                            |
 |            `production.env.apicastConfigurationCache`             | `string`  |     Yes      |                   -                   |                     Apicast configurations cache TTL                     |
 |             `production.env.threescalePortalEndpoint`             | `string`  |     Yes      |                   -                   |               Endpoint to request proxy configurations to                |
 |                 `production.env.apicastLogLevel`                  | `string`  |      No      |                `warn`                 |                           Openresty log level                            |
