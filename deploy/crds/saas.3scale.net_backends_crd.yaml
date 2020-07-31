@@ -139,9 +139,11 @@ spec:
                       description: Enable (true) or disable (false) PodDisruptionBudget
                     maxUnavailable:
                       type: string
+                      pattern: "^[0-9]+%?$"
                       description: Maximum number of unavailable pods (number or percentage of pods)
                     minAvailable:
                       type: string
+                      pattern: "^[0-9]+%?$"
                       description: Minimum number of available pods (number or percentage of pods), overrides maxUnavailable
                 hpa:
                   type: object
@@ -252,9 +254,11 @@ spec:
                       description: Enable (true) or disable (false) PodDisruptionBudget
                     maxUnavailable:
                       type: string
+                      pattern: "^[0-9]+%?$"
                       description: Maximum number of unavailable pods (number or percentage of pods)
                     minAvailable:
                       type: string
+                      pattern: "^[0-9]+%?$"
                       description: Minimum number of available pods (number or percentage of pods), overrides maxUnavailable
                 hpa:
                   type: object
