@@ -8,7 +8,9 @@ metadata:
     threescale_component: zync
     threescale_component_element: zync-que
 spec:
+{% if que.hpa.enabled is defined and que.hpa.enabled == false %}
   replicas: {{ que.replicas | default(que_replicas) }}
+{% endif %}
   selector:
     matchLabels:
       deployment: zync-que
