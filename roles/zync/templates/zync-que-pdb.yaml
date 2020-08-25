@@ -1,0 +1,19 @@
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: zync-que
+  namespace: "{{ meta.namespace }}"
+  labels:
+    app: 3scale-api-management
+    threescale_component: zync
+    threescale_component_element: zync-que
+spec:
+{% if que.pdb.min_available is not defined %}
+  maxUnavailable: {{ que.pdb.max_unavailable | default(que_pdb_max_unavailable) }}
+{% endif %}
+{% if que.pdb.min_available is defined %}
+  minAvailable: {{ que.pdb.min_available }}
+{% endif %}
+  selector:
+    matchLabels:
+      deployment: zync-que
