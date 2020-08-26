@@ -1,0 +1,19 @@
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: echo-api
+  namespace: "{{ meta.namespace }}"
+  labels:
+    app: echo-api
+    threescale_component: echo-api
+    threescale_component_element: echo-api
+spec:
+{% if pdb.min_available is not defined %}
+  maxUnavailable: {{ pdb.max_unavailable | default(pdb_max_unavailable) }}
+{% endif %}
+{% if pdb.min_available is defined %}
+  minAvailable: {{ pdb.min_available }}
+{% endif %}
+  selector:
+    matchLabels:
+      deployment: echo-api
