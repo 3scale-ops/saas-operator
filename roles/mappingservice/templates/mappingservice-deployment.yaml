@@ -7,7 +7,9 @@ metadata:
     app: mapping-service
     part-of: 3scale-saas
 spec:
+{% if hpa.enabled is defined and hpa.enabled == false %}
   replicas: {{ replicas }}
+{% endif %}
   selector:
     matchLabels:
       deployment: mapping-service
