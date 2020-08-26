@@ -1,0 +1,22 @@
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: cors-proxy
+  namespace: "{{ meta.namespace }}"
+  labels:
+    app: cors-proxy
+    part-of: 3scale-saas
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: cors-proxy
+  minReplicas: {{ hpa.min_replicas | default(hpa_min_replicas) }}
+  maxReplicas: {{ hpa.max_replicas | default(hpa_max_replicas) }}
+  metrics:
+  - type: Resource
+    resource:
+      name: "{{ hpa.resource_name | default(hpa_resource_name) }}"
+      target:
+        type: Utilization
+        averageUtilization: {{ hpa.resource_utilization | default(hpa_resource_utilization) }}

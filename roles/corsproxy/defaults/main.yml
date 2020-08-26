@@ -1,6 +1,13 @@
 ---
 
 ## Deployment
+pdb_state: "present"
+pdb_max_unavailable: 1
+hpa_state: "present"
+hpa_min_replicas: 2
+hpa_max_replicas: 4
+hpa_resource_name: "cpu"
+hpa_resource_utilization: 90
 replicas: 2
 image_name: "quay.io/3scale/cors-proxy"
 image_tag: "v1.1.0"
