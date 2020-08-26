@@ -8,7 +8,9 @@ metadata:
     threescale_component: echo-api
     threescale_component_element: echo-api
 spec:
+{% if hpa.enabled is defined and hpa.enabled == false %}
   replicas: {{ replicas }}
+{% endif %}
   selector:
     matchLabels:
       deployment: echo-api
