@@ -4,6 +4,26 @@
   k8s:
     definition: "{{ lookup('template', 'mappingservice-system-master-access-token-secretdefinition.yaml') }}"
 
+- name: Convert pdb.enabled boolean var into ansible pdb_state state var for MappingService {{ meta.name }} on Namespace {{ meta.namespace }}
+  set_fact:
+    pdb_state: "absent"
+  when: pdb.enabled is defined and pdb.enabled|bool == false
+
+- name: Manage mapping-service PodDisruptionBudget for MappingService {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    state: "{{ pdb_state }}"
+    definition: "{{ lookup('template', 'mappingservice-pdb.yaml') }}"
+
+- name: Convert hpa.enabled boolean var into ansible hpa_state state var for MappingService {{ meta.name }} on Namespace {{ meta.namespace }}
+  set_fact:
+    hpa_state: "absent"
+  when: hpa.enabled is defined and hpa.enabled|bool == false
+
+- name: Manage mapping-service HoritzontalPodAutoscaler for MappingService {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    state: "{{ hpa_state }}"
+    definition: "{{ lookup('template', 'mappingservice-hpa.yaml') }}"
+
 - name: Manage mapping-service Deployment for MappingService {{ meta.name }} on Namespace {{ meta.namespace }}
   k8s:
     definition: "{{ lookup('template', 'mappingservice-deployment.yaml') }}"
