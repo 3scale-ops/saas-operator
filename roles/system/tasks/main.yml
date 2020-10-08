@@ -1,0 +1,14 @@
+---
+
+- name: Apply k8s resources
+  include_tasks: k8s-upsert.yaml
+  with_fileglob:
+    - "templates/configmaps/*.yaml"
+    - "templates/deployments/*.yaml"
+    - "templates/ingresses/*.yaml"
+    - "templates/podmonitors/*.yaml"
+    - "templates/secretdefinitions/*.yaml"
+    - "templates/services/*.yaml"
+    - "templates/statefulsets/*.yaml"
+  loop_control:
+    loop_var: manifest

@@ -1,0 +1,5 @@
+---
+
+- name: Apply {{ manifest | basename }} for {{ role_name }} {{ meta.name }} on Namespace {{ meta.namespace }}
+  k8s:
+    definition: "{{ lookup('template', manifest) }}"
