@@ -12,3 +12,13 @@
     - "templates/statefulsets/*.yaml"
   loop_control:
     loop_var: manifest
+
+- name: Apply or remove k8s resources
+  include_tasks: k8s-sync.yaml
+  with_items:
+    - { manifest: "pdbs/system-sidekiq-pdb.yaml", enabled: "{{ sidekiq.pdb.enabled | default(sidekiq_pdb_enabled) | bool }}" }
+    - { manifest: "pdbs/system-app-pdb.yaml", enabled: "{{ app.pdb.enabled | default(app_pdb_enabled) | bool }}" }
+    - { manifest: "hpas/system-sidekiq-hpa.yaml", enabled: "{{ sidekiq.hpa.enabled | default(sidekiq_hpa_enabled) | bool }}" }
+    - { manifest: "hpas/system-app-hpa.yaml", enabled: "{{ app.hpa.enabled | default(app_hpa_enabled)  | bool }}" }
+  loop_control:
+    loop_var: resource
