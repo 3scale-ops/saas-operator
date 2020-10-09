@@ -4,3 +4,4 @@
   k8s:
     state: "{{ 'present' if resource.enabled else 'absent' }}"
     definition: "{{ lookup('template', resource.manifest) }}"
+  ignore_errors: yes
