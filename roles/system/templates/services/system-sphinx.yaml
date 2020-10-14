@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: system-sphinx
+  namespace: "{{ meta.namespace }}"
+  labels:
+    app: 3scale-api-management
+    threescale_component: system
+    threescale_component_element: sphinx
+spec:
+  selector:
+    app: 3scale-api-management
+    threescale_component: system
+    threescale_component_element: sphinx
+  ports:
+    - name: sphinx
+      port: {{ sphinx.env.thinking.port | default(sphinx_env_thinking_port) }}
+      protocol: TCP
+      targetPort: sphinx

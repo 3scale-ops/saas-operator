@@ -33,3 +33,8 @@
   group: saas.3scale.net
   kind: MappingService
   role: mappingservice
+
+- version: v1alpha1
+  group: saas.3scale.net
+  kind: System
+  role: system

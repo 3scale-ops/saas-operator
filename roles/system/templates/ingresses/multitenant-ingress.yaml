@@ -1,0 +1,38 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: multitenant-system
+  namespace: "{{ meta.namespace }}"
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      add_header X-Kubernetes-Ingress multitenant-system always;
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /
+            backend:
+              serviceName: system
+              servicePort: 3000
+    - host: "multitenant.{{ env.threescale_superdomain | default(env_threescale_superdomain) }}"
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: system
+              servicePort: 3000
+    - host: "*.{{ env.threescale_superdomain | default(env_threescale_superdomain) }}"
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: system
+              servicePort: 3000
+{% if secret.multitenant_ingress_tls is defined %}
+  tls:
+    - secretName: {{ secret.multitenant_ingress_tls }}
+      hosts:
+        - "*.{{ env.threescale_superdomain | default(env_threescale_superdomain) }}"
+        - "multitentant.{{ env.threescale_superdomain | default(env_threescale_superdomain) }}"
+{% endif %}

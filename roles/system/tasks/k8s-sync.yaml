@@ -1,0 +1,7 @@
+---
+
+- name: "{{ 'Apply' if resource.enabled else 'Remove' }} {{ resource.manifest }} for {{ role_name }} {{ meta.name }} on Namespace {{ meta.namespace }}"
+  k8s:
+    state: "{{ 'present' if resource.enabled else 'absent' }}"
+    definition: "{{ lookup('template', resource.manifest) }}"
+  ignore_errors: yes

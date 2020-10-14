@@ -1,7 +1,6 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  creationTimestamp: null
   name: threescale-saas-operator
 rules:
 - apiGroups:
@@ -133,6 +132,7 @@ rules:
   resources:
   - replicasets
   - deployments
+  - statefulsets
   verbs:
   - get
 - apiGroups:
@@ -150,6 +150,8 @@ rules:
   - echoapis/status
   - mappingservices
   - mappingservices/status
+  - systems
+  - systems/status
   - zyncs
   - zyncs/status
   verbs:

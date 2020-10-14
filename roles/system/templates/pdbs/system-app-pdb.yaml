@@ -1,0 +1,21 @@
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: system-app
+  namespace: "{{ meta.namespace }}"
+  labels:
+    app: 3scale-api-management
+    threescale_component: system
+    threescale_component_element: app
+spec:
+{% if app.pdb.min_available is not defined %}
+  maxUnavailable: {{ app.pdb.max_unavailable | default(app_pdb_max_unavailable) }}
+{% endif %}
+{% if app.pdb.min_available is defined %}
+  minAvailable: {{ app.pdb.min_available }}
+{% endif %}
+  selector:
+    matchLabels:
+      app: 3scale-api-management
+      threescale_component: system
+      threescale_component_element: app
