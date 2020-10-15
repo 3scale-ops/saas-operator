@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: system-sphinx
+  namespace: "{{ meta.namespace }}"
+  labels:
+    app: 3scale-api-management
+    threescale_component: system
+    threescale_component_element: sphinx
+data:
+  SPHINX_ADDRESS: "{{ sphinx.env.thinking.endpoint | default("system-sphinx") }}"
+  SPHINX_PORT: "{{ sphinx.env.thinking.port | default(sphinx_env_thinking_port) }}"
+  SPHINX_CONFIGURATION_FILE: "{{ sphinx.env.thinking.config_file | default(sphinx_env_thinking_config_file) }}"
+  SPHINX_PID_FILE: "{{ sphinx.env.thinking.pid_file | default(sphinx_env_thinking_pid_file) }}"
+  DELTA_INDEX_INTERVAL: "{{ sphinx.env.delta_index_interval | default(sphinx_env_delta_index_interval) }}"
+  FULL_REINDEX_INTERVAL: "{{ sphinx.env.full_reindex_interval | default(sphinx_env_full_reindex_interval) }}"

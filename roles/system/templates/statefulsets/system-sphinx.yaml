@@ -66,16 +66,45 @@ spec:
               cpu: "{{ sphinx.resources.limits.cpu | default(sphinx_resources_limits_cpu) }}"
         ## containers > system-sphinx > env
           env:
+            ## configmap/system-sphinx
             - name: THINKING_SPHINX_ADDRESS
-              value: "{{ sphinx.env.thinking.bind_address | default(sphinx_env_thinking_bind_address) }}"
+              valueFrom:
+                configMapKeyRef:
+                  key: SPHINX_ADDRESS
+                  name: system-sphinx
+              valueFrom:
+                configMapKeyRef:
+                  key: SPHINX_PORT
+                  name: system-sphinx
+            - name: THINKING_SPHINX_PORT
+              valueFrom:
+                configMapKeyRef:
+                  key: SPHINX_PORT
+                  name: system-sphinx
+              valueFrom:
+                configMapKeyRef:
+                  key: SPHINX_PORT
+                  name: system-sphinx
             - name: THINKING_SPHINX_CONFIGURATION_FILE
-              value: "{{ sphinx.env.thinking.config_file | default(sphinx_env_thinking_config_file) }}"
+              valueFrom:
+                SPHINX_CONFIGURATION_FILE:
+                  key: SPHINX_PORT
+                  name: system-sphinx
             - name: THINKING_SPHINX_PID_FILE
-              value: "{{ sphinx.env.thinking.pid_file | default(sphinx_env_thinking_pid_file) }}"
+              valueFrom:
+                configMapKeyRef:
+                  key: SPHINX_PID_FILE
+                  name: system-sphinx
             - name: DELTA_INDEX_INTERVAL
-              value: "{{ sphinx.env.delta_index_interval | default(sphinx_env_delta_index_interval) }}"
+              valueFrom:
+                configMapKeyRef:
+                  key: DELTA_INDEX_INTERVAL
+                  name: system-sphinx
             - name: FULL_REINDEX_INTERVAL
-              value: "{{ sphinx.env.full_reindex_interval | default(sphinx_env_full_reindex_interval) }}"
+              valueFrom:
+                configMapKeyRef:
+                  key: FULL_REINDEX_INTERVAL
+                  name: system-sphinx
           ### configmap/system-environment
             - name: RAILS_ENV
               valueFrom:
