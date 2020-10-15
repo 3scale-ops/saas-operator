@@ -81,10 +81,17 @@ spec:
               readOnly: true
         ## container > system-sidekiq > env
           env:
+            ## configmap/system-sphinx
             - name: THINKING_SPHINX_ADDRESS
-              value: {{ sphinx.env.thinking.endpoint | default("system-sphinx") }}
+              valueFrom:
+                configMapKeyRef:
+                  key: SPHINX_ADDRESS
+                  name: system-sphinx
             - name: THINKING_SPHINX_PORT
-              value: {{ sphinx.env.thinking.port | default(sphinx_env_thinking_port) }}
+              valueFrom:
+                configMapKeyRef:
+                  key: SPHINX_PORT
+                  name: system-sphinx
             ## configmap/system-environment
             - name: AMP_RELEASE
               valueFrom:
