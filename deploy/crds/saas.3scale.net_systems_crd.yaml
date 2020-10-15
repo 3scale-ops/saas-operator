@@ -164,7 +164,7 @@ spec:
                 replicas:
                   type: integer
                   description: Number of replicas (ignored if hpa is enabled)
-                  resources:
+                resources:
                   type: object
                   properties:
                     requests:
@@ -193,7 +193,7 @@ spec:
                       type: string
                       pattern: "[0-9]+([kKmMgGtTpPeE]i?)?$"
                       description: Override storage size for the database
-                  livenessProbe:
+                livenessProbe:
                   type: object
                   properties:
                     initialDelaySeconds:
@@ -211,7 +211,7 @@ spec:
                     failureThreshold:
                       type: integer
                       description: Override liveness probe failure threshold
-                  readinessProbe:
+                readinessProbe:
                   type: object
                   properties:
                     initialDelaySeconds:
@@ -229,7 +229,7 @@ spec:
                     failureThreshold:
                       type: integer
                       description: Override readiness probe failure threshold
-                  pdb:
+                pdb:
                   type: object
                   properties:
                     enabled:
@@ -243,7 +243,7 @@ spec:
                       type: string
                       pattern: "^[0-9]+%?$"
                       description: Minimum number of available pods (number or percentage of pods), overrides maxUnavailable
-                  hpa:
+                hpa:
                   type: object
                   properties:
                     enabled:
@@ -270,7 +270,7 @@ spec:
                 replicas:
                   type: integer
                   description: Number of replicas (ignored if hpa is enabled)
-                  resources:
+                resources:
                   type: object
                   properties:
                     requests:
@@ -295,7 +295,7 @@ spec:
                           type: string
                           pattern: "[0-9]+([kKmMgGtTpPeE]i?)?$"
                           description: Override Memory limits
-                  livenessProbe:
+                livenessProbe:
                   type: object
                   properties:
                     initialDelaySeconds:
@@ -313,7 +313,7 @@ spec:
                     failureThreshold:
                       type: integer
                       description: Override liveness probe failure threshold
-                  readinessProbe:
+                readinessProbe:
                   type: object
                   properties:
                     initialDelaySeconds:
@@ -331,7 +331,7 @@ spec:
                     failureThreshold:
                       type: integer
                       description: Override readiness probe failure threshold
-                  pdb:
+                pdb:
                   type: object
                   properties:
                     enabled:
@@ -345,7 +345,7 @@ spec:
                       type: string
                       pattern: "^[0-9]+%?$"
                       description: Minimum number of available pods (number or percentage of pods), overrides maxUnavailable
-                  hpa:
+                hpa:
                   type: object
                   properties:
                     enabled:
@@ -369,7 +369,7 @@ spec:
             sphinx:
               type: object
               properties:
-                  env:
+                env:
                   type: object
                   description: Environment variables
                   properties:
@@ -401,7 +401,7 @@ spec:
                     fullReindexInterval:
                       type: integer
                       description: Interval used to do a full re-index
-                  resources:
+                resources:
                   type: object
                   properties:
                     requests:
@@ -426,7 +426,7 @@ spec:
                           type: string
                           pattern: "[0-9]+([kKmMgGtTpPeE]i?)?$"
                           description: Override Memory limits
-                  livenessProbe:
+                livenessProbe:
                   type: object
                   properties:
                     initialDelaySeconds:
@@ -444,7 +444,7 @@ spec:
                     failureThreshold:
                       type: integer
                       description: Override liveness probe failure threshold
-                  readinessProbe:
+                readinessProbe:
                   type: object
                   properties:
                     initialDelaySeconds:
