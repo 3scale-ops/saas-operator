@@ -91,9 +91,9 @@ sidekiq_hpa_resource_utilization: 90
 ### sphinx > env > env
 sphinx_env_thinking_port: 9306
 sphinx_env_thinking_bind_address: "0.0.0.0"
-sphinx_env_thinking_config_file: "/opt/sphinx/etc/sphinx.conf"
-sphinx_env_thinking_db_path: "/opt/sphinx"
-sphinx_env_thinking_pid_file: "/var/run/searchd.pid"
+sphinx_env_thinking_config_file: "/opt/system/db/sphinx/preview.conf"
+sphinx_env_thinking_db_path: "/opt/system/db/sphinx"
+sphinx_env_thinking_pid_file: "/opt/system/tmp/pids/searchd.pid"
 sphinx_env_delta_index_interval: 5
 sphinx_env_full_reindex_interval: 60
 ### sphinx > probe > liveness
