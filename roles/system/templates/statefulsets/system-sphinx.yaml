@@ -72,15 +72,7 @@ spec:
                 configMapKeyRef:
                   key: SPHINX_ADDRESS
                   name: system-sphinx
-              valueFrom:
-                configMapKeyRef:
-                  key: SPHINX_PORT
-                  name: system-sphinx
             - name: THINKING_SPHINX_PORT
-              valueFrom:
-                configMapKeyRef:
-                  key: SPHINX_PORT
-                  name: system-sphinx
               valueFrom:
                 configMapKeyRef:
                   key: SPHINX_PORT
