@@ -8,8 +8,9 @@ metadata:
     threescale_component: system
     threescale_component_element: sphinx
 data:
-  SPHINX_ADDRESS: "{{ sphinx.env.thinking.endpoint | default("system-sphinx") }}"
+  SPHINX_ADDRESS: "{{ env.external_sphinx | default("system-sphinx") }}"
   SPHINX_PORT: "{{ sphinx.env.thinking.port | default(sphinx_env_thinking_port) }}"
+  SPHINX_BIND_ADDRESS: "{{ sphinx.env.thinking.bind_address | default(sphinx_env_thinking_bind_address) }}"
   SPHINX_CONFIGURATION_FILE: "{{ sphinx.env.thinking.config_file | default(sphinx_env_thinking_config_file) }}"
   SPHINX_PID_FILE: "{{ sphinx.env.thinking.pid_file | default(sphinx_env_thinking_pid_file) }}"
   DELTA_INDEX_INTERVAL: "{{ sphinx.env.delta_index_interval | default(sphinx_env_delta_index_interval) }}"

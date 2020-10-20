@@ -70,22 +70,22 @@ spec:
             - name: THINKING_SPHINX_ADDRESS
               valueFrom:
                 configMapKeyRef:
-                  key: SPHINX_ADDRESS
+                  key: SPHINX_BIND_ADDRESS
                   name: system-sphinx
             - name: THINKING_SPHINX_PORT
               valueFrom:
                 configMapKeyRef:
                   key: SPHINX_PORT
                   name: system-sphinx
-            - name: THINKING_SPHINX_CONFIGURATION_FILE
-              valueFrom:
-                SPHINX_CONFIGURATION_FILE:
-                  key: SPHINX_PORT
-                  name: system-sphinx
             - name: THINKING_SPHINX_PID_FILE
               valueFrom:
                 configMapKeyRef:
                   key: SPHINX_PID_FILE
+                  name: system-sphinx
+            - name: THINKING_SPHINX_CONFIGURATION_FILE
+              valueFrom:
+                configMapKeyRef:
+                  key: SPHINX_CONFIGURATION_FILE
                   name: system-sphinx
             - name: DELTA_INDEX_INTERVAL
               valueFrom:

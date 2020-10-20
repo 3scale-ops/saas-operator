@@ -3,22 +3,23 @@
 - name: Apply k8s resources
   include_tasks: k8s-upsert.yaml
   with_fileglob:
-    - "templates/configmaps/*.yaml"
-    - "templates/deployments/*.yaml"
-    - "templates/ingresses/*.yaml"
-    - "templates/podmonitors/*.yaml"
-    - "templates/secretdefinitions/*.yaml"
-    - "templates/services/*.yaml"
-    - "templates/statefulsets/*.yaml"
+    - "templates/system/configmaps/*.yaml"
+    - "templates/system/services/*.yaml"
+    - "templates/system/deployments/*.yaml"
+    - "templates/system/ingresses/*.yaml"
+    - "templates/system/podmonitors/*.yaml"
+    - "templates/system/secretdefinitions/*.yaml"
   loop_control:
     loop_var: manifest
 
 - name: Apply or remove k8s resources
   include_tasks: k8s-sync.yaml
   with_items:
-    - { manifest: "pdbs/system-sidekiq-pdb.yaml", enabled: "{{ sidekiq.pdb.enabled | default(sidekiq_pdb_enabled) | bool }}" }
-    - { manifest: "pdbs/system-app-pdb.yaml", enabled: "{{ app.pdb.enabled | default(app_pdb_enabled) | bool }}" }
-    - { manifest: "hpas/system-sidekiq-hpa.yaml", enabled: "{{ sidekiq.hpa.enabled | default(sidekiq_hpa_enabled) | bool }}" }
-    - { manifest: "hpas/system-app-hpa.yaml", enabled: "{{ app.hpa.enabled | default(app_hpa_enabled)  | bool }}" }
+    - { manifest: "system/pdbs/system-sidekiq-pdb.yaml", enabled: "{{ sidekiq.pdb.enabled | default(sidekiq_pdb_enabled) | bool }}" }
+    - { manifest: "system/pdbs/system-app-pdb.yaml", enabled: "{{ app.pdb.enabled | default(app_pdb_enabled) | bool }}" }
+    - { manifest: "system/hpas/system-sidekiq-hpa.yaml", enabled: "{{ sidekiq.hpa.enabled | default(sidekiq_hpa_enabled) | bool }}" }
+    - { manifest: "system/hpas/system-app-hpa.yaml", enabled: "{{ app.hpa.enabled | default(app_hpa_enabled)  | bool }}" }
+    - { manifest: "sphinx/system-sphinx-service.yaml", enabled: "{{ env.external_sphinx is not defined }}" }
+    - { manifest: "sphinx/system-sphinx-statefulset.yaml", enabled: "{{ env.external_sphinx is not defined }}" }
   loop_control:
     loop_var: resource
