@@ -84,6 +84,9 @@ spec:
                 threescaleProviderPlan:
                   type: string
                   description: 3scale provider plan
+                externalSphinx:
+                  type: string
+                  description: The external Sphinx DNS endpoint
                 rails:
                   type: object
                   properties:
@@ -383,9 +386,6 @@ spec:
                         bindAddress:
                           type: string
                           description: Allows setting the TCP host for Sphinx to a different address
-                        endpoint:
-                          type: string
-                          description: The Sphinx DNS endpoint
                         configFile:
                           type: string
                           description: Sphinx configuration file path

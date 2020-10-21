@@ -8,8 +8,7 @@
     - "templates/ingresses/*.yaml"
     - "templates/podmonitors/*.yaml"
     - "templates/secretdefinitions/*.yaml"
-    - "templates/services/*.yaml"
-    - "templates/statefulsets/*.yaml"
+    - "templates/services/system-service.yaml"
   loop_control:
     loop_var: manifest
 
@@ -20,5 +19,7 @@
     - { manifest: "pdbs/system-app-pdb.yaml", enabled: "{{ app.pdb.enabled | default(app_pdb_enabled) | bool }}" }
     - { manifest: "hpas/system-sidekiq-hpa.yaml", enabled: "{{ sidekiq.hpa.enabled | default(sidekiq_hpa_enabled) | bool }}" }
     - { manifest: "hpas/system-app-hpa.yaml", enabled: "{{ app.hpa.enabled | default(app_hpa_enabled)  | bool }}" }
+    - { manifest: "services/system-sphinx-service.yaml", enabled: "{{ env.external_sphinx is not defined }}" }
+    - { manifest: "statefulsets/system-sphinx-statefulset.yaml", enabled: "{{ env.external_sphinx is not defined }}" }
   loop_control:
     loop_var: resource
