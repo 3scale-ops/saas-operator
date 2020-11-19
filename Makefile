@@ -1,61 +1,92 @@
-.PHONY: operator-image-update operator-deploy operator-delete help
+# Current Operator version
+VERSION ?= build
+# Default bundle image tag
+BUNDLE_IMG ?= quay.io/3scale/3scale-saas-operator-bundle:$(VERSION)
+# Options for 'bundle-build'
+ifneq ($(origin CHANNELS), undefined)
+BUNDLE_CHANNELS := --channels=$(CHANNELS)
+endif
+ifneq ($(origin DEFAULT_CHANNEL), undefined)
+BUNDLE_DEFAULT_CHANNEL := --default-channel=$(DEFAULT_CHANNEL)
+endif
+BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 
-.DEFAULT_GOAL := help
+# Image URL to use all building/pushing image targets
+IMG ?= quay.io/3scale/3scale-saas-operator:${VERSION}
 
-MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
-THISDIR_PATH := $(patsubst %/,%,$(abspath $(dir $(MKFILE_PATH))))
-UNAME := $(shell uname)
+all: docker-build
 
-ifeq (${UNAME}, Linux)
-  INPLACE_SED=sed -i
-else ifeq (${UNAME}, Darwin)
-  INPLACE_SED=sed -i ""
+# Run against the configured Kubernetes cluster in ~/.kube/config
+run: ansible-operator
+	$(ANSIBLE_OPERATOR) run
+
+# Install CRDs into a cluster
+install: kustomize
+	$(KUSTOMIZE) build config/crd | kubectl apply -f -
+
+# Uninstall CRDs from a cluster
+uninstall: kustomize
+	$(KUSTOMIZE) build config/crd | kubectl delete -f -
+
+# Deploy controller in the configured Kubernetes cluster in ~/.kube/config
+deploy: kustomize
+	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+	$(KUSTOMIZE) build config/default | kubectl apply -f -
+
+# Undeploy controller in the configured Kubernetes cluster in ~/.kube/config
+undeploy: kustomize
+	$(KUSTOMIZE) build config/default | kubectl delete -f -
+
+# Build the docker image
+docker-build:
+	docker build . -t ${IMG}
+
+# Push the docker image
+docker-push:
+	docker push ${IMG}
+
+PATH  := $(PATH):$(PWD)/bin
+SHELL := env PATH=$(PATH) /bin/sh
+OS    = $(shell uname -s | tr '[:upper:]' '[:lower:]')
+ARCH  = $(shell uname -m | sed 's/x86_64/amd64/')
+OSOPER   = $(shell uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/apple-darwin/' | sed 's/linux/linux-gnu/')
+ARCHOPER = $(shell uname -m )
+
+kustomize:
+ifeq (, $(shell which kustomize 2>/dev/null))
+	@{ \
+	set -e ;\
+	mkdir -p bin ;\
+	curl -sSLo - https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v3.5.4/kustomize_v3.5.4_$(OS)_$(ARCH).tar.gz | tar xzf - -C bin/ ;\
+	}
+KUSTOMIZE=$(realpath ./bin/kustomize)
+else
+KUSTOMIZE=$(shell which kustomize)
 endif
 
-CURRENT_GIT_REF := $(shell git describe --always --dirty)
-TAG ?= $(CURRENT_GIT_REF)
-REGISTRY ?= quay.io
-ORG ?= 3scale
-PROJECT ?= 3scale-saas-operator
-IMAGE ?= $(REGISTRY)/$(ORG)/$(PROJECT)
-KUBE_CLIENT ?= kubectl # It can be used "oc" or "kubectl"
-NAMESPACE ?= 3scale-example
+ansible-operator:
+ifeq (, $(shell which ansible-operator 2>/dev/null))
+	@{ \
+	set -e ;\
+	mkdir -p bin ;\
+	curl -LO https://github.com/operator-framework/operator-sdk/releases/download/v1.2.0/ansible-operator-v1.2.0-$(ARCHOPER)-$(OSOPER) ;\
+	mv ansible-operator-v1.2.0-$(ARCHOPER)-$(OSOPER) ./bin/ansible-operator ;\
+	chmod +x ./bin/ansible-operator ;\
+	}
+ANSIBLE_OPERATOR=$(realpath ./bin/ansible-operator)
+else
+ANSIBLE_OPERATOR=$(shell which ansible-operator)
+endif
 
-## Operator ##
-operator-image-build: ## OPERATOR IMAGE - Build operator Docker image
-	operator-sdk build $(IMAGE):$(TAG)
+# Generate bundle manifests and metadata, then validate generated files.
+.PHONY: bundle
+bundle: kustomize
+	operator-sdk generate kustomize manifests -q
+	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
+	$(KUSTOMIZE) build config/manifests | operator-sdk generate bundle -q --overwrite --version $(VERSION) $(BUNDLE_METADATA_OPTS)
+	operator-sdk bundle validate ./bundle
 
-operator-image-push: ## OPERATOR IMAGE - Push operator Docker image to remote registry
-	docker push $(IMAGE):$(TAG)
-
-operator-image-update: operator-image-build operator-image-push ## OPERATOR IMAGE - Build and Push Operator Docker image to remote registry
-
-namespace-create: # NAMESPACE MANAGEMENT - Create namespace for the operator
-	$(KUBE_CLIENT) create namespace $(NAMESPACE) || true
-	$(KUBE_CLIENT) label namespace $(NAMESPACE) monitoring-key=middleware || true
-
-operator-local-deploy: namespace-create ## OPERATOR LOCAL DEPLOY - Deploy Operator locally for dev purpose
-	operator-sdk run --local --watch-namespace $(NAMESPACE)
-
-operator-deploy: namespace-create ## OPERATOR DEPLOY - Deploy Operator objects (namespace, CRDs, service account, role, role binding and operator deployment)
-	$(KUBE_CLIENT) apply -f deploy/crds/saas.3scale.net_autossls_crd.yaml --validate=false || true
-	$(KUBE_CLIENT) apply -f deploy/crds/saas.3scale.net_backends_crd.yaml --validate=false || true
-	$(KUBE_CLIENT) apply -f deploy/crds/saas.3scale.net_systems_crd.yaml --validate=false || true
-	$(KUBE_CLIENT) apply -f deploy/crds/saas.3scale.net_zyncs_crd.yaml --validate=false || true
-	$(KUBE_CLIENT) apply -f deploy/crds/saas.3scale.net_corsproxies_crd.yaml --validate=false || true
-	$(KUBE_CLIENT) apply -f deploy/crds/saas.3scale.net_echoapis_crd.yaml --validate=false || true
-	$(KUBE_CLIENT) apply -f deploy/service_account.yaml -n $(NAMESPACE)
-	$(KUBE_CLIENT) apply -f deploy/role.yaml -n $(NAMESPACE)
-	$(KUBE_CLIENT) apply -f deploy/role_binding.yaml -n $(NAMESPACE)
-	$(INPLACE_SED) 's|REPLACE_IMAGE|$(IMAGE):$(TAG)|g' deploy/operator.yaml
-	$(KUBE_CLIENT) apply -f deploy/operator.yaml -n $(NAMESPACE)
-	$(INPLACE_SED) 's|$(IMAGE):$(TAG)|REPLACE_IMAGE|g' deploy/operator.yaml
-
-operator-delete: ## OPERATOR DEPLOY - Delete Operator objects (except CRD/namespace for caution)
-	$(KUBE_CLIENT) delete -f deploy/operator.yaml -n $(NAMESPACE) || true
-	$(KUBE_CLIENT) delete -f deploy/role_binding.yaml -n $(NAMESPACE) || true
-	$(KUBE_CLIENT) delete -f deploy/role.yaml -n $(NAMESPACE) || true
-	$(KUBE_CLIENT) delete -f deploy/service_account.yaml -n $(NAMESPACE) || true
-
-help: ## Print this help
-	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-33s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+# Build the bundle image.
+.PHONY: bundle-build
+bundle-build:
+	docker build -f bundle.Dockerfile -t $(BUNDLE_IMG) .
