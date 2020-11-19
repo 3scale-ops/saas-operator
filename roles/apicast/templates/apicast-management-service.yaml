@@ -3,7 +3,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: "apicast-{{ apicast_env }}-management"
-  namespace: "{{ meta.namespace }}"
+  namespace: "{{ ansible_operator_meta.namespace }}"
   labels:
     app: 3scale-api-management
     threescale_component: "apicast-{{ apicast_env }}"

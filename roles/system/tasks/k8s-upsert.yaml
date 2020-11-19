@@ -1,6 +1,6 @@
 ---
 
-- name: Apply {{ manifest | basename }} for {{ role_name }} {{ meta.name }} on Namespace {{ meta.namespace }}
+- name: Apply {{ manifest | basename }} for {{ role_name }} {{ ansible_operator_meta.name }} on Namespace {{ ansible_operator_meta.namespace }}
   k8s:
     definition: "{{ lookup('template', manifest) }}"
   ignore_errors: yes

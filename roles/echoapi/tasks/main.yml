@@ -1,33 +1,33 @@
 ---
 
-- name: Convert pdb.enabled boolean var into ansible pdb_state state var for EchoAPI {{ meta.name }} on Namespace {{ meta.namespace }}
+- name: Convert pdb.enabled boolean var into ansible pdb_state state var for EchoAPI {{ ansible_operator_meta.name }} on Namespace {{ ansible_operator_meta.namespace }}
   set_fact:
     pdb_state: "absent"
   when: pdb.enabled is defined and pdb.enabled|bool == false
 
-- name: Manage echo-api PodDisruptionBudget for EchoAPI {{ meta.name }} on Namespace {{ meta.namespace }}
+- name: Manage echo-api PodDisruptionBudget for EchoAPI {{ ansible_operator_meta.name }} on Namespace {{ ansible_operator_meta.namespace }}
   k8s:
     state: "{{ pdb_state }}"
     definition: "{{ lookup('template', 'echo-api-pdb.yaml') }}"
 
-- name: Convert hpa.enabled boolean var into ansible hpa_state state var for EchoAPI {{ meta.name }} on Namespace {{ meta.namespace }}
+- name: Convert hpa.enabled boolean var into ansible hpa_state state var for EchoAPI {{ ansible_operator_meta.name }} on Namespace {{ ansible_operator_meta.namespace }}
   set_fact:
     hpa_state: "absent"
   when: hpa.enabled is defined and hpa.enabled|bool == false
 
-- name: Manage echo-api HoritzontalPodAutoscaler for EchoAPI {{ meta.name }} on Namespace {{ meta.namespace }}
+- name: Manage echo-api HoritzontalPodAutoscaler for EchoAPI {{ ansible_operator_meta.name }} on Namespace {{ ansible_operator_meta.namespace }}
   k8s:
     state: "{{ hpa_state }}"
     definition: "{{ lookup('template', 'echo-api-hpa.yaml') }}"
 
-- name: Manage echo-api Deployment for EchoAPI {{ meta.name }} on Namespace {{ meta.namespace }}
+- name: Manage echo-api Deployment for EchoAPI {{ ansible_operator_meta.name }} on Namespace {{ ansible_operator_meta.namespace }}
   k8s:
     definition: "{{ lookup('template', 'echo-api-deployment.yaml') }}"
 
-- name: Manage echo-api Service for EchoAPI {{ meta.name }} on Namespace {{ meta.namespace }}
+- name: Manage echo-api Service for EchoAPI {{ ansible_operator_meta.name }} on Namespace {{ ansible_operator_meta.namespace }}
   k8s:
     definition: "{{ lookup('template', 'echo-api-service.yaml') }}"
 
-- name: Manage echo-api PodMonitor for EchoAPI {{ meta.name }} on Namespace {{ meta.namespace }}
+- name: Manage echo-api PodMonitor for EchoAPI {{ ansible_operator_meta.name }} on Namespace {{ ansible_operator_meta.namespace }}
   k8s:
     definition: "{{ lookup('template', 'echo-api-podmonitor.yaml') }}"

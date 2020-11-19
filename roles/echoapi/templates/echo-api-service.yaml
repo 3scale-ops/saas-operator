@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: echo-api
-  namespace: "{{ meta.namespace }}"
+  namespace: "{{ ansible_operator_meta.namespace }}"
   labels:
     app: echo-api
     threescale_component: echo-api

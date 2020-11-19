@@ -2,7 +2,7 @@ apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
   name: cors-proxy
-  namespace: "{{ meta.namespace }}"
+  namespace: "{{ ansible_operator_meta.namespace }}"
   labels:
     app: cors-proxy
     part-of: 3scale-saas
