@@ -1,254 +1,137 @@
+---
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  name: apicasts.saas.3scale.net
+  name: backends.saas.3scale.net
 spec:
   group: saas.3scale.net
   names:
-    kind: Apicast
-    listKind: ApicastList
-    plural: apicasts
-    singular: apicast
+    kind: Backend
+    listKind: BackendList
+    plural: backends
+    singular: backend
   scope: Namespaced
   subresources:
     status: {}
   validation:
     openAPIV3Schema:
-      type: object
-      description: Apicast is the Schema for Apicast instance
+      description: Backend is the Schema for the backends API
       properties:
         apiVersion:
-          description:
-            "APIVersion defines the versioned schema of this representation
+          description: 'APIVersion defines the versioned schema of this representation
             of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources"
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
           type: string
         kind:
-          description:
-            "Kind is a string value representing the REST resource this
+          description: 'Kind is a string value representing the REST resource this
             object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds"
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
           type: string
         metadata:
           type: object
         spec:
+          description: Spec defines the desired state of Backend
           type: object
-          description: ApicastSpec defines the desired state of Apicast
+          x-kubernetes-preserve-unknown-fields: true
           required:
-            - production
-            - staging
+          - secret
+          - listener
           properties:
-            production:
+            image:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Image name (docker repository)
+                tag:
+                  type: string
+                  description: Image tag
+                pullSecretName:
+                  type: string
+                  description: Quay pull secret for private repository
+            grafanaDashboard:
+              type: object
+              properties:
+                label:
+                  type: object
+                  properties:
+                    key:
+                      type: string
+                      description: Label key used by grafana-operator for dashboard discovery
+                    value:
+                      type: string
+                      description: Label value used by grafana-operator for dashboard discovery
+            config:
+              type: object
+              properties:
+                rackEnv:
+                  type: string
+                  description: Rack environment (used for example for error-monitoring ID)
+                masterServiceId:
+                  type: integer
+                  description: Master service account ID in Porta
+                oauthMaxTokenSize:
+                  type: integer
+                  description: Oauth Max token size (bytes)
+                legacyReferrerFilters:
+                  type: boolean
+                  description: Enable (true) or disable (false) Legacy Referrer Filters
+            secret:
               type: object
               required:
-                - image
-                - env
-                - marin3r
-                - externalDnsHostname
+              - redisVaultPath
+              - systemEventsHookVaultPath
+              - internalApiVaultPath
+              properties:
+                redisVaultPath:
+                  type: string
+                  description: Vault Path with backend-redis secret definition
+                systemEventsHookVaultPath:
+                  type: string
+                  description: Vault Path with backend-system-events-hook secret definition
+                internalApiVaultPath:
+                  type: string
+                  description: Vault Path with backend-internal-api secret definition
+                errorMonitoringVaultPath:
+                  type: string
+                  description: Vault Path with backend-error-monitoring secret definition
+            errorMonitoringEnabled:
+              type: boolean
+              description: Mount (true) or not (false) backend-error-monitoring Secret on deployments
+            listener:
+              type: object
+              required:
+              - externalDnsHostname
+              - marin3r
               properties:
                 externalDnsHostname:
                   type: string
-                  description: DNS hostname to manage on AWS Route53 by external-dns
-                image:
-                  type: object
-                  required:
-                    - tag
-                  properties:
-                    name:
-                      type: string
-                      description: Image name (docker repository)
-                    tag:
-                      type: string
-                      description: Image tag
-                    pullSecretName:
-                      type: string
-                      description: Quay pull secret for private repository
-                pdb:
-                  type: object
-                  properties:
-                    enabled:
-                      type: boolean
-                      description: Enable (true) or disable (false) PodDisruptionBudget
-                    maxUnavailable:
-                      type: string
-                      pattern: "^[0-9]+%?$"
-                      description: Maximum number of unavailable pods (number or percentage of pods)
-                    minAvailable:
-                      type: string
-                      pattern: "^[0-9]+%?$"
-                      description: Minimum number of available pods (number or percentage of pods), overrides maxUnavailable
-                hpa:
-                  type: object
-                  properties:
-                    enabled:
-                      type: boolean
-                      description: Enable (true) or disable (false) HoritzontalPodAutoscaler
-                    minReplicas:
-                      type: integer
-                      description: Minimum number of replicas
-                    maxReplicas:
-                      type: integer
-                      description: Maximum number of replicas
-                    resourceName:
-                      type: string
-                      description: Resource used for autoscale (cpu/memory)
-                      enum:
-                      - cpu
-                      - memory
-                    resourceUtilization:
-                      type: integer
-                      description: Percentage usage of the resource used for autoscale
-                replicas:
-                  type: integer
-                  description: Number of replicas (ignored if hpa is enabled)
-                env:
-                  type: object
-                  description: Environment variables
-                  required:
-                    - apicastConfigurationCache
-                    - threescalePortalEndpoint
-                  properties:
-                    apicastConfigurationCache:
-                      type: string
-                      pattern: "[0-9]+$"
-                      description: Configuration cache seconds
-                    apicastLogLevel:
-                      type: string
-                      enum: [debug, info, notice, warn, error, crit, alert, emerg]
-                      description: Specifies the log level for the OpenResty logs
-                    apicastOIDCLogLevel:
-                      type: string
-                      enum: [debug, info, notice, warn, error, crit, alert, emerg]
-                      description: Allows to set the log level for the logs related to OpenID Connect integration
-                    threescalePortalEndpoint:
-                      type: string
-                      description: 3scale portal endpoint
+                  description: DNS hostnames to manage on AWS Route53 by external-dns
                 marin3r:
                   type: object
                   required:
-                    - enabled
+                  - enabled
                   properties:
                     enabled:
                       type: boolean
-                      description: Enable (true) or disable (false) marin3r
+                      description:  Enable (true) or disable (false) marin3r
                     annotations:
                       additionalProperties:
                         type: string
                       description: Map of marin3r annotations
                       type: object
-                resources:
-                  type: object
-                  properties:
-                    requests:
-                      type: object
-                      properties:
-                        cpu:
-                          type: string
-                          pattern: "[0-9]+m?$"
-                          description: Override CPU requests
-                        memory:
-                          type: string
-                          pattern: "[0-9]+([kKmMgGtTpPeE]i?)?$"
-                          description: Override Memory requests
-                    limits:
-                      type: object
-                      properties:
-                        cpu:
-                          type: string
-                          pattern: "[0-9]+m?$"
-                          description: Override CPU limits
-                        memory:
-                          type: string
-                          pattern: "[0-9]+([kKmMgGtTpPeE]i?)?$"
-                          description: Override Memory limits
-                livenessProbe:
-                  type: object
-                  properties:
-                    initialDelaySeconds:
-                      type: integer
-                      description: Override liveness probe initial delay (seconds)
-                    timeoutSeconds:
-                      type: integer
-                      description: Override liveness probe timeout (seconds)
-                    periodSeconds:
-                      type: integer
-                      description: Override liveness probe period (seconds)
-                    successThreshold:
-                      type: integer
-                      description: Override liveness probe success threshold
-                    failureThreshold:
-                      type: integer
-                      description: Override liveness probe failure threshold
-                readinessProbe:
-                  type: object
-                  properties:
-                    initialDelaySeconds:
-                      type: integer
-                      description: Override readiness probe initial delay (seconds)
-                    timeoutSeconds:
-                      type: integer
-                      description: Override readiness probe timeout (seconds)
-                    periodSeconds:
-                      type: integer
-                      description: Override readiness probe period (seconds)
-                    successThreshold:
-                      type: integer
-                      description: Override readiness probe success threshold
-                    failureThreshold:
-                      type: integer
-                      description: Override readiness probe failure failureThreshold
                 loadBalancer:
                   type: object
                   properties:
                     proxyProtocol:
-                      type: string
-                      description: Proxy protocol enabled (k8s aws provider only accepts * by the moment)
+                      type: boolean
+                      description:  Enable (true) or disable (false) proxy protocol with aws-nlb-helper-operator
                     crossZoneLoadBalancingEnabled:
                       type: boolean
                       description: Enable (true) or disable (false) cross zone load balancing
-                    connectionDrainingEnabled:
-                      type: boolean
-                      description: Enable (true) or disable (false) connection draining
-                    connectionDrainingTimeout:
-                      type: integer
-                      description: Connection draining timeout (seconds)
-                    connectionHealthcheckHealthyThreshold:
-                      type: integer
-                      description: Connection healthcheck healthy threshold
-                    connectionHealthcheckUnhealthyThreshold:
-                      type: integer
-                      description: Connection healthcheck unhealthy threshold
-                    connectionHealthcheckInterval:
-                      type: integer
-                      description: Connection healthcheck interval (seconds)
-                    connectionHealthcheckTimeout:
-                      type: integer
-                      description: Connection healthcheck timeout (seconds)
-            staging:
-              type: object
-              required:
-                - image
-                - env
-                - marin3r
-                - externalDnsHostname
-              properties:
-                externalDnsHostname:
-                  type: string
-                  description: DNS hostname to manage on AWS Route53 by external-dns
-                image:
-                  type: object
-                  required:
-                    - tag
-                  properties:
-                    name:
+                    eipAllocations:
                       type: string
-                      description: Image name (docker repository)
-                    tag:
-                      type: string
-                      description: Image tag
-                    pullSecretName:
-                      type: string
-                      description: Quay pull secret for private repository
+                      description: Optional Elastic IPs allocations
                 pdb:
                   type: object
                   properties:
@@ -290,38 +173,16 @@ spec:
                 env:
                   type: object
                   description: Environment variables
-                  required:
-                    - apicastConfigurationCache
-                    - threescalePortalEndpoint
                   properties:
-                    apicastConfigurationCache:
+                    logFormat:
                       type: string
-                      pattern: "[0-9]+$"
-                      description: Configuration cache seconds
-                    apicastLogLevel:
-                      type: string
-                      enum: [debug, info, notice, warn, error, crit, alert, emerg]
-                      description: Specifies the log level for the OpenResty logs
-                    apicastOIDCLogLevel:
-                      type: string
-                      enum: [debug, info, notice, warn, error, crit, alert, emerg]
-                      description: Allows to set the log level for the logs related to OpenID Connect integration
-                    threescalePortalEndpoint:
-                      type: string
-                      description: 3scale portal endpoint
-                marin3r:
-                  type: object
-                  required:
-                    - enabled
-                  properties:
-                    enabled:
+                      description: Log format (text/json)
+                    listenerWorkers:
+                      type: integer
+                      description: Number of worker processes per listener pod
+                    redisAsync:
                       type: boolean
-                      description: Enable (true) or disable (false) marin3r
-                    annotations:
-                      additionalProperties:
-                        type: string
-                      description: Map of marin3r annotations
-                      type: object
+                      description: Enable (true) or disable (false) redis async mode
                 resources:
                   type: object
                   properties:
@@ -383,47 +244,155 @@ spec:
                     failureThreshold:
                       type: integer
                       description: Override readiness probe failure threshold
-                loadBalancer:
-                  type: object
-                  properties:
-                    proxyProtocol:
-                      type: string
-                      description: Proxy protocol enabled (k8s aws provider only accepts * by the moment)
-                    crossZoneLoadBalancingEnabled:
-                      type: boolean
-                      description: Enable (true) or disable (false) cross zone load balancing
-                    connectionDrainingEnabled:
-                      type: boolean
-                      description: Enable (true) or disable (false) connection draining
-                    connectionDrainingTimeout:
-                      type: integer
-                      description: Connection draining timeout (seconds)
-                    connectionHealthcheckHealthyThreshold:
-                      type: integer
-                      description: Connection healthcheck healthy threshold
-                    connectionHealthcheckUnhealthyThreshold:
-                      type: integer
-                      description: Connection healthcheck unhealthy threshold
-                    connectionHealthcheckInterval:
-                      type: integer
-                      description: Connection healthcheck interval (seconds)
-                    connectionHealthcheckTimeout:
-                      type: integer
-                      description: Connection healthcheck timeout (seconds)
-            grafanaDashboard:
+            worker:
               type: object
               properties:
-                label:
+                pdb:
                   type: object
                   properties:
-                    key:
+                    enabled:
+                      type: boolean
+                      description: Enable (true) or disable (false) PodDisruptionBudget
+                    maxUnavailable:
                       type: string
-                      description: Label key used by grafana-operator for dashboard discovery
-                    value:
+                      pattern: "^[0-9]+%?$"
+                      description: Maximum number of unavailable pods (number or percentage of pods)
+                    minAvailable:
                       type: string
-                      description: Label value used by grafana-operator for dashboard discovery
-  version: v1alpha1
+                      pattern: "^[0-9]+%?$"
+                      description: Minimum number of available pods (number or percentage of pods), overrides maxUnavailable
+                hpa:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Enable (true) or disable (false) HoritzontalPodAutoscaler
+                    minReplicas:
+                      type: integer
+                      description: Minimum number of replicas
+                    maxReplicas:
+                      type: integer
+                      description: Maximum number of replicas
+                    resourceName:
+                      type: string
+                      description: Resource used for autoscale (cpu/memory)
+                      enum:
+                      - cpu
+                      - memory
+                    resourceUtilization:
+                      type: integer
+                      description: Percentage usage of the resource used for autoscale
+                replicas:
+                  type: integer
+                  description: Number of replicas (ignored if hpa is enabled)
+                env:
+                  type: object
+                  description: Environment variables
+                  properties:
+                    logFormat:
+                      type: string
+                      description: Log format (text/json)
+                    redisAsync:
+                      type: boolean
+                      description: Enable (true) or disable (false) redis async mode
+                resources:
+                  type: object
+                  properties:
+                    requests:
+                      type: object
+                      properties:
+                        cpu:
+                          type: string
+                          pattern: "[0-9]+m?$"
+                          description: Override CPU requests
+                        memory:
+                          type: string
+                          pattern: "[0-9]+([kKmMgGtTpPeE]i?)?$"
+                          description: Override Memory requests
+                    limits:
+                      type: object
+                      properties:
+                        cpu:
+                          type: string
+                          pattern: "[0-9]+m?$"
+                          description: Override CPU limits
+                        memory:
+                          type: string
+                          pattern: "[0-9]+([kKmMgGtTpPeE]i?)?$"
+                          description: Override Memory limits
+                livenessProbe:
+                  type: object
+                  properties:
+                    initialDelaySeconds:
+                      type: integer
+                      description: Override liveness probe initial delay (seconds)
+                    timeoutSeconds:
+                      type: integer
+                      description: Override liveness probe timeout (seconds)
+                    periodSeconds:
+                      type: integer
+                      description: Override liveness probe period (seconds)
+                    successThreshold:
+                      type: integer
+                      description: Override liveness probe success threshold
+                    failureThreshold:
+                      type: integer
+                      description: Override liveness probe failure threshold
+                readinessProbe:
+                  type: object
+                  properties:
+                    initialDelaySeconds:
+                      type: integer
+                      description: Override readiness probe initial delay (seconds)
+                    timeoutSeconds:
+                      type: integer
+                      description: Override readiness probe timeout (seconds)
+                    periodSeconds:
+                      type: integer
+                      description: Override readiness probe period (seconds)
+                    successThreshold:
+                      type: integer
+                      description: Override readiness probe success threshold
+                    failureThreshold:
+                      type: integer
+                      description: Override readiness probe failure threshold
+            cron:
+              type: object
+              properties:
+                replicas:
+                  type: integer
+                  description: Number of replicas
+                resources:
+                  type: object
+                  properties:
+                    requests:
+                      type: object
+                      properties:
+                        cpu:
+                          type: string
+                          pattern: "[0-9]+m?$"
+                          description: Override CPU requests
+                        memory:
+                          type: string
+                          pattern: "[0-9]+([kKmMgGtTpPeE]i?)?$"
+                          description: Override Memory requests
+                    limits:
+                      type: object
+                      properties:
+                        cpu:
+                          type: string
+                          pattern: "[0-9]+m?$"
+                          description: Override CPU limits
+                        memory:
+                          type: string
+                          pattern: "[0-9]+([kKmMgGtTpPeE]i?)?$"
+                          description: Override Memory limits
+        status:
+          description: Status defines the observed state of Backend
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+      type: object
   versions:
-    - name: v1alpha1
-      served: true
-      storage: true
+  - name: v1alpha1
+    served: true
+    storage: true

@@ -1,21 +1,21 @@
+---
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  name: backends.saas.3scale.net
+  name: systems.saas.3scale.net
 spec:
   group: saas.3scale.net
   names:
-    kind: Backend
-    listKind: BackendList
-    plural: backends
-    singular: backend
+    kind: System
+    listKind: SystemList
+    plural: systems
+    singular: system
   scope: Namespaced
   subresources:
     status: {}
   validation:
     openAPIV3Schema:
-      type: object
-      description: Backend is the Schema for Backend instance
+      description: System is the Schema for the systems API
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -30,11 +30,11 @@ spec:
         metadata:
           type: object
         spec:
+          description: Spec defines the desired state of System
           type: object
-          description: BackendSpec defines the desired state of Backend
+          x-kubernetes-preserve-unknown-fields: true
           required:
-          - secret
-          - listener
+            - secret
           properties:
             image:
               type: object
@@ -45,9 +45,13 @@ spec:
                 tag:
                   type: string
                   description: Image tag
-                pullSecretName:
+                pullPolicy:
                   type: string
-                  description: Quay pull secret for private repository
+                  description: Determine if the image should be pulled prior to starting the container
+                  enum:
+                    - Always
+                    - IfNotPresent
+                    - Never
             grafanaDashboard:
               type: object
               properties:
@@ -60,77 +64,175 @@ spec:
                     value:
                       type: string
                       description: Label value used by grafana-operator for dashboard discovery
-            config:
+            env:
               type: object
               properties:
-                rackEnv:
+                ampRelease:
                   type: string
-                  description: Rack environment (used for example for error-monitoring ID)
-                masterServiceId:
-                  type: integer
-                  description: Master service account ID in Porta
-                oauthMaxTokenSize:
-                  type: integer
-                  description: Oauth Max token size (bytes)
-                legacyReferrerFilters:
+                  description: AMP release number
+                forceSSL:
                   type: boolean
-                  description: Enable (true) or disable (false) Legacy Referrer Filters
+                  description: Enable (true) or disable (false) enforcing SSL
+                sslCertDir:
+                  type: string
+                  description: SSL certificates path
+                sandboxProxyOpensslVerifyMode:
+                  type: string
+                  description: OpenSSL verification mode for sandbox proxy
+                threescaleSuperdomain:
+                  type: string
+                  description: 3scale superdomain
+                threescaleProviderPlan:
+                  type: string
+                  description: 3scale provider plan
+                externalSphinx:
+                  type: string
+                  description: The external Sphinx DNS endpoint
+                rails:
+                  type: object
+                  properties:
+                    env:
+                      type: string
+                      description: Rails environment
+                    logLevel:
+                      type: string
+                      description: Rails log level
+                      enum:
+                        - debug
+                        - info
+                        - warn
+                        - error
+                        - fatal
+                        - unknown
+                    logToStdout:
+                      type: boolean
+                      description:  Enable (true) or disable (false) writting logs to the stdout
             secret:
               type: object
               required:
-              - redisVaultPath
-              - systemEventsHookVaultPath
-              - internalApiVaultPath
+                - appVaultPath
+                - configVaultPath
+                - backendListenerVaultPath
+                - databaseVaultPath
+                - eventsHookVaultPath
+                - masterApicastVaultPath
+                - memcachedVaultPath
+                - multitenantAssetsS3VaultPath
+                - recaptchaVaultPath
+                - redisVaultPath
+                - seedVaultPath
+                - smtpVaultPath
               properties:
+                multitenantIngressTLS:
+                  type: string
+                  description: Multitenant Ingress TLS secret name
+                appVaultPath:
+                  type: string
+                  description: Vault Path with system-app secret definition
+                backendListenerVaultPath:
+                  type: string
+                  description: Vault Path with system-backend-listener secret definition
+                configVaultPath:
+                  type: string
+                  description: Vault Path with system-config secret definition
+                databaseVaultPath:
+                  type: string
+                  description: Vault Path with system-database secret definition
+                eventsHookVaultPath:
+                  type: string
+                  description: Vault Path with system-events-hook secret definition
+                masterApicastVaultPath:
+                  type: string
+                  description: Vault Path with system-master-apicast secret definition
+                memcachedVaultPath:
+                  type: string
+                  description: Vault Path with system-memcached secret definition
+                multitenantAssetsS3VaultPath:
+                  type: string
+                  description: Vault Path with system-multitenant-assets-s3 secret definition
+                recaptchaVaultPath:
+                  type: string
+                  description: Vault Path with system-recaptcha secret definition
                 redisVaultPath:
                   type: string
-                  description: Vault Path with backend-redis secret definition
-                systemEventsHookVaultPath:
+                  description: Vault Path with system-redis secret definition
+                seedVaultPath:
                   type: string
-                  description: Vault Path with backend-system-events-hook secret definition
-                internalApiVaultPath:
+                  description: Vault Path with system-seed secret definition
+                smtpVaultPath:
                   type: string
-                  description: Vault Path with backend-internal-api secret definition
-                errorMonitoringVaultPath:
-                  type: string
-                  description: Vault Path with backend-error-monitoring secret definition
-            errorMonitoringEnabled:
-              type: boolean
-              description: Mount (true) or not (false) backend-error-monitoring Secret on deployments
-            listener:
+                  description: Vault Path with system-smtp secret definition
+            app:
               type: object
-              required:
-              - externalDnsHostname
-              - marin3r
               properties:
-                externalDnsHostname:
-                  type: string
-                  description: DNS hostnames to manage on AWS Route53 by external-dns
-                marin3r:
+                replicas:
+                  type: integer
+                  description: Number of replicas (ignored if hpa is enabled)
+                resources:
                   type: object
-                  required:
-                  - enabled
                   properties:
-                    enabled:
-                      type: boolean
-                      description:  Enable (true) or disable (false) marin3r
-                    annotations:
-                      additionalProperties:
-                        type: string
-                      description: Map of marin3r annotations
+                    requests:
                       type: object
-                loadBalancer:
+                      properties:
+                        cpu:
+                          type: string
+                          pattern: "[0-9]+m?$"
+                          description: Override CPU requests
+                        memory:
+                          type: string
+                          pattern: "[0-9]+([kKmMgGtTpPeE]i?)?$"
+                          description: Override Memory requests
+                    limits:
+                      type: object
+                      properties:
+                        cpu:
+                          type: string
+                          pattern: "[0-9]+m?$"
+                          description: Override CPU limits
+                        memory:
+                          type: string
+                          pattern: "[0-9]+([kKmMgGtTpPeE]i?)?$"
+                          description: Override Memory limits
+                    storage:
+                      type: string
+                      pattern: "[0-9]+([kKmMgGtTpPeE]i?)?$"
+                      description: Override storage size for the database
+                livenessProbe:
                   type: object
                   properties:
-                    proxyProtocol:
-                      type: boolean
-                      description:  Enable (true) or disable (false) proxy protocol with aws-nlb-helper-operator
-                    crossZoneLoadBalancingEnabled:
-                      type: boolean
-                      description: Enable (true) or disable (false) cross zone load balancing
-                    eipAllocations:
-                      type: string
-                      description: Optional Elastic IPs allocations
+                    initialDelaySeconds:
+                      type: integer
+                      description: Override liveness probe initial delay (seconds)
+                    timeoutSeconds:
+                      type: integer
+                      description: Override liveness probe timeout (seconds)
+                    periodSeconds:
+                      type: integer
+                      description: Override liveness probe period (seconds)
+                    successThreshold:
+                      type: integer
+                      description: Override liveness probe success threshold
+                    failureThreshold:
+                      type: integer
+                      description: Override liveness probe failure threshold
+                readinessProbe:
+                  type: object
+                  properties:
+                    initialDelaySeconds:
+                      type: integer
+                      description: Override readiness probe initial delay (seconds)
+                    timeoutSeconds:
+                      type: integer
+                      description: Override readiness probe timeout (seconds)
+                    periodSeconds:
+                      type: integer
+                      description: Override readiness probe period (seconds)
+                    successThreshold:
+                      type: integer
+                      description: Override readiness probe success threshold
+                    failureThreshold:
+                      type: integer
+                      description: Override readiness probe failure threshold
                 pdb:
                   type: object
                   properties:
@@ -161,27 +263,17 @@ spec:
                       type: string
                       description: Resource used for autoscale (cpu/memory)
                       enum:
-                      - cpu
-                      - memory
+                        - cpu
+                        - memory
                     resourceUtilization:
                       type: integer
                       description: Percentage usage of the resource used for autoscale
+            sidekiq:
+              type: object
+              properties:
                 replicas:
                   type: integer
                   description: Number of replicas (ignored if hpa is enabled)
-                env:
-                  type: object
-                  description: Environment variables
-                  properties:
-                    logFormat:
-                      type: string
-                      description: Log format (text/json)
-                    listenerWorkers:
-                      type: integer
-                      description: Number of worker processes per listener pod
-                    redisAsync:
-                      type: boolean
-                      description: Enable (true) or disable (false) redis async mode
                 resources:
                   type: object
                   properties:
@@ -243,9 +335,6 @@ spec:
                     failureThreshold:
                       type: integer
                       description: Override readiness probe failure threshold
-            worker:
-              type: object
-              properties:
                 pdb:
                   type: object
                   properties:
@@ -276,24 +365,43 @@ spec:
                       type: string
                       description: Resource used for autoscale (cpu/memory)
                       enum:
-                      - cpu
-                      - memory
+                        - cpu
+                        - memory
                     resourceUtilization:
                       type: integer
                       description: Percentage usage of the resource used for autoscale
-                replicas:
-                  type: integer
-                  description: Number of replicas (ignored if hpa is enabled)
+            sphinx:
+              type: object
+              properties:
                 env:
                   type: object
                   description: Environment variables
                   properties:
-                    logFormat:
-                      type: string
-                      description: Log format (text/json)
-                    redisAsync:
-                      type: boolean
-                      description: Enable (true) or disable (false) redis async mode
+                    thinking:
+                      type: object
+                      description: Environment variables
+                      properties:
+                        port:
+                          type: integer
+                          description: The TCP port Sphinx will run its daemon on
+                        bindAddress:
+                          type: string
+                          description: Allows setting the TCP host for Sphinx to a different address
+                        configFile:
+                          type: string
+                          description: Sphinx configuration file path
+                        dbPath:
+                          type: string
+                          description: Sphinx database path
+                        pidFile:
+                          type: string
+                          description: Sphinx PID file path
+                    deltaIndexInterval:
+                      type: integer
+                      description: Interval used for adding chunks of brand new documents to the primary index at certain intervals without having to do a full re-index
+                    fullReindexInterval:
+                      type: integer
+                      description: Interval used to do a full re-index
                 resources:
                   type: object
                   properties:
@@ -355,38 +463,11 @@ spec:
                     failureThreshold:
                       type: integer
                       description: Override readiness probe failure threshold
-            cron:
-              type: object
-              properties:
-                replicas:
-                  type: integer
-                  description: Number of replicas
-                resources:
-                  type: object
-                  properties:
-                    requests:
-                      type: object
-                      properties:
-                        cpu:
-                          type: string
-                          pattern: "[0-9]+m?$"
-                          description: Override CPU requests
-                        memory:
-                          type: string
-                          pattern: "[0-9]+([kKmMgGtTpPeE]i?)?$"
-                          description: Override Memory requests
-                    limits:
-                      type: object
-                      properties:
-                        cpu:
-                          type: string
-                          pattern: "[0-9]+m?$"
-                          description: Override CPU limits
-                        memory:
-                          type: string
-                          pattern: "[0-9]+([kKmMgGtTpPeE]i?)?$"
-                          description: Override Memory limits
-  version: v1alpha1
+        status:
+          description: Status defines the observed state of System
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+      type: object
   versions:
   - name: v1alpha1
     served: true
