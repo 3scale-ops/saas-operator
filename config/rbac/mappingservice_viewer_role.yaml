@@ -1,0 +1,20 @@
+# permissions for end users to view mappingservices.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: mappingservice-viewer-role
+rules:
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - mappingservices
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - mappingservices/status
+  verbs:
+  - get

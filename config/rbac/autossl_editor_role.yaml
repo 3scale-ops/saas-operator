@@ -1,0 +1,24 @@
+# permissions for end users to edit autossls.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: autossl-editor-role
+rules:
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - autossls
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - autossls/status
+  verbs:
+  - get
