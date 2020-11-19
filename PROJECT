@@ -1,0 +1,29 @@
+domain: 3scale.net
+layout: ansible.sdk.operatorframework.io/v1
+projectName: saas-operator
+resources:
+- group: saas
+  kind: Apicast
+  version: v1alpha1
+- group: saas
+  kind: AutoSSL
+  version: v1alpha1
+- group: saas
+  kind: Backend
+  version: v1alpha1
+- group: saas
+  kind: CORSProxy
+  version: v1alpha1
+- group: saas
+  kind: EchoAPI
+  version: v1alpha1
+- group: saas
+  kind: MappingService
+  version: v1alpha1
+- group: saas
+  kind: System
+  version: v1alpha1
+- group: saas
+  kind: Zync
+  version: v1alpha1
+version: 3-alpha
