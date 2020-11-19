@@ -92,23 +92,3 @@
 - name: Manage backend GrafanaDashboard for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
   k8s:
     definition: "{{ lookup('template', 'backend-grafanadashboard.yaml') }}"
-
-- name: Manage backend-storage Main GrafanaDashboard for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
-  k8s:
-    definition: "{{ lookup('template', 'backend-storage-main-grafanadashboard.yaml') }}"
-
-- name: Manage backend-storage Redis GrafanaDashboard for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
-  k8s:
-    definition: "{{ lookup('template', 'backend-storage-redis-grafanadashboard.yaml') }}"
-
-- name: Manage backend-storage Node GrafanaDashboard for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
-  k8s:
-    definition: "{{ lookup('template', 'backend-storage-node-grafanadashboard.yaml') }}"
-
-- name: Manage backend-storage Twemproxy GrafanaDashboard for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
-  k8s:
-    definition: "{{ lookup('template', 'backend-storage-twemproxy-grafanadashboard.yaml') }}"
-
-- name: Manage backend-storage Sentinel GrafanaDashboard for Backend {{ meta.name }} on Namespace {{ meta.namespace }}
-  k8s:
-    definition: "{{ lookup('template', 'backend-storage-sentinel-grafanadashboard.yaml') }}"
