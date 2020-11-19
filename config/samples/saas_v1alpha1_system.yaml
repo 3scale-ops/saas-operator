@@ -1,16 +1,10 @@
 apiVersion: saas.3scale.net/v1alpha1
 kind: System
 metadata:
-  name: example
+  name: system-sample
 spec:
   image:
-    name: "quay.io/3scale/porta"
     tag: "nightly"
-    pullPolicy: "Always"
-  grafanaDashboard:
-    label:
-      key: "monitoring-key"
-      value: "middleware"
   env:
     ampRelease: 2.7.1
     rails:
@@ -38,64 +32,8 @@ spec:
     smtpVaultPath: secret/data/openshift/cluster-example/3scale/system-smtp
   app:
     replicas: 2
-    resources:
-      requests:
-        cpu: "200m"
-        memory: "1Gi"
-      limits:
-        cpu: "400m"
-        memory: "2Gi"
-    livenessProbe:
-      initialDelaySeconds: 30
-      timeoutSeconds: 1
-      periodSeconds: 10
-      successThreshold: 1
-      failureThreshold: 3
-    readinessProbe:
-      initialDelaySeconds: 30
-      timeoutSeconds: 5
-      periodSeconds: 10
-      successThreshold: 1
-      failureThreshold: 3
-    pdb:
-      enabled: true
-      maxUnavailable: "1"
-    hpa:
-      enabled: true
-      minReplicas: 3
-      maxReplicas: 6
-      resourceName: "cpu"
-      resourceUtilization: 90
   sidekiq:
     replicas: 2
-    resources:
-      requests:
-        cpu: "500m"
-        memory: "1Gi"
-      limits:
-        cpu: "1"
-        memory: "2Gi"
-    livenessProbe:
-      initialDelaySeconds: 10
-      timeoutSeconds: 3
-      periodSeconds: 15
-      successThreshold: 1
-      failureThreshold: 5
-    readinessProbe:
-      initialDelaySeconds: 10
-      timeoutSeconds: 5
-      periodSeconds: 30
-      successThreshold: 1
-      failureThreshold: 5
-    pdb:
-      enabled: false
-      maxUnavailable: "1"
-    hpa:
-      enabled: false
-      minReplicas: 2
-      maxReplicas: 4
-      resourceName: "cpu"
-      resourceUtilization: 90
   sphinx:
     env:
       thinking:
@@ -114,15 +52,3 @@ spec:
         cpu: "750m"
         memory: "5Gi"
       storage: "30Gi"
-    livenessProbe:
-      initialDelaySeconds: 60
-      timeoutSeconds: 3
-      periodSeconds: 15
-      successThreshold: 1
-      failureThreshold: 5
-    readinessProbe:
-      initialDelaySeconds: 60
-      timeoutSeconds: 5
-      periodSeconds: 30
-      successThreshold: 1
-      failureThreshold: 5
