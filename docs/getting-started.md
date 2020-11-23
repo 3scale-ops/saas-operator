@@ -1,34 +1,45 @@
 # Getting started
 
-## Controllers management
+## Deploy the controller using this repo
 
-* Operator initial creation:
+All the resouces requires to run the operator are available at [config](config/default)
+and use kustomize to generate the final YAMLs.
 
-```bash
-$ operator-sdk new threescale-saas-operator --api-version=saas.3scale.net/v1alpha1 --kind=AutoSSL --type=ansible
+By default rendered and applied on the fly by the different makefile targets,
+but you can generate the final YAMLs using:
+
+```
+bin/kustomize build config/default
 ```
 
-* New API addition:
-```bash
-$ operator-sdk add api --api-version=saas.3scale.net/v1alpha1 --kind=Backend
+### Install the crds
+
+Installs the custom resource definitions into the configured cluster in ~/.kube/config.
+
+```
+make install
 ```
 
-## Operator image
+### Deploy the controller
 
-* Apply changes on Operator ([ansible roles](../roles/)), then create a new operator image and push it to the registry with:
-```bash
-$ make operator-image-update
+Deploys the controller, rbac and crds into the configured cluster in ~/.kube/config.
+
 ```
-* Operator images are available [here](https://quay.io/repository/3scale/3scale-saas-operator?tab=tags)
-
-## Operator deploy
-
-* Deploy operator (namespace, CRD, service account, role, role binding and operator deployment):
-```bash
-$ make operator-deploy
+make deploy
 ```
-* Create any CR resource
-* Once tested, delete created operator objects (except CRD/namespace for caution):
-```bash
-$ make operator-delete
+
+### Uninstall the crds
+
+Deletes the custom resource definitions from the configured cluster in ~/.kube/config.
+
+```
+make uninstall
+```
+
+### Undeploy the controller
+
+Deletes the controller, rbac and crds from the configured cluster in ~/.kube/config.
+
+```
+make undeploy
 ```
