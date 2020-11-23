@@ -14,35 +14,31 @@ BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 # Image URL to use all building/pushing image targets
 IMG ?= quay.io/3scale/3scale-saas-operator:${VERSION}
 
+help: ## Print this help
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z0-9_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+
 all: docker-build
 
-# Run against the configured Kubernetes cluster in ~/.kube/config
-run: ansible-operator
+run: ansible-operator ## Run against the configured Kubernetes cluster in ~/.kube/config
 	$(ANSIBLE_OPERATOR) run
 
-# Install CRDs into a cluster
-install: kustomize
+install: kustomize ## Install CRDs into a cluster
 	$(KUSTOMIZE) build config/crd | kubectl apply -f -
 
-# Uninstall CRDs from a cluster
-uninstall: kustomize
+uninstall: kustomize ## Uninstall CRDs from a cluster
 	$(KUSTOMIZE) build config/crd | kubectl delete -f -
 
-# Deploy controller in the configured Kubernetes cluster in ~/.kube/config
-deploy: kustomize
+deploy: kustomize ## Deploy controller in the configured Kubernetes cluster in ~/.kube/config
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/default | kubectl apply -f -
 
-# Undeploy controller in the configured Kubernetes cluster in ~/.kube/config
-undeploy: kustomize
+undeploy: kustomize ## Undeploy controller in the configured Kubernetes cluster in ~/.kube/config
 	$(KUSTOMIZE) build config/default | kubectl delete -f -
 
-# Build the docker image
-docker-build:
+docker-build: ## Build the docker image
 	docker build . -t ${IMG}
 
-# Push the docker image
-docker-push:
+docker-push: ## Push the docker image
 	docker push ${IMG}
 
 PATH  := $(PATH):$(PWD)/bin
@@ -52,7 +48,7 @@ ARCH  = $(shell uname -m | sed 's/x86_64/amd64/')
 OSOPER   = $(shell uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/apple-darwin/' | sed 's/linux/linux-gnu/')
 ARCHOPER = $(shell uname -m )
 
-kustomize:
+kustomize: ## Install kustomize binary if missing
 ifeq (, $(shell which kustomize 2>/dev/null))
 	@{ \
 	set -e ;\
@@ -64,7 +60,7 @@ else
 KUSTOMIZE=$(shell which kustomize)
 endif
 
-ansible-operator:
+ansible-operator: ## Install ansible-operator binary if missing
 ifeq (, $(shell which ansible-operator 2>/dev/null))
 	@{ \
 	set -e ;\
@@ -78,15 +74,13 @@ else
 ANSIBLE_OPERATOR=$(shell which ansible-operator)
 endif
 
-# Generate bundle manifests and metadata, then validate generated files.
 .PHONY: bundle
-bundle: kustomize
+bundle: kustomize ## Generate bundle manifests and metadata, then validate generated files.
 	operator-sdk generate kustomize manifests -q
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
 	$(KUSTOMIZE) build config/manifests | operator-sdk generate bundle -q --overwrite --version $(VERSION) $(BUNDLE_METADATA_OPTS)
 	operator-sdk bundle validate ./bundle
 
-# Build the bundle image.
 .PHONY: bundle-build
-bundle-build:
+bundle-build: ## Build the bundle image.
 	docker build -f bundle.Dockerfile -t $(BUNDLE_IMG) .
