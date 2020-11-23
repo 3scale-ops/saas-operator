@@ -28,28 +28,18 @@ A Kubernetes Operator based on the Operator SDK to manage 3scale SaaS (hosted ve
 ## Documentation
 
 * [Getting started](docs/getting-started.md)
-* [Apicast Custom Resource Reference](docs/apicast-crd-reference.md)
-* [AutoSSL Custom Resource Reference](docs/autossl-crd-reference.md)
-* [Backend Custom Resource Reference](docs/backend-crd-reference.md)
-* [CORSProxy Custom Resource Reference](docs/corsproxy-crd-reference.md)
-* [EchoAPI Custom Resource Reference](docs/echoapi-crd-reference.md)
-* [MappingService Custom Resource Reference](docs/mappingservice-crd-reference.md)
-* [System Custom Resource Reference](docs/system-crd-reference.md)
-* [Zync Custom Resource Reference](docs/zync-crd-reference.md)
+* [Development](docs/development.md)
 
-## Development
+### Custom resources reference
 
-To run the operator locally you need to install some ansible dependencies first:
-
-* ansible-runner: `sudo dnf install python-ansible-runner`
-* ansible-runner-http: `pip install python-ansible-runner`
-* openshift ansible module: `pip install openshift`
-
-You can then run the operator with the following command:
-
-```bash
-operator-sdk run --local --watch-namespace <namespace>
-```
+* [Apicast Custom Resource Reference](docs/reference/apicast-crd-reference.md)
+* [AutoSSL Custom Resource Reference](docs/reference/autossl-crd-reference.md)
+* [Backend Custom Resource Reference](docs/reference/backend-crd-reference.md)
+* [CORSProxy Custom Resource Reference](docs/reference/corsproxy-crd-reference.md)
+* [EchoAPI Custom Resource Reference](docs/reference/echoapi-crd-reference.md)
+* [MappingService Custom Resource Reference](docs/reference/mappingservice-crd-reference.md)
+* [System Custom Resource Reference](docs/reference/system-crd-reference.md)
+* [Zync Custom Resource Reference](docs/reference/zync-crd-reference.md)
 
 ## License
 

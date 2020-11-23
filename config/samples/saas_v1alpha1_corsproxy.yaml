@@ -1,0 +1,13 @@
+apiVersion: saas.3scale.net/v1alpha1
+kind: CORSProxy
+metadata:
+  name: corsproxy-sample
+spec:
+  image:
+    tag: v1.1.0
+    pullSecretName: quay-pull-secret
+  secret:
+    systemDatabaseVaultPath: secret/data/openshift/cluster-example/3scale/cors-proxy-system-database
+  replicas: 1
+  ingress:
+    host: "*.example.3sca.net"

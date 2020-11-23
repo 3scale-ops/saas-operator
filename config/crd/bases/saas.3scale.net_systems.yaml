@@ -1,0 +1,474 @@
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: systems.saas.3scale.net
+spec:
+  group: saas.3scale.net
+  names:
+    kind: System
+    listKind: SystemList
+    plural: systems
+    singular: system
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: System is the Schema for the systems API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: Spec defines the desired state of System
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+          required:
+            - secret
+          properties:
+            image:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Image name (docker repository)
+                tag:
+                  type: string
+                  description: Image tag
+                pullPolicy:
+                  type: string
+                  description: Determine if the image should be pulled prior to starting the container
+                  enum:
+                    - Always
+                    - IfNotPresent
+                    - Never
+            grafanaDashboard:
+              type: object
+              properties:
+                label:
+                  type: object
+                  properties:
+                    key:
+                      type: string
+                      description: Label key used by grafana-operator for dashboard discovery
+                    value:
+                      type: string
+                      description: Label value used by grafana-operator for dashboard discovery
+            env:
+              type: object
+              properties:
+                ampRelease:
+                  type: string
+                  description: AMP release number
+                forceSSL:
+                  type: boolean
+                  description: Enable (true) or disable (false) enforcing SSL
+                sslCertDir:
+                  type: string
+                  description: SSL certificates path
+                sandboxProxyOpensslVerifyMode:
+                  type: string
+                  description: OpenSSL verification mode for sandbox proxy
+                threescaleSuperdomain:
+                  type: string
+                  description: 3scale superdomain
+                threescaleProviderPlan:
+                  type: string
+                  description: 3scale provider plan
+                externalSphinx:
+                  type: string
+                  description: The external Sphinx DNS endpoint
+                rails:
+                  type: object
+                  properties:
+                    env:
+                      type: string
+                      description: Rails environment
+                    logLevel:
+                      type: string
+                      description: Rails log level
+                      enum:
+                        - debug
+                        - info
+                        - warn
+                        - error
+                        - fatal
+                        - unknown
+                    logToStdout:
+                      type: boolean
+                      description:  Enable (true) or disable (false) writting logs to the stdout
+            secret:
+              type: object
+              required:
+                - appVaultPath
+                - configVaultPath
+                - backendListenerVaultPath
+                - databaseVaultPath
+                - eventsHookVaultPath
+                - masterApicastVaultPath
+                - memcachedVaultPath
+                - multitenantAssetsS3VaultPath
+                - recaptchaVaultPath
+                - redisVaultPath
+                - seedVaultPath
+                - smtpVaultPath
+              properties:
+                multitenantIngressTLS:
+                  type: string
+                  description: Multitenant Ingress TLS secret name
+                appVaultPath:
+                  type: string
+                  description: Vault Path with system-app secret definition
+                backendListenerVaultPath:
+                  type: string
+                  description: Vault Path with system-backend-listener secret definition
+                configVaultPath:
+                  type: string
+                  description: Vault Path with system-config secret definition
+                databaseVaultPath:
+                  type: string
+                  description: Vault Path with system-database secret definition
+                eventsHookVaultPath:
+                  type: string
+                  description: Vault Path with system-events-hook secret definition
+                masterApicastVaultPath:
+                  type: string
+                  description: Vault Path with system-master-apicast secret definition
+                memcachedVaultPath:
+                  type: string
+                  description: Vault Path with system-memcached secret definition
+                multitenantAssetsS3VaultPath:
+                  type: string
+                  description: Vault Path with system-multitenant-assets-s3 secret definition
+                recaptchaVaultPath:
+                  type: string
+                  description: Vault Path with system-recaptcha secret definition
+                redisVaultPath:
+                  type: string
+                  description: Vault Path with system-redis secret definition
+                seedVaultPath:
+                  type: string
+                  description: Vault Path with system-seed secret definition
+                smtpVaultPath:
+                  type: string
+                  description: Vault Path with system-smtp secret definition
+            app:
+              type: object
+              properties:
+                replicas:
+                  type: integer
+                  description: Number of replicas (ignored if hpa is enabled)
+                resources:
+                  type: object
+                  properties:
+                    requests:
+                      type: object
+                      properties:
+                        cpu:
+                          type: string
+                          pattern: "[0-9]+m?$"
+                          description: Override CPU requests
+                        memory:
+                          type: string
+                          pattern: "[0-9]+([kKmMgGtTpPeE]i?)?$"
+                          description: Override Memory requests
+                    limits:
+                      type: object
+                      properties:
+                        cpu:
+                          type: string
+                          pattern: "[0-9]+m?$"
+                          description: Override CPU limits
+                        memory:
+                          type: string
+                          pattern: "[0-9]+([kKmMgGtTpPeE]i?)?$"
+                          description: Override Memory limits
+                    storage:
+                      type: string
+                      pattern: "[0-9]+([kKmMgGtTpPeE]i?)?$"
+                      description: Override storage size for the database
+                livenessProbe:
+                  type: object
+                  properties:
+                    initialDelaySeconds:
+                      type: integer
+                      description: Override liveness probe initial delay (seconds)
+                    timeoutSeconds:
+                      type: integer
+                      description: Override liveness probe timeout (seconds)
+                    periodSeconds:
+                      type: integer
+                      description: Override liveness probe period (seconds)
+                    successThreshold:
+                      type: integer
+                      description: Override liveness probe success threshold
+                    failureThreshold:
+                      type: integer
+                      description: Override liveness probe failure threshold
+                readinessProbe:
+                  type: object
+                  properties:
+                    initialDelaySeconds:
+                      type: integer
+                      description: Override readiness probe initial delay (seconds)
+                    timeoutSeconds:
+                      type: integer
+                      description: Override readiness probe timeout (seconds)
+                    periodSeconds:
+                      type: integer
+                      description: Override readiness probe period (seconds)
+                    successThreshold:
+                      type: integer
+                      description: Override readiness probe success threshold
+                    failureThreshold:
+                      type: integer
+                      description: Override readiness probe failure threshold
+                pdb:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Enable (true) or disable (false) PodDisruptionBudget
+                    maxUnavailable:
+                      type: string
+                      pattern: "^[0-9]+%?$"
+                      description: Maximum number of unavailable pods (number or percentage of pods)
+                    minAvailable:
+                      type: string
+                      pattern: "^[0-9]+%?$"
+                      description: Minimum number of available pods (number or percentage of pods), overrides maxUnavailable
+                hpa:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Enable (true) or disable (false) HoritzontalPodAutoscaler
+                    minReplicas:
+                      type: integer
+                      description: Minimum number of replicas
+                    maxReplicas:
+                      type: integer
+                      description: Maximum number of replicas
+                    resourceName:
+                      type: string
+                      description: Resource used for autoscale (cpu/memory)
+                      enum:
+                        - cpu
+                        - memory
+                    resourceUtilization:
+                      type: integer
+                      description: Percentage usage of the resource used for autoscale
+            sidekiq:
+              type: object
+              properties:
+                replicas:
+                  type: integer
+                  description: Number of replicas (ignored if hpa is enabled)
+                resources:
+                  type: object
+                  properties:
+                    requests:
+                      type: object
+                      properties:
+                        cpu:
+                          type: string
+                          pattern: "[0-9]+m?$"
+                          description: Override CPU requests
+                        memory:
+                          type: string
+                          pattern: "[0-9]+([kKmMgGtTpPeE]i?)?$"
+                          description: Override Memory requests
+                    limits:
+                      type: object
+                      properties:
+                        cpu:
+                          type: string
+                          pattern: "[0-9]+m?$"
+                          description: Override CPU limits
+                        memory:
+                          type: string
+                          pattern: "[0-9]+([kKmMgGtTpPeE]i?)?$"
+                          description: Override Memory limits
+                livenessProbe:
+                  type: object
+                  properties:
+                    initialDelaySeconds:
+                      type: integer
+                      description: Override liveness probe initial delay (seconds)
+                    timeoutSeconds:
+                      type: integer
+                      description: Override liveness probe timeout (seconds)
+                    periodSeconds:
+                      type: integer
+                      description: Override liveness probe period (seconds)
+                    successThreshold:
+                      type: integer
+                      description: Override liveness probe success threshold
+                    failureThreshold:
+                      type: integer
+                      description: Override liveness probe failure threshold
+                readinessProbe:
+                  type: object
+                  properties:
+                    initialDelaySeconds:
+                      type: integer
+                      description: Override readiness probe initial delay (seconds)
+                    timeoutSeconds:
+                      type: integer
+                      description: Override readiness probe timeout (seconds)
+                    periodSeconds:
+                      type: integer
+                      description: Override readiness probe period (seconds)
+                    successThreshold:
+                      type: integer
+                      description: Override readiness probe success threshold
+                    failureThreshold:
+                      type: integer
+                      description: Override readiness probe failure threshold
+                pdb:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Enable (true) or disable (false) PodDisruptionBudget
+                    maxUnavailable:
+                      type: string
+                      pattern: "^[0-9]+%?$"
+                      description: Maximum number of unavailable pods (number or percentage of pods)
+                    minAvailable:
+                      type: string
+                      pattern: "^[0-9]+%?$"
+                      description: Minimum number of available pods (number or percentage of pods), overrides maxUnavailable
+                hpa:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Enable (true) or disable (false) HoritzontalPodAutoscaler
+                    minReplicas:
+                      type: integer
+                      description: Minimum number of replicas
+                    maxReplicas:
+                      type: integer
+                      description: Maximum number of replicas
+                    resourceName:
+                      type: string
+                      description: Resource used for autoscale (cpu/memory)
+                      enum:
+                        - cpu
+                        - memory
+                    resourceUtilization:
+                      type: integer
+                      description: Percentage usage of the resource used for autoscale
+            sphinx:
+              type: object
+              properties:
+                env:
+                  type: object
+                  description: Environment variables
+                  properties:
+                    thinking:
+                      type: object
+                      description: Environment variables
+                      properties:
+                        port:
+                          type: integer
+                          description: The TCP port Sphinx will run its daemon on
+                        bindAddress:
+                          type: string
+                          description: Allows setting the TCP host for Sphinx to a different address
+                        configFile:
+                          type: string
+                          description: Sphinx configuration file path
+                        dbPath:
+                          type: string
+                          description: Sphinx database path
+                        pidFile:
+                          type: string
+                          description: Sphinx PID file path
+                    deltaIndexInterval:
+                      type: integer
+                      description: Interval used for adding chunks of brand new documents to the primary index at certain intervals without having to do a full re-index
+                    fullReindexInterval:
+                      type: integer
+                      description: Interval used to do a full re-index
+                resources:
+                  type: object
+                  properties:
+                    requests:
+                      type: object
+                      properties:
+                        cpu:
+                          type: string
+                          pattern: "[0-9]+m?$"
+                          description: Override CPU requests
+                        memory:
+                          type: string
+                          pattern: "[0-9]+([kKmMgGtTpPeE]i?)?$"
+                          description: Override Memory requests
+                    limits:
+                      type: object
+                      properties:
+                        cpu:
+                          type: string
+                          pattern: "[0-9]+m?$"
+                          description: Override CPU limits
+                        memory:
+                          type: string
+                          pattern: "[0-9]+([kKmMgGtTpPeE]i?)?$"
+                          description: Override Memory limits
+                livenessProbe:
+                  type: object
+                  properties:
+                    initialDelaySeconds:
+                      type: integer
+                      description: Override liveness probe initial delay (seconds)
+                    timeoutSeconds:
+                      type: integer
+                      description: Override liveness probe timeout (seconds)
+                    periodSeconds:
+                      type: integer
+                      description: Override liveness probe period (seconds)
+                    successThreshold:
+                      type: integer
+                      description: Override liveness probe success threshold
+                    failureThreshold:
+                      type: integer
+                      description: Override liveness probe failure threshold
+                readinessProbe:
+                  type: object
+                  properties:
+                    initialDelaySeconds:
+                      type: integer
+                      description: Override readiness probe initial delay (seconds)
+                    timeoutSeconds:
+                      type: integer
+                      description: Override readiness probe timeout (seconds)
+                    periodSeconds:
+                      type: integer
+                      description: Override readiness probe period (seconds)
+                    successThreshold:
+                      type: integer
+                      description: Override readiness probe success threshold
+                    failureThreshold:
+                      type: integer
+                      description: Override readiness probe failure threshold
+        status:
+          description: Status defines the observed state of System
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+      type: object
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true

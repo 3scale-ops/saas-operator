@@ -1,0 +1,10 @@
+# Adds namespace to all resources.
+namespace: saas-operator-system
+
+namePrefix: saas-operator-
+
+bases:
+- ../crd
+- ../rbac
+- ../manager
+- ../prometheus
