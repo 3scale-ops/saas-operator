@@ -28,6 +28,7 @@ A Kubernetes Operator based on the Operator SDK to manage 3scale SaaS (hosted ve
 ## Documentation
 
 * [Getting started](docs/getting-started.md)
+* [Development](docs/development.md)
 
 ### Custom resources reference
 
@@ -39,20 +40,6 @@ A Kubernetes Operator based on the Operator SDK to manage 3scale SaaS (hosted ve
 * [MappingService Custom Resource Reference](docs/reference/mappingservice-crd-reference.md)
 * [System Custom Resource Reference](docs/reference/system-crd-reference.md)
 * [Zync Custom Resource Reference](docs/reference/zync-crd-reference.md)
-
-## Development
-
-To run the operator locally you need to install some ansible dependencies first:
-
-* ansible-runner: `sudo dnf install python-ansible-runner`
-* ansible-runner-http: `pip install python-ansible-runner`
-* openshift ansible module: `pip install openshift`
-
-You can then run the operator with the following command:
-
-```bash
-operator-sdk run --local --watch-namespace <namespace>
-```
 
 ## License
 
