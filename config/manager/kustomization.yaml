@@ -8,5 +8,6 @@ patchesStrategicMerge:
 - patches/manager.resources.yaml
 - patches/manager.imagePullPolicy.yaml
 - patches/manager.probes.yaml
+- patches/manager.env.yaml
 resources:
 - bases/manager.yaml
