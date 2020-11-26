@@ -1,7 +1,15 @@
 # Current Operator version
-VERSION ?= build
-# Default bundle image tag
-BUNDLE_IMG ?= quay.io/3scale/3scale-saas-operator-bundle:$(VERSION)
+VERSION ?= 0.8.0
+
+# Current Docker Image Tag
+TAG ?= $(VERSION)
+
+# Controller image
+IMG ?= quay.io/3scale/saas-operator:${TAG}
+
+# Bundle image
+BUNDLE_IMG ?= quay.io/3scaleops/saas-operator-bundle:${TAG}
+
 # Options for 'bundle-build'
 ifneq ($(origin CHANNELS), undefined)
 BUNDLE_CHANNELS := --channels=$(CHANNELS)
@@ -10,9 +18,6 @@ ifneq ($(origin DEFAULT_CHANNEL), undefined)
 BUNDLE_DEFAULT_CHANNEL := --default-channel=$(DEFAULT_CHANNEL)
 endif
 BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
-
-# Image URL to use all building/pushing image targets
-IMG ?= quay.io/3scale/3scale-saas-operator:${VERSION}
 
 help: ## Print this help
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z0-9_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -84,3 +89,7 @@ bundle: kustomize ## Generate bundle manifests and metadata, then validate gener
 .PHONY: bundle-build
 bundle-build: ## Build the bundle image.
 	docker build -f bundle.Dockerfile -t $(BUNDLE_IMG) .
+
+.PHONY: bundle-push
+bundle-push: ## Push the bundle image.
+	docker push $(BUNDLE_IMG)
