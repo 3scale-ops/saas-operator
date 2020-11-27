@@ -573,7 +573,7 @@ spec:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
                 - name: ANSIBLE_GATHERING
                   value: explicit
-                image: quay.io/3scale/saas-operator:0.8.1
+                image: quay.io/3scale/saas-operator:v0.8.1
                 imagePullPolicy: Always
                 livenessProbe:
                   failureThreshold: 3

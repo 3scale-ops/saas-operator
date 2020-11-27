@@ -4,7 +4,7 @@ CHANNELS ?= alpha
 DEFAULT_CHANNEL ?= alpha
 
 # Current Docker Image Tag
-TAG ?= $(VERSION)
+TAG ?= v$(VERSION)
 
 # Controller image
 IMG ?= quay.io/3scale/saas-operator:${TAG}
