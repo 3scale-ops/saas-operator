@@ -1,5 +1,7 @@
 # Current Operator version
 VERSION ?= 0.8.0
+CHANNELS ?= alpha
+DEFAULT_CHANNEL ?= alpha
 
 # Current Docker Image Tag
 TAG ?= $(VERSION)
@@ -9,6 +11,9 @@ IMG ?= quay.io/3scale/saas-operator:${TAG}
 
 # Bundle image
 BUNDLE_IMG ?= quay.io/3scaleops/saas-operator-bundle:${TAG}
+
+# Catalog Image
+CATALOG_IMG ?= quay.io/3scaleops/olm-catalog:bundle
 
 # Options for 'bundle-build'
 ifneq ($(origin CHANNELS), undefined)
@@ -93,3 +98,18 @@ bundle-build: ## Build the bundle image.
 .PHONY: bundle-push
 bundle-push: ## Push the bundle image.
 	docker push $(BUNDLE_IMG)
+
+bundle-publish:
+	opm index rm \
+		--build-tool docker \
+		--operators saas-operator \
+		--from-index $(CATALOG_IMG) \
+		--tag $(CATALOG_IMG)
+	docker push $(CATALOG_IMG)
+	opm index add \
+		--build-tool docker \
+		--mode replaces \
+		--bundles $(BUNDLE_IMG) \
+		--from-index $(CATALOG_IMG) \
+		--tag $(CATALOG_IMG)
+	docker push $(CATALOG_IMG)
