@@ -1,0 +1,431 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: |-
+      [
+        {
+          "apiVersion": "saas.3scale.net/v1alpha1",
+          "kind": "Apicast",
+          "metadata": {
+            "name": "apicast-sample"
+          },
+          "spec": {
+            "production": {
+              "env": {
+                "apicastConfigurationCache": "300",
+                "threescalePortalEndpoint": "http://mapping-service/config"
+              },
+              "externalDnsHostname": "apicast-production.test.stg-saas.3sca.net",
+              "image": {
+                "tag": "apicast-v3.8.0-r3"
+              },
+              "marin3r": {
+                "annotations": {
+                  "marin3r.3scale.net/node-id": "apicast-staging",
+                  "marin3r.3scale.net/ports": "gateway-http:38080,gateway-https:38443,envoy-metrics:9901"
+                },
+                "enabled": true
+              },
+              "replicas": 1
+            },
+            "staging": {
+              "env": {
+                "apicastConfigurationCache": "30",
+                "threescalePortalEndpoint": "http://mapping-service/config"
+              },
+              "externalDnsHostname": "apicast-staging.test.stg-saas.3sca.net",
+              "image": {
+                "tag": "apicast-v3.8.0-r3"
+              },
+              "marin3r": {
+                "annotations": {
+                  "marin3r.3scale.net/node-id": "apicast-staging",
+                  "marin3r.3scale.net/ports": "gateway-http:38080,gateway-https:38443,envoy-metrics:9901"
+                },
+                "enabled": true
+              },
+              "replicas": 1
+            }
+          }
+        },
+        {
+          "apiVersion": "saas.3scale.net/v1alpha1",
+          "kind": "AutoSSL",
+          "metadata": {
+            "name": "autossl-sample"
+          },
+          "spec": {
+            "env": {
+              "contactEmail": "example@3scale.net",
+              "domainWhitelist": "autossl.example.3scale.net",
+              "proxyEndpoint": "https://multitenant-admin.example.3scale.net",
+              "redisHost": "example-autossl-redis.ng.0001.use1.cache.amazonaws.com",
+              "verificationEndpoint": "https://multitenant-admin.example.3scale.net/swagger/spec.json"
+            },
+            "externalDnsHostname": "mtssl-edge-a.example.3scale.net,mtssl-edge-b.example.3scale.net,autossl.example.3scale.net",
+            "image": {
+              "pullSecretName": "quay-pull-secret",
+              "tag": "v1.0.0"
+            },
+            "replicas": 1
+          }
+        },
+        {
+          "apiVersion": "saas.3scale.net/v1alpha1",
+          "kind": "Backend",
+          "metadata": {
+            "name": "backend-sample"
+          },
+          "spec": {
+            "config": {
+              "rackEnv": "example"
+            },
+            "cron": {
+              "replicas": 1
+            },
+            "image": {
+              "tag": "v2.101.1"
+            },
+            "listener": {
+              "externalDnsHostname": "backend.example.3scale.net",
+              "marin3r": {
+                "annotations": {
+                  "marin3r.3scale.net/node-id": "backend-listener",
+                  "marin3r.3scale.net/ports": "backend-listener-http:38080,backend-listener-https:38443,envoy-metrics:9901"
+                },
+                "enabled": true
+              },
+              "replicas": 1
+            },
+            "secret": {
+              "internalApiVaultPath": "secret/data/openshift/cluster-example/3scale/backend-internal-api",
+              "redisVaultPath": "secret/data/openshift/cluster-example/3scale/backend-redis",
+              "systemEventsHookVaultPath": "secret/data/openshift/cluster-example/3scale/backend-system-events-hook"
+            },
+            "worker": {
+              "replicas": 1
+            }
+          }
+        },
+        {
+          "apiVersion": "saas.3scale.net/v1alpha1",
+          "kind": "CORSProxy",
+          "metadata": {
+            "name": "corsproxy-sample"
+          },
+          "spec": {
+            "image": {
+              "pullSecretName": "quay-pull-secret",
+              "tag": "v1.1.0"
+            },
+            "ingress": {
+              "host": "*.example.3sca.net"
+            },
+            "replicas": 1,
+            "secret": {
+              "systemDatabaseVaultPath": "secret/data/openshift/cluster-example/3scale/cors-proxy-system-database"
+            }
+          }
+        },
+        {
+          "apiVersion": "saas.3scale.net/v1alpha1",
+          "kind": "EchoAPI",
+          "metadata": {
+            "name": "echoapi-sample"
+          },
+          "spec": {
+            "externalDnsHostname": "echo-api.example.3scale.net",
+            "image": {
+              "tag": "v1.0.1"
+            },
+            "marin3r": {
+              "annotations": {
+                "marin3r.3scale.net/node-id": "echo-api",
+                "marin3r.3scale.net/ports": "echo-api-http:38080,echo-api-https:38443,envoy-metrics:9901"
+              },
+              "enabled": true
+            },
+            "replicas": 1
+          }
+        },
+        {
+          "apiVersion": "saas.3scale.net/v1alpha1",
+          "kind": "MappingService",
+          "metadata": {
+            "name": "mappingservice-sample"
+          },
+          "spec": {
+            "env": {
+              "apiHost": "http://system:3000",
+              "previewBaseDomain": "example.3scale.net"
+            },
+            "image": {
+              "tag": "mapping-service-v3.8.0-r3"
+            },
+            "replicas": 1,
+            "secret": {
+              "systemAdminTokenVaultPath": "secret/data/openshift/cluster-example/3scale/mappingservice-system-master-access-token"
+            }
+          }
+        },
+        {
+          "apiVersion": "saas.3scale.net/v1alpha1",
+          "kind": "System",
+          "metadata": {
+            "name": "system-sample"
+          },
+          "spec": {
+            "app": {
+              "replicas": 2
+            },
+            "env": {
+              "ampRelease": "2.7.1",
+              "forceSSL": true,
+              "rails": {
+                "env": "production",
+                "logLevel": "info",
+                "logToStdout": true
+              },
+              "sandboxProxyOpensslVerifyMode": "VERIFY_NONE",
+              "sslCertDir": "/etc/pki/tls/cert",
+              "threescaleProviderPlan": "enterprise",
+              "threescaleSuperdomain": "example.com"
+            },
+            "image": {
+              "tag": "nightly"
+            },
+            "secret": {
+              "appVaultPath": "secret/data/openshift/cluster-example/3scale/system-app",
+              "backendListenerVaultPath": "secret/data/openshift/cluster-example/3scale/system-backend-listener",
+              "configVaultPath": "secret/data/openshift/dev-eng-ocp/3sscale-saas/system-config",
+              "databaseVaultPath": "secret/data/openshift/cluster-example/3scale/system-database",
+              "eventsHookVaultPath": "secret/data/openshift/cluster-example/3scale/system-events-hook",
+              "masterApicastVaultPath": "secret/data/openshift/cluster-example/3scale/system-master-apicast",
+              "memcachedVaultPath": "secret/data/openshift/cluster-example/3scale/system-memcached",
+              "multitenantAssetsS3VaultPath": "secret/data/openshift/cluster-example/3scale/system-multitenant-assets-s3",
+              "multitenantIngressTLS": "wildcard-multitenant-certificate",
+              "recaptchaVaultPath": "secret/data/openshift/cluster-example/3scale/system-recaptcha",
+              "redisVaultPath": "secret/data/openshift/cluster-example/3scale/system-redis",
+              "seedVaultPath": "secret/data/openshift/cluster-example/3scale/system-seed",
+              "smtpVaultPath": "secret/data/openshift/cluster-example/3scale/system-smtp"
+            },
+            "sidekiq": {
+              "replicas": 2
+            },
+            "sphinx": {
+              "env": {
+                "deltaIndexInterval": 5,
+                "fullReindexInterval": 60,
+                "thinking": {
+                  "bindAddress": "0.0.0.0",
+                  "configFile": "/opt/sphinx/sphinx.conf",
+                  "dbPath": "/opt/sphinx",
+                  "pidFile": "/opt/sphinx/sphinx.pid",
+                  "port": 9306
+                }
+              },
+              "resources": {
+                "limits": {
+                  "cpu": "750m",
+                  "memory": "5Gi"
+                },
+                "requests": {
+                  "cpu": "250m",
+                  "memory": "4Gi"
+                },
+                "storage": "30Gi"
+              }
+            }
+          }
+        },
+        {
+          "apiVersion": "saas.3scale.net/v1alpha1",
+          "kind": "Zync",
+          "metadata": {
+            "name": "zync-sample"
+          },
+          "spec": {
+            "que": {
+              "replicas": 1
+            },
+            "secret": {
+              "vaultPath": "secret/data/openshift/cluster-example/3scale/zync"
+            },
+            "zync": {
+              "replicas": 1,
+              "resources": {
+                "limits": {
+                  "cpu": "1"
+                }
+              }
+            }
+          }
+        }
+      ]
+    capabilities: Basic Install
+    categories: Integration & Delivery
+    containerImage: quay.io/3scale/saas-operator
+    createdAt: 2020-06-02T15:49:31GMT
+    description: |-
+      The 3scale SaaS Operator creates and maintains a SaaS-ready deployment
+      of the Red Hat 3scale API Management on OpenShift.
+    operators.operatorframework.io/builder: operator-sdk-v1.2.0
+    operators.operatorframework.io/project_layout: ansible.sdk.operatorframework.io/v1
+    repository: https://github.com/3scale/saas-operator
+    support: Red Hat
+  name: saas-operator.v0.8.0
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+    - kind: Apicast
+      name: apicasts.saas.3scale.net
+      version: v1alpha1
+    - kind: AutoSSL
+      name: autossls.saas.3scale.net
+      version: v1alpha1
+    - kind: Backend
+      name: backends.saas.3scale.net
+      version: v1alpha1
+    - kind: CORSProxy
+      name: corsproxies.saas.3scale.net
+      version: v1alpha1
+    - kind: EchoAPI
+      name: echoapis.saas.3scale.net
+      version: v1alpha1
+    - kind: MappingService
+      name: mappingservices.saas.3scale.net
+      version: v1alpha1
+    - kind: System
+      name: systems.saas.3scale.net
+      version: v1alpha1
+    - kind: Zync
+      name: zyncs.saas.3scale.net
+      version: v1alpha1
+  description: |
+    The 3scale SaaS Operator creates and maintains a SaaS-ready deployment of the Red Hat 3scale API Management on OpenShift.
+
+    ## Supported Features
+
+    - **Installer:** A way to install a SaaS ready deployment of the 3scale API Management components, providing configurability options at the time of installation
+    - **Reconcilliation:** Tunable CRD parameters for each component after 3scale API Management solution is installed
+
+    ## Documentation
+
+    - [Getting started](https://github.com/3scale/saas-operator/blob/master/docs/getting-started.md)
+    - [Custom Resource Definitions reference](https://github.com/3scale/saas-operator/tree/master/docs/reference)
+    - [Development](https://github.com/3scale/saas-operator/blob/master/docs/development.md)
+
+    ## License
+
+    3scale SaaS Operator is licensed under the [Apache 2.0 license](https://github.com/3scale/saas-operator/blob/master/LICENSE)
+  displayName: 3scale SaaS Operator
+  icon:
+  - base64data: |
+      iVBORw0KGgoAAAANSUhEUgAAAFAAAAAoCAYAAABpYH0BAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3
+      Jnm+48GgAAABp0RVh0VGl0bGUATkdJTlhfUGFydG5lcnNfbG9nb198DJyHAAAGcklEQVRo3u2Ye2wURRzHlz4OKkiF0lqxtLfX8iiVEKwFpCIUakQR
+      NYGSKFrAxEoEKxTYuwoIGFFATFSIGqOi8R2NCqLGJyAmRkEBFYwCEgTrI4DSu2sBwfP7a7/bDMtsW/40nV/yye3Nzs7s/ub3mrEsI0aMGDFixIgRI0
+      baLwPAKKOGc5N88ACvD4F/qcR5bBsCio2azpYqEAY9wPVsewP8BDJAEjgffAQ2gZ4gZNRmWVeDoaASVGvui/WlgfvBz6A7SAcT2dahJUgX/VNpywZP
+      gpGgEzgALgc2GMc+N4EyXncDY9m3w0kAvAweVNpuBwmwnkrJ1Dw3Bgzm9R3s37+jKU/iWg2vJ4HneS0uuggMomUdYPuVjIkl/L8CfEErFsvsB/qqEy
+      SWBLs0OPbQeNieEAvbt8hvgxMcLu0+Gf86cBuYBsbT6v2kknE7rR3fOpWGoZtX2kaACo53M72ra1uDpvElXWVecmxOTs9YOHh3LBIcp/RL5+8aWtoy
+      /v+W/4uVjH3IfSg6Lz8LStsPDoJtsYj9GRS4BdeHo2F7X/3cfr2UOZ4B/4DvmaA2cfxTwNG8+2DOHaVyWpNipe8Uz70+4BdwFGxjghSjOMiwNsBv0B
+      SwgPFrsatIfNxmkBDEWpiNF/KZLDAT5tkzGi4ogvZz8H+4MuadYHqLAsP2TFFeoqo49QyrnJOThvYD8UhwBpty+YHDNO8pHlLPCkCVh8EusBx80oYC
+      HwXbwSrwgefeYt4LaPSzAzzmN6iY5wZwEUuTVCrwiKLAhcyyu9QHo06wuqlPxJ5rNStxL8cI0M0tjvUQ+ryjmxz3NkQj9n38O5YK1LnXpbSMbkpbEi
+      1dLLOQSdBuxVB+50IUgdO0OldeIjpZAlb6KTBZ8fF0xi8ox56Fj2sAO+JOn94eNxAXmBxz7Kvi4eDeeDjvGo4zXnGrv1xFxOYHsxvn2nlaBcKdwXz+
+      vYIKvPAcyq7TXDyRrxizdTKeYSCb/78Btcr9Z2lI5ySduKonwGiwWr7Jp28SFZLLuDRcyd5yrzOtz23Txoyj4VC6JJNYJFQec4KzxdLra0P9lKQlin
+      +PAfxallB9fRLEi+BD5f8ssMenjHqV47oyG/yo9J3G2LuIibScSbK3JmycUbpEuepVdGPJQucBcbmBnhj0dnNGLQrEndBl8XvypL/EL7HAp8BG9n2d
+      Y9Z4J5R4KolDgPLqYMWrJBZ6XPVp8DnYDepAIz9uhSf0yLvfqrTJjug4KPVMKwsTZ81qKXH8pBJvO1EHb4GtYB84Qgv/TTNmi5Qw4AcUpQaoEClLxL
+      32U0lZ9bUXZ8TCoV2MjyeRpafxOZvljsj7VODi1sy/aSEkGzuh5e3wlKkcM08pXWKemCjyJt9dFSmHjtEwVJH69vE25u7K7/m4rZOWdLroI8pLW3SR
+      hJuB4469yE0u5GiiuW9/FuEZdOWRjIsWXHVq1Mkr000cDYeWSiJRFmF6K6VWgqHGfa+trNlU1lBZqlV/Cr7U9H2CZUsXGsgIn7lncuuqlQIG13c9Vv
+      k3zTyXq9+VJckyjwLjiYomRa3iB06h6w9SMu16cdV2KPAGukyypms3jj+KcekUq4JtGk4whrql0WnWlbq+4saTwTqw1kdH1XRp35V9hWauvmylJ3hK
+      sZvSGAkG8cF/tJQ4sEjez+QzAWbywpa4F7FXo+9GT6yzEncVdG6qNx3bLREKqaQJGheuZpnSm2GlzkfRFhXh1nm1LHX8EsELNJ6VPG26wHNfPHMz3b
+      hVKVVWzXWnXp7iuClbShxE7VYRj4RKlP1wFa8dZsKx7oMNC/L7QFHbwXHZkTCB/ABiiIF7GpyCHGWelbSKY9wF/MokckqJqTtp8X5SRqsT6/vOk3y8
+      Us4EJWebX/P6CC3uMBetrj3nnju5+pnMZo3cQmXRvCuZsXZrzv5qaMUiWzjOWcdbsqWLR/KLXaK1uQMTS0anaN4lnSGgjAxSLCOZH53ZRtIpY31Y7j
+      EEXXk2ht9p8ZlhfK6URpPcnppwpBLAZTfyGpPCEK7mc0w26+hGy5gFvduuQtZYPTrqueBSzelDNpWaTyUncdsjlnYj+wyksju8zGAimEi3LvLEpwRd
+      KpU7hEl07wI1cRixrAhdt4ylw1oqaDI34d2VYnSzUZf/Qat7YJrgcb7FY6N7laCealTV9nZmqKdOTDFqMWLEiBEjRowY+V/Jf9KGC5ojEk+KAAAAAE
+      lFTkSuQmCC
+    mediatype: image/png
+  install:
+    spec:
+      deployments:
+      - name: saas-operator-controller-manager
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              control-plane: controller-manager
+          strategy: {}
+          template:
+            metadata:
+              labels:
+                control-plane: controller-manager
+            spec:
+              containers:
+              - args:
+                - --enable-leader-election
+                - --leader-election-id=saas-operator
+                env:
+                - name: WATCH_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.annotations['olm.targetNamespaces']
+                - name: ANSIBLE_GATHERING
+                  value: explicit
+                image: quay.io/3scale/saas-operator:0.8.0
+                imagePullPolicy: Always
+                livenessProbe:
+                  failureThreshold: 3
+                  httpGet:
+                    path: /healthz
+                    port: 6789
+                  initialDelaySeconds: 20
+                  periodSeconds: 20
+                  successThreshold: 1
+                  timeoutSeconds: 5
+                name: manager
+                readinessProbe:
+                  failureThreshold: 3
+                  httpGet:
+                    path: /healthz
+                    port: 6789
+                  initialDelaySeconds: 30
+                  periodSeconds: 15
+                  successThreshold: 1
+                  timeoutSeconds: 5
+                resources:
+                  limits:
+                    cpu: 900m
+                    memory: 1Gi
+                  requests:
+                    cpu: 450m
+                    memory: 256Mi
+              terminationGracePeriodSeconds: 10
+    strategy: deployment
+  installModes:
+  - supported: true
+    type: OwnNamespace
+  - supported: true
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+  - saas
+  - 3scale
+  - operations
+  links:
+  - name: GitHub Repository
+    url: https://github.com/3scale/saas-operator
+  - name: 3scale
+    url: https://3scale.net
+  maintainers:
+  - email: 3scale-operations@redhat.com
+    name: 3scale Ops
+  maturity: alpha
+  provider:
+    name: Red Hat
+    url: https://www.3scale.net/
+  version: 0.8.0
