@@ -20,12 +20,23 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions: {}
   description: |
-    The 3scale SaaS Operator creates and maintains a SaaS-ready deployment of the Red Hat 3scale API Management on OpenShift.
+    The 3scale SaaS Operator creates and maintains SaaS-ready deployments
+    of each component from the Red Hat 3scale API Management solution.
 
     ## Supported Features
 
     - **Installer:** A way to install a SaaS ready deployment of the 3scale API Management components, providing configurability options at the time of installation
     - **Reconcilliation:** Tunable CRD parameters for each component after 3scale API Management solution is installed
+
+    ## Supported Components
+
+    - **Apicast**
+    - **Autossl**
+    - **Backend**
+    - **CorsProxy**
+    - **MappingService**
+    - **System**
+    - **Zync**
 
     ## Documentation
 
