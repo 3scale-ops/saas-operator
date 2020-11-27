@@ -316,4 +316,5 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
+  replaces: saas-operator.v0.8.0
   version: 0.0.0
