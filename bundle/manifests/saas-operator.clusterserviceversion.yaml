@@ -280,29 +280,218 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
-    - kind: Apicast
+    - description: Defines the desired state of 3scale SaaS Apicast instance
+      displayName: Apicast
+      kind: Apicast
       name: apicasts.saas.3scale.net
+      resources:
+      - kind: Deployment
+        name: apicast-{{ env }}
+        version: v1
+      - kind: Service
+        name: apicast-{{ env }}
+        version: v1
+      - kind: Services
+        name: apicast-{{ env }}-management
+        version: v1
+      - kind: GrafanaDashboard
+        name: threescale-apicast
+        version: v1alpha1
+      - kind: GrafanaDashboard
+        name: threescale-apicast-services
+        version: v1alpha1
       version: v1alpha1
-    - kind: AutoSSL
+    - description: Defines the desired state of a 3scale SaaS AutoSSL instance
+      displayName: AutoSSL
+      kind: AutoSSL
       name: autossls.saas.3scale.net
+      resources:
+      - kind: Deployment
+        name: autossl
+        version: v1
+      - kind: Service
+        name: autossl
+        version: v1
+      - kind: GrafanaDashboard
+        name: threescale-autossl
+        version: v1alpha1
       version: v1alpha1
-    - kind: Backend
+    - description: Defines the desired state of a 3scale SaaS Backend instance
+      displayName: Backend
+      kind: Backend
       name: backends.saas.3scale.net
+      resources:
+      - kind: Deployment
+        name: backend-cron
+        version: v1
+      - kind: Deployment
+        name: backend-worker
+        version: v1
+      - kind: Deployment
+        name: backend-listener
+        version: v1
+      - kind: Service
+        name: backend-listener
+        version: v1
+      - kind: Service
+        name: backend-listener-internal
+        version: v1
+      - kind: GrafanaDashboard
+        name: threescale-backend
+        version: v1alpha1
+      - kind: ConfigMap
+        name: backend-environment
+        version: v1
+      - kind: SecretDefinition
+        name: backend-error-monitoring
+        version: v1alpha1
+      - kind: SecretDefinition
+        name: backend-redis
+        version: v1alpha1
+      - kind: SecretDefinition
+        name: backend-system-events-hook
+        version: v1alpha1
       version: v1alpha1
-    - kind: CORSProxy
+    - description: Defines the desired state of a 3scale SaaS CORSProxy instance
+      displayName: CORS Proxy
+      kind: CORSProxy
       name: corsproxies.saas.3scale.net
+      resources:
+      - kind: Deployment
+        name: cors-proxy
+        version: v1
+      - kind: Service
+        name: cors-proxy
+        version: v1
+      - kind: Ingress
+        name: cors-proxy
+        version: v1beta1
+      - kind: SecretDefinition
+        name: cors-proxy-system-database
+        version: v1alpha1
+      - kind: GrafanaDashboard
+        name: threescale-cors-proxy
+        version: v1alpha1
       version: v1alpha1
-    - kind: EchoAPI
+    - description: Defines the desired state of a 3scale SaaS EchoAPI instance
+      displayName: Echo API
+      kind: EchoAPI
       name: echoapis.saas.3scale.net
+      resources:
+      - kind: Deployment
+        name: echo-api
+        version: v1
+      - kind: Service
+        name: echo-api
+        version: v1
       version: v1alpha1
-    - kind: MappingService
+    - description: Defines the desired state of a 3scale SaaS MappingService instance
+      displayName: Mapping Service
+      kind: MappingService
       name: mappingservices.saas.3scale.net
+      resources:
+      - kind: Deployment
+        name: mapping-service
+        version: v1
+      - kind: Service
+        name: mapping-service
+        version: v1
+      - kind: SecretDefinition
+        name: mapping-service-system-master-access-token
+        version: v1alpha1
+      - kind: GrafanaDashboard
+        name: threescale-mapping-service
+        version: v1alpha1
       version: v1alpha1
-    - kind: System
+    - description: Defines the desired state of a 3scale SaaS System instance
+      displayName: System
+      kind: System
       name: systems.saas.3scale.net
+      resources:
+      - kind: ConfigMap
+        name: system-environment
+        version: v1
+      - kind: Deployment
+        name: system-app
+        version: v1
+      - kind: Deployment
+        name: system-sidekiq
+        version: v1
+      - kind: Service
+        name: system
+        version: v1beta1
+      - kind: Ingress
+        name: multitenant-system
+        version: v1
+      - kind: StatefulSet
+        name: system-sphinx
+        version: v1
+      - kind: Service
+        name: system-sphinx
+        version: v1
+      - kind: ConfigMap
+        name: system-sphinx
+        version: v1
+      - kind: SecretDefinition
+        name: system-app
+        version: v1alpha1
+      - kind: SecretDefinition
+        name: system-backend-listener
+        version: v1alpha1
+      - kind: SecretDefinition
+        name: system-config
+        version: v1alpha1
+      - kind: SecretDefinition
+        name: system-database
+        version: v1alpha1
+      - kind: SecretDefinition
+        name: system-events-hook
+        version: v1alpha1
+      - kind: SecretDefinition
+        name: system-master-apicast
+        version: v1alpha1
+      - kind: SecretDefinition
+        name: system-memcached
+        version: v1alpha1
+      - kind: SecretDefinition
+        name: system-multitenant-assets-s3
+        version: v1alpha1
+      - kind: SecretDefinition
+        name: system-recaptcha
+        version: v1alpha1
+      - kind: SecretDefinition
+        name: system-redis
+        version: v1alpha1
+      - kind: SecretDefinition
+        name: system-seed
+        version: v1alpha1
+      - kind: SecretDefinition
+        name: system-smtp
+        version: v1alpha1
+      - kind: GrafanaDashboard
+        name: threescale-system
+        version: v1alpha1
       version: v1alpha1
-    - kind: Zync
+    - description: Defines the desired state of a 3scale SaaS Zync instance
+      displayName: Zync
+      kind: Zync
       name: zyncs.saas.3scale.net
+      resources:
+      - kind: Deployment
+        name: zync
+        version: ""
+      - kind: Deployment
+        name: zync-que
+        version: v1
+      - kind: Service
+        name: zync
+        version: v1
+      - kind: SecretDefinition
+        name: zync
+        version: v1alpha1
+      - kind: GrafanaDashboard
+        name: threescale-zync
+        version: v1alpha1
       version: v1alpha1
   description: |
     The 3scale SaaS Operator creates and maintains SaaS-ready deployments
