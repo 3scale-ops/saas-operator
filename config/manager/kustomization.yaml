@@ -11,3 +11,4 @@ patchesStrategicMerge:
 - patches/manager.env.yaml
 resources:
 - bases/manager.yaml
+- bases/saas-operator.serviceaccount.yaml
