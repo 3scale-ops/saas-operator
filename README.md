@@ -1,5 +1,7 @@
 # 3scale SaaS Operator
 
+![3scale-saas](3scale-saas-logo.svg)
+
 [![build status](https://circleci.com/gh/3scale/saas-operator.svg?style=shield)](https://circleci.com/gh/3scale/saas-operator)
 [![release](https://badgen.net/github/release/3scale/saas-operator)](https://github.com/3scale/saas-operator/releases)
 [![license](https://badgen.net/github/license/3scale/saas-operator)](https://github.com/3scale/saas-operator/blob/master/LICENSE)
