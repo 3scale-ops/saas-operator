@@ -87,7 +87,7 @@ To build and publish a new release, update the `VERSION` env var and use the
 all the existing targets to publish a new release.
 
 - Build a new image for the operator (`docker-build` and `docker-push` targets)
-- Build a new image for the operator bundle (`bundle`, `bundle-buiild` and `bundle-push` targets)
+- Build a new image for the operator bundle (`bundle`, `bundle-build` and `bundle-push` targets)
 - Add the new bundle to the 3scale Ops Bundle Catalog (`bundle-publish` targets)
 -
 ```

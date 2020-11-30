@@ -102,7 +102,7 @@ bundle-push: ## Push the bundle image.
 bundle-publish:
 	opm index add \
 		--build-tool docker \
-		--mode replaces \
+		--mode semver \
 		--bundles $(BUNDLE_IMG) \
 		--from-index $(CATALOG_IMG) \
 		--tag $(CATALOG_IMG)
