@@ -3,7 +3,7 @@ kind: Kustomization
 images:
 - name: controller
   newName: quay.io/3scale/saas-operator
-  newTag: v0.8.1
+  newTag: v0.8.0
 patchesStrategicMerge:
 - patches/manager.resources.yaml
 - patches/manager.imagePullPolicy.yaml

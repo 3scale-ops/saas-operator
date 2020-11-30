@@ -1,5 +1,5 @@
 # Current Operator version
-VERSION ?= 0.8.1
+VERSION ?= 0.8.0
 CHANNELS ?= alpha
 DEFAULT_CHANNEL ?= alpha
 
@@ -106,20 +106,20 @@ bundle-publish:
 		--bundles $(BUNDLE_IMG) \
 		--from-index $(CATALOG_IMG) \
 		--tag $(CATALOG_IMG)
-	docker push $(CATALOG_IMG)
+		docker push $(CATALOG_IMG)
 
 bundle-publish-replace:
 	docker pull $(CATALOG_IMG)
 	opm index rm \
-		--build-tool docker \
-		--operators saas-operator \
-		--from-index $(CATALOG_IMG) \
-		--tag $(CATALOG_IMG)
+		 --build-tool docker \
+		 --operators saas-operator \
+		 --from-index $(CATALOG_IMG) \
+		 --tag $(CATALOG_IMG)
 	docker push $(CATALOG_IMG)
 	opm index add \
-		--build-tool docker \
-		--mode replaces \
-		--bundles $(BUNDLE_IMG) \
-		--from-index $(CATALOG_IMG) \
-		--tag $(CATALOG_IMG)
-	docker push $(CATALOG_IMG)
+		 --build-tool docker \
+		 --mode replaces \
+		 --bundles $(BUNDLE_IMG) \
+		 --from-index $(CATALOG_IMG) \
+		  --tag $(CATALOG_IMG)
+	 docker push $(CATALOG_IMG)

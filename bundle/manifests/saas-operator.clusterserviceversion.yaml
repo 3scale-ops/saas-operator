@@ -274,7 +274,7 @@ metadata:
     operators.operatorframework.io/project_layout: ansible.sdk.operatorframework.io/v1
     repository: https://github.com/3scale/saas-operator
     support: Red Hat
-  name: saas-operator.v0.8.1
+  name: saas-operator.v0.8.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -573,7 +573,7 @@ spec:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
                 - name: ANSIBLE_GATHERING
                   value: explicit
-                image: quay.io/3scale/saas-operator:v0.8.1
+                image: quay.io/3scale/saas-operator:v0.8.0
                 imagePullPolicy: Always
                 livenessProbe:
                   failureThreshold: 3
@@ -628,5 +628,4 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
-  replaces: saas-operator.v0.8.0
-  version: 0.8.1
+  version: 0.8.0
