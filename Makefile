@@ -106,4 +106,8 @@ bundle-publish:
 		--bundles $(BUNDLE_IMG) \
 		--from-index $(CATALOG_IMG) \
 		--tag $(CATALOG_IMG)
-		docker push $(CATALOG_IMG)
+	docker push $(CATALOG_IMG)
+
+build-and-publish: \
+	docker-build docker-push \
+	bundle bundle-build bundle-push bundle-publish
