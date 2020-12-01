@@ -31,6 +31,7 @@ A Kubernetes Operator based on the Operator SDK to manage 3scale SaaS (hosted ve
 
 * [Getting started](docs/getting-started.md)
 * [Development](docs/development.md)
+* [Release](docs/release.md)
 
 ### Custom resources reference
 
