@@ -219,7 +219,7 @@ spec:
       resources:
       - kind: Deployment
         name: zync
-        version: ""
+        version: v1
       - kind: Deployment
         name: zync-que
         version: v1
