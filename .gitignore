@@ -10,3 +10,8 @@ bin
 *.swp
 *.swo
 *~
+
+# Bundle temp files
+cache/*
+index_build*
+index.Dockerfile*
