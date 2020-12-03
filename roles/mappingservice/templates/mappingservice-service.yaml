@@ -12,5 +12,8 @@ spec:
     - name: mapping
       port: 80
       targetPort: mapping
+    - name: management
+      port: 8090
+      targetPort: management
   selector:
     deployment: mapping-service
