@@ -1,0 +1,865 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: |-
+      [
+        {
+          "apiVersion": "saas.3scale.net/v1alpha1",
+          "kind": "Apicast",
+          "metadata": {
+            "name": "apicast-sample"
+          },
+          "spec": {
+            "production": {
+              "env": {
+                "apicastConfigurationCache": "300",
+                "threescalePortalEndpoint": "http://mapping-service/config"
+              },
+              "externalDnsHostname": "apicast-production.test.stg-saas.3sca.net",
+              "image": {
+                "tag": "apicast-v3.8.0-r3"
+              },
+              "marin3r": {
+                "annotations": {
+                  "marin3r.3scale.net/node-id": "apicast-staging",
+                  "marin3r.3scale.net/ports": "gateway-http:38080,gateway-https:38443,envoy-metrics:9901"
+                },
+                "enabled": true
+              },
+              "replicas": 1
+            },
+            "staging": {
+              "env": {
+                "apicastConfigurationCache": "30",
+                "threescalePortalEndpoint": "http://mapping-service/config"
+              },
+              "externalDnsHostname": "apicast-staging.test.stg-saas.3sca.net",
+              "image": {
+                "tag": "apicast-v3.8.0-r3"
+              },
+              "marin3r": {
+                "annotations": {
+                  "marin3r.3scale.net/node-id": "apicast-staging",
+                  "marin3r.3scale.net/ports": "gateway-http:38080,gateway-https:38443,envoy-metrics:9901"
+                },
+                "enabled": true
+              },
+              "replicas": 1
+            }
+          }
+        },
+        {
+          "apiVersion": "saas.3scale.net/v1alpha1",
+          "kind": "AutoSSL",
+          "metadata": {
+            "name": "autossl-sample"
+          },
+          "spec": {
+            "env": {
+              "contactEmail": "example@3scale.net",
+              "domainWhitelist": "autossl.example.3scale.net",
+              "proxyEndpoint": "https://multitenant-admin.example.3scale.net",
+              "redisHost": "example-autossl-redis.ng.0001.use1.cache.amazonaws.com",
+              "verificationEndpoint": "https://multitenant-admin.example.3scale.net/swagger/spec.json"
+            },
+            "externalDnsHostname": "mtssl-edge-a.example.3scale.net,mtssl-edge-b.example.3scale.net,autossl.example.3scale.net",
+            "image": {
+              "pullSecretName": "quay-pull-secret",
+              "tag": "v1.0.0"
+            },
+            "replicas": 1
+          }
+        },
+        {
+          "apiVersion": "saas.3scale.net/v1alpha1",
+          "kind": "Backend",
+          "metadata": {
+            "name": "backend-sample"
+          },
+          "spec": {
+            "config": {
+              "rackEnv": "example"
+            },
+            "cron": {
+              "replicas": 1
+            },
+            "image": {
+              "tag": "v2.101.1"
+            },
+            "listener": {
+              "externalDnsHostname": "backend.example.3scale.net",
+              "marin3r": {
+                "annotations": {
+                  "marin3r.3scale.net/node-id": "backend-listener",
+                  "marin3r.3scale.net/ports": "backend-listener-http:38080,backend-listener-https:38443,envoy-metrics:9901"
+                },
+                "enabled": true
+              },
+              "replicas": 1
+            },
+            "secret": {
+              "internalApiVaultPath": "secret/data/openshift/cluster-example/3scale/backend-internal-api",
+              "redisVaultPath": "secret/data/openshift/cluster-example/3scale/backend-redis",
+              "systemEventsHookVaultPath": "secret/data/openshift/cluster-example/3scale/backend-system-events-hook"
+            },
+            "worker": {
+              "replicas": 1
+            }
+          }
+        },
+        {
+          "apiVersion": "saas.3scale.net/v1alpha1",
+          "kind": "CORSProxy",
+          "metadata": {
+            "name": "corsproxy-sample"
+          },
+          "spec": {
+            "image": {
+              "pullSecretName": "quay-pull-secret",
+              "tag": "v1.1.0"
+            },
+            "ingress": {
+              "host": "*.example.3sca.net"
+            },
+            "replicas": 1,
+            "secret": {
+              "systemDatabaseVaultPath": "secret/data/openshift/cluster-example/3scale/cors-proxy-system-database"
+            }
+          }
+        },
+        {
+          "apiVersion": "saas.3scale.net/v1alpha1",
+          "kind": "EchoAPI",
+          "metadata": {
+            "name": "echoapi-sample"
+          },
+          "spec": {
+            "externalDnsHostname": "echo-api.example.3scale.net",
+            "image": {
+              "tag": "v1.0.1"
+            },
+            "marin3r": {
+              "annotations": {
+                "marin3r.3scale.net/node-id": "echo-api",
+                "marin3r.3scale.net/ports": "echo-api-http:38080,echo-api-https:38443,envoy-metrics:9901"
+              },
+              "enabled": true
+            },
+            "replicas": 1
+          }
+        },
+        {
+          "apiVersion": "saas.3scale.net/v1alpha1",
+          "kind": "MappingService",
+          "metadata": {
+            "name": "mappingservice-sample"
+          },
+          "spec": {
+            "env": {
+              "apiHost": "http://system:3000",
+              "previewBaseDomain": "example.3scale.net"
+            },
+            "image": {
+              "tag": "mapping-service-v3.8.0-r3"
+            },
+            "replicas": 1,
+            "secret": {
+              "systemAdminTokenVaultPath": "secret/data/openshift/cluster-example/3scale/mappingservice-system-master-access-token"
+            }
+          }
+        },
+        {
+          "apiVersion": "saas.3scale.net/v1alpha1",
+          "kind": "System",
+          "metadata": {
+            "name": "system-sample"
+          },
+          "spec": {
+            "app": {
+              "replicas": 2
+            },
+            "env": {
+              "ampRelease": "2.7.1",
+              "forceSSL": true,
+              "rails": {
+                "env": "production",
+                "logLevel": "info",
+                "logToStdout": true
+              },
+              "sandboxProxyOpensslVerifyMode": "VERIFY_NONE",
+              "sslCertDir": "/etc/pki/tls/cert",
+              "threescaleProviderPlan": "enterprise",
+              "threescaleSuperdomain": "example.com"
+            },
+            "image": {
+              "tag": "nightly"
+            },
+            "secret": {
+              "appVaultPath": "secret/data/openshift/cluster-example/3scale/system-app",
+              "backendListenerVaultPath": "secret/data/openshift/cluster-example/3scale/system-backend-listener",
+              "configVaultPath": "secret/data/openshift/dev-eng-ocp/3sscale-saas/system-config",
+              "databaseVaultPath": "secret/data/openshift/cluster-example/3scale/system-database",
+              "eventsHookVaultPath": "secret/data/openshift/cluster-example/3scale/system-events-hook",
+              "masterApicastVaultPath": "secret/data/openshift/cluster-example/3scale/system-master-apicast",
+              "memcachedVaultPath": "secret/data/openshift/cluster-example/3scale/system-memcached",
+              "multitenantAssetsS3VaultPath": "secret/data/openshift/cluster-example/3scale/system-multitenant-assets-s3",
+              "multitenantIngressTLS": "wildcard-multitenant-certificate",
+              "recaptchaVaultPath": "secret/data/openshift/cluster-example/3scale/system-recaptcha",
+              "redisVaultPath": "secret/data/openshift/cluster-example/3scale/system-redis",
+              "seedVaultPath": "secret/data/openshift/cluster-example/3scale/system-seed",
+              "smtpVaultPath": "secret/data/openshift/cluster-example/3scale/system-smtp"
+            },
+            "sidekiq": {
+              "replicas": 2
+            },
+            "sphinx": {
+              "env": {
+                "deltaIndexInterval": 5,
+                "fullReindexInterval": 60,
+                "thinking": {
+                  "bindAddress": "0.0.0.0",
+                  "configFile": "/opt/sphinx/sphinx.conf",
+                  "dbPath": "/opt/sphinx",
+                  "pidFile": "/opt/sphinx/sphinx.pid",
+                  "port": 9306
+                }
+              },
+              "resources": {
+                "limits": {
+                  "cpu": "750m",
+                  "memory": "5Gi"
+                },
+                "requests": {
+                  "cpu": "250m",
+                  "memory": "4Gi"
+                },
+                "storage": "30Gi"
+              }
+            }
+          }
+        },
+        {
+          "apiVersion": "saas.3scale.net/v1alpha1",
+          "kind": "Zync",
+          "metadata": {
+            "name": "zync-sample"
+          },
+          "spec": {
+            "que": {
+              "replicas": 1
+            },
+            "secret": {
+              "vaultPath": "secret/data/openshift/cluster-example/3scale/zync"
+            },
+            "zync": {
+              "replicas": 1,
+              "resources": {
+                "limits": {
+                  "cpu": "1"
+                }
+              }
+            }
+          }
+        }
+      ]
+    capabilities: Basic Install
+    categories: Integration & Delivery
+    containerImage: quay.io/3scale/saas-operator
+    createdAt: 2020-06-02T15:49:31GMT
+    description: |-
+      The 3scale SaaS Operator creates and maintains a SaaS-ready deployment
+      of the Red Hat 3scale API Management on OpenShift.
+    operators.operatorframework.io/builder: operator-sdk-v1.2.0
+    operators.operatorframework.io/project_layout: ansible.sdk.operatorframework.io/v1
+    repository: https://github.com/3scale/saas-operator
+    support: Red Hat
+  name: saas-operator.v0.8.1
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+    - description: Defines the desired state of 3scale SaaS Apicast instance
+      displayName: Apicast
+      kind: Apicast
+      name: apicasts.saas.3scale.net
+      resources:
+      - kind: Deployment
+        name: apicast-{{ env }}
+        version: v1
+      - kind: Service
+        name: apicast-{{ env }}
+        version: v1
+      - kind: Services
+        name: apicast-{{ env }}-management
+        version: v1
+      - kind: GrafanaDashboard
+        name: threescale-apicast
+        version: v1alpha1
+      - kind: GrafanaDashboard
+        name: threescale-apicast-services
+        version: v1alpha1
+      version: v1alpha1
+    - description: Defines the desired state of a 3scale SaaS AutoSSL instance
+      displayName: AutoSSL
+      kind: AutoSSL
+      name: autossls.saas.3scale.net
+      resources:
+      - kind: Deployment
+        name: autossl
+        version: v1
+      - kind: Service
+        name: autossl
+        version: v1
+      - kind: GrafanaDashboard
+        name: threescale-autossl
+        version: v1alpha1
+      version: v1alpha1
+    - description: Defines the desired state of a 3scale SaaS Backend instance
+      displayName: Backend
+      kind: Backend
+      name: backends.saas.3scale.net
+      resources:
+      - kind: Deployment
+        name: backend-cron
+        version: v1
+      - kind: Deployment
+        name: backend-worker
+        version: v1
+      - kind: Deployment
+        name: backend-listener
+        version: v1
+      - kind: Service
+        name: backend-listener
+        version: v1
+      - kind: Service
+        name: backend-listener-internal
+        version: v1
+      - kind: GrafanaDashboard
+        name: threescale-backend
+        version: v1alpha1
+      - kind: ConfigMap
+        name: backend-environment
+        version: v1
+      - kind: SecretDefinition
+        name: backend-error-monitoring
+        version: v1alpha1
+      - kind: SecretDefinition
+        name: backend-redis
+        version: v1alpha1
+      - kind: SecretDefinition
+        name: backend-system-events-hook
+        version: v1alpha1
+      version: v1alpha1
+    - description: Defines the desired state of a 3scale SaaS CORSProxy instance
+      displayName: CORS Proxy
+      kind: CORSProxy
+      name: corsproxies.saas.3scale.net
+      resources:
+      - kind: Deployment
+        name: cors-proxy
+        version: v1
+      - kind: Service
+        name: cors-proxy
+        version: v1
+      - kind: Ingress
+        name: cors-proxy
+        version: v1beta1
+      - kind: SecretDefinition
+        name: cors-proxy-system-database
+        version: v1alpha1
+      - kind: GrafanaDashboard
+        name: threescale-cors-proxy
+        version: v1alpha1
+      version: v1alpha1
+    - description: Defines the desired state of a 3scale SaaS EchoAPI instance
+      displayName: Echo API
+      kind: EchoAPI
+      name: echoapis.saas.3scale.net
+      resources:
+      - kind: Deployment
+        name: echo-api
+        version: v1
+      - kind: Service
+        name: echo-api
+        version: v1
+      version: v1alpha1
+    - description: Defines the desired state of a 3scale SaaS MappingService instance
+      displayName: Mapping Service
+      kind: MappingService
+      name: mappingservices.saas.3scale.net
+      resources:
+      - kind: Deployment
+        name: mapping-service
+        version: v1
+      - kind: Service
+        name: mapping-service
+        version: v1
+      - kind: SecretDefinition
+        name: mapping-service-system-master-access-token
+        version: v1alpha1
+      - kind: GrafanaDashboard
+        name: threescale-mapping-service
+        version: v1alpha1
+      version: v1alpha1
+    - description: Defines the desired state of a 3scale SaaS System instance
+      displayName: System
+      kind: System
+      name: systems.saas.3scale.net
+      resources:
+      - kind: ConfigMap
+        name: system-environment
+        version: v1
+      - kind: Deployment
+        name: system-app
+        version: v1
+      - kind: Deployment
+        name: system-sidekiq
+        version: v1
+      - kind: Service
+        name: system
+        version: v1beta1
+      - kind: Ingress
+        name: multitenant-system
+        version: v1
+      - kind: StatefulSet
+        name: system-sphinx
+        version: v1
+      - kind: Service
+        name: system-sphinx
+        version: v1
+      - kind: ConfigMap
+        name: system-sphinx
+        version: v1
+      - kind: SecretDefinition
+        name: system-app
+        version: v1alpha1
+      - kind: SecretDefinition
+        name: system-backend-listener
+        version: v1alpha1
+      - kind: SecretDefinition
+        name: system-config
+        version: v1alpha1
+      - kind: SecretDefinition
+        name: system-database
+        version: v1alpha1
+      - kind: SecretDefinition
+        name: system-events-hook
+        version: v1alpha1
+      - kind: SecretDefinition
+        name: system-master-apicast
+        version: v1alpha1
+      - kind: SecretDefinition
+        name: system-memcached
+        version: v1alpha1
+      - kind: SecretDefinition
+        name: system-multitenant-assets-s3
+        version: v1alpha1
+      - kind: SecretDefinition
+        name: system-recaptcha
+        version: v1alpha1
+      - kind: SecretDefinition
+        name: system-redis
+        version: v1alpha1
+      - kind: SecretDefinition
+        name: system-seed
+        version: v1alpha1
+      - kind: SecretDefinition
+        name: system-smtp
+        version: v1alpha1
+      - kind: GrafanaDashboard
+        name: threescale-system
+        version: v1alpha1
+      version: v1alpha1
+    - description: Defines the desired state of a 3scale SaaS Zync instance
+      displayName: Zync
+      kind: Zync
+      name: zyncs.saas.3scale.net
+      resources:
+      - kind: Deployment
+        name: zync
+        version: v1
+      - kind: Deployment
+        name: zync-que
+        version: v1
+      - kind: Service
+        name: zync
+        version: v1
+      - kind: SecretDefinition
+        name: zync
+        version: v1alpha1
+      - kind: GrafanaDashboard
+        name: threescale-zync
+        version: v1alpha1
+      version: v1alpha1
+  description: |
+    The 3scale SaaS Operator creates and maintains SaaS-ready deployments
+    of each component from the Red Hat 3scale API Management solution.
+
+    ## Supported Features
+
+    - **Installer:** A way to install a SaaS ready deployment of the 3scale API Management components, providing configurability options at the time of installation
+    - **Reconcilliation:** Tunable CRD parameters for each component after 3scale API Management solution is installed
+
+    ## Supported Components
+
+    - **Apicast**
+    - **Autossl**
+    - **Backend**
+    - **CorsProxy**
+    - **MappingService**
+    - **System**
+    - **Zync**
+
+    ## Documentation
+
+    - [Getting started](https://github.com/3scale/saas-operator/blob/master/docs/getting-started.md)
+    - [Custom Resource Definitions reference](https://github.com/3scale/saas-operator/tree/master/docs/reference)
+    - [Development](https://github.com/3scale/saas-operator/blob/master/docs/development.md)
+
+    ## License
+
+    3scale SaaS Operator is licensed under the [Apache 2.0 license](https://github.com/3scale/saas-operator/blob/master/LICENSE)
+  displayName: 3scale SaaS Operator
+  icon:
+  - base64data: |
+      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
+    mediatype: image/png
+  install:
+    spec:
+      deployments:
+      - name: saas-operator-controller-manager
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              control-plane: controller-manager
+          strategy: {}
+          template:
+            metadata:
+              labels:
+                control-plane: controller-manager
+            spec:
+              containers:
+              - args:
+                - --enable-leader-election
+                - --leader-election-id=saas-operator
+                env:
+                - name: WATCH_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.annotations['olm.targetNamespaces']
+                - name: ANSIBLE_GATHERING
+                  value: explicit
+                image: quay.io/3scale/saas-operator:v0.8.1
+                imagePullPolicy: Always
+                livenessProbe:
+                  failureThreshold: 3
+                  httpGet:
+                    path: /healthz
+                    port: 6789
+                  initialDelaySeconds: 20
+                  periodSeconds: 20
+                  successThreshold: 1
+                  timeoutSeconds: 5
+                name: manager
+                readinessProbe:
+                  failureThreshold: 3
+                  httpGet:
+                    path: /healthz
+                    port: 6789
+                  initialDelaySeconds: 30
+                  periodSeconds: 15
+                  successThreshold: 1
+                  timeoutSeconds: 5
+                resources:
+                  limits:
+                    cpu: 900m
+                    memory: 1Gi
+                  requests:
+                    cpu: 450m
+                    memory: 256Mi
+              serviceAccountName: saas-operator-manager
+              terminationGracePeriodSeconds: 10
+      permissions:
+      - rules:
+        - apiGroups:
+          - ""
+          resources:
+          - secrets
+          - pods
+          - pods/exec
+          - pods/log
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - apps
+          resources:
+          - deployments
+          - daemonsets
+          - replicasets
+          - statefulsets
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - ""
+          resources:
+          - secrets
+          - pods
+          - pods/exec
+          - pods/log
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - ""
+          resources:
+          - services
+          - services/finalizers
+          - endpoints
+          - persistentvolumeclaims
+          - events
+          - configmaps
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - monitoring.coreos.com
+          resources:
+          - servicemonitors
+          - podmonitors
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - integreatly.org
+          resources:
+          - grafanadashboards
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - secrets-manager.tuenti.io
+          resources:
+          - secretdefinitions
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - networking.k8s.io
+          resources:
+          - ingresses
+          - ingresses/status
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - policy
+          resources:
+          - poddisruptionbudgets
+          - poddisruptionbudgets/status
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - autoscaling
+          resources:
+          - horizontalpodautoscalers
+          - horizontalpodautoscalers/status
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - saas.3scale.net
+          resources:
+          - apicasts
+          - apicasts/status
+          - apicasts/finalizers
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - saas.3scale.net
+          resources:
+          - autossls
+          - autossls/status
+          - autossls/finalizers
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - saas.3scale.net
+          resources:
+          - backends
+          - backends/status
+          - backends/finalizers
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - saas.3scale.net
+          resources:
+          - corsproxies
+          - corsproxies/status
+          - corsproxies/finalizers
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - saas.3scale.net
+          resources:
+          - echoapis
+          - echoapis/status
+          - echoapis/finalizers
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - saas.3scale.net
+          resources:
+          - mappingservices
+          - mappingservices/status
+          - mappingservices/finalizers
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - saas.3scale.net
+          resources:
+          - systems
+          - systems/status
+          - systems/finalizers
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - saas.3scale.net
+          resources:
+          - zyncs
+          - zyncs/status
+          - zyncs/finalizers
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        serviceAccountName: saas-operator-manager
+    strategy: deployment
+  installModes:
+  - supported: true
+    type: OwnNamespace
+  - supported: true
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: false
+    type: AllNamespaces
+  keywords:
+  - saas
+  - 3scale
+  - operations
+  links:
+  - name: GitHub Repository
+    url: https://github.com/3scale/saas-operator
+  - name: 3scale
+    url: https://3scale.net
+  maintainers:
+  - email: 3scale-operations@redhat.com
+    name: 3scale Ops
+  maturity: alpha
+  provider:
+    name: Red Hat
+    url: https://www.3scale.net/
+  replaces: saas-operator.v0.8.0
+  version: 0.8.1

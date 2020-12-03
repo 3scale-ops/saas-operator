@@ -65,7 +65,7 @@ By default, the image is [quay.io/3scaleops/saas-operator-bundle](https://quay.i
 
 ## Running the operator
 
-## Running the operator locally
+### Running the operator locally
 
 You can then run the operator with the following command:
 

@@ -1,0 +1,400 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  creationTimestamp: null
+  name: backends.saas.3scale.net
+spec:
+  group: saas.3scale.net
+  names:
+    kind: Backend
+    listKind: BackendList
+    plural: backends
+    singular: backend
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: Backend is the Schema for the backends API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: Spec defines the desired state of Backend
+          properties:
+            config:
+              properties:
+                legacyReferrerFilters:
+                  description: Enable (true) or disable (false) Legacy Referrer Filters
+                  type: boolean
+                masterServiceId:
+                  description: Master service account ID in Porta
+                  type: integer
+                oauthMaxTokenSize:
+                  description: Oauth Max token size (bytes)
+                  type: integer
+                rackEnv:
+                  description: Rack environment (used for example for error-monitoring ID)
+                  type: string
+              type: object
+            cron:
+              properties:
+                replicas:
+                  description: Number of replicas
+                  type: integer
+                resources:
+                  properties:
+                    limits:
+                      properties:
+                        cpu:
+                          description: Override CPU limits
+                          pattern: '[0-9]+m?$'
+                          type: string
+                        memory:
+                          description: Override Memory limits
+                          pattern: '[0-9]+([kKmMgGtTpPeE]i?)?$'
+                          type: string
+                      type: object
+                    requests:
+                      properties:
+                        cpu:
+                          description: Override CPU requests
+                          pattern: '[0-9]+m?$'
+                          type: string
+                        memory:
+                          description: Override Memory requests
+                          pattern: '[0-9]+([kKmMgGtTpPeE]i?)?$'
+                          type: string
+                      type: object
+                  type: object
+              type: object
+            errorMonitoringEnabled:
+              description: Mount (true) or not (false) backend-error-monitoring Secret on deployments
+              type: boolean
+            grafanaDashboard:
+              properties:
+                label:
+                  properties:
+                    key:
+                      description: Label key used by grafana-operator for dashboard discovery
+                      type: string
+                    value:
+                      description: Label value used by grafana-operator for dashboard discovery
+                      type: string
+                  type: object
+              type: object
+            image:
+              properties:
+                name:
+                  description: Image name (docker repository)
+                  type: string
+                pullSecretName:
+                  description: Quay pull secret for private repository
+                  type: string
+                tag:
+                  description: Image tag
+                  type: string
+              type: object
+            listener:
+              properties:
+                env:
+                  description: Environment variables
+                  properties:
+                    listenerWorkers:
+                      description: Number of worker processes per listener pod
+                      type: integer
+                    logFormat:
+                      description: Log format (text/json)
+                      type: string
+                    redisAsync:
+                      description: Enable (true) or disable (false) redis async mode
+                      type: boolean
+                  type: object
+                externalDnsHostname:
+                  description: DNS hostnames to manage on AWS Route53 by external-dns
+                  type: string
+                hpa:
+                  properties:
+                    enabled:
+                      description: Enable (true) or disable (false) HoritzontalPodAutoscaler
+                      type: boolean
+                    maxReplicas:
+                      description: Maximum number of replicas
+                      type: integer
+                    minReplicas:
+                      description: Minimum number of replicas
+                      type: integer
+                    resourceName:
+                      description: Resource used for autoscale (cpu/memory)
+                      enum:
+                      - cpu
+                      - memory
+                      type: string
+                    resourceUtilization:
+                      description: Percentage usage of the resource used for autoscale
+                      type: integer
+                  type: object
+                livenessProbe:
+                  properties:
+                    failureThreshold:
+                      description: Override liveness probe failure threshold
+                      type: integer
+                    initialDelaySeconds:
+                      description: Override liveness probe initial delay (seconds)
+                      type: integer
+                    periodSeconds:
+                      description: Override liveness probe period (seconds)
+                      type: integer
+                    successThreshold:
+                      description: Override liveness probe success threshold
+                      type: integer
+                    timeoutSeconds:
+                      description: Override liveness probe timeout (seconds)
+                      type: integer
+                  type: object
+                loadBalancer:
+                  properties:
+                    crossZoneLoadBalancingEnabled:
+                      description: Enable (true) or disable (false) cross zone load balancing
+                      type: boolean
+                    eipAllocations:
+                      description: Optional Elastic IPs allocations
+                      type: string
+                    proxyProtocol:
+                      description: Enable (true) or disable (false) proxy protocol with aws-nlb-helper-operator
+                      type: boolean
+                  type: object
+                marin3r:
+                  properties:
+                    annotations:
+                      additionalProperties:
+                        type: string
+                      description: Map of marin3r annotations
+                      type: object
+                    enabled:
+                      description: Enable (true) or disable (false) marin3r
+                      type: boolean
+                  required:
+                  - enabled
+                  type: object
+                pdb:
+                  properties:
+                    enabled:
+                      description: Enable (true) or disable (false) PodDisruptionBudget
+                      type: boolean
+                    maxUnavailable:
+                      description: Maximum number of unavailable pods (number or percentage of pods)
+                      pattern: ^[0-9]+%?$
+                      type: string
+                    minAvailable:
+                      description: Minimum number of available pods (number or percentage of pods), overrides maxUnavailable
+                      pattern: ^[0-9]+%?$
+                      type: string
+                  type: object
+                readinessProbe:
+                  properties:
+                    failureThreshold:
+                      description: Override readiness probe failure threshold
+                      type: integer
+                    initialDelaySeconds:
+                      description: Override readiness probe initial delay (seconds)
+                      type: integer
+                    periodSeconds:
+                      description: Override readiness probe period (seconds)
+                      type: integer
+                    successThreshold:
+                      description: Override readiness probe success threshold
+                      type: integer
+                    timeoutSeconds:
+                      description: Override readiness probe timeout (seconds)
+                      type: integer
+                  type: object
+                replicas:
+                  description: Number of replicas (ignored if hpa is enabled)
+                  type: integer
+                resources:
+                  properties:
+                    limits:
+                      properties:
+                        cpu:
+                          description: Override CPU limits
+                          pattern: '[0-9]+m?$'
+                          type: string
+                        memory:
+                          description: Override Memory limits
+                          pattern: '[0-9]+([kKmMgGtTpPeE]i?)?$'
+                          type: string
+                      type: object
+                    requests:
+                      properties:
+                        cpu:
+                          description: Override CPU requests
+                          pattern: '[0-9]+m?$'
+                          type: string
+                        memory:
+                          description: Override Memory requests
+                          pattern: '[0-9]+([kKmMgGtTpPeE]i?)?$'
+                          type: string
+                      type: object
+                  type: object
+              required:
+              - externalDnsHostname
+              - marin3r
+              type: object
+            secret:
+              properties:
+                errorMonitoringVaultPath:
+                  description: Vault Path with backend-error-monitoring secret definition
+                  type: string
+                internalApiVaultPath:
+                  description: Vault Path with backend-internal-api secret definition
+                  type: string
+                redisVaultPath:
+                  description: Vault Path with backend-redis secret definition
+                  type: string
+                systemEventsHookVaultPath:
+                  description: Vault Path with backend-system-events-hook secret definition
+                  type: string
+              required:
+              - redisVaultPath
+              - systemEventsHookVaultPath
+              - internalApiVaultPath
+              type: object
+            worker:
+              properties:
+                env:
+                  description: Environment variables
+                  properties:
+                    logFormat:
+                      description: Log format (text/json)
+                      type: string
+                    redisAsync:
+                      description: Enable (true) or disable (false) redis async mode
+                      type: boolean
+                  type: object
+                hpa:
+                  properties:
+                    enabled:
+                      description: Enable (true) or disable (false) HoritzontalPodAutoscaler
+                      type: boolean
+                    maxReplicas:
+                      description: Maximum number of replicas
+                      type: integer
+                    minReplicas:
+                      description: Minimum number of replicas
+                      type: integer
+                    resourceName:
+                      description: Resource used for autoscale (cpu/memory)
+                      enum:
+                      - cpu
+                      - memory
+                      type: string
+                    resourceUtilization:
+                      description: Percentage usage of the resource used for autoscale
+                      type: integer
+                  type: object
+                livenessProbe:
+                  properties:
+                    failureThreshold:
+                      description: Override liveness probe failure threshold
+                      type: integer
+                    initialDelaySeconds:
+                      description: Override liveness probe initial delay (seconds)
+                      type: integer
+                    periodSeconds:
+                      description: Override liveness probe period (seconds)
+                      type: integer
+                    successThreshold:
+                      description: Override liveness probe success threshold
+                      type: integer
+                    timeoutSeconds:
+                      description: Override liveness probe timeout (seconds)
+                      type: integer
+                  type: object
+                pdb:
+                  properties:
+                    enabled:
+                      description: Enable (true) or disable (false) PodDisruptionBudget
+                      type: boolean
+                    maxUnavailable:
+                      description: Maximum number of unavailable pods (number or percentage of pods)
+                      pattern: ^[0-9]+%?$
+                      type: string
+                    minAvailable:
+                      description: Minimum number of available pods (number or percentage of pods), overrides maxUnavailable
+                      pattern: ^[0-9]+%?$
+                      type: string
+                  type: object
+                readinessProbe:
+                  properties:
+                    failureThreshold:
+                      description: Override readiness probe failure threshold
+                      type: integer
+                    initialDelaySeconds:
+                      description: Override readiness probe initial delay (seconds)
+                      type: integer
+                    periodSeconds:
+                      description: Override readiness probe period (seconds)
+                      type: integer
+                    successThreshold:
+                      description: Override readiness probe success threshold
+                      type: integer
+                    timeoutSeconds:
+                      description: Override readiness probe timeout (seconds)
+                      type: integer
+                  type: object
+                replicas:
+                  description: Number of replicas (ignored if hpa is enabled)
+                  type: integer
+                resources:
+                  properties:
+                    limits:
+                      properties:
+                        cpu:
+                          description: Override CPU limits
+                          pattern: '[0-9]+m?$'
+                          type: string
+                        memory:
+                          description: Override Memory limits
+                          pattern: '[0-9]+([kKmMgGtTpPeE]i?)?$'
+                          type: string
+                      type: object
+                    requests:
+                      properties:
+                        cpu:
+                          description: Override CPU requests
+                          pattern: '[0-9]+m?$'
+                          type: string
+                        memory:
+                          description: Override Memory requests
+                          pattern: '[0-9]+([kKmMgGtTpPeE]i?)?$'
+                          type: string
+                      type: object
+                  type: object
+              type: object
+          required:
+          - secret
+          - listener
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+        status:
+          description: Status defines the observed state of Backend
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+      type: object
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: null
+  storedVersions: null
