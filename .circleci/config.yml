@@ -36,8 +36,8 @@ commands:
       - run:
           name: Build and Push Operator Image
           command: |
-              make docker-build VERSION=${CIRCLE_TAG:-master}
-              make docker-push VERSION=${CIRCLE_TAG:-master}
+              make docker-build TAG=${CIRCLE_TAG:-master}
+              make docker-push TAG=${CIRCLE_TAG:-master}
 jobs:
   release:
     machine:
