@@ -18,46 +18,156 @@ package controllers
 
 import (
 	"context"
-
-	"github.com/go-logr/logr"
-	"k8s.io/apimachinery/pkg/runtime"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	"encoding/json"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	"github.com/3scale/saas-operator/pkg/basereconciler"
+	"github.com/3scale/saas-operator/pkg/generators/autossl"
+	"github.com/go-logr/logr"
+	"github.com/redhat-cop/operator-utils/pkg/util"
+	"github.com/redhat-cop/operator-utils/pkg/util/lockedresourcecontroller/lockedpatch"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/types"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 // AutoSSLReconciler reconciles a AutoSSL object
 type AutoSSLReconciler struct {
-	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	basereconciler.Reconciler
+	Log logr.Logger
 }
 
-// +kubebuilder:rbac:groups=saas.3scale.net,resources=autossls,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=saas.3scale.net,resources=autossls/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=saas.3scale.net,resources=autossls/finalizers,verbs=update
+// +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=autossls,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=autossls/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=autossls/finalizers,verbs=update
+// +kubebuilder:rbac:groups="core",namespace=placeholder,resources=services,verbs=get;list;watch;create;update;patch
+// +kubebuilder:rbac:groups="apps",namespace=placeholder,resources=deployments,verbs=get;list;watch;create;update;patch
+// +kubebuilder:rbac:groups="monitoring.coreos.com/v1",namespace=placeholder,resources=podmonitors,verbs=get;list;watch;create;update;patch
+// +kubebuilder:rbac:groups="autoscaling/v2beta2",namespace=placeholder,resources=horizontalpodautoscalers,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="policy/v1beta1",namespace=placeholder,resources=poddisruptionbudgets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="integreatly.org/v1alpha1",namespace=placeholder,resources=grafanadashboards,verbs=get;list;watch;create;update;patch;delete
 
-// Reconcile is part of the main kubernetes reconciliation loop which aims to
-// move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
-// the AutoSSL object against the actual cluster state, and then
-// perform operations to make the cluster state reflect the state specified by
-// the user.
-//
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/reconcile
 func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = r.Log.WithValues("autossl", req.NamespacedName)
+	log := r.Log.WithValues("name", req.Name, "namespace", req.Namespace)
 
-	// your logic here
+	instance := &saasv1alpha1.AutoSSL{}
+	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
+	err := r.GetClient().Get(ctx, key, instance)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			// Return and don't requeue
+			return ctrl.Result{}, nil
+		}
+		return ctrl.Result{}, err
+	}
 
-	return ctrl.Result{}, nil
+	if ok := r.IsInitialized(instance, saasv1alpha1.Finalizer); !ok {
+		err := r.GetClient().Update(ctx, instance)
+		if err != nil {
+			log.Error(err, "unable to initialize instance")
+			return r.ManageError(ctx, instance, err)
+		}
+		return ctrl.Result{}, nil
+	}
+
+	// Apply defaults for reconcile but do not store them in the API
+	instance.Default()
+	json, _ := json.Marshal(instance)
+	log.V(1).Info("Apply defaults before resolving templates", "JSON", string(json))
+
+	if util.IsBeingDeleted(instance) {
+		if !util.HasFinalizer(instance, saasv1alpha1.Finalizer) {
+			return ctrl.Result{}, nil
+		}
+		err := r.ManageCleanUpLogic(instance, log)
+		if err != nil {
+			log.Error(err, "unable to delete instance")
+			return r.ManageError(ctx, instance, err)
+		}
+		util.RemoveFinalizer(instance, saasv1alpha1.Finalizer)
+		err = r.GetClient().Update(ctx, instance)
+		if err != nil {
+			log.Error(err, "unable to update instance")
+			return r.ManageError(ctx, instance, err)
+		}
+		return ctrl.Result{}, nil
+	}
+
+	generate := autossl.Options{
+		InstanceName: instance.GetName(),
+		Namespace:    instance.GetNamespace(),
+		Spec:         instance.Spec,
+	}
+
+	// Calculate resources to enforce
+	resources := []basereconciler.LockedResource{}
+
+	resources = append(resources,
+		basereconciler.LockedResource{
+			GeneratorFn: generate.Deployment(),
+			ExcludePaths: func() []string {
+				if instance.Spec.HPA.IsDeactivated() {
+					return basereconciler.DefaultExcludedPaths
+				}
+				return append(basereconciler.DefaultExcludedPaths, "/spec/replicas")
+			}(),
+		})
+
+	resources = append(resources,
+		basereconciler.LockedResource{
+			GeneratorFn:  generate.Service(),
+			ExcludePaths: append(basereconciler.DefaultExcludedPaths, autossl.ServiceExcludes(generate.Service())...),
+		})
+
+	resources = append(resources,
+		basereconciler.LockedResource{
+			GeneratorFn:  generate.PodMonitor(),
+			ExcludePaths: basereconciler.DefaultExcludedPaths,
+		})
+
+	if !instance.Spec.HPA.IsDeactivated() {
+		resources = append(resources,
+			basereconciler.LockedResource{
+				GeneratorFn:  generate.HPA(),
+				ExcludePaths: basereconciler.DefaultExcludedPaths,
+			},
+		)
+	}
+
+	if !instance.Spec.PDB.IsDeactivated() {
+		resources = append(resources,
+			basereconciler.LockedResource{
+				GeneratorFn:  generate.PDB(),
+				ExcludePaths: basereconciler.DefaultExcludedPaths,
+			},
+		)
+	}
+
+	if !instance.Spec.GrafanaDashboard.IsDeactivated() {
+		resources = append(resources,
+			basereconciler.LockedResource{
+				GeneratorFn:  generate.GrafanaDashboard(),
+				ExcludePaths: basereconciler.DefaultExcludedPaths,
+			},
+		)
+	}
+
+	lockedResources, err := r.NewLockedResources(resources, instance)
+	err = r.UpdateLockedResources(ctx, instance, lockedResources, []lockedpatch.LockedPatch{})
+	if err != nil {
+		log.Error(err, "unable to update locked resources")
+		return r.ManageError(ctx, instance, err)
+	}
+
+	return r.ManageSuccess(ctx, instance)
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *AutoSSLReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&saasv1alpha1.AutoSSL{}).
+		Watches(&source.Channel{Source: r.GetStatusChangeChannel()}, &handler.EnqueueRequestForObject{}).
 		Complete(r)
 }

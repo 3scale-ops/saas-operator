@@ -1,7 +1,13 @@
 apiVersion: saas.3scale.net/v1alpha1
 kind: AutoSSL
 metadata:
-  name: autossl-sample
+  name: simple-example
 spec:
-  # Add fields here
-  foo: bar
+  config:
+    contactEmail: example@example.com
+    proxyEndpoint: https://multitenant-admin.example.3scale.net
+    verificationEndpoint: https://multitenant-admin.example.3scale.net/swagger/spec.json
+    redisHost: redis.example.com
+  endpoint:
+    dns:
+      - autossl.example.com

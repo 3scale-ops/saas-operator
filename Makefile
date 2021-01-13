@@ -59,7 +59,8 @@ undeploy:
 
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: controller-gen
-	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths=./api/... output:crd:artifacts:config=config/crd/bases
+	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths=./controllers/... output:crd:artifacts:config=config/crd/bases
 
 # Run go fmt against code
 fmt:
@@ -71,7 +72,7 @@ vet:
 
 # Generate code
 generate: controller-gen
-	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
+	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./api/..."
 
 # Build the docker image
 docker-build: test
@@ -117,3 +118,31 @@ bundle: manifests kustomize
 .PHONY: bundle-build
 bundle-build:
 	docker build -f bundle.Dockerfile -t $(BUNDLE_IMG) .
+
+tmp:
+	mkdir -p $@
+
+# Download ginkgo locally if necessary
+GINKGO = $(shell pwd)/bin/ginkgo
+ginkgo:
+	$(call go-get-tool,$(GINKGO),github.com/onsi/ginkgo/ginkgo)
+
+############################################
+#### Targets to manually test with Kind ####
+############################################
+
+KIND_VERSION ?= v0.9.0
+
+# Download kind locally if necessary
+KIND = $(shell pwd)/bin/kind
+kind:
+	$(call go-get-tool,$(KIND),sigs.k8s.io/kind@$(KIND_VERSION))
+
+kind-create: ## runs a k8s kind cluster for testing
+kind-create: export KUBECONFIG = ${PWD}/kubeconfig
+kind-create: tmp $(KIND)
+	$(KIND) create cluster --wait 5m
+
+kind-delete: ## deletes the kind cluster
+kind-delete: $(KIND)
+	$(KIND) delete cluster

@@ -113,7 +113,7 @@ type AutoSSLSpec struct {
 	GrafanaDashboard *GrafanaDashboardSpec `json:"grafanaDashboard,omitempty"`
 	// Application specific configuration options for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	Config AutoSSLConfig `json:"env"`
+	Config AutoSSLConfig `json:"config"`
 	// The external endpoint/s for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Endpoint Endpoint `json:"endpoint"`
@@ -126,7 +126,7 @@ func (r *AutoSSL) Default() {
 	r.Spec.HPA = InitializeHorizontalPodAutoscalerSpec(r.Spec.HPA, defaultHPA)
 
 	if r.Spec.HPA.IsDeactivated() {
-		r.Spec.Replicas = &defaultReplicas
+		r.Spec.Replicas = intOrDefault(r.Spec.Replicas, &defaultReplicas)
 	} else {
 		r.Spec.Replicas = nil
 	}

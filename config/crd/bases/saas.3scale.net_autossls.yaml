@@ -36,18 +36,7 @@ spec:
           spec:
             description: AutoSSLSpec defines the desired state of AutoSSL
             properties:
-              endpoint:
-                description: The external endpoint/s for the component
-                properties:
-                  dns:
-                    description: The list of dns records that will point to the component
-                    items:
-                      type: string
-                    type: array
-                required:
-                - dns
-                type: object
-              env:
+              config:
                 description: Application specific configuration options for the component
                 properties:
                   acmeStaging:
@@ -89,6 +78,17 @@ spec:
                 - proxyEndpoint
                 - redisHost
                 - verificationEndpoint
+                type: object
+              endpoint:
+                description: The external endpoint/s for the component
+                properties:
+                  dns:
+                    description: The list of dns records that will point to the component
+                    items:
+                      type: string
+                    type: array
+                required:
+                - dns
                 type: object
               grafanaDashboard:
                 description: Configures the Grafana Dashboard for the component
@@ -288,8 +288,8 @@ spec:
                     type: object
                 type: object
             required:
+            - config
             - endpoint
-            - env
             type: object
           status:
             description: AutoSSLStatus defines the observed state of AutoSSL
