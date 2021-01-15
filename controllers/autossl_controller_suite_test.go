@@ -178,7 +178,7 @@ var _ = Describe("AutoSSL controller", func() {
 			}, timeout, poll).ShouldNot(HaveOccurred())
 		})
 
-		FIt("does not create deactivated resources/blocks", func() {
+		It("does not create deactivated resources/blocks", func() {
 
 			dep := &appsv1.Deployment{}
 			Eventually(func() error {
