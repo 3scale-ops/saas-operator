@@ -1,0 +1,526 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.1
+  creationTimestamp: null
+  name: apicasts.saas.3scale.net
+spec:
+  group: saas.3scale.net
+  names:
+    kind: Apicast
+    listKind: ApicastList
+    plural: apicasts
+    singular: apicast
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Apicast is the Schema for the apicasts API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: ApicastSpec defines the desired state of Apicast
+            properties:
+              grafanaDashboard:
+                description: Configures the Grafana Dashboard for the component
+                properties:
+                  selectorKey:
+                    description: Label key used by grafana-operator for dashboard
+                      discovery
+                    type: string
+                  selectorValue:
+                    description: Label value used by grafana-operator for dashboard
+                      discovery
+                    type: string
+                type: object
+              loadBalancer:
+                description: Configures the AWS load balancer for the component
+                properties:
+                  connectionDrainingEnabled:
+                    description: Enables/disables connection draining
+                    type: boolean
+                  connectionDrainingTimeout:
+                    description: Sets the timeout for connection draining
+                    format: int32
+                    type: integer
+                  crossZoneLoadBalancingEnabled:
+                    description: Enables/disables cross zone load balancing
+                    type: boolean
+                  healthcheckHealthyThreshold:
+                    description: Sets the healthy threshold for the load balancer
+                    format: int32
+                    type: integer
+                  healthcheckInterval:
+                    description: Sets the interval between health checks
+                    format: int32
+                    type: integer
+                  healthcheckTimeout:
+                    description: Sets the timeout for the health check
+                    format: int32
+                    type: integer
+                  healthcheckUnhealthyThreshold:
+                    description: Sets the unhealthy threshold for the load balancer
+                    format: int32
+                    type: integer
+                  proxyProtocol:
+                    description: Enables/disbles use of proxy protocol in the load
+                      balancer
+                    type: boolean
+                type: object
+              production:
+                description: Configures the production Apicast environment
+                properties:
+                  config:
+                    description: Application specific configuration options for the
+                      component
+                    properties:
+                      configurationCache:
+                        description: Apicast configurations cache TTL
+                        format: int32
+                        type: integer
+                      logLevel:
+                        description: Openresty log level
+                        enum:
+                        - debug
+                        - info
+                        - notice
+                        - warn
+                        - error
+                        - crit
+                        - alert
+                        - emerg
+                        type: string
+                      oidcLogLevel:
+                        description: OpenID Connect integration log level
+                        enum:
+                        - debug
+                        - info
+                        - notice
+                        - warn
+                        - error
+                        - crit
+                        - alert
+                        - emerg
+                        type: string
+                      threescalePortalEndpoint:
+                        description: Endpoint to request proxy configurations to
+                        type: string
+                    required:
+                    - configurationCache
+                    - threescalePortalEndpoint
+                    type: object
+                  endpoint:
+                    description: The external endpoint/s for the component
+                    properties:
+                      dns:
+                        description: The list of dns records that will point to the
+                          component
+                        items:
+                          type: string
+                        type: array
+                    required:
+                    - dns
+                    type: object
+                  hpa:
+                    description: Horizontal Pod Autoscaler for the component
+                    properties:
+                      maxReplicas:
+                        description: Upper limit for the number of replicas to which
+                          the autoscaler can scale up. It cannot be less that minReplicas.
+                        format: int32
+                        type: integer
+                      minReplicas:
+                        description: Lower limit for the number of replicas to which
+                          the autoscaler can scale down.  It defaults to 1 pod.  minReplicas
+                          is allowed to be 0 if the alpha feature gate HPAScaleToZero
+                          is enabled and at least one Object or External metric is
+                          configured.  Scaling is active as long as at least one metric
+                          value is available.
+                        format: int32
+                        type: integer
+                      resourceName:
+                        description: Target resource used to autoscale (cpu/memory)
+                        enum:
+                        - cpu
+                        - memory
+                        type: string
+                      resourceUtilization:
+                        description: A percentage indicating the target resource consumption
+                          used to autoscale
+                        format: int32
+                        type: integer
+                    type: object
+                  image:
+                    description: Image specification for the component
+                    properties:
+                      name:
+                        description: Docker repository of the image
+                        type: string
+                      pullSecretName:
+                        description: Name of the Secret that holds quay.io credentials
+                          to access the image repository
+                        type: string
+                      tag:
+                        description: Image tag
+                        type: string
+                    type: object
+                  livenessProbe:
+                    description: Liveness probe for the component
+                    properties:
+                      failureThreshold:
+                        description: Minimum consecutive failures for the probe to
+                          be considered failed after having succeeded
+                        format: int32
+                        type: integer
+                      initialDelaySeconds:
+                        description: Number of seconds after the container has started
+                          before liveness probes are initiated
+                        format: int32
+                        type: integer
+                      periodSeconds:
+                        description: How often (in seconds) to perform the probe
+                        format: int32
+                        type: integer
+                      successThreshold:
+                        description: Minimum consecutive successes for the probe to
+                          be considered successful after having failed
+                        format: int32
+                        type: integer
+                      timeoutSeconds:
+                        description: Number of seconds after which the probe times
+                          out
+                        format: int32
+                        type: integer
+                    type: object
+                  pdb:
+                    description: Pod Disruption Budget for the component
+                    properties:
+                      maxUnavailable:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        description: An eviction is allowed if at most "maxUnavailable"
+                          pods selected by "selector" are unavailable after the eviction,
+                          i.e. even in absence of the evicted pod. For example, one
+                          can prevent all voluntary evictions by specifying 0. This
+                          is a mutually exclusive setting with "minAvailable".
+                        x-kubernetes-int-or-string: true
+                      minAvailable:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        description: An eviction is allowed if at least "minAvailable"
+                          pods selected by "selector" will still be available after
+                          the eviction, i.e. even in the absence of the evicted pod.  So
+                          for example you can prevent all voluntary evictions by specifying
+                          "100%".
+                        x-kubernetes-int-or-string: true
+                    type: object
+                  readinessProbe:
+                    description: Readiness probe for the component
+                    properties:
+                      failureThreshold:
+                        description: Minimum consecutive failures for the probe to
+                          be considered failed after having succeeded
+                        format: int32
+                        type: integer
+                      initialDelaySeconds:
+                        description: Number of seconds after the container has started
+                          before liveness probes are initiated
+                        format: int32
+                        type: integer
+                      periodSeconds:
+                        description: How often (in seconds) to perform the probe
+                        format: int32
+                        type: integer
+                      successThreshold:
+                        description: Minimum consecutive successes for the probe to
+                          be considered successful after having failed
+                        format: int32
+                        type: integer
+                      timeoutSeconds:
+                        description: Number of seconds after which the probe times
+                          out
+                        format: int32
+                        type: integer
+                    type: object
+                  replicas:
+                    description: Number of replicas (ignored if hpa is enabled) for
+                      the component
+                    format: int32
+                    type: integer
+                  resources:
+                    description: Resource requirements for the component
+                    properties:
+                      limits:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Limits describes the maximum amount of compute
+                          resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        type: object
+                      requests:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Requests describes the minimum amount of compute
+                          resources required. If Requests is omitted for a container,
+                          it defaults to Limits if that is explicitly specified, otherwise
+                          to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        type: object
+                    type: object
+                required:
+                - config
+                - endpoint
+                type: object
+              staging:
+                description: Configures the staging Apicast environment
+                properties:
+                  config:
+                    description: Application specific configuration options for the
+                      component
+                    properties:
+                      configurationCache:
+                        description: Apicast configurations cache TTL
+                        format: int32
+                        type: integer
+                      logLevel:
+                        description: Openresty log level
+                        enum:
+                        - debug
+                        - info
+                        - notice
+                        - warn
+                        - error
+                        - crit
+                        - alert
+                        - emerg
+                        type: string
+                      oidcLogLevel:
+                        description: OpenID Connect integration log level
+                        enum:
+                        - debug
+                        - info
+                        - notice
+                        - warn
+                        - error
+                        - crit
+                        - alert
+                        - emerg
+                        type: string
+                      threescalePortalEndpoint:
+                        description: Endpoint to request proxy configurations to
+                        type: string
+                    required:
+                    - configurationCache
+                    - threescalePortalEndpoint
+                    type: object
+                  endpoint:
+                    description: The external endpoint/s for the component
+                    properties:
+                      dns:
+                        description: The list of dns records that will point to the
+                          component
+                        items:
+                          type: string
+                        type: array
+                    required:
+                    - dns
+                    type: object
+                  hpa:
+                    description: Horizontal Pod Autoscaler for the component
+                    properties:
+                      maxReplicas:
+                        description: Upper limit for the number of replicas to which
+                          the autoscaler can scale up. It cannot be less that minReplicas.
+                        format: int32
+                        type: integer
+                      minReplicas:
+                        description: Lower limit for the number of replicas to which
+                          the autoscaler can scale down.  It defaults to 1 pod.  minReplicas
+                          is allowed to be 0 if the alpha feature gate HPAScaleToZero
+                          is enabled and at least one Object or External metric is
+                          configured.  Scaling is active as long as at least one metric
+                          value is available.
+                        format: int32
+                        type: integer
+                      resourceName:
+                        description: Target resource used to autoscale (cpu/memory)
+                        enum:
+                        - cpu
+                        - memory
+                        type: string
+                      resourceUtilization:
+                        description: A percentage indicating the target resource consumption
+                          used to autoscale
+                        format: int32
+                        type: integer
+                    type: object
+                  image:
+                    description: Image specification for the component
+                    properties:
+                      name:
+                        description: Docker repository of the image
+                        type: string
+                      pullSecretName:
+                        description: Name of the Secret that holds quay.io credentials
+                          to access the image repository
+                        type: string
+                      tag:
+                        description: Image tag
+                        type: string
+                    type: object
+                  livenessProbe:
+                    description: Liveness probe for the component
+                    properties:
+                      failureThreshold:
+                        description: Minimum consecutive failures for the probe to
+                          be considered failed after having succeeded
+                        format: int32
+                        type: integer
+                      initialDelaySeconds:
+                        description: Number of seconds after the container has started
+                          before liveness probes are initiated
+                        format: int32
+                        type: integer
+                      periodSeconds:
+                        description: How often (in seconds) to perform the probe
+                        format: int32
+                        type: integer
+                      successThreshold:
+                        description: Minimum consecutive successes for the probe to
+                          be considered successful after having failed
+                        format: int32
+                        type: integer
+                      timeoutSeconds:
+                        description: Number of seconds after which the probe times
+                          out
+                        format: int32
+                        type: integer
+                    type: object
+                  pdb:
+                    description: Pod Disruption Budget for the component
+                    properties:
+                      maxUnavailable:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        description: An eviction is allowed if at most "maxUnavailable"
+                          pods selected by "selector" are unavailable after the eviction,
+                          i.e. even in absence of the evicted pod. For example, one
+                          can prevent all voluntary evictions by specifying 0. This
+                          is a mutually exclusive setting with "minAvailable".
+                        x-kubernetes-int-or-string: true
+                      minAvailable:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        description: An eviction is allowed if at least "minAvailable"
+                          pods selected by "selector" will still be available after
+                          the eviction, i.e. even in the absence of the evicted pod.  So
+                          for example you can prevent all voluntary evictions by specifying
+                          "100%".
+                        x-kubernetes-int-or-string: true
+                    type: object
+                  readinessProbe:
+                    description: Readiness probe for the component
+                    properties:
+                      failureThreshold:
+                        description: Minimum consecutive failures for the probe to
+                          be considered failed after having succeeded
+                        format: int32
+                        type: integer
+                      initialDelaySeconds:
+                        description: Number of seconds after the container has started
+                          before liveness probes are initiated
+                        format: int32
+                        type: integer
+                      periodSeconds:
+                        description: How often (in seconds) to perform the probe
+                        format: int32
+                        type: integer
+                      successThreshold:
+                        description: Minimum consecutive successes for the probe to
+                          be considered successful after having failed
+                        format: int32
+                        type: integer
+                      timeoutSeconds:
+                        description: Number of seconds after which the probe times
+                          out
+                        format: int32
+                        type: integer
+                    type: object
+                  replicas:
+                    description: Number of replicas (ignored if hpa is enabled) for
+                      the component
+                    format: int32
+                    type: integer
+                  resources:
+                    description: Resource requirements for the component
+                    properties:
+                      limits:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Limits describes the maximum amount of compute
+                          resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        type: object
+                      requests:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Requests describes the minimum amount of compute
+                          resources required. If Requests is omitted for a container,
+                          it defaults to Limits if that is explicitly specified, otherwise
+                          to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        type: object
+                    type: object
+                required:
+                - config
+                - endpoint
+                type: object
+            required:
+            - production
+            - staging
+            type: object
+          status:
+            description: ApicastStatus defines the observed state of Apicast
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

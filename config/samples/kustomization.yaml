@@ -1,4 +1,5 @@
 ## Append samples you want in your CSV to this file as resources ##
 resources:
 - saas_v1alpha1_autossl.yaml
+- saas_v1alpha1_apicast.yaml
 # +kubebuilder:scaffold:manifestskustomizesamples

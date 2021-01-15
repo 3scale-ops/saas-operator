@@ -25,12 +25,12 @@ import (
 )
 
 var (
-	defaultReplicas int32            = 2
-	defaultImage    defaultImageSpec = defaultImageSpec{
+	autosslDefaultReplicas int32            = 2
+	autosslDefaultImage    defaultImageSpec = defaultImageSpec{
 		Name: pointer.StringPtr("quay.io/3scale/autossl"),
 		Tag:  pointer.StringPtr("latest"),
 	}
-	defaultLoadBalancer defaultLoadBalancerSpec = defaultLoadBalancerSpec{
+	autosslDefaultLoadBalancer defaultLoadBalancerSpec = defaultLoadBalancerSpec{
 		ProxyProtocol:                 pointer.BoolPtr(true),
 		CrossZoneLoadBalancingEnabled: pointer.BoolPtr(true),
 		ConnectionDrainingEnabled:     pointer.BoolPtr(true),
@@ -40,7 +40,7 @@ var (
 		HealthcheckInterval:           pointer.Int32Ptr(5),
 		HealthcheckTimeout:            pointer.Int32Ptr(3),
 	}
-	defaultResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
+	autosslDefaultResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
 		Requests: corev1.ResourceList{
 			corev1.ResourceCPU:    resource.MustParse("75m"),
 			corev1.ResourceMemory: resource.MustParse("64Mi"),
@@ -50,24 +50,24 @@ var (
 			corev1.ResourceMemory: resource.MustParse("128Mi"),
 		},
 	}
-	defaultHPA defaultHorizontalPodAutoscalerSpec = defaultHorizontalPodAutoscalerSpec{
+	autosslDefaultHPA defaultHorizontalPodAutoscalerSpec = defaultHorizontalPodAutoscalerSpec{
 		MinReplicas:         pointer.Int32Ptr(2),
 		MaxReplicas:         pointer.Int32Ptr(4),
 		ResourceUtilization: pointer.Int32Ptr(90),
 		ResourceName:        pointer.StringPtr("cpu"),
 	}
-	defaultProbe defaultHTTPProbeSpec = defaultHTTPProbeSpec{
+	autosslDefaultProbe defaultHTTPProbeSpec = defaultHTTPProbeSpec{
 		InitialDelaySeconds: pointer.Int32Ptr(25),
 		TimeoutSeconds:      pointer.Int32Ptr(1),
 		PeriodSeconds:       pointer.Int32Ptr(10),
 		SuccessThreshold:    pointer.Int32Ptr(1),
 		FailureThreshold:    pointer.Int32Ptr(3),
 	}
-	defaultPDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
+	autosslDefaultPDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
 		MaxUnavailable: intstrPtr(intstr.IntOrString{Type: intstr.Int, IntVal: 1}),
 	}
 
-	defaultGrafanaDashboard defaultGrafanaDashboardSpec = defaultGrafanaDashboardSpec{
+	autosslDefaultGrafanaDashboard defaultGrafanaDashboardSpec = defaultGrafanaDashboardSpec{
 		SelectorKey:   pointer.StringPtr("monitoring-key"),
 		SelectorValue: pointer.StringPtr("middleware"),
 	}
@@ -120,24 +120,24 @@ type AutoSSLSpec struct {
 }
 
 // Default implements defaulting for the AutoSSL resource
-func (r *AutoSSL) Default() {
+func (a *AutoSSL) Default() {
 
-	r.Spec.Image = InitializeImageSpec(r.Spec.Image, defaultImage)
-	r.Spec.HPA = InitializeHorizontalPodAutoscalerSpec(r.Spec.HPA, defaultHPA)
+	a.Spec.Image = InitializeImageSpec(a.Spec.Image, autosslDefaultImage)
+	a.Spec.HPA = InitializeHorizontalPodAutoscalerSpec(a.Spec.HPA, autosslDefaultHPA)
 
-	if r.Spec.HPA.IsDeactivated() {
-		r.Spec.Replicas = intOrDefault(r.Spec.Replicas, &defaultReplicas)
+	if a.Spec.HPA.IsDeactivated() {
+		a.Spec.Replicas = intOrDefault(a.Spec.Replicas, &autosslDefaultReplicas)
 	} else {
-		r.Spec.Replicas = nil
+		a.Spec.Replicas = nil
 	}
 
-	r.Spec.PDB = InitializePodDisruptionBudgetSpec(r.Spec.PDB, defaultPDB)
-	r.Spec.Resources = InitializeResourceRequirementsSpec(r.Spec.Resources, defaultResources)
-	r.Spec.LivenessProbe = InitializeHTTPProbeSpec(r.Spec.LivenessProbe, defaultProbe)
-	r.Spec.ReadinessProbe = InitializeHTTPProbeSpec(r.Spec.ReadinessProbe, defaultProbe)
-	r.Spec.LoadBalancer = InitializeLoadBalancerSpec(r.Spec.LoadBalancer, defaultLoadBalancer)
-	r.Spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(r.Spec.GrafanaDashboard, defaultGrafanaDashboard)
-	r.Spec.Config.Default()
+	a.Spec.PDB = InitializePodDisruptionBudgetSpec(a.Spec.PDB, autosslDefaultPDB)
+	a.Spec.Resources = InitializeResourceRequirementsSpec(a.Spec.Resources, autosslDefaultResources)
+	a.Spec.LivenessProbe = InitializeHTTPProbeSpec(a.Spec.LivenessProbe, autosslDefaultProbe)
+	a.Spec.ReadinessProbe = InitializeHTTPProbeSpec(a.Spec.ReadinessProbe, autosslDefaultProbe)
+	a.Spec.LoadBalancer = InitializeLoadBalancerSpec(a.Spec.LoadBalancer, autosslDefaultLoadBalancer)
+	a.Spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(a.Spec.GrafanaDashboard, autosslDefaultGrafanaDashboard)
+	a.Spec.Config.Default()
 }
 
 // AutoSSLConfig defines configuration options for the component
