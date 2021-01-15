@@ -3,6 +3,8 @@ kind: AutoSSL
 metadata:
   name: simple-example
 spec:
+  image:
+    tag: v1.0.1
   config:
     contactEmail: example@example.com
     proxyEndpoint: https://multitenant-admin.example.3scale.net
