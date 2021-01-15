@@ -1,6 +1,8 @@
-package autossl
+package generators
 
 import (
+	"fmt"
+
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -9,7 +11,7 @@ import (
 
 // PodMonitor returns a basereconciler.GeneratorFunction funtion that will return a PodMonitor
 // resource when called
-func (opts *Options) PodMonitor() basereconciler.GeneratorFunction {
+func (bo *BaseOptions) PodMonitor(path, port string, interval int32) basereconciler.GeneratorFunction {
 
 	return func() client.Object {
 
@@ -19,16 +21,16 @@ func (opts *Options) PodMonitor() basereconciler.GeneratorFunction {
 				APIVersion: monitoringv1.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      Component,
-				Namespace: opts.Namespace,
-				Labels:    opts.labels(),
+				Name:      bo.GetComponent(),
+				Namespace: bo.GetNamespace(),
+				Labels:    bo.Labels(),
 			},
 			Spec: monitoringv1.PodMonitorSpec{
 				PodMetricsEndpoints: []monitoringv1.PodMetricsEndpoint{
 					{
-						Interval: "30s",
-						Path:     "/metrics",
-						Port:     "metrics",
+						Interval: fmt.Sprintf("%ds", interval),
+						Path:     path,
+						Port:     port,
 						RelabelConfigs: []*monitoringv1.RelabelConfig{
 							{
 								SourceLabels: []string{" __meta_kubernetes_service_label_app"},
@@ -37,7 +39,7 @@ func (opts *Options) PodMonitor() basereconciler.GeneratorFunction {
 						},
 					},
 				},
-				Selector: *opts.selector(),
+				Selector: *bo.Selector(),
 			},
 		}
 	}

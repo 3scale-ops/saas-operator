@@ -49,6 +49,8 @@ type AutoSSLReconciler struct {
 // +kubebuilder:rbac:groups="policy/v1beta1",namespace=placeholder,resources=poddisruptionbudgets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="integreatly.org/v1alpha1",namespace=placeholder,resources=grafanadashboards,verbs=get;list;watch;create;update;patch;delete
 
+// Reconcile is part of the main kubernetes reconciliation loop which aims to
+// move the current state of the cluster closer to the desired state.
 func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("name", req.Name, "namespace", req.Namespace)
 
@@ -95,18 +97,18 @@ func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, nil
 	}
 
-	generate := autossl.Options{
-		InstanceName: instance.GetName(),
-		Namespace:    instance.GetNamespace(),
-		Spec:         instance.Spec,
-	}
+	gen := autossl.NewAutoSSLGenerator(
+		instance.GetName(),
+		instance.GetNamespace(),
+		instance.Spec,
+	)
 
 	// Calculate resources to enforce
 	resources := []basereconciler.LockedResource{}
 
 	resources = append(resources,
 		basereconciler.LockedResource{
-			GeneratorFn: generate.Deployment(),
+			GeneratorFn: gen.Deployment(),
 			ExcludePaths: func() []string {
 				if instance.Spec.HPA.IsDeactivated() {
 					return basereconciler.DefaultExcludedPaths
@@ -117,20 +119,20 @@ func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	resources = append(resources,
 		basereconciler.LockedResource{
-			GeneratorFn:  generate.Service(),
-			ExcludePaths: append(basereconciler.DefaultExcludedPaths, autossl.ServiceExcludes(generate.Service())...),
+			GeneratorFn:  gen.Service(),
+			ExcludePaths: append(basereconciler.DefaultExcludedPaths, gen.ServiceExcludes(gen.Service())...),
 		})
 
 	resources = append(resources,
 		basereconciler.LockedResource{
-			GeneratorFn:  generate.PodMonitor(),
+			GeneratorFn:  gen.PodMonitor("/metrics", "metrics", 30),
 			ExcludePaths: basereconciler.DefaultExcludedPaths,
 		})
 
 	if !instance.Spec.HPA.IsDeactivated() {
 		resources = append(resources,
 			basereconciler.LockedResource{
-				GeneratorFn:  generate.HPA(),
+				GeneratorFn:  gen.HPA(*instance.Spec.HPA),
 				ExcludePaths: basereconciler.DefaultExcludedPaths,
 			},
 		)
@@ -139,7 +141,7 @@ func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	if !instance.Spec.PDB.IsDeactivated() {
 		resources = append(resources,
 			basereconciler.LockedResource{
-				GeneratorFn:  generate.PDB(),
+				GeneratorFn:  gen.PDB(*instance.Spec.PDB),
 				ExcludePaths: basereconciler.DefaultExcludedPaths,
 			},
 		)
@@ -148,7 +150,7 @@ func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	if !instance.Spec.GrafanaDashboard.IsDeactivated() {
 		resources = append(resources,
 			basereconciler.LockedResource{
-				GeneratorFn:  generate.GrafanaDashboard(),
+				GeneratorFn:  gen.GrafanaDashboard(*instance.Spec.GrafanaDashboard, []byte{}),
 				ExcludePaths: basereconciler.DefaultExcludedPaths,
 			},
 		)

@@ -128,9 +128,8 @@ func main() {
 		os.Exit(1)
 	}
 	if err = (&controllers.ApicastReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Apicast"),
-		Scheme: mgr.GetScheme(),
+		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("Apicast"), false),
+		Log:        ctrl.Log.WithName("controllers").WithName("Apicast"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Apicast")
 		os.Exit(1)

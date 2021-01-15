@@ -1,6 +1,7 @@
-package autossl
+package generators
 
 import (
+	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
@@ -11,7 +12,7 @@ import (
 
 // HPA returns a basereconciler.GeneratorFunction funtion that will return an HPA
 // resource when called
-func (opts *Options) HPA() basereconciler.GeneratorFunction {
+func (bo *BaseOptions) HPA(cfg saasv1alpha1.HorizontalPodAutoscalerSpec) basereconciler.GeneratorFunction {
 
 	return func() client.Object {
 
@@ -21,26 +22,26 @@ func (opts *Options) HPA() basereconciler.GeneratorFunction {
 				APIVersion: autoscalingv2beta2.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      Component,
-				Namespace: opts.Namespace,
-				Labels:    opts.labels(),
+				Name:      bo.GetComponent(),
+				Namespace: bo.GetNamespace(),
+				Labels:    bo.Labels(),
 			},
 			Spec: autoscalingv2beta2.HorizontalPodAutoscalerSpec{
 				ScaleTargetRef: autoscalingv2beta2.CrossVersionObjectReference{
 					APIVersion: appsv1.SchemeGroupVersion.String(),
 					Kind:       "Deployment",
-					Name:       Component,
+					Name:       bo.GetComponent(),
 				},
-				MinReplicas: opts.Spec.HPA.MinReplicas,
-				MaxReplicas: *opts.Spec.HPA.MaxReplicas,
+				MinReplicas: cfg.MinReplicas,
+				MaxReplicas: *cfg.MaxReplicas,
 				Metrics: []autoscalingv2beta2.MetricSpec{
 					{
 						Type: autoscalingv2beta2.ResourceMetricSourceType,
 						Resource: &autoscalingv2beta2.ResourceMetricSource{
-							Name: corev1.ResourceName(*opts.Spec.HPA.ResourceName),
+							Name: corev1.ResourceName(*cfg.ResourceName),
 							Target: autoscalingv2beta2.MetricTarget{
 								Type:               autoscalingv2beta2.UtilizationMetricType,
-								AverageUtilization: opts.Spec.HPA.ResourceUtilization,
+								AverageUtilization: cfg.ResourceUtilization,
 							},
 						},
 					},
