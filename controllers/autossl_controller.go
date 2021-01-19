@@ -23,6 +23,7 @@ import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/generators/autossl"
+	"github.com/3scale/saas-operator/pkg/generators/common_blocks/service"
 	"github.com/go-logr/logr"
 	"github.com/redhat-cop/operator-utils/pkg/util"
 	"github.com/redhat-cop/operator-utils/pkg/util/lockedresourcecontroller/lockedpatch"
@@ -120,19 +121,19 @@ func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	resources = append(resources,
 		basereconciler.LockedResource{
 			GeneratorFn:  gen.Service(),
-			ExcludePaths: append(basereconciler.DefaultExcludedPaths, gen.ServiceExcludes(gen.Service())...),
+			ExcludePaths: append(basereconciler.DefaultExcludedPaths, service.Excludes(gen.Service())...),
 		})
 
 	resources = append(resources,
 		basereconciler.LockedResource{
-			GeneratorFn:  gen.PodMonitor("/metrics", "metrics", 30),
+			GeneratorFn:  gen.PodMonitor(),
 			ExcludePaths: basereconciler.DefaultExcludedPaths,
 		})
 
 	if !instance.Spec.HPA.IsDeactivated() {
 		resources = append(resources,
 			basereconciler.LockedResource{
-				GeneratorFn:  gen.HPA(*instance.Spec.HPA),
+				GeneratorFn:  gen.HPA(),
 				ExcludePaths: basereconciler.DefaultExcludedPaths,
 			},
 		)
@@ -141,7 +142,7 @@ func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	if !instance.Spec.PDB.IsDeactivated() {
 		resources = append(resources,
 			basereconciler.LockedResource{
-				GeneratorFn:  gen.PDB(*instance.Spec.PDB),
+				GeneratorFn:  gen.PDB(),
 				ExcludePaths: basereconciler.DefaultExcludedPaths,
 			},
 		)
@@ -150,7 +151,7 @@ func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	if !instance.Spec.GrafanaDashboard.IsDeactivated() {
 		resources = append(resources,
 			basereconciler.LockedResource{
-				GeneratorFn:  gen.GrafanaDashboard(*instance.Spec.GrafanaDashboard, []byte{}),
+				GeneratorFn:  gen.GrafanaDashboard(),
 				ExcludePaths: basereconciler.DefaultExcludedPaths,
 			},
 		)

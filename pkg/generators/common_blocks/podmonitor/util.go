@@ -1,4 +1,4 @@
-package generators
+package podmonitor
 
 import (
 	"fmt"
@@ -6,12 +6,14 @@ import (
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// PodMonitor returns a basereconciler.GeneratorFunction funtion that will return a PodMonitor
+// New returns a basereconciler.GeneratorFunction funtion that will return a New
 // resource when called
-func (bo *BaseOptions) PodMonitor(path, port string, interval int32) basereconciler.GeneratorFunction {
+func New(key types.NamespacedName, labels map[string]string, selector map[string]string,
+	path, port string, interval int32) basereconciler.GeneratorFunction {
 
 	return func() client.Object {
 
@@ -21,9 +23,9 @@ func (bo *BaseOptions) PodMonitor(path, port string, interval int32) basereconci
 				APIVersion: monitoringv1.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      bo.GetComponent(),
-				Namespace: bo.GetNamespace(),
-				Labels:    bo.Labels(),
+				Name:      key.Name,
+				Namespace: key.Namespace,
+				Labels:    labels,
 			},
 			Spec: monitoringv1.PodMonitorSpec{
 				PodMetricsEndpoints: []monitoringv1.PodMetricsEndpoint{
@@ -39,7 +41,9 @@ func (bo *BaseOptions) PodMonitor(path, port string, interval int32) basereconci
 						},
 					},
 				},
-				Selector: *bo.Selector(),
+				Selector: metav1.LabelSelector{
+					MatchLabels: selector,
+				},
 			},
 		}
 	}

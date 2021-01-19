@@ -1,16 +1,18 @@
-package generators
+package pdb
 
 import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// PDB returns a basereconciler.GeneratorFunction funtion that will return a PDB
+// New returns a basereconciler.GeneratorFunction funtion that will return a New
 // resource when called
-func (bo *BaseOptions) PDB(cfg saasv1alpha1.PodDisruptionBudgetSpec) basereconciler.GeneratorFunction {
+func New(key types.NamespacedName, labels map[string]string, selector map[string]string,
+	cfg saasv1alpha1.PodDisruptionBudgetSpec) basereconciler.GeneratorFunction {
 
 	return func() client.Object {
 
@@ -20,13 +22,15 @@ func (bo *BaseOptions) PDB(cfg saasv1alpha1.PodDisruptionBudgetSpec) basereconci
 				APIVersion: policyv1beta1.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      bo.GetComponent(),
-				Namespace: bo.GetNamespace(),
-				Labels:    bo.Labels(),
+				Name:      key.Name,
+				Namespace: key.Namespace,
+				Labels:    labels,
 			},
 			Spec: func() policyv1beta1.PodDisruptionBudgetSpec {
 				spec := policyv1beta1.PodDisruptionBudgetSpec{
-					Selector: bo.Selector(),
+					Selector: &metav1.LabelSelector{
+						MatchLabels: selector,
+					},
 				}
 				if cfg.MinAvailable != nil {
 					spec.MinAvailable = cfg.MinAvailable

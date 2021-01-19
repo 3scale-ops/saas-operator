@@ -1,13 +1,14 @@
-package generators
+package pod
 
 import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 // HTTPProbe returns an HTTP corev1.Probe struct
-func (bo *BaseOptions) HTTPProbe(path string, port intstr.IntOrString, scheme corev1.URIScheme, cfg saasv1alpha1.HTTPProbeSpec) *corev1.Probe {
+func HTTPProbe(path string, port intstr.IntOrString, scheme corev1.URIScheme, cfg saasv1alpha1.HTTPProbeSpec) *corev1.Probe {
 	if cfg.IsDeactivated() {
 		return nil
 	}
@@ -28,22 +29,26 @@ func (bo *BaseOptions) HTTPProbe(path string, port intstr.IntOrString, scheme co
 }
 
 // Affinity returns a corev1.Affinity struct
-func (bo *BaseOptions) Affinity() *corev1.Affinity {
+func Affinity(selector map[string]string) *corev1.Affinity {
 	return &corev1.Affinity{
 		PodAntiAffinity: &corev1.PodAntiAffinity{
 			PreferredDuringSchedulingIgnoredDuringExecution: []corev1.WeightedPodAffinityTerm{
 				{
 					Weight: 100,
 					PodAffinityTerm: corev1.PodAffinityTerm{
-						TopologyKey:   corev1.LabelHostname,
-						LabelSelector: bo.Selector(),
+						TopologyKey: corev1.LabelHostname,
+						LabelSelector: &metav1.LabelSelector{
+							MatchLabels: selector,
+						},
 					},
 				},
 				{
 					Weight: 99,
 					PodAffinityTerm: corev1.PodAffinityTerm{
-						TopologyKey:   corev1.LabelTopologyZone,
-						LabelSelector: bo.Selector(),
+						TopologyKey: corev1.LabelTopologyZone,
+						LabelSelector: &metav1.LabelSelector{
+							MatchLabels: selector,
+						},
 					},
 				},
 			},
@@ -52,7 +57,7 @@ func (bo *BaseOptions) Affinity() *corev1.Affinity {
 }
 
 // ContainerPortTCP returns a TCP corev1.ContainerPort
-func (bo *BaseOptions) ContainerPortTCP(name string, port int32) corev1.ContainerPort {
+func ContainerPortTCP(name string, port int32) corev1.ContainerPort {
 	return corev1.ContainerPort{
 		Name:          name,
 		ContainerPort: port,
@@ -61,7 +66,7 @@ func (bo *BaseOptions) ContainerPortTCP(name string, port int32) corev1.Containe
 }
 
 // ContainerPorts returns a list of corev1.ContainerPort
-func (bo *BaseOptions) ContainerPorts(ports ...corev1.ContainerPort) []corev1.ContainerPort {
+func ContainerPorts(ports ...corev1.ContainerPort) []corev1.ContainerPort {
 	list := []corev1.ContainerPort{}
 	return append(list, ports...)
 }

@@ -1,4 +1,4 @@
-package generators
+package service
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 )
 
 // ELBServiceAnnotations returns annotations for services exposed through AWS Classic LoadBalancers
-func (bo *BaseOptions) ELBServiceAnnotations(cfg saasv1alpha1.LoadBalancerSpec, hostnames []string) map[string]string {
+func ELBServiceAnnotations(cfg saasv1alpha1.LoadBalancerSpec, hostnames []string) map[string]string {
 	annotations := map[string]string{
 		"external-dns.alpha.kubernetes.io/hostname":                                      strings.Join(hostnames, ","),
 		"service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled": fmt.Sprintf("%t", *cfg.CrossZoneLoadBalancingEnabled),
@@ -31,8 +31,8 @@ func (bo *BaseOptions) ELBServiceAnnotations(cfg saasv1alpha1.LoadBalancerSpec, 
 
 }
 
-// ServicePortTCP returns a TCP corev1.ServicePort
-func (bo *BaseOptions) ServicePortTCP(name string, port int32, targetPort intstr.IntOrString) corev1.ServicePort {
+// TCPPort returns a TCP corev1.ServicePort
+func TCPPort(name string, port int32, targetPort intstr.IntOrString) corev1.ServicePort {
 	return corev1.ServicePort{
 		Name:       name,
 		Port:       port,
@@ -41,14 +41,14 @@ func (bo *BaseOptions) ServicePortTCP(name string, port int32, targetPort intstr
 	}
 }
 
-// ServicePorts returns a list of corev1.ServicePort
-func (bo *BaseOptions) ServicePorts(ports ...corev1.ServicePort) []corev1.ServicePort {
+// Ports returns a list of corev1.ServicePort
+func Ports(ports ...corev1.ServicePort) []corev1.ServicePort {
 	list := []corev1.ServicePort{}
 	return append(list, ports...)
 }
 
-// ServiceExcludes generates the list of excluded paths for a Service resource
-func (bo *BaseOptions) ServiceExcludes(fn basereconciler.GeneratorFunction) []string {
+// Excludes generates the list of excluded paths for a Service resource
+func Excludes(fn basereconciler.GeneratorFunction) []string {
 	svc := fn().(*corev1.Service)
 	paths := []string{}
 	paths = append(paths, "/spec/clusterIP")

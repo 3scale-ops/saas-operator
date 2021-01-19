@@ -449,7 +449,3 @@ func boolOrDefault(value *bool, defValue *bool) *bool {
 	}
 	return value
 }
-
-func intstrPtr(value intstr.IntOrString) *intstr.IntOrString {
-	return &value
-}

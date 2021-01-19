@@ -20,6 +20,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/3scale/saas-operator/pkg/util"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -587,39 +588,39 @@ func TestPodDisruptionBudgetSpec_Default(t *testing.T) {
 			name:   "Sets defaults",
 			fields: fields{},
 			args: args{def: defaultPodDisruptionBudgetSpec{
-				MinAvailable:   intstrPtr(intstr.IntOrString{Type: intstr.String, StrVal: "default"}),
+				MinAvailable:   util.IntStrPtr(intstr.FromString("default")),
 				MaxUnavailable: nil,
 			}},
 			want: &PodDisruptionBudgetSpec{
-				MinAvailable:   intstrPtr(intstr.IntOrString{Type: intstr.String, StrVal: "default"}),
+				MinAvailable:   util.IntStrPtr(intstr.FromString("default")),
 				MaxUnavailable: nil,
 			},
 		},
 		{
 			name: "Combines explicitely set values with defaults",
 			fields: fields{
-				MinAvailable: intstrPtr(intstr.IntOrString{Type: intstr.String, StrVal: "explicit"}),
+				MinAvailable: util.IntStrPtr(intstr.FromString("explicit")),
 			},
 			args: args{def: defaultPodDisruptionBudgetSpec{
-				MinAvailable:   intstrPtr(intstr.IntOrString{Type: intstr.String, StrVal: "default"}),
+				MinAvailable:   util.IntStrPtr(intstr.FromString("default")),
 				MaxUnavailable: nil,
 			}},
 			want: &PodDisruptionBudgetSpec{
-				MinAvailable:   intstrPtr(intstr.IntOrString{Type: intstr.String, StrVal: "explicit"}),
+				MinAvailable:   util.IntStrPtr(intstr.FromString("explicit")),
 				MaxUnavailable: nil,
 			},
 		},
 		{
 			name: "Only one of MinAvailable or MaxUnavailable can be set",
 			fields: fields{
-				MinAvailable: intstrPtr(intstr.IntOrString{Type: intstr.String, StrVal: "explicit"}),
+				MinAvailable: util.IntStrPtr(intstr.FromString("explicit")),
 			},
 			args: args{def: defaultPodDisruptionBudgetSpec{
 				MinAvailable:   nil,
-				MaxUnavailable: intstrPtr(intstr.IntOrString{Type: intstr.String, StrVal: "default"}),
+				MaxUnavailable: util.IntStrPtr(intstr.FromString("default")),
 			}},
 			want: &PodDisruptionBudgetSpec{
-				MinAvailable:   intstrPtr(intstr.IntOrString{Type: intstr.String, StrVal: "explicit"}),
+				MinAvailable:   util.IntStrPtr(intstr.FromString("explicit")),
 				MaxUnavailable: nil,
 			},
 		},
@@ -627,11 +628,11 @@ func TestPodDisruptionBudgetSpec_Default(t *testing.T) {
 			name:   "Only one of MinAvailable or MaxUnavailable can be set (II)",
 			fields: fields{},
 			args: args{def: defaultPodDisruptionBudgetSpec{
-				MinAvailable:   intstrPtr(intstr.IntOrString{Type: intstr.String, StrVal: "defaultMin"}),
-				MaxUnavailable: intstrPtr(intstr.IntOrString{Type: intstr.String, StrVal: "defaultMax"}),
+				MinAvailable:   util.IntStrPtr(intstr.IntOrString{Type: intstr.String, StrVal: "defaultMin"}),
+				MaxUnavailable: util.IntStrPtr(intstr.IntOrString{Type: intstr.String, StrVal: "defaultMax"}),
 			}},
 			want: &PodDisruptionBudgetSpec{
-				MinAvailable:   intstrPtr(intstr.IntOrString{Type: intstr.String, StrVal: "defaultMin"}),
+				MinAvailable:   util.IntStrPtr(intstr.IntOrString{Type: intstr.String, StrVal: "defaultMin"}),
 				MaxUnavailable: nil,
 			},
 		},
@@ -658,7 +659,7 @@ func TestPodDisruptionBudgetSpec_IsDeactivated(t *testing.T) {
 	}{
 		{"Wants true if empty", &PodDisruptionBudgetSpec{}, true},
 		{"Wants false if nil", nil, false},
-		{"Wants false if other", &PodDisruptionBudgetSpec{MinAvailable: intstrPtr(intstr.FromInt(1))}, false},
+		{"Wants false if other", &PodDisruptionBudgetSpec{MinAvailable: util.IntStrPtr(intstr.FromInt(1))}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -682,11 +683,11 @@ func TestInitializePodDisruptionBudgetSpec(t *testing.T) {
 		{
 			name: "Initializes the struct with appropriate defaults if nil",
 			args: args{nil, defaultPodDisruptionBudgetSpec{
-				MinAvailable:   intstrPtr(intstr.IntOrString{Type: intstr.String, StrVal: "default"}),
+				MinAvailable:   util.IntStrPtr(intstr.FromString("default")),
 				MaxUnavailable: nil,
 			}},
 			want: &PodDisruptionBudgetSpec{
-				MinAvailable:   intstrPtr(intstr.IntOrString{Type: intstr.String, StrVal: "default"}),
+				MinAvailable:   util.IntStrPtr(intstr.FromString("default")),
 				MaxUnavailable: nil,
 			},
 		},
@@ -1103,26 +1104,6 @@ func Test_boolOrDefault(t *testing.T) {
 			got := boolOrDefault(tt.args.value, tt.args.defValue)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("boolOrDefault() = %v, want %v", *got, *tt.want)
-			}
-		})
-	}
-}
-
-func Test_intstrPtr(t *testing.T) {
-	type args struct {
-		value intstr.IntOrString
-	}
-	tests := []struct {
-		name string
-		args args
-		want *intstr.IntOrString
-	}{
-		{"Returns a pointer", args{value: intstr.FromInt(1)}, &intstr.IntOrString{Type: intstr.Int, IntVal: 1}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := intstrPtr(tt.args.value); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("intstrPtr() = %v, want %v", got, tt.want)
 			}
 		})
 	}

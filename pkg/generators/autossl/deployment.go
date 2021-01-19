@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/3scale/saas-operator/pkg/basereconciler"
+	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
+	"github.com/3scale/saas-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -30,7 +32,7 @@ func (gen *Generator) Deployment() basereconciler.GeneratorFunction {
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      gen.GetComponent(),
 				Namespace: gen.Namespace,
-				Labels:    gen.Labels(),
+				Labels:    gen.GetLabels(),
 			},
 			Spec: appsv1.DeploymentSpec{
 				Replicas: gen.Spec.Replicas,
@@ -38,14 +40,8 @@ func (gen *Generator) Deployment() basereconciler.GeneratorFunction {
 				Strategy: appsv1.DeploymentStrategy{
 					Type: appsv1.RollingUpdateDeploymentStrategyType,
 					RollingUpdate: &appsv1.RollingUpdateDeployment{
-						MaxUnavailable: &intstr.IntOrString{
-							Type:   intstr.Int,
-							IntVal: 0,
-						},
-						MaxSurge: &intstr.IntOrString{
-							Type:   intstr.Int,
-							IntVal: 1,
-						},
+						MaxUnavailable: util.IntStrPtr(intstr.FromInt(0)),
+						MaxSurge:       util.IntStrPtr(intstr.FromInt(1)),
 					},
 				},
 				Template: corev1.PodTemplateSpec{
@@ -77,12 +73,12 @@ func (gen *Generator) Deployment() basereconciler.GeneratorFunction {
 							{
 								Name:  gen.GetComponent(),
 								Image: fmt.Sprintf("%s:%s", *gen.Spec.Image.Name, *gen.Spec.Image.Tag),
-								Ports: gen.ContainerPorts(
-									gen.ContainerPortTCP("http", 8081),
-									gen.ContainerPortTCP("https", 8444),
-									gen.ContainerPortTCP("http-no-pp", 8080),
-									gen.ContainerPortTCP("https-no-pp", 8443),
-									gen.ContainerPortTCP("metrics", 9145),
+								Ports: pod.ContainerPorts(
+									pod.ContainerPortTCP("http", 8081),
+									pod.ContainerPortTCP("https", 8444),
+									pod.ContainerPortTCP("http-no-pp", 8080),
+									pod.ContainerPortTCP("https-no-pp", 8443),
+									pod.ContainerPortTCP("metrics", 9145),
 								),
 								Env: []corev1.EnvVar{
 									{
@@ -117,11 +113,11 @@ func (gen *Generator) Deployment() basereconciler.GeneratorFunction {
 										MountPath: "/var/lib/nginx",
 									},
 								},
-								LivenessProbe:  gen.HTTPProbe("/health", intstr.FromInt(9145), corev1.URISchemeHTTP, *gen.Spec.LivenessProbe),
-								ReadinessProbe: gen.HTTPProbe("/health", intstr.FromInt(9145), corev1.URISchemeHTTP, *gen.Spec.ReadinessProbe),
+								LivenessProbe:  pod.HTTPProbe("/health", intstr.FromInt(9145), corev1.URISchemeHTTP, *gen.Spec.LivenessProbe),
+								ReadinessProbe: pod.HTTPProbe("/health", intstr.FromInt(9145), corev1.URISchemeHTTP, *gen.Spec.ReadinessProbe),
 							},
 						},
-						Affinity: gen.Affinity(),
+						Affinity: pod.Affinity(gen.Selector().MatchLabels),
 					},
 				},
 			},

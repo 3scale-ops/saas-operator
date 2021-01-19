@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"github.com/3scale/saas-operator/pkg/util"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -64,7 +65,7 @@ var (
 		FailureThreshold:    pointer.Int32Ptr(3),
 	}
 	autosslDefaultPDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
-		MaxUnavailable: intstrPtr(intstr.IntOrString{Type: intstr.Int, IntVal: 1}),
+		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
 	}
 
 	autosslDefaultGrafanaDashboard defaultGrafanaDashboardSpec = defaultGrafanaDashboardSpec{

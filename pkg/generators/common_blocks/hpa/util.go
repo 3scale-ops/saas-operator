@@ -1,4 +1,4 @@
-package generators
+package hpa
 
 import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
@@ -7,12 +7,13 @@ import (
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// HPA returns a basereconciler.GeneratorFunction funtion that will return an HPA
+// New returns a basereconciler.GeneratorFunction funtion that will return an New
 // resource when called
-func (bo *BaseOptions) HPA(cfg saasv1alpha1.HorizontalPodAutoscalerSpec) basereconciler.GeneratorFunction {
+func New(key types.NamespacedName, labels map[string]string, cfg saasv1alpha1.HorizontalPodAutoscalerSpec) basereconciler.GeneratorFunction {
 
 	return func() client.Object {
 
@@ -22,15 +23,15 @@ func (bo *BaseOptions) HPA(cfg saasv1alpha1.HorizontalPodAutoscalerSpec) baserec
 				APIVersion: autoscalingv2beta2.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      bo.GetComponent(),
-				Namespace: bo.GetNamespace(),
-				Labels:    bo.Labels(),
+				Name:      key.Name,
+				Namespace: key.Namespace,
+				Labels:    labels,
 			},
 			Spec: autoscalingv2beta2.HorizontalPodAutoscalerSpec{
 				ScaleTargetRef: autoscalingv2beta2.CrossVersionObjectReference{
 					APIVersion: appsv1.SchemeGroupVersion.String(),
 					Kind:       "Deployment",
-					Name:       bo.GetComponent(),
+					Name:       key.Name,
 				},
 				MinReplicas: cfg.MinReplicas,
 				MaxReplicas: *cfg.MaxReplicas,
