@@ -32,7 +32,12 @@ func (bo *BaseOptions) GetNamespace() string {
 
 // GetLabels returns metadata labels
 func (bo *BaseOptions) GetLabels() map[string]string {
-	return bo.Labels
+	// return a copy of the map and not a reference
+	m := map[string]string{}
+	for k, v := range bo.Labels {
+		m[k] = v
+	}
+	return m
 }
 
 // LabelsWithSelector returns Labels() with the addition of the Pod

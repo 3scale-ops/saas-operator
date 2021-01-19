@@ -53,7 +53,7 @@ func (gen *Generator) PDB() basereconciler.GeneratorFunction {
 // PodMonitor returns a basereconciler.GeneratorFunction
 func (gen *Generator) PodMonitor() basereconciler.GeneratorFunction {
 	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return podmonitor.New(key, gen.GetLabels(), gen.Selector().MatchLabels, "/metrics", "metrics", 30)
+	return podmonitor.New(key, gen.GetLabels(), gen.Selector().MatchLabels, podmonitor.PodMetricsEndpoint("/metrics", "metrics", 30))
 }
 
 // GrafanaDashboard returns a basereconciler.GeneratorFunction

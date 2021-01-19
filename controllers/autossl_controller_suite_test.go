@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
@@ -17,11 +16,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/pointer"
-)
-
-var (
-	timeout = 30 * time.Second
-	poll    = 5 * time.Second
 )
 
 var _ = Describe("AutoSSL controller", func() {
@@ -193,24 +187,6 @@ var _ = Describe("AutoSSL controller", func() {
 			Expect(dep.Spec.Template.Spec.Containers[0].LivenessProbe).To(BeNil())
 			Expect(dep.Spec.Template.Spec.Containers[0].ReadinessProbe).To(BeNil())
 			Expect(dep.Spec.Replicas).To(Equal(pointer.Int32Ptr(1)))
-
-			svc := &corev1.Service{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "autossl", Namespace: namespace},
-					svc,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-
-			pm := &monitoringv1.PodMonitor{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "autossl", Namespace: namespace},
-					pm,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
 
 			hpa := &autoscalingv2beta2.HorizontalPodAutoscaler{}
 			Eventually(func() error {

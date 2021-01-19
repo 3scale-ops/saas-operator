@@ -72,6 +72,9 @@ var (
 		SelectorKey:   pointer.StringPtr("monitoring-key"),
 		SelectorValue: pointer.StringPtr("middleware"),
 	}
+	autosslDefaultACMEStaging bool   = false
+	autosslDefaultRedisPort   int32  = 6379
+	defaultLogLevel           string = "warn"
 )
 
 // AutoSSLSpec defines the desired state of AutoSSL
@@ -180,9 +183,9 @@ type AutoSSLConfig struct {
 
 // Default sets default values for any value not specifically set in the AutoSSLConfig struct
 func (spec *AutoSSLConfig) Default() {
-	spec.ACMEStaging = pointer.BoolPtr(false)
-	spec.RedisPort = pointer.Int32Ptr(6379)
-	spec.LogLevel = pointer.StringPtr("warn")
+	spec.ACMEStaging = boolOrDefault(spec.ACMEStaging, pointer.BoolPtr(autosslDefaultACMEStaging))
+	spec.RedisPort = intOrDefault(spec.RedisPort, pointer.Int32Ptr(autosslDefaultRedisPort))
+	spec.LogLevel = stringOrDefault(spec.LogLevel, pointer.StringPtr(defaultLogLevel))
 	if spec.DomainWhitelist == nil {
 		spec.DomainWhitelist = []string{}
 	}

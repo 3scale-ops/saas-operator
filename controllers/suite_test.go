@@ -45,10 +45,14 @@ import (
 // These tests use Ginkgo (BDD-style Go testing framework). Refer to
 // http://onsi.github.io/ginkgo/ to learn more about Ginkgo.
 
-var cfg *rest.Config
-var k8sClient client.Client
-var testEnv *envtest.Environment
-var nameGenerator namegenerator.Generator
+var (
+	cfg           *rest.Config
+	k8sClient     client.Client
+	testEnv       *envtest.Environment
+	nameGenerator namegenerator.Generator
+	timeout       time.Duration = 30 * time.Second
+	poll          time.Duration = 5 * time.Second
+)
 
 func TestAPIs(t *testing.T) {
 	RegisterFailHandler(Fail)
@@ -109,6 +113,12 @@ var _ = BeforeSuite(func() {
 	err = (&AutoSSLReconciler{
 		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("AutoSSL"), false),
 		Log:        ctrl.Log.WithName("controllers").WithName("AutoSSL"),
+	}).SetupWithManager(mgr)
+	Expect(err).ToNot(HaveOccurred())
+
+	err = (&ApicastReconciler{
+		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("Apicast"), false),
+		Log:        ctrl.Log.WithName("controllers").WithName("Apicast"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 

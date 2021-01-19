@@ -74,11 +74,13 @@ var (
 	apicastDefaultPDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
 		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
 	}
-
 	apicastDefaultGrafanaDashboard defaultGrafanaDashboardSpec = defaultGrafanaDashboardSpec{
 		SelectorKey:   pointer.StringPtr("monitoring-key"),
 		SelectorValue: pointer.StringPtr("middleware"),
 	}
+	apicastDefaultMarin3rSpec  defaultMarin3rSidecarSpec = defaultMarin3rSidecarSpec{}
+	apicastDefaultLogLevel     string                    = "warn"
+	apicastDefaultOIDCLogLevel string                    = "warn"
 )
 
 // ApicastSpec defines the desired state of Apicast
@@ -89,10 +91,6 @@ type ApicastSpec struct {
 	// Configures the production Apicast environment
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Production ApicastEnvironmentSpec `json:"production"`
-	// Configures the AWS load balancer for the component
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	LoadBalancer *LoadBalancerSpec `json:"loadBalancer,omitempty"`
 	// Configures the Grafana Dashboard for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -135,6 +133,14 @@ type ApicastEnvironmentSpec struct {
 	// The external endpoint/s for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Endpoint Endpoint `json:"endpoint"`
+	// Marin3r configures the Marin3r sidecars for the component
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Marin3r *Marin3rSidecarSpec `json:"marin3r,omitempty"`
+	// Configures the AWS load balancer for the component
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	LoadBalancer *LoadBalancerSpec `json:"loadBalancer,omitempty"`
 }
 
 // Default implements defaulting for the Apicast resource
@@ -142,7 +148,6 @@ func (a *Apicast) Default() {
 
 	a.Spec.Staging.Default()
 	a.Spec.Production.Default()
-	a.Spec.LoadBalancer = InitializeLoadBalancerSpec(a.Spec.LoadBalancer, apicastDefaultLoadBalancer)
 	a.Spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(a.Spec.GrafanaDashboard, apicastDefaultGrafanaDashboard)
 
 }
@@ -163,6 +168,8 @@ func (spec *ApicastEnvironmentSpec) Default() {
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, apicastDefaultResources)
 	spec.LivenessProbe = InitializeHTTPProbeSpec(spec.LivenessProbe, apicastDefaultLivenessProbe)
 	spec.ReadinessProbe = InitializeHTTPProbeSpec(spec.ReadinessProbe, apicastDefaultReadinessProbe)
+	spec.LoadBalancer = InitializeLoadBalancerSpec(spec.LoadBalancer, apicastDefaultLoadBalancer)
+	spec.Marin3r = InitializeMarin3rSidecarSpec(spec.Marin3r, apicastDefaultMarin3rSpec)
 	spec.Config.Default()
 }
 
@@ -188,8 +195,9 @@ type ApicastConfig struct {
 
 // Default sets default values for any value not specifically set in the ApicastConfig struct
 func (spec *ApicastConfig) Default() {
-	spec.LogLevel = pointer.StringPtr("warn")
-	spec.OIDCLogLevel = pointer.StringPtr("warn")
+	spec.LogLevel = stringOrDefault(spec.LogLevel, pointer.StringPtr(apicastDefaultLogLevel))
+	spec.OIDCLogLevel = stringOrDefault(spec.OIDCLogLevel, pointer.StringPtr(apicastDefaultOIDCLogLevel))
+
 }
 
 // ApicastStatus defines the observed state of Apicast

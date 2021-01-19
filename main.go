@@ -92,11 +92,12 @@ func main() {
 	}
 
 	options := ctrl.Options{
-		Scheme:             scheme,
-		MetricsBindAddress: metricsAddr,
-		LeaderElection:     enableLeaderElection,
-		LeaderElectionID:   "256bc75b.3scale.net",
-		Namespace:          watchNamespace, // namespaced-scope when the value is not an empty string
+		Scheme:                 scheme,
+		MetricsBindAddress:     metricsAddr,
+		HealthProbeBindAddress: probeAddr,
+		LeaderElection:         enableLeaderElection,
+		LeaderElectionID:       "256bc75b.3scale.net",
+		Namespace:              watchNamespace, // namespaced-scope when the value is not an empty string
 	}
 
 	if strings.Contains(watchNamespace, ",") {
@@ -107,14 +108,7 @@ func main() {
 		options.Namespace = watchNamespace
 	}
 
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
-		Scheme:                 scheme,
-		MetricsBindAddress:     metricsAddr,
-		Port:                   9443,
-		HealthProbeBindAddress: probeAddr,
-		LeaderElection:         enableLeaderElection,
-		LeaderElectionID:       "256bc75b.3scale.net",
-	})
+	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), options)
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
 		os.Exit(1)

@@ -429,6 +429,81 @@ func InitializeResourceRequirementsSpec(spec *ResourceRequirementsSpec, def defa
 	return spec
 }
 
+// SidecarPort defines port for the Marin3r sidecar container
+type SidecarPort struct {
+	// Port name
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	Name string `json:"name"`
+	// Port value
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	Port int32 `json:"port"`
+}
+
+// Marin3rSidecarSpec defines the marin3r sidecar for the component
+type Marin3rSidecarSpec struct {
+	// The ports that the sidecar exposes
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	Ports []SidecarPort `json:"ports"`
+	// Compute Resources required by this container.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Resources *ResourceRequirementsSpec `json:"resources,omitempty"`
+	// Extra annotations to pass the Pod to further configure the sidecar container.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ExtraPodAnnotations map[string]string `json:"extraPodAnnotations,omitempty"`
+}
+
+type defaultMarin3rSidecarSpec struct {
+	Ports               []SidecarPort
+	Resources           defaultResourceRequirementsSpec
+	ExtraPodAnnotations map[string]string
+}
+
+// Default sets default values for any value not specifically set in the ResourceRequirementsSpec struct
+func (spec *Marin3rSidecarSpec) Default(def defaultMarin3rSidecarSpec) {
+	if spec.Ports == nil {
+		spec.Ports = def.Ports
+	}
+
+	if spec.Resources == nil {
+		if !reflect.DeepEqual(def.Resources, defaultResourceRequirementsSpec{}) {
+			spec.Resources = &ResourceRequirementsSpec{}
+			spec.Resources.Default(def.Resources)
+		}
+	} else {
+		spec.Resources.Default(def.Resources)
+	}
+
+	// spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, def.Resources)
+	if spec.ExtraPodAnnotations == nil {
+		spec.ExtraPodAnnotations = def.ExtraPodAnnotations
+	}
+}
+
+// IsDeactivated true if the field is set with the deactivated value (empty struct)
+func (spec *Marin3rSidecarSpec) IsDeactivated() bool {
+	if reflect.DeepEqual(spec, &Marin3rSidecarSpec{}) {
+		return true
+	}
+	return false
+}
+
+// InitializeMarin3rSidecarSpec initializes a ResourceRequirementsSpec struct
+func InitializeMarin3rSidecarSpec(spec *Marin3rSidecarSpec, def defaultMarin3rSidecarSpec) *Marin3rSidecarSpec {
+	if spec == nil {
+		new := &Marin3rSidecarSpec{}
+		new.Default(def)
+		return new
+	}
+	if !spec.IsDeactivated() {
+		copy := spec.DeepCopy()
+		copy.Default(def)
+		return copy
+	}
+	return spec
+}
+
 func stringOrDefault(value *string, defValue *string) *string {
 	if value == nil {
 		return defValue

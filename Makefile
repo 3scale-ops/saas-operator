@@ -1,7 +1,9 @@
 # Current Operator version
-VERSION ?= 0.0.1
+VERSION ?= 0.9.0-alpha14
+# Default catalog image
+CATALOG_IMG ?= quay.io/3scaleops/go-saas-operator-catalog:latest
 # Default bundle image tag
-BUNDLE_IMG ?= controller-bundle:$(VERSION)
+BUNDLE_IMG ?= quay.io/3scaleops/go-saas-operator-catalog:$(VERSION)
 # Options for 'bundle-build'
 ifneq ($(origin CHANNELS), undefined)
 BUNDLE_CHANNELS := --channels=$(CHANNELS)
@@ -12,7 +14,7 @@ endif
 BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 
 # Image URL to use all building/pushing image targets
-IMG ?= controller:latest
+IMG ?= quay.io/3scale/saas-operator:$(VERSION)
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
 
@@ -146,3 +148,42 @@ kind-create: tmp $(KIND)
 kind-delete: ## deletes the kind cluster
 kind-delete: $(KIND)
 	$(KIND) delete cluster
+
+kind-deploy: ## Deploys the operator in the kind cluster for testing
+kind-deploy: export KUBECONFIG = ${PWD}/kubeconfig
+kind-deploy: manifests kustomize kind
+	$(KIND) load docker-image $(IMG)
+	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+	$(KUSTOMIZE) build config/test | kubectl apply -f -
+
+kind-refresh-operator: ## Reloads the operator image into the cluster and deletes the old Pod
+kind-refresh-operator: export KUBECONFIG = ${PWD}/kubeconfig
+kind-refresh-operator: manifests kind
+	$(KIND) load docker-image $(IMG)
+	kubectl delete pod -l control-plane=controller-manager
+
+kind-undeploy: ## Removes the operator from the kind cluster
+kind-undeploy: export KUBECONFIG = ${PWD}/kubeconfig
+kind-undeploy: manifests kustomize
+	$(KUSTOMIZE) build config/test | kubectl delete -f -
+
+#########################
+#### Release targets ####
+#########################
+
+prepare-release: bump-release generate fmt vet manifests bundle
+
+bump-release:
+	sed -i 's/version string = "v\(.*\)"/version string = "v$(VERSION)"/g' pkg/version/version.go
+
+bundle-push: bundle bundle-build
+	docker push $(BUNDLE_IMG)
+
+bundle-publish: bundle-push
+	opm index add \
+		--build-tool docker \
+		--mode replaces \
+		--bundles $(BUNDLE_IMG) \
+		--from-index $(CATALOG_IMG) \
+		--tag $(CATALOG_IMG)
+	docker push $(CATALOG_IMG)

@@ -20,10 +20,6 @@ import (
 	"context"
 	"encoding/json"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/basereconciler"
-	"github.com/3scale/saas-operator/pkg/generators/autossl"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/service"
 	"github.com/go-logr/logr"
 	"github.com/redhat-cop/operator-utils/pkg/util"
 	"github.com/redhat-cop/operator-utils/pkg/util/lockedresourcecontroller/lockedpatch"
@@ -32,17 +28,22 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	"github.com/3scale/saas-operator/pkg/basereconciler"
+	"github.com/3scale/saas-operator/pkg/generators/apicast"
+	"github.com/3scale/saas-operator/pkg/generators/common_blocks/service"
 )
 
-// AutoSSLReconciler reconciles a AutoSSL object
-type AutoSSLReconciler struct {
+// ApicastReconciler reconciles a Apicast object
+type ApicastReconciler struct {
 	basereconciler.Reconciler
 	Log logr.Logger
 }
 
-// +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=autossls,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=autossls/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=autossls/finalizers,verbs=update
+// +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=apicasts,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=apicasts/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=apicasts/finalizers,verbs=update
 // +kubebuilder:rbac:groups="core",namespace=placeholder,resources=services,verbs=get;list;watch;create;update;patch
 // +kubebuilder:rbac:groups="apps",namespace=placeholder,resources=deployments,verbs=get;list;watch;create;update;patch
 // +kubebuilder:rbac:groups="monitoring.coreos.com",namespace=placeholder,resources=podmonitors,verbs=get;list;watch;create;update;patch
@@ -52,10 +53,10 @@ type AutoSSLReconciler struct {
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *ApicastReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("name", req.Name, "namespace", req.Namespace)
 
-	instance := &saasv1alpha1.AutoSSL{}
+	instance := &saasv1alpha1.Apicast{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
 	err := r.GetClient().Get(ctx, key, instance)
 	if err != nil {
@@ -98,7 +99,7 @@ func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	json, _ := json.Marshal(instance.Spec)
 	log.V(1).Info("Apply defaults before resolving templates", "JSON", string(json))
 
-	gen := autossl.NewAutoSSLGenerator(
+	gen := apicast.NewApicastGenerator(
 		instance.GetName(),
 		instance.GetNamespace(),
 		instance.Spec,
@@ -107,11 +108,12 @@ func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	// Calculate resources to enforce
 	resources := []basereconciler.LockedResource{}
 
+	// Apicast staging resources
 	resources = append(resources,
 		basereconciler.LockedResource{
-			GeneratorFn: gen.Deployment(),
+			GeneratorFn: gen.Staging.Deployment(),
 			ExcludePaths: func() []string {
-				if instance.Spec.HPA.IsDeactivated() {
+				if instance.Spec.Staging.HPA.IsDeactivated() {
 					return basereconciler.DefaultExcludedPaths
 				}
 				return append(basereconciler.DefaultExcludedPaths, "/spec/replicas")
@@ -120,38 +122,99 @@ func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	resources = append(resources,
 		basereconciler.LockedResource{
-			GeneratorFn:  gen.Service(),
-			ExcludePaths: append(basereconciler.DefaultExcludedPaths, service.Excludes(gen.Service())...),
+			GeneratorFn:  gen.Staging.GatewayService(),
+			ExcludePaths: append(basereconciler.DefaultExcludedPaths, service.Excludes(gen.Staging.GatewayService())...),
 		})
 
 	resources = append(resources,
 		basereconciler.LockedResource{
-			GeneratorFn:  gen.PodMonitor(),
+			GeneratorFn:  gen.Staging.MgmtService(),
+			ExcludePaths: append(basereconciler.DefaultExcludedPaths, service.Excludes(gen.Staging.MgmtService())...),
+		})
+
+	resources = append(resources,
+		basereconciler.LockedResource{
+			GeneratorFn:  gen.Staging.PodMonitor(),
 			ExcludePaths: basereconciler.DefaultExcludedPaths,
 		})
 
-	if !instance.Spec.HPA.IsDeactivated() {
+	if !instance.Spec.Staging.HPA.IsDeactivated() {
 		resources = append(resources,
 			basereconciler.LockedResource{
-				GeneratorFn:  gen.HPA(),
+				GeneratorFn:  gen.Staging.HPA(),
 				ExcludePaths: basereconciler.DefaultExcludedPaths,
 			},
 		)
 	}
 
-	if !instance.Spec.PDB.IsDeactivated() {
+	if !instance.Spec.Staging.PDB.IsDeactivated() {
 		resources = append(resources,
 			basereconciler.LockedResource{
-				GeneratorFn:  gen.PDB(),
+				GeneratorFn:  gen.Staging.PDB(),
 				ExcludePaths: basereconciler.DefaultExcludedPaths,
 			},
 		)
 	}
 
+	// Apicast production resources
+	resources = append(resources,
+		basereconciler.LockedResource{
+			GeneratorFn: gen.Production.Deployment(),
+			ExcludePaths: func() []string {
+				if instance.Spec.Production.HPA.IsDeactivated() {
+					return basereconciler.DefaultExcludedPaths
+				}
+				return append(basereconciler.DefaultExcludedPaths, "/spec/replicas")
+			}(),
+		})
+
+	resources = append(resources,
+		basereconciler.LockedResource{
+			GeneratorFn:  gen.Production.GatewayService(),
+			ExcludePaths: append(basereconciler.DefaultExcludedPaths, service.Excludes(gen.Production.GatewayService())...),
+		})
+
+	resources = append(resources,
+		basereconciler.LockedResource{
+			GeneratorFn:  gen.Production.MgmtService(),
+			ExcludePaths: append(basereconciler.DefaultExcludedPaths, service.Excludes(gen.Production.MgmtService())...),
+		})
+
+	resources = append(resources,
+		basereconciler.LockedResource{
+			GeneratorFn:  gen.Production.PodMonitor(),
+			ExcludePaths: basereconciler.DefaultExcludedPaths,
+		})
+
+	if !instance.Spec.Production.HPA.IsDeactivated() {
+		resources = append(resources,
+			basereconciler.LockedResource{
+				GeneratorFn:  gen.Production.HPA(),
+				ExcludePaths: basereconciler.DefaultExcludedPaths,
+			},
+		)
+	}
+
+	if !instance.Spec.Production.PDB.IsDeactivated() {
+		resources = append(resources,
+			basereconciler.LockedResource{
+				GeneratorFn:  gen.Production.PDB(),
+				ExcludePaths: basereconciler.DefaultExcludedPaths,
+			},
+		)
+	}
+
+	// Apicast grafana dashboards
 	if !instance.Spec.GrafanaDashboard.IsDeactivated() {
 		resources = append(resources,
 			basereconciler.LockedResource{
-				GeneratorFn:  gen.GrafanaDashboard(),
+				GeneratorFn:  gen.ApicastDashboard(),
+				ExcludePaths: basereconciler.DefaultExcludedPaths,
+			},
+		)
+		resources = append(resources,
+			basereconciler.LockedResource{
+				GeneratorFn:  gen.ApicastServicesDashboard(),
 				ExcludePaths: basereconciler.DefaultExcludedPaths,
 			},
 		)
@@ -164,13 +227,13 @@ func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return r.ManageError(ctx, instance, err)
 	}
 
-	return r.ManageSuccess(ctx, instance)
+	return ctrl.Result{}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *AutoSSLReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *ApicastReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&saasv1alpha1.AutoSSL{}).
+		For(&saasv1alpha1.Apicast{}).
 		Watches(&source.Channel{Source: r.GetStatusChangeChannel()}, &handler.EnqueueRequestForObject{}).
 		Complete(r)
 }

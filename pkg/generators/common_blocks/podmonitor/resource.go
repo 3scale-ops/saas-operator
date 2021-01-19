@@ -13,7 +13,7 @@ import (
 // New returns a basereconciler.GeneratorFunction funtion that will return a New
 // resource when called
 func New(key types.NamespacedName, labels map[string]string, selector map[string]string,
-	path, port string, interval int32) basereconciler.GeneratorFunction {
+	endpoints ...monitoringv1.PodMetricsEndpoint) basereconciler.GeneratorFunction {
 
 	return func() client.Object {
 
@@ -28,23 +28,21 @@ func New(key types.NamespacedName, labels map[string]string, selector map[string
 				Labels:    labels,
 			},
 			Spec: monitoringv1.PodMonitorSpec{
-				PodMetricsEndpoints: []monitoringv1.PodMetricsEndpoint{
-					{
-						Interval: fmt.Sprintf("%ds", interval),
-						Path:     path,
-						Port:     port,
-						RelabelConfigs: []*monitoringv1.RelabelConfig{
-							{
-								SourceLabels: []string{" __meta_kubernetes_service_label_app"},
-								TargetLabel:  "app",
-							},
-						},
-					},
-				},
+				PodMetricsEndpoints: endpoints,
 				Selector: metav1.LabelSelector{
 					MatchLabels: selector,
 				},
 			},
 		}
+	}
+}
+
+// PodMetricsEndpoint returns a monitoringv1.PodMetricsEndpoint
+func PodMetricsEndpoint(path, port string, interval int32) monitoringv1.PodMetricsEndpoint {
+	return monitoringv1.PodMetricsEndpoint{
+		Interval: fmt.Sprintf("%ds", interval),
+		Path:     path,
+		Port:     port,
+		Scheme:   "http",
 	}
 }

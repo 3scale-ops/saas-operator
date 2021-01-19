@@ -28,6 +28,25 @@ func HTTPProbe(path string, port intstr.IntOrString, scheme corev1.URIScheme, cf
 	}
 }
 
+// TCPProbe returns a TCP corev1.Probe struct
+func TCPProbe(port intstr.IntOrString, cfg saasv1alpha1.HTTPProbeSpec) *corev1.Probe {
+	if cfg.IsDeactivated() {
+		return nil
+	}
+	return &corev1.Probe{
+		Handler: corev1.Handler{
+			HTTPGet: &corev1.HTTPGetAction{
+				Port: port,
+			},
+		},
+		InitialDelaySeconds: *cfg.InitialDelaySeconds,
+		TimeoutSeconds:      *cfg.TimeoutSeconds,
+		PeriodSeconds:       *cfg.PeriodSeconds,
+		SuccessThreshold:    *cfg.SuccessThreshold,
+		FailureThreshold:    *cfg.FailureThreshold,
+	}
+}
+
 // Affinity returns a corev1.Affinity struct
 func Affinity(selector map[string]string) *corev1.Affinity {
 	return &corev1.Affinity{
