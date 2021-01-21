@@ -1,5 +1,5 @@
 # Current Operator version
-VERSION ?= 0.9.0-alpha14
+VERSION ?= 0.9.0-alpha15
 # Default catalog image
 CATALOG_IMG ?= quay.io/3scaleops/go-saas-operator-catalog:latest
 # Default bundle image tag
@@ -29,7 +29,7 @@ all: manager
 
 # Run tests
 ENVTEST_ASSETS_DIR=$(shell pwd)/testbin
-test: generate fmt vet manifests
+test: generate fmt vet manifests assets
 	mkdir -p ${ENVTEST_ASSETS_DIR}
 	test -f ${ENVTEST_ASSETS_DIR}/setup-envtest.sh || curl -sSLo ${ENVTEST_ASSETS_DIR}/setup-envtest.sh https://raw.githubusercontent.com/kubernetes-sigs/controller-runtime/v0.7.0/hack/setup-envtest.sh
 	source ${ENVTEST_ASSETS_DIR}/setup-envtest.sh; fetch_envtest_tools $(ENVTEST_ASSETS_DIR); setup_envtest_env $(ENVTEST_ASSETS_DIR); go test ./... -coverprofile cover.out
@@ -39,7 +39,7 @@ manager: generate fmt vet
 	go build -o bin/manager main.go
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
-run: generate fmt vet manifests
+run: generate fmt vet manifests assets
 	go run ./main.go
 
 # Install CRDs into a cluster
@@ -75,6 +75,12 @@ vet:
 # Generate code
 generate: controller-gen
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./api/..."
+
+## assets: Generate embedded assets
+# assets: export PATH=$(PATH):$(shell pwd)/bin
+assets: go-bindata
+	@echo Generate Go embedded assets files by processing source
+	PATH=$$PATH:$$PWD/bin go generate github.com/3scale/saas-operator/pkg/assets
 
 # Build the docker image
 docker-build: test
@@ -128,6 +134,10 @@ tmp:
 GINKGO = $(shell pwd)/bin/ginkgo
 ginkgo:
 	$(call go-get-tool,$(GINKGO),github.com/onsi/ginkgo/ginkgo)
+
+GOBINDATA=$(shell pwd)/bin/go-bindata
+go-bindata:
+	$(call go-get-tool,$(GOBINDATA),github.com/go-bindata/go-bindata/...)
 
 ############################################
 #### Targets to manually test with Kind ####

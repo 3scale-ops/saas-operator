@@ -29,13 +29,13 @@ type Generator struct {
 // ApicastDashboard returns a basereconciler.GeneratorFunction
 func (gen *Generator) ApicastDashboard() basereconciler.GeneratorFunction {
 	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return grafanadashboard.New(key, gen.GetLabels(), gen.GrafanaDashboardSpec, []byte{})
+	return grafanadashboard.New(key, gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/apicast.json.tpl")
 }
 
 // ApicastServicesDashboard returns a basereconciler.GeneratorFunction
 func (gen *Generator) ApicastServicesDashboard() basereconciler.GeneratorFunction {
 	key := types.NamespacedName{Name: gen.Component + "-services", Namespace: gen.Namespace}
-	return grafanadashboard.New(key, gen.GetLabels(), gen.GrafanaDashboardSpec, []byte{})
+	return grafanadashboard.New(key, gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/apicast-services.json.tpl")
 }
 
 // NewApicastGenerator returns a new Options struct

@@ -5,6 +5,7 @@ import (
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
+	"github.com/3scale/saas-operator/pkg/assets"
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -13,9 +14,15 @@ import (
 
 // New returns a basereconciler.GeneratorFunction funtion that will return a New
 // resource when called
-func New(key types.NamespacedName, labels map[string]string, cfg saasv1alpha1.GrafanaDashboardSpec, dashboard []byte) basereconciler.GeneratorFunction {
+func New(key types.NamespacedName, labels map[string]string, cfg saasv1alpha1.GrafanaDashboardSpec,
+	template string) basereconciler.GeneratorFunction {
 
 	return func() client.Object {
+		data := &struct {
+			Namespace string
+		}{
+			key.Namespace,
+		}
 
 		return &grafanav1alpha1.GrafanaDashboard{
 			TypeMeta: metav1.TypeMeta{
@@ -32,8 +39,8 @@ func New(key types.NamespacedName, labels map[string]string, cfg saasv1alpha1.Gr
 				}(),
 			},
 			Spec: grafanav1alpha1.GrafanaDashboardSpec{
-				Name: fmt.Sprintf("%s-%s-%s.json", key.Namespace, "threescale", key.Name),
-				Json: "",
+				Name: fmt.Sprintf("%s/%s.json", key.Namespace, key.Name),
+				Json: assets.TemplateAsset(template, data),
 			},
 		}
 	}
