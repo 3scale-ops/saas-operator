@@ -5,6 +5,7 @@ namespace: default
 resources:
 - external-apis/grafanadashboards.integreatly.org.yaml
 - external-apis/podmonitors.monitoring.coreos.com.yaml
+- external-apis/secretdefinitions.secrets-manager.tuenti.io.yaml
 - ../crd
 - ../rbac
 - ../manager

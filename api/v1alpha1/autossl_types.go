@@ -74,7 +74,7 @@ var (
 	}
 	autosslDefaultACMEStaging bool   = false
 	autosslDefaultRedisPort   int32  = 6379
-	defaultLogLevel           string = "warn"
+	autosslDefaultLogLevel    string = "warn"
 )
 
 // AutoSSLSpec defines the desired state of AutoSSL
@@ -182,15 +182,15 @@ type AutoSSLConfig struct {
 }
 
 // Default sets default values for any value not specifically set in the AutoSSLConfig struct
-func (spec *AutoSSLConfig) Default() {
-	spec.ACMEStaging = boolOrDefault(spec.ACMEStaging, pointer.BoolPtr(autosslDefaultACMEStaging))
-	spec.RedisPort = intOrDefault(spec.RedisPort, pointer.Int32Ptr(autosslDefaultRedisPort))
-	spec.LogLevel = stringOrDefault(spec.LogLevel, pointer.StringPtr(defaultLogLevel))
-	if spec.DomainWhitelist == nil {
-		spec.DomainWhitelist = []string{}
+func (cfg *AutoSSLConfig) Default() {
+	cfg.ACMEStaging = boolOrDefault(cfg.ACMEStaging, pointer.BoolPtr(autosslDefaultACMEStaging))
+	cfg.RedisPort = intOrDefault(cfg.RedisPort, pointer.Int32Ptr(autosslDefaultRedisPort))
+	cfg.LogLevel = stringOrDefault(cfg.LogLevel, pointer.StringPtr(autosslDefaultLogLevel))
+	if cfg.DomainWhitelist == nil {
+		cfg.DomainWhitelist = []string{}
 	}
-	if spec.DomainBlacklist == nil {
-		spec.DomainBlacklist = []string{}
+	if cfg.DomainBlacklist == nil {
+		cfg.DomainBlacklist = []string{}
 	}
 }
 

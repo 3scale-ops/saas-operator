@@ -504,6 +504,24 @@ func InitializeMarin3rSidecarSpec(spec *Marin3rSidecarSpec, def defaultMarin3rSi
 	return spec
 }
 
+// SecretReference is a reference to a secret stored in some secrets engine
+type SecretReference struct {
+	// VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	FromVault VaultSecretReference `json:"fromVault"`
+}
+
+// VaultSecretReference is a reference to a secret stored in
+// a Hashicorp Vault
+type VaultSecretReference struct {
+	// The Vault path where the secret is located
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	Path string `json:"path"`
+	// The Vault key of the secret
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	Key string `json:"key"`
+}
+
 func stringOrDefault(value *string, defValue *string) *string {
 	if value == nil {
 		return defValue

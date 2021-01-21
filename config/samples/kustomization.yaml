@@ -2,4 +2,5 @@
 resources:
 - saas_v1alpha1_autossl.yaml
 - saas_v1alpha1_apicast.yaml
+- saas_v1alpha1_mappingservice.yaml
 # +kubebuilder:scaffold:manifestskustomizesamples

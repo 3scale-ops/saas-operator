@@ -22,8 +22,7 @@ import (
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/basereconciler"
-	"github.com/3scale/saas-operator/pkg/generators/autossl"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/service"
+	"github.com/3scale/saas-operator/pkg/generators/mappingservice"
 	"github.com/go-logr/logr"
 	"github.com/redhat-cop/operator-utils/pkg/util"
 	"github.com/redhat-cop/operator-utils/pkg/util/lockedresourcecontroller/lockedpatch"
@@ -34,28 +33,29 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-// AutoSSLReconciler reconciles a AutoSSL object
-type AutoSSLReconciler struct {
+// MappingServiceReconciler reconciles a MappingService object
+type MappingServiceReconciler struct {
 	basereconciler.Reconciler
 	Log logr.Logger
 }
 
-// +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=autossls,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=autossls/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=autossls/finalizers,verbs=update
+// +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=mappingservices,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=mappingservices/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=mappingservices/finalizers,verbs=update
 // +kubebuilder:rbac:groups="core",namespace=placeholder,resources=services,verbs=get;list;watch;create;update;patch,delete
 // +kubebuilder:rbac:groups="apps",namespace=placeholder,resources=deployments,verbs=get;list;watch;create;update;patch,delete
 // +kubebuilder:rbac:groups="monitoring.coreos.com",namespace=placeholder,resources=podmonitors,verbs=get;list;watch;create;update;patch
 // +kubebuilder:rbac:groups="autoscaling",namespace=placeholder,resources=horizontalpodautoscalers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="policy",namespace=placeholder,resources=poddisruptionbudgets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="integreatly.org",namespace=placeholder,resources=grafanadashboards,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="secrets-manager.tuenti.io",namespace=placeholder,resources=secretdefinitions,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *MappingServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("name", req.Name, "namespace", req.Namespace)
 
-	instance := &saasv1alpha1.AutoSSL{}
+	instance := &saasv1alpha1.MappingService{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
 	err := r.GetClient().Get(ctx, key, instance)
 	if err != nil {
@@ -98,7 +98,7 @@ func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	json, _ := json.Marshal(instance.Spec)
 	log.V(1).Info("Apply defaults before resolving templates", "JSON", string(json))
 
-	gen := autossl.NewGenerator(
+	gen := mappingservice.NewGenerator(
 		instance.GetName(),
 		instance.GetNamespace(),
 		instance.Spec,
@@ -120,8 +120,14 @@ func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	resources = append(resources,
 		basereconciler.LockedResource{
+			GeneratorFn:  gen.SecretDefinition(),
+			ExcludePaths: basereconciler.DefaultExcludedPaths,
+		})
+
+	resources = append(resources,
+		basereconciler.LockedResource{
 			GeneratorFn:  gen.Service(),
-			ExcludePaths: append(basereconciler.DefaultExcludedPaths, service.Excludes(gen.Service())...),
+			ExcludePaths: basereconciler.DefaultExcludedPaths,
 		})
 
 	resources = append(resources,
@@ -168,9 +174,9 @@ func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *AutoSSLReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *MappingServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&saasv1alpha1.AutoSSL{}).
+		For(&saasv1alpha1.MappingService{}).
 		Watches(&source.Channel{Source: r.GetStatusChangeChannel()}, &handler.EnqueueRequestForObject{}).
 		Complete(r)
 }

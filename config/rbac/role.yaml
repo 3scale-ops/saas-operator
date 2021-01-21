@@ -128,3 +128,41 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - mappingservices
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - mappingservices/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - mappingservices/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - secrets-manager.tuenti.io
+  resources:
+  - secretdefinitions
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch

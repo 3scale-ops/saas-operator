@@ -36,6 +36,16 @@ metadata:
               "tag": "v1.0.1"
             }
           }
+        },
+        {
+          "apiVersion": "saas.3scale.net/v1alpha1",
+          "kind": "MappingService",
+          "metadata": {
+            "name": "mappingservice-sample"
+          },
+          "spec": {
+            "foo": "bar"
+          }
         }
       ]
     capabilities: Basic Install
@@ -49,7 +59,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/3scale/saas-operator
     support: Red Hat
-  name: saas-operator.v0.9.0-alpha15
+  name: saas-operator.v0.9.0-alpha17
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -226,6 +236,51 @@ spec:
         displayName: Resources
         path: resources
       version: v1alpha1
+    - description: MappingService is the Schema for the mappingservices API
+      displayName: Mapping Service
+      kind: MappingService
+      name: mappingservices.saas.3scale.net
+      specDescriptors:
+      - description: Application specific configuration options for the component
+        displayName: Config
+        path: config
+      - description: System endpoint to fetch proxy configs from
+        displayName: APIHost
+        path: config.apiHost
+      - description: Openresty log level
+        displayName: Log Level
+        path: config.logLevel
+      - description: Base domain to replace the proxy configs base domain
+        displayName: Preview Base Domain
+        path: config.previewBaseDomain
+      - description: A reference to the secret holding the system admin token
+        displayName: System Admin Token
+        path: config.systemAdminToken
+      - description: Configures the Grafana Dashboard for the component
+        displayName: Grafana Dashboard
+        path: grafanaDashboard
+      - description: Horizontal Pod Autoscaler for the component
+        displayName: HPA
+        path: hpa
+      - description: Image specification for the component
+        displayName: Image
+        path: image
+      - description: Liveness probe for the component
+        displayName: Liveness Probe
+        path: livenessProbe
+      - description: Pod Disruption Budget for the component
+        displayName: PDB
+        path: pdb
+      - description: Readiness probe for the component
+        displayName: Readiness Probe
+        path: readinessProbe
+      - description: Number of replicas (ignored if hpa is enabled) for the component
+        displayName: Replicas
+        path: replicas
+      - description: Resource requirements for the component
+        displayName: Resources
+        path: resources
+      version: v1alpha1
   description: |
     The 3scale SaaS Operator creates and maintains SaaS-ready deployments
     of each component from the Red Hat 3scale API Management solution.
@@ -312,7 +367,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/3scale/saas-operator:0.9.0-alpha15
+                image: quay.io/3scale/saas-operator:0.9.0-alpha17
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -481,6 +536,44 @@ spec:
           - get
           - patch
           - update
+        - apiGroups:
+          - saas.3scale.net
+          resources:
+          - mappingservices
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - saas.3scale.net
+          resources:
+          - mappingservices/finalizers
+          verbs:
+          - update
+        - apiGroups:
+          - saas.3scale.net
+          resources:
+          - mappingservices/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - secrets-manager.tuenti.io
+          resources:
+          - secretdefinitions
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
         serviceAccountName: saas-operator-controller-manager
     strategy: deployment
   installModes:
@@ -508,4 +601,4 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
-  version: 0.9.0-alpha15
+  version: 0.9.0-alpha17

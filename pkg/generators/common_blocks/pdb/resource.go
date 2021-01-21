@@ -9,7 +9,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// New returns a basereconciler.GeneratorFunction funtion that will return a New
+// New returns a basereconciler.GeneratorFunction funtion that will return a PodDisruptionBudget
 // resource when called
 func New(key types.NamespacedName, labels map[string]string, selector map[string]string,
 	cfg saasv1alpha1.PodDisruptionBudgetSpec) basereconciler.GeneratorFunction {

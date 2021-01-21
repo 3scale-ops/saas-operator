@@ -1,0 +1,24 @@
+# permissions for end users to edit mappingservices.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: mappingservice-editor-role
+rules:
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - mappingservices
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - mappingservices/status
+  verbs:
+  - get

@@ -1,4 +1,4 @@
-package autossl
+package mappingservice
 
 import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
@@ -8,22 +8,24 @@ import (
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/hpa"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pdb"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/podmonitor"
+	"github.com/3scale/saas-operator/pkg/generators/common_blocks/secrets"
 
 	"k8s.io/apimachinery/pkg/types"
 )
 
 const (
-	component string = "autossl"
+	component             string = "mapping-service"
+	masterTokenSecretName string = "mapping-service-system-master-access-token"
 )
 
-// Generator configures the generators for AutoSSL
+// Generator configures the generators for MappingService
 type Generator struct {
 	generators.BaseOptions
-	Spec saasv1alpha1.AutoSSLSpec
+	Spec saasv1alpha1.MappingServiceSpec
 }
 
 // NewGenerator returns a new Options struct
-func NewGenerator(instance, namespace string, spec saasv1alpha1.AutoSSLSpec) Generator {
+func NewGenerator(instance, namespace string, spec saasv1alpha1.MappingServiceSpec) Generator {
 	return Generator{
 		BaseOptions: generators.BaseOptions{
 			Component:    component,
@@ -59,5 +61,14 @@ func (gen *Generator) PodMonitor() basereconciler.GeneratorFunction {
 // GrafanaDashboard returns a basereconciler.GeneratorFunction
 func (gen *Generator) GrafanaDashboard() basereconciler.GeneratorFunction {
 	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return grafanadashboard.New(key, gen.GetLabels(), *gen.Spec.GrafanaDashboard, "dashboards/autossl.json.tpl")
+	return grafanadashboard.New(key, gen.GetLabels(), *gen.Spec.GrafanaDashboard, "dashboards/mapping-service.json.tpl")
+}
+
+// SecretDefinition returns a basereconciler.GeneratorFunction
+func (gen *Generator) SecretDefinition() basereconciler.GeneratorFunction {
+	key := types.NamespacedName{
+		Name:      gen.Component + "-system-master-access-token",
+		Namespace: gen.Namespace,
+	}
+	return secrets.NewSecretDefinition(key, gen.GetLabels(), key.Name, gen.Spec.Config.SystemAdminToken.FromVault)
 }

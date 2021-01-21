@@ -191,6 +191,51 @@ spec:
         displayName: Resources
         path: resources
       version: v1alpha1
+    - description: MappingService is the Schema for the mappingservices API
+      displayName: Mapping Service
+      kind: MappingService
+      name: mappingservices.saas.3scale.net
+      specDescriptors:
+      - description: Application specific configuration options for the component
+        displayName: Config
+        path: config
+      - description: System endpoint to fetch proxy configs from
+        displayName: APIHost
+        path: config.apiHost
+      - description: Openresty log level
+        displayName: Log Level
+        path: config.logLevel
+      - description: Base domain to replace the proxy configs base domain
+        displayName: Preview Base Domain
+        path: config.previewBaseDomain
+      - description: A reference to the secret holding the system admin token
+        displayName: System Admin Token
+        path: config.systemAdminToken
+      - description: Configures the Grafana Dashboard for the component
+        displayName: Grafana Dashboard
+        path: grafanaDashboard
+      - description: Horizontal Pod Autoscaler for the component
+        displayName: HPA
+        path: hpa
+      - description: Image specification for the component
+        displayName: Image
+        path: image
+      - description: Liveness probe for the component
+        displayName: Liveness Probe
+        path: livenessProbe
+      - description: Pod Disruption Budget for the component
+        displayName: PDB
+        path: pdb
+      - description: Readiness probe for the component
+        displayName: Readiness Probe
+        path: readinessProbe
+      - description: Number of replicas (ignored if hpa is enabled) for the component
+        displayName: Replicas
+        path: replicas
+      - description: Resource requirements for the component
+        displayName: Resources
+        path: resources
+      version: v1alpha1
   description: |
     The 3scale SaaS Operator creates and maintains SaaS-ready deployments
     of each component from the Red Hat 3scale API Management solution.

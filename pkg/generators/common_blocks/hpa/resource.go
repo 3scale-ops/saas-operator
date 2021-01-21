@@ -11,7 +11,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// New returns a basereconciler.GeneratorFunction funtion that will return an New
+// New returns a basereconciler.GeneratorFunction funtion that will return an HorizontalPodAutoscaler
 // resource when called
 func New(key types.NamespacedName, labels map[string]string, cfg saasv1alpha1.HorizontalPodAutoscalerSpec) basereconciler.GeneratorFunction {
 

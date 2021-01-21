@@ -194,9 +194,9 @@ type ApicastConfig struct {
 }
 
 // Default sets default values for any value not specifically set in the ApicastConfig struct
-func (spec *ApicastConfig) Default() {
-	spec.LogLevel = stringOrDefault(spec.LogLevel, pointer.StringPtr(apicastDefaultLogLevel))
-	spec.OIDCLogLevel = stringOrDefault(spec.OIDCLogLevel, pointer.StringPtr(apicastDefaultOIDCLogLevel))
+func (cfg *ApicastConfig) Default() {
+	cfg.LogLevel = stringOrDefault(cfg.LogLevel, pointer.StringPtr(apicastDefaultLogLevel))
+	cfg.OIDCLogLevel = stringOrDefault(cfg.OIDCLogLevel, pointer.StringPtr(apicastDefaultOIDCLogLevel))
 
 }
 

@@ -38,8 +38,8 @@ func (gen *Generator) ApicastServicesDashboard() basereconciler.GeneratorFunctio
 	return grafanadashboard.New(key, gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/apicast-services.json.tpl")
 }
 
-// NewApicastGenerator returns a new Options struct
-func NewApicastGenerator(instance, namespace string, spec saasv1alpha1.ApicastSpec) Generator {
+// NewGenerator returns a new Options struct
+func NewGenerator(instance, namespace string, spec saasv1alpha1.ApicastSpec) Generator {
 	return Generator{
 		BaseOptions: generators.BaseOptions{
 			Component:    apicast,
