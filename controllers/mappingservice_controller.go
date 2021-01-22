@@ -22,6 +22,7 @@ import (
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/basereconciler"
+	"github.com/3scale/saas-operator/pkg/generators/common_blocks/service"
 	"github.com/3scale/saas-operator/pkg/generators/mappingservice"
 	"github.com/go-logr/logr"
 	"github.com/redhat-cop/operator-utils/pkg/util"
@@ -42,9 +43,9 @@ type MappingServiceReconciler struct {
 // +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=mappingservices,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=mappingservices/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=mappingservices/finalizers,verbs=update
-// +kubebuilder:rbac:groups="core",namespace=placeholder,resources=services,verbs=get;list;watch;create;update;patch,delete
-// +kubebuilder:rbac:groups="apps",namespace=placeholder,resources=deployments,verbs=get;list;watch;create;update;patch,delete
-// +kubebuilder:rbac:groups="monitoring.coreos.com",namespace=placeholder,resources=podmonitors,verbs=get;list;watch;create;update;patch
+// +kubebuilder:rbac:groups="core",namespace=placeholder,resources=services,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="apps",namespace=placeholder,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="monitoring.coreos.com",namespace=placeholder,resources=podmonitors,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="autoscaling",namespace=placeholder,resources=horizontalpodautoscalers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="policy",namespace=placeholder,resources=poddisruptionbudgets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="integreatly.org",namespace=placeholder,resources=grafanadashboards,verbs=get;list;watch;create;update;patch;delete
@@ -127,7 +128,7 @@ func (r *MappingServiceReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	resources = append(resources,
 		basereconciler.LockedResource{
 			GeneratorFn:  gen.Service(),
-			ExcludePaths: basereconciler.DefaultExcludedPaths,
+			ExcludePaths: append(basereconciler.DefaultExcludedPaths, service.Excludes(gen.Service())...),
 		})
 
 	resources = append(resources,
