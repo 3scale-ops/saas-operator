@@ -9,7 +9,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// GatewayService returns a basereconciler.GeneratorFunction funtion that will return the
+// GatewayService returns a basereconciler.GeneratorFunction function that will return the
 // gateway Service resource when called
 func (gen *EnvGenerator) GatewayService() basereconciler.GeneratorFunction {
 
@@ -47,7 +47,7 @@ func (gen *EnvGenerator) GatewayService() basereconciler.GeneratorFunction {
 	}
 }
 
-// MgmtService returns a basereconciler.GeneratorFunction funtion that will return the
+// MgmtService returns a basereconciler.GeneratorFunction function that will return the
 // management Service resource when called
 func (gen *EnvGenerator) MgmtService() basereconciler.GeneratorFunction {
 

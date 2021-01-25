@@ -9,7 +9,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// NewSecretDefinition returns a basereconciler.GeneratorFunction funtion that will return a SecretDefinition
+// NewSecretDefinition returns a basereconciler.GeneratorFunction function that will return a SecretDefinition
 // resource when called
 func NewSecretDefinition(key types.NamespacedName, labels map[string]string, secretName string,
 	cfg saasv1alpha1.VaultSecretReference) basereconciler.GeneratorFunction {

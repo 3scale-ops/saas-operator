@@ -9,7 +9,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// Service returns a basereconciler.GeneratorFunction funtion that will return the
+// Service returns a basereconciler.GeneratorFunction function that will return the
 // management Service resource when called
 func (gen *Generator) Service() basereconciler.GeneratorFunction {
 

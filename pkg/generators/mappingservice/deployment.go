@@ -18,7 +18,7 @@ const (
 	leACMEStagingEndpoint = "https://acme-staging-v02.api.letsencrypt.org/directory"
 )
 
-// Deployment returns a basereconciler.GeneratorFunction funtion that will return a Deployment
+// Deployment returns a basereconciler.GeneratorFunction function that will return a Deployment
 // resource when called
 func (gen *Generator) Deployment() basereconciler.GeneratorFunction {
 

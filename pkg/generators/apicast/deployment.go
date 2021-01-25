@@ -14,7 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// Deployment returns a basereconciler.GeneratorFunction funtion that will return a Deployment
+// Deployment returns a basereconciler.GeneratorFunction function that will return a Deployment
 // resource when called
 func (gen *EnvGenerator) Deployment() basereconciler.GeneratorFunction {
 

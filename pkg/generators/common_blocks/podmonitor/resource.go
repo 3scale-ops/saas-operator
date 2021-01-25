@@ -10,7 +10,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// New returns a basereconciler.GeneratorFunction funtion that will return a PodMonitor
+// New returns a basereconciler.GeneratorFunction function that will return a PodMonitor
 // resource when called
 func New(key types.NamespacedName, labels map[string]string, selector map[string]string,
 	endpoints ...monitoringv1.PodMetricsEndpoint) basereconciler.GeneratorFunction {
