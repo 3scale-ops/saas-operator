@@ -8,24 +8,87 @@ metadata:
           "apiVersion": "saas.3scale.net/v1alpha1",
           "kind": "Apicast",
           "metadata": {
-            "name": "apicast-sample"
+            "name": "example"
           },
           "spec": {
-            "foo": "bar"
+            "production": {
+              "config": {
+                "configurationCache": 300,
+                "logLevel": "debug",
+                "threescalePortalEndpoint": "http://example.com"
+              },
+              "endpoint": {
+                "dns": [
+                  "production.gw.example.com",
+                  "production.apicast.example.com"
+                ]
+              },
+              "image": {
+                "tag": "v0.1.0"
+              },
+              "marin3r": {
+                "ports": [
+                  {
+                    "name": "gateway-http",
+                    "port": 38080
+                  },
+                  {
+                    "name": "gateway-https",
+                    "port": 38443
+                  },
+                  {
+                    "name": "envoy-metrics",
+                    "port": 9901
+                  }
+                ]
+              }
+            },
+            "staging": {
+              "config": {
+                "configurationCache": 30,
+                "logLevel": "debug",
+                "threescalePortalEndpoint": "http://example.com"
+              },
+              "endpoint": {
+                "dns": [
+                  "staging.gw.example.com",
+                  "staging.apicast.example.com"
+                ]
+              },
+              "image": {
+                "tag": "v0.1.0"
+              },
+              "marin3r": {
+                "ports": [
+                  {
+                    "name": "gateway-http",
+                    "port": 38080
+                  },
+                  {
+                    "name": "gateway-https",
+                    "port": 38443
+                  },
+                  {
+                    "name": "envoy-metrics",
+                    "port": 9901
+                  }
+                ]
+              }
+            }
           }
         },
         {
           "apiVersion": "saas.3scale.net/v1alpha1",
           "kind": "AutoSSL",
           "metadata": {
-            "name": "simple-example"
+            "name": "example"
           },
           "spec": {
             "config": {
               "contactEmail": "example@example.com",
-              "proxyEndpoint": "https://multitenant-admin.example.3scale.net",
+              "proxyEndpoint": "https://example.com",
               "redisHost": "redis.example.com",
-              "verificationEndpoint": "https://multitenant-admin.example.3scale.net/swagger/spec.json"
+              "verificationEndpoint": "https://example.com/verify"
             },
             "endpoint": {
               "dns": [
@@ -41,10 +104,21 @@ metadata:
           "apiVersion": "saas.3scale.net/v1alpha1",
           "kind": "MappingService",
           "metadata": {
-            "name": "mappingservice-sample"
+            "name": "example"
           },
           "spec": {
-            "foo": "bar"
+            "config": {
+              "apiHost": "http://example.com:3000",
+              "systemAdminToken": {
+                "fromVault": {
+                  "key": "access-token",
+                  "path": "secret/data/some/path"
+                }
+              }
+            },
+            "image": {
+              "tag": "v0.1.0"
+            }
           }
         }
       ]
@@ -421,6 +495,7 @@ spec:
           - deployments
           verbs:
           - create
+          - delete
           - get
           - list
           - patch
@@ -444,6 +519,7 @@ spec:
           - services
           verbs:
           - create
+          - delete
           - get
           - list
           - patch
@@ -467,6 +543,7 @@ spec:
           - podmonitors
           verbs:
           - create
+          - delete
           - get
           - list
           - patch

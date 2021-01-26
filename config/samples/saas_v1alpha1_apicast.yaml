@@ -1,7 +1,43 @@
 apiVersion: saas.3scale.net/v1alpha1
 kind: Apicast
 metadata:
-  name: apicast-sample
+  name: example
 spec:
-  # Add fields here
-  foo: bar
+  staging:
+    endpoint:
+      dns:
+        - staging.gw.example.com
+        - staging.apicast.example.com
+    image:
+      tag: v0.1.0
+    config:
+      configurationCache: 30
+      threescalePortalEndpoint: "http://example.com"
+      logLevel: "debug"
+    marin3r:
+      ports:
+        - name: gateway-http
+          port: 38080
+        - name: gateway-https
+          port: 38443
+        - name: envoy-metrics
+          port: 9901
+  production:
+    endpoint:
+      dns:
+        - production.gw.example.com
+        - production.apicast.example.com
+    image:
+      tag: v0.1.0
+    config:
+      configurationCache: 300
+      threescalePortalEndpoint: "http://example.com"
+      logLevel: "debug"
+    marin3r:
+      ports:
+        - name: gateway-http
+          port: 38080
+        - name: gateway-https
+          port: 38443
+        - name: envoy-metrics
+          port: 9901

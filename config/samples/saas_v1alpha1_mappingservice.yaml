@@ -1,7 +1,13 @@
 apiVersion: saas.3scale.net/v1alpha1
 kind: MappingService
 metadata:
-  name: mappingservice-sample
+  name: example
 spec:
-  # Add fields here
-  foo: bar
+  image:
+    tag: v0.1.0
+  config:
+    apiHost: http://example.com:3000
+    systemAdminToken:
+      fromVault:
+        key: access-token
+        path: secret/data/some/path
