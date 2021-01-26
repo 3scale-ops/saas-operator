@@ -27,10 +27,15 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/redhat-cop/operator-utils/pkg/util"
 	"github.com/redhat-cop/operator-utils/pkg/util/lockedresourcecontroller/lockedpatch"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
@@ -44,6 +49,7 @@ type MappingServiceReconciler struct {
 // +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=mappingservices/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=mappingservices/finalizers,verbs=update
 // +kubebuilder:rbac:groups="core",namespace=placeholder,resources=services,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="core",namespace=placeholder,resources=secrets,verbs=get;list;watch
 // +kubebuilder:rbac:groups="apps",namespace=placeholder,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="monitoring.coreos.com",namespace=placeholder,resources=podmonitors,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="autoscaling",namespace=placeholder,resources=horizontalpodautoscalers,verbs=get;list;watch;create;update;patch;delete
@@ -110,19 +116,24 @@ func (r *MappingServiceReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 
 	resources = append(resources,
 		basereconciler.LockedResource{
-			GeneratorFn: gen.Deployment(),
+			GeneratorFn:  gen.SecretDefinition(),
+			ExcludePaths: basereconciler.DefaultExcludedPaths,
+		})
+
+	hash, err := r.CalculateSecretHash(ctx, gen.SecretDefinition())
+	if err != nil {
+		return r.ManageError(ctx, instance, err)
+	}
+
+	resources = append(resources,
+		basereconciler.LockedResource{
+			GeneratorFn: gen.Deployment(hash),
 			ExcludePaths: func() []string {
 				if instance.Spec.HPA.IsDeactivated() {
 					return basereconciler.DefaultExcludedPaths
 				}
 				return append(basereconciler.DefaultExcludedPaths, "/spec/replicas")
 			}(),
-		})
-
-	resources = append(resources,
-		basereconciler.LockedResource{
-			GeneratorFn:  gen.SecretDefinition(),
-			ExcludePaths: basereconciler.DefaultExcludedPaths,
 		})
 
 	resources = append(resources,
@@ -174,10 +185,32 @@ func (r *MappingServiceReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	return r.ManageSuccess(ctx, instance)
 }
 
+func (r *MappingServiceReconciler) secretEventHandler() handler.EventHandler {
+	return handler.EnqueueRequestsFromMapFunc(
+		func(o client.Object) []reconcile.Request {
+			msList := &saasv1alpha1.MappingServiceList{}
+			if err := r.GetClient().List(context.TODO(), msList); err != nil {
+				r.Log.Error(err, "unable to retrieve the list of mappingservices")
+				return []reconcile.Request{}
+			}
+			if len(msList.Items) == 0 {
+				return []reconcile.Request{}
+			}
+
+			key := types.NamespacedName{
+				Name:      msList.Items[0].GetName(),
+				Namespace: msList.Items[0].GetNamespace(),
+			}
+			return []reconcile.Request{{NamespacedName: key}}
+		},
+	)
+}
+
 // SetupWithManager sets up the controller with the Manager.
 func (r *MappingServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&saasv1alpha1.MappingService{}).
+		For(&saasv1alpha1.MappingService{}, builder.WithPredicates(util.ResourceGenerationOrFinalizerChangedPredicate{})).
 		Watches(&source.Channel{Source: r.GetStatusChangeChannel()}, &handler.EnqueueRequestForObject{}).
+		Watches(&source.Kind{Type: &corev1.Secret{TypeMeta: metav1.TypeMeta{Kind: "Secret"}}}, r.secretEventHandler()).
 		Complete(r)
 }

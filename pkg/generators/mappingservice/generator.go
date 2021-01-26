@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	component             string = "mapping-service"
+	Component             string = "mapping-service"
 	masterTokenSecretName string = "mapping-service-system-master-access-token"
 )
 
@@ -28,11 +28,11 @@ type Generator struct {
 func NewGenerator(instance, namespace string, spec saasv1alpha1.MappingServiceSpec) Generator {
 	return Generator{
 		BaseOptions: generators.BaseOptions{
-			Component:    component,
+			Component:    Component,
 			InstanceName: instance,
 			Namespace:    namespace,
 			Labels: map[string]string{
-				"app":     component,
+				"app":     Component,
 				"part-of": "3scale-saas",
 			},
 		},

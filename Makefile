@@ -1,5 +1,5 @@
 # Current Operator version
-VERSION ?= 0.9.0-alpha17
+VERSION ?= 0.9.0-alpha21
 # Default catalog image
 CATALOG_IMG ?= quay.io/3scaleops/go-saas-operator-catalog:latest
 # Default bundle image tag
