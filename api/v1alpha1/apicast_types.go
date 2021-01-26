@@ -153,7 +153,7 @@ func (a *Apicast) Default() {
 
 }
 
-// Default implements defaulting for the each apicsat environment
+// Default implements defaulting for the each apicast environment
 func (spec *ApicastEnvironmentSpec) Default() {
 
 	spec.Image = InitializeImageSpec(spec.Image, apicastDefaultImage)
