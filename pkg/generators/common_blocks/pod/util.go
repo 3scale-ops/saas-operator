@@ -8,7 +8,7 @@ import (
 )
 
 // HTTPProbe returns an HTTP corev1.Probe struct
-func HTTPProbe(path string, port intstr.IntOrString, scheme corev1.URIScheme, cfg saasv1alpha1.HTTPProbeSpec) *corev1.Probe {
+func HTTPProbe(path string, port intstr.IntOrString, scheme corev1.URIScheme, cfg saasv1alpha1.ProbeSpec) *corev1.Probe {
 	if cfg.IsDeactivated() {
 		return nil
 	}
@@ -29,7 +29,7 @@ func HTTPProbe(path string, port intstr.IntOrString, scheme corev1.URIScheme, cf
 }
 
 // TCPProbe returns a TCP corev1.Probe struct
-func TCPProbe(port intstr.IntOrString, cfg saasv1alpha1.HTTPProbeSpec) *corev1.Probe {
+func TCPProbe(port intstr.IntOrString, cfg saasv1alpha1.ProbeSpec) *corev1.Probe {
 	if cfg.IsDeactivated() {
 		return nil
 	}

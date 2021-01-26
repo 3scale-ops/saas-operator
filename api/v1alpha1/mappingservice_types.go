@@ -47,14 +47,14 @@ var (
 		ResourceUtilization: pointer.Int32Ptr(90),
 		ResourceName:        pointer.StringPtr("cpu"),
 	}
-	mappingserviceLivenessDefaultProbe defaultHTTPProbeSpec = defaultHTTPProbeSpec{
+	mappingserviceLivenessDefaultProbe defaultProbeSpec = defaultProbeSpec{
 		InitialDelaySeconds: pointer.Int32Ptr(5),
 		TimeoutSeconds:      pointer.Int32Ptr(5),
 		PeriodSeconds:       pointer.Int32Ptr(10),
 		SuccessThreshold:    pointer.Int32Ptr(1),
 		FailureThreshold:    pointer.Int32Ptr(3),
 	}
-	mappingserviceReadinessDefaultProbe defaultHTTPProbeSpec = defaultHTTPProbeSpec{
+	mappingserviceReadinessDefaultProbe defaultProbeSpec = defaultProbeSpec{
 		InitialDelaySeconds: pointer.Int32Ptr(5),
 		TimeoutSeconds:      pointer.Int32Ptr(5),
 		PeriodSeconds:       pointer.Int32Ptr(30),
@@ -97,11 +97,11 @@ type MappingServiceSpec struct {
 	// Liveness probe for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	LivenessProbe *HTTPProbeSpec `json:"livenessProbe,omitempty"`
+	LivenessProbe *ProbeSpec `json:"livenessProbe,omitempty"`
 	// Readiness probe for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	ReadinessProbe *HTTPProbeSpec `json:"readinessProbe,omitempty"`
+	ReadinessProbe *ProbeSpec `json:"readinessProbe,omitempty"`
 	// Configures the Grafana Dashboard for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -125,8 +125,8 @@ func (ms *MappingService) Default() {
 
 	ms.Spec.PDB = InitializePodDisruptionBudgetSpec(ms.Spec.PDB, mappingserviceDefaultPDB)
 	ms.Spec.Resources = InitializeResourceRequirementsSpec(ms.Spec.Resources, mappingserviceDefaultResources)
-	ms.Spec.LivenessProbe = InitializeHTTPProbeSpec(ms.Spec.LivenessProbe, mappingserviceLivenessDefaultProbe)
-	ms.Spec.ReadinessProbe = InitializeHTTPProbeSpec(ms.Spec.ReadinessProbe, mappingserviceReadinessDefaultProbe)
+	ms.Spec.LivenessProbe = InitializeProbeSpec(ms.Spec.LivenessProbe, mappingserviceLivenessDefaultProbe)
+	ms.Spec.ReadinessProbe = InitializeProbeSpec(ms.Spec.ReadinessProbe, mappingserviceReadinessDefaultProbe)
 	ms.Spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(ms.Spec.GrafanaDashboard, mappingserviceDefaultGrafanaDashboard)
 	ms.Spec.Config.Default()
 }

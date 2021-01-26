@@ -57,14 +57,14 @@ var (
 		ResourceUtilization: pointer.Int32Ptr(90),
 		ResourceName:        pointer.StringPtr("cpu"),
 	}
-	apicastDefaultLivenessProbe defaultHTTPProbeSpec = defaultHTTPProbeSpec{
+	apicastDefaultLivenessProbe defaultProbeSpec = defaultProbeSpec{
 		InitialDelaySeconds: pointer.Int32Ptr(5),
 		TimeoutSeconds:      pointer.Int32Ptr(5),
 		PeriodSeconds:       pointer.Int32Ptr(10),
 		SuccessThreshold:    pointer.Int32Ptr(1),
 		FailureThreshold:    pointer.Int32Ptr(3),
 	}
-	apicastDefaultReadinessProbe defaultHTTPProbeSpec = defaultHTTPProbeSpec{
+	apicastDefaultReadinessProbe defaultProbeSpec = defaultProbeSpec{
 		InitialDelaySeconds: pointer.Int32Ptr(5),
 		TimeoutSeconds:      pointer.Int32Ptr(5),
 		PeriodSeconds:       pointer.Int32Ptr(30),
@@ -122,11 +122,11 @@ type ApicastEnvironmentSpec struct {
 	// Liveness probe for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	LivenessProbe *HTTPProbeSpec `json:"livenessProbe,omitempty"`
+	LivenessProbe *ProbeSpec `json:"livenessProbe,omitempty"`
 	// Readiness probe for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	ReadinessProbe *HTTPProbeSpec `json:"readinessProbe,omitempty"`
+	ReadinessProbe *ProbeSpec `json:"readinessProbe,omitempty"`
 	// Application specific configuration options for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Config ApicastConfig `json:"config"`
@@ -166,8 +166,8 @@ func (spec *ApicastEnvironmentSpec) Default() {
 
 	spec.PDB = InitializePodDisruptionBudgetSpec(spec.PDB, apicastDefaultPDB)
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, apicastDefaultResources)
-	spec.LivenessProbe = InitializeHTTPProbeSpec(spec.LivenessProbe, apicastDefaultLivenessProbe)
-	spec.ReadinessProbe = InitializeHTTPProbeSpec(spec.ReadinessProbe, apicastDefaultReadinessProbe)
+	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, apicastDefaultLivenessProbe)
+	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, apicastDefaultReadinessProbe)
 	spec.LoadBalancer = InitializeLoadBalancerSpec(spec.LoadBalancer, apicastDefaultLoadBalancer)
 	spec.Marin3r = InitializeMarin3rSidecarSpec(spec.Marin3r, apicastDefaultMarin3rSpec)
 	spec.Config.Default()

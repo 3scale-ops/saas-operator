@@ -57,7 +57,7 @@ var (
 		ResourceUtilization: pointer.Int32Ptr(90),
 		ResourceName:        pointer.StringPtr("cpu"),
 	}
-	autosslDefaultProbe defaultHTTPProbeSpec = defaultHTTPProbeSpec{
+	autosslDefaultProbe defaultProbeSpec = defaultProbeSpec{
 		InitialDelaySeconds: pointer.Int32Ptr(25),
 		TimeoutSeconds:      pointer.Int32Ptr(1),
 		PeriodSeconds:       pointer.Int32Ptr(10),
@@ -102,11 +102,11 @@ type AutoSSLSpec struct {
 	// Liveness probe for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	LivenessProbe *HTTPProbeSpec `json:"livenessProbe,omitempty"`
+	LivenessProbe *ProbeSpec `json:"livenessProbe,omitempty"`
 	// Readiness probe for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	ReadinessProbe *HTTPProbeSpec `json:"readinessProbe,omitempty"`
+	ReadinessProbe *ProbeSpec `json:"readinessProbe,omitempty"`
 	// Configures the AWS load balancer for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -137,8 +137,8 @@ func (a *AutoSSL) Default() {
 
 	a.Spec.PDB = InitializePodDisruptionBudgetSpec(a.Spec.PDB, autosslDefaultPDB)
 	a.Spec.Resources = InitializeResourceRequirementsSpec(a.Spec.Resources, autosslDefaultResources)
-	a.Spec.LivenessProbe = InitializeHTTPProbeSpec(a.Spec.LivenessProbe, autosslDefaultProbe)
-	a.Spec.ReadinessProbe = InitializeHTTPProbeSpec(a.Spec.ReadinessProbe, autosslDefaultProbe)
+	a.Spec.LivenessProbe = InitializeProbeSpec(a.Spec.LivenessProbe, autosslDefaultProbe)
+	a.Spec.ReadinessProbe = InitializeProbeSpec(a.Spec.ReadinessProbe, autosslDefaultProbe)
 	a.Spec.LoadBalancer = InitializeLoadBalancerSpec(a.Spec.LoadBalancer, autosslDefaultLoadBalancer)
 	a.Spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(a.Spec.GrafanaDashboard, autosslDefaultGrafanaDashboard)
 	a.Spec.Config.Default()

@@ -59,7 +59,7 @@ func (spec *ImageSpec) Default(def defaultImageSpec) {
 // IsDeactivated true if the field is set with the deactivated value (empty struct)
 func (spec *ImageSpec) IsDeactivated() bool { return false }
 
-// InitializeImageSpec initializes a HTTPProbeSpec struct
+// InitializeImageSpec initializes a ImageSpec struct
 func InitializeImageSpec(spec *ImageSpec, def defaultImageSpec) *ImageSpec {
 	if spec == nil {
 		new := &ImageSpec{}
@@ -71,8 +71,8 @@ func InitializeImageSpec(spec *ImageSpec, def defaultImageSpec) *ImageSpec {
 	return copy
 }
 
-// HTTPProbeSpec specifies configuration for an HTTP probe
-type HTTPProbeSpec struct {
+// ProbeSpec specifies configuration for a probe
+type ProbeSpec struct {
 	// Number of seconds after the container has started before liveness probes are initiated
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -95,13 +95,13 @@ type HTTPProbeSpec struct {
 	FailureThreshold *int32 `json:"failureThreshold,omitempty"`
 }
 
-type defaultHTTPProbeSpec struct {
+type defaultProbeSpec struct {
 	InitialDelaySeconds, TimeoutSeconds, PeriodSeconds,
 	SuccessThreshold, FailureThreshold *int32
 }
 
-// Default sets default values for any value not specifically set in the HTTPProbeSpec struct
-func (spec *HTTPProbeSpec) Default(def defaultHTTPProbeSpec) {
+// Default sets default values for any value not specifically set in the ProbeSpec struct
+func (spec *ProbeSpec) Default(def defaultProbeSpec) {
 	spec.InitialDelaySeconds = intOrDefault(spec.InitialDelaySeconds, def.InitialDelaySeconds)
 	spec.TimeoutSeconds = intOrDefault(spec.TimeoutSeconds, def.TimeoutSeconds)
 	spec.PeriodSeconds = intOrDefault(spec.PeriodSeconds, def.PeriodSeconds)
@@ -110,17 +110,17 @@ func (spec *HTTPProbeSpec) Default(def defaultHTTPProbeSpec) {
 }
 
 // IsDeactivated true if the field is set with the deactivated value (empty struct)
-func (spec *HTTPProbeSpec) IsDeactivated() bool {
-	if reflect.DeepEqual(spec, &HTTPProbeSpec{}) {
+func (spec *ProbeSpec) IsDeactivated() bool {
+	if reflect.DeepEqual(spec, &ProbeSpec{}) {
 		return true
 	}
 	return false
 }
 
-// InitializeHTTPProbeSpec initializes a HTTPProbeSpec struct
-func InitializeHTTPProbeSpec(spec *HTTPProbeSpec, def defaultHTTPProbeSpec) *HTTPProbeSpec {
+// InitializeProbeSpec initializes a ProbeSpec struct
+func InitializeProbeSpec(spec *ProbeSpec, def defaultProbeSpec) *ProbeSpec {
 	if spec == nil {
-		new := &HTTPProbeSpec{}
+		new := &ProbeSpec{}
 		new.Default(def)
 		return new
 	}
@@ -174,7 +174,7 @@ type defaultLoadBalancerSpec struct {
 	HealthcheckInterval, HealthcheckTimeout                                               *int32
 }
 
-// Default sets default values for any value not specifically set in the HTTPProbeSpec struct
+// Default sets default values for any value not specifically set in the LoadBalancerSpec struct
 func (spec *LoadBalancerSpec) Default(def defaultLoadBalancerSpec) {
 	spec.ProxyProtocol = boolOrDefault(spec.ProxyProtocol, def.ProxyProtocol)
 	spec.CrossZoneLoadBalancingEnabled = boolOrDefault(spec.CrossZoneLoadBalancingEnabled, def.CrossZoneLoadBalancingEnabled)

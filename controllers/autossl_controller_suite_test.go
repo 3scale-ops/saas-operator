@@ -161,8 +161,8 @@ var _ = Describe("AutoSSL controller", func() {
 					Replicas:         pointer.Int32Ptr(1),
 					Resources:        &saasv1alpha1.ResourceRequirementsSpec{},
 					GrafanaDashboard: &saasv1alpha1.GrafanaDashboardSpec{},
-					LivenessProbe:    &saasv1alpha1.HTTPProbeSpec{},
-					ReadinessProbe:   &saasv1alpha1.HTTPProbeSpec{},
+					LivenessProbe:    &saasv1alpha1.ProbeSpec{},
+					ReadinessProbe:   &saasv1alpha1.ProbeSpec{},
 				},
 			}
 			err := k8sClient.Create(context.Background(), autossl)

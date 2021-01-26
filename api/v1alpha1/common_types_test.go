@@ -152,7 +152,7 @@ func TestInitializeImageSpec(t *testing.T) {
 	}
 }
 
-func TestHTTPProbeSpec_Default(t *testing.T) {
+func TestProbeSpec_Default(t *testing.T) {
 	type fields struct {
 		InitialDelaySeconds *int32
 		TimeoutSeconds      *int32
@@ -161,25 +161,25 @@ func TestHTTPProbeSpec_Default(t *testing.T) {
 		FailureThreshold    *int32
 	}
 	type args struct {
-		def defaultHTTPProbeSpec
+		def defaultProbeSpec
 	}
 	tests := []struct {
 		name   string
 		fields fields
 		args   args
-		want   *HTTPProbeSpec
+		want   *ProbeSpec
 	}{
 		{
 			name:   "Sets defaults",
 			fields: fields{},
-			args: args{def: defaultHTTPProbeSpec{
+			args: args{def: defaultProbeSpec{
 				InitialDelaySeconds: pointer.Int32Ptr(1),
 				TimeoutSeconds:      pointer.Int32Ptr(2),
 				PeriodSeconds:       pointer.Int32Ptr(3),
 				SuccessThreshold:    pointer.Int32Ptr(4),
 				FailureThreshold:    pointer.Int32Ptr(5),
 			}},
-			want: &HTTPProbeSpec{
+			want: &ProbeSpec{
 				InitialDelaySeconds: pointer.Int32Ptr(1),
 				TimeoutSeconds:      pointer.Int32Ptr(2),
 				PeriodSeconds:       pointer.Int32Ptr(3),
@@ -192,14 +192,14 @@ func TestHTTPProbeSpec_Default(t *testing.T) {
 			fields: fields{
 				InitialDelaySeconds: pointer.Int32Ptr(9999),
 			},
-			args: args{def: defaultHTTPProbeSpec{
+			args: args{def: defaultProbeSpec{
 				InitialDelaySeconds: pointer.Int32Ptr(1),
 				TimeoutSeconds:      pointer.Int32Ptr(2),
 				PeriodSeconds:       pointer.Int32Ptr(3),
 				SuccessThreshold:    pointer.Int32Ptr(4),
 				FailureThreshold:    pointer.Int32Ptr(5),
 			}},
-			want: &HTTPProbeSpec{
+			want: &ProbeSpec{
 				InitialDelaySeconds: pointer.Int32Ptr(9999),
 				TimeoutSeconds:      pointer.Int32Ptr(2),
 				PeriodSeconds:       pointer.Int32Ptr(3),
@@ -210,7 +210,7 @@ func TestHTTPProbeSpec_Default(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			spec := &HTTPProbeSpec{
+			spec := &ProbeSpec{
 				InitialDelaySeconds: tt.fields.InitialDelaySeconds,
 				TimeoutSeconds:      tt.fields.TimeoutSeconds,
 				PeriodSeconds:       tt.fields.PeriodSeconds,
@@ -219,51 +219,51 @@ func TestHTTPProbeSpec_Default(t *testing.T) {
 			}
 			spec.Default(tt.args.def)
 			if !reflect.DeepEqual(spec, tt.want) {
-				t.Errorf("HTTPProbeSpec_Default() = %v, want %v", *spec, *tt.want)
+				t.Errorf("ProbeSpec_Default() = %v, want %v", *spec, *tt.want)
 			}
 		})
 	}
 }
 
-func TestHTTPProbeSpec_IsDeactivated(t *testing.T) {
+func TestProbeSpec_IsDeactivated(t *testing.T) {
 	tests := []struct {
 		name string
-		spec *HTTPProbeSpec
+		spec *ProbeSpec
 		want bool
 	}{
-		{"Wants true if empty", &HTTPProbeSpec{}, true},
+		{"Wants true if empty", &ProbeSpec{}, true},
 		{"Wants false if nil", nil, false},
-		{"Wants false if other", &HTTPProbeSpec{InitialDelaySeconds: pointer.Int32Ptr(1)}, false},
+		{"Wants false if other", &ProbeSpec{InitialDelaySeconds: pointer.Int32Ptr(1)}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.spec.IsDeactivated(); got != tt.want {
-				t.Errorf("HTTPProbeSpec.IsDeactivated() = %v, want %v", got, tt.want)
+				t.Errorf("ProbeSpec.IsDeactivated() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestInitializeHTTPProbeSpec(t *testing.T) {
+func TestInitializeProbeSpec(t *testing.T) {
 	type args struct {
-		spec *HTTPProbeSpec
-		def  defaultHTTPProbeSpec
+		spec *ProbeSpec
+		def  defaultProbeSpec
 	}
 	tests := []struct {
 		name string
 		args args
-		want *HTTPProbeSpec
+		want *ProbeSpec
 	}{
 		{
 			name: "Initializes the struct with appropriate defaults if nil",
-			args: args{nil, defaultHTTPProbeSpec{
+			args: args{nil, defaultProbeSpec{
 				InitialDelaySeconds: pointer.Int32Ptr(1),
 				TimeoutSeconds:      pointer.Int32Ptr(2),
 				PeriodSeconds:       pointer.Int32Ptr(3),
 				SuccessThreshold:    pointer.Int32Ptr(4),
 				FailureThreshold:    pointer.Int32Ptr(5),
 			}},
-			want: &HTTPProbeSpec{
+			want: &ProbeSpec{
 				InitialDelaySeconds: pointer.Int32Ptr(1),
 				TimeoutSeconds:      pointer.Int32Ptr(2),
 				PeriodSeconds:       pointer.Int32Ptr(3),
@@ -273,14 +273,14 @@ func TestInitializeHTTPProbeSpec(t *testing.T) {
 		},
 		{
 			name: "Deactivated",
-			args: args{&HTTPProbeSpec{}, defaultHTTPProbeSpec{}},
-			want: &HTTPProbeSpec{},
+			args: args{&ProbeSpec{}, defaultProbeSpec{}},
+			want: &ProbeSpec{},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := InitializeHTTPProbeSpec(tt.args.spec, tt.args.def); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("InitializeHTTPProbeSpec() = %v, want %v", got, tt.want)
+			if got := InitializeProbeSpec(tt.args.spec, tt.args.def); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("InitializeProbeSpec() = %v, want %v", got, tt.want)
 			}
 		})
 	}

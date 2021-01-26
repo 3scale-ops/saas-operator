@@ -224,8 +224,8 @@ var _ = Describe("Apicast controller", func() {
 						HPA:            &saasv1alpha1.HorizontalPodAutoscalerSpec{},
 						Replicas:       pointer.Int32Ptr(1),
 						Resources:      &saasv1alpha1.ResourceRequirementsSpec{},
-						LivenessProbe:  &saasv1alpha1.HTTPProbeSpec{},
-						ReadinessProbe: &saasv1alpha1.HTTPProbeSpec{},
+						LivenessProbe:  &saasv1alpha1.ProbeSpec{},
+						ReadinessProbe: &saasv1alpha1.ProbeSpec{},
 					},
 					Production: saasv1alpha1.ApicastEnvironmentSpec{
 						Config: saasv1alpha1.ApicastConfig{
@@ -238,8 +238,8 @@ var _ = Describe("Apicast controller", func() {
 						HPA:            &saasv1alpha1.HorizontalPodAutoscalerSpec{},
 						Replicas:       pointer.Int32Ptr(1),
 						Resources:      &saasv1alpha1.ResourceRequirementsSpec{},
-						LivenessProbe:  &saasv1alpha1.HTTPProbeSpec{},
-						ReadinessProbe: &saasv1alpha1.HTTPProbeSpec{},
+						LivenessProbe:  &saasv1alpha1.ProbeSpec{},
+						ReadinessProbe: &saasv1alpha1.ProbeSpec{},
 					},
 					GrafanaDashboard: &saasv1alpha1.GrafanaDashboardSpec{},
 				},
