@@ -102,7 +102,7 @@ func (gen *Generator) Deployment() basereconciler.GeneratorFunction {
 								},
 								Resources:              corev1.ResourceRequirements(*gen.Spec.Resources),
 								TerminationMessagePath: corev1.TerminationMessagePathDefault,
-								ImagePullPolicy:        corev1.PullAlways,
+								ImagePullPolicy:        *gen.Spec.Image.PullPolicy,
 								VolumeMounts: []corev1.VolumeMount{
 									{
 										Name:      "autossl-cache",

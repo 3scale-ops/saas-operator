@@ -28,8 +28,9 @@ import (
 var (
 	autosslDefaultReplicas int32            = 2
 	autosslDefaultImage    defaultImageSpec = defaultImageSpec{
-		Name: pointer.StringPtr("quay.io/3scale/autossl"),
-		Tag:  pointer.StringPtr("latest"),
+		Name:       pointer.StringPtr("quay.io/3scale/autossl"),
+		Tag:        pointer.StringPtr("latest"),
+		PullPolicy: (*corev1.PullPolicy)(pointer.StringPtr(string(corev1.PullIfNotPresent))),
 	}
 	autosslDefaultLoadBalancer defaultLoadBalancerSpec = defaultLoadBalancerSpec{
 		ProxyProtocol:                 pointer.BoolPtr(true),

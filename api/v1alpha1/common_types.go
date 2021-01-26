@@ -43,10 +43,15 @@ type ImageSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	PullSecretName *string `json:"pullSecretName,omitempty"`
+	// Pull policy for the image
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	PullPolicy *corev1.PullPolicy `json:"pullPolicy,omitempty"`
 }
 
 type defaultImageSpec struct {
 	Name, Tag, PullSecretName *string
+	PullPolicy                *corev1.PullPolicy
 }
 
 // Default sets default values for any value not specifically set in the ImageSpec struct
@@ -54,6 +59,12 @@ func (spec *ImageSpec) Default(def defaultImageSpec) {
 	spec.Name = stringOrDefault(spec.Name, def.Name)
 	spec.Tag = stringOrDefault(spec.Tag, def.Tag)
 	spec.PullSecretName = stringOrDefault(spec.PullSecretName, def.PullSecretName)
+	spec.PullPolicy = func() *corev1.PullPolicy {
+		if spec.PullPolicy == nil {
+			return def.PullPolicy
+		}
+		return spec.PullPolicy
+	}()
 }
 
 // IsDeactivated true if the field is set with the deactivated value (empty struct)

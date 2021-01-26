@@ -75,7 +75,7 @@ func (gen *Generator) Deployment() basereconciler.GeneratorFunction {
 								}(),
 								Resources:              corev1.ResourceRequirements(*gen.Spec.Resources),
 								TerminationMessagePath: corev1.TerminationMessagePathDefault,
-								ImagePullPolicy:        corev1.PullAlways,
+								ImagePullPolicy:        *gen.Spec.Image.PullPolicy,
 								LivenessProbe:          pod.TCPProbe(intstr.FromString("mapping"), *gen.Spec.LivenessProbe),
 								ReadinessProbe:         pod.HTTPProbe("/status/ready", intstr.FromString("management"), corev1.URISchemeHTTP, *gen.Spec.ReadinessProbe),
 							},

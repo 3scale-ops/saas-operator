@@ -32,6 +32,7 @@ func TestImageSpec_Default(t *testing.T) {
 		Name           *string
 		Tag            *string
 		PullSecretName *string
+		PullPolicy     *corev1.PullPolicy
 	}
 	type args struct {
 		def defaultImageSpec
@@ -49,27 +50,32 @@ func TestImageSpec_Default(t *testing.T) {
 				Name:           pointer.StringPtr("name"),
 				Tag:            pointer.StringPtr("tag"),
 				PullSecretName: pointer.StringPtr("pullSecret"),
+				PullPolicy:     func() *corev1.PullPolicy { p := corev1.PullIfNotPresent; return &p }(),
 			}},
 			want: &ImageSpec{
 				Name:           pointer.StringPtr("name"),
 				Tag:            pointer.StringPtr("tag"),
 				PullSecretName: pointer.StringPtr("pullSecret"),
+				PullPolicy:     func() *corev1.PullPolicy { p := corev1.PullIfNotPresent; return &p }(),
 			},
 		},
 		{
 			name: "Combines explicitely set values with defaults",
 			fields: fields{
-				Name: pointer.StringPtr("explicit"),
+				Name:       pointer.StringPtr("explicit"),
+				PullPolicy: func() *corev1.PullPolicy { p := corev1.PullAlways; return &p }(),
 			},
 			args: args{def: defaultImageSpec{
 				Name:           pointer.StringPtr("name"),
 				Tag:            pointer.StringPtr("tag"),
 				PullSecretName: pointer.StringPtr("pullSecret"),
+				PullPolicy:     func() *corev1.PullPolicy { p := corev1.PullIfNotPresent; return &p }(),
 			}},
 			want: &ImageSpec{
 				Name:           pointer.StringPtr("explicit"),
 				Tag:            pointer.StringPtr("tag"),
 				PullSecretName: pointer.StringPtr("pullSecret"),
+				PullPolicy:     func() *corev1.PullPolicy { p := corev1.PullAlways; return &p }(),
 			},
 		},
 	}
@@ -79,6 +85,7 @@ func TestImageSpec_Default(t *testing.T) {
 				Name:           tt.fields.Name,
 				Tag:            tt.fields.Tag,
 				PullSecretName: tt.fields.PullSecretName,
+				PullPolicy:     tt.fields.PullPolicy,
 			}
 			spec.Default(tt.args.def)
 			if !reflect.DeepEqual(spec, tt.want) {

@@ -74,7 +74,7 @@ func (gen *EnvGenerator) Deployment() basereconciler.GeneratorFunction {
 								LivenessProbe:          pod.TCPProbe(intstr.FromString("gateway"), *gen.Spec.LivenessProbe),
 								ReadinessProbe:         pod.HTTPProbe("/status/ready", intstr.FromString("management"), corev1.URISchemeHTTP, *gen.Spec.ReadinessProbe),
 								TerminationMessagePath: corev1.TerminationMessagePathDefault,
-								ImagePullPolicy:        corev1.PullAlways,
+								ImagePullPolicy:        *gen.Spec.Image.PullPolicy,
 							},
 						},
 						Affinity: pod.Affinity(gen.Selector().MatchLabels),

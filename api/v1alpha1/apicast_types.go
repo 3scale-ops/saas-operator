@@ -28,8 +28,9 @@ import (
 var (
 	apicastDefaultReplicas int32            = 2
 	apicastDefaultImage    defaultImageSpec = defaultImageSpec{
-		Name: pointer.StringPtr("quay.io/3scale/apicast-cloud-hosted"),
-		Tag:  pointer.StringPtr("latest"),
+		Name:       pointer.StringPtr("quay.io/3scale/apicast-cloud-hosted"),
+		Tag:        pointer.StringPtr("latest"),
+		PullPolicy: (*corev1.PullPolicy)(pointer.StringPtr(string(corev1.PullIfNotPresent))),
 	}
 	apicastDefaultLoadBalancer defaultLoadBalancerSpec = defaultLoadBalancerSpec{
 		ProxyProtocol:                 pointer.BoolPtr(true),
