@@ -1,0 +1,15 @@
+apiVersion: saas.3scale.net/v1alpha1
+kind: AutoSSL
+metadata:
+  name: example
+spec:
+  image:
+    tag: v1.0.1
+  config:
+    contactEmail: example@example.com
+    proxyEndpoint: https://example.com
+    verificationEndpoint: https://example.com/verify
+    redisHost: redis.example.com
+  endpoint:
+    dns:
+      - autossl.example.com

@@ -1,0 +1,301 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: '[]'
+    capabilities: Basic Install
+    categories: Integration & Delivery
+    containerImage: quay.io/3scale/saas-operator
+    createdAt: 2020-06-02T15:49:31GMT
+    description: |-
+      The 3scale SaaS Operator creates and maintains a SaaS-ready deployment
+      of the Red Hat 3scale API Management on OpenShift.
+    operators.operatorframework.io/builder: operator-sdk-v1.3.0
+    operators.operatorframework.io/project_layout: ansible.sdk.operatorframework.io/v1
+    repository: https://github.com/3scale/saas-operator
+    support: Red Hat
+  name: saas-operator.v0.0.0
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+    - description: Apicast is the Schema for the apicasts API
+      displayName: Apicast
+      kind: Apicast
+      name: apicasts.saas.3scale.net
+      specDescriptors:
+      - description: Configures the Grafana Dashboard for the component
+        displayName: Grafana Dashboard
+        path: grafanaDashboard
+      - description: Configures the production Apicast environment
+        displayName: Production
+        path: production
+      - description: Application specific configuration options for the component
+        displayName: Config
+        path: production.config
+      - description: Apicast configurations cache TTL
+        displayName: Configuration Cache
+        path: production.config.configurationCache
+      - description: Openresty log level
+        displayName: Log Level
+        path: production.config.logLevel
+      - description: OpenID Connect integration log level
+        displayName: OIDCLog Level
+        path: production.config.oidcLogLevel
+      - description: Endpoint to request proxy configurations to
+        displayName: Threescale Portal Endpoint
+        path: production.config.threescalePortalEndpoint
+      - description: The external endpoint/s for the component
+        displayName: Endpoint
+        path: production.endpoint
+      - description: Horizontal Pod Autoscaler for the component
+        displayName: HPA
+        path: production.hpa
+      - description: Image specification for the component
+        displayName: Image
+        path: production.image
+      - description: Liveness probe for the component
+        displayName: Liveness Probe
+        path: production.livenessProbe
+      - description: Configures the AWS load balancer for the component
+        displayName: Load Balancer
+        path: production.loadBalancer
+      - description: Marin3r configures the Marin3r sidecars for the component
+        displayName: Marin3r
+        path: production.marin3r
+      - description: Pod Disruption Budget for the component
+        displayName: PDB
+        path: production.pdb
+      - description: Readiness probe for the component
+        displayName: Readiness Probe
+        path: production.readinessProbe
+      - description: Number of replicas (ignored if hpa is enabled) for the component
+        displayName: Replicas
+        path: production.replicas
+      - description: Resource requirements for the component
+        displayName: Resources
+        path: production.resources
+      - description: Configures the staging Apicast environment
+        displayName: Staging
+        path: staging
+      - description: Application specific configuration options for the component
+        displayName: Config
+        path: staging.config
+      - description: Apicast configurations cache TTL
+        displayName: Configuration Cache
+        path: staging.config.configurationCache
+      - description: Openresty log level
+        displayName: Log Level
+        path: staging.config.logLevel
+      - description: OpenID Connect integration log level
+        displayName: OIDCLog Level
+        path: staging.config.oidcLogLevel
+      - description: Endpoint to request proxy configurations to
+        displayName: Threescale Portal Endpoint
+        path: staging.config.threescalePortalEndpoint
+      - description: The external endpoint/s for the component
+        displayName: Endpoint
+        path: staging.endpoint
+      - description: Horizontal Pod Autoscaler for the component
+        displayName: HPA
+        path: staging.hpa
+      - description: Image specification for the component
+        displayName: Image
+        path: staging.image
+      - description: Liveness probe for the component
+        displayName: Liveness Probe
+        path: staging.livenessProbe
+      - description: Configures the AWS load balancer for the component
+        displayName: Load Balancer
+        path: staging.loadBalancer
+      - description: Marin3r configures the Marin3r sidecars for the component
+        displayName: Marin3r
+        path: staging.marin3r
+      - description: Pod Disruption Budget for the component
+        displayName: PDB
+        path: staging.pdb
+      - description: Readiness probe for the component
+        displayName: Readiness Probe
+        path: staging.readinessProbe
+      - description: Number of replicas (ignored if hpa is enabled) for the component
+        displayName: Replicas
+        path: staging.replicas
+      - description: Resource requirements for the component
+        displayName: Resources
+        path: staging.resources
+      version: v1alpha1
+    - description: AutoSSL is the Schema for the autossls API
+      displayName: Auto SSL
+      kind: AutoSSL
+      name: autossls.saas.3scale.net
+      specDescriptors:
+      - description: Application specific configuration options for the component
+        displayName: Config
+        path: config
+      - description: Enables/disables the Let's Encrypt staging ACME endpoint
+        displayName: ACMEStaging
+        path: config.acmeStaging
+      - description: Defines an email address for Let's Encrypt notifications
+        displayName: Contact Email
+        path: config.contactEmail
+      - description: List of domains that will never get autogenerated certificates
+        displayName: Domain Blacklist
+        path: config.domainBlacklist
+      - description: List of domains that will bypass domain verification
+        displayName: Domain Whitelist
+        path: config.domainWhitelist
+      - description: ets the nginx log level
+        displayName: Log Level
+        path: config.logLevel
+      - description: The endpoint to proxy_pass requests to
+        displayName: Proxy Endpoint
+        path: config.proxyEndpoint
+      - description: Host for the redis database to store certificates
+        displayName: Redis Host
+        path: config.redisHost
+      - description: Port for the redis database to store certificates
+        displayName: Redis Port
+        path: config.redisPort
+      - description: The endpoint used to validate if certificate generation is allowed for the domain
+        displayName: Verification Endpoint
+        path: config.verificationEndpoint
+      - description: The external endpoint/s for the component
+        displayName: Endpoint
+        path: endpoint
+      - description: Configures the Grafana Dashboard for the component
+        displayName: Grafana Dashboard
+        path: grafanaDashboard
+      - description: Horizontal Pod Autoscaler for the component
+        displayName: HPA
+        path: hpa
+      - description: Image specification for the component
+        displayName: Image
+        path: image
+      - description: Liveness probe for the component
+        displayName: Liveness Probe
+        path: livenessProbe
+      - description: Configures the AWS load balancer for the component
+        displayName: Load Balancer
+        path: loadBalancer
+      - description: Pod Disruption Budget for the component
+        displayName: PDB
+        path: pdb
+      - description: Readiness probe for the component
+        displayName: Readiness Probe
+        path: readinessProbe
+      - description: Number of replicas (ignored if hpa is enabled) for the component
+        displayName: Replicas
+        path: replicas
+      - description: Resource requirements for the component
+        displayName: Resources
+        path: resources
+      version: v1alpha1
+    - description: MappingService is the Schema for the mappingservices API
+      displayName: Mapping Service
+      kind: MappingService
+      name: mappingservices.saas.3scale.net
+      specDescriptors:
+      - description: Application specific configuration options for the component
+        displayName: Config
+        path: config
+      - description: System endpoint to fetch proxy configs from
+        displayName: APIHost
+        path: config.apiHost
+      - description: Openresty log level
+        displayName: Log Level
+        path: config.logLevel
+      - description: Base domain to replace the proxy configs base domain
+        displayName: Preview Base Domain
+        path: config.previewBaseDomain
+      - description: A reference to the secret holding the system admin token
+        displayName: System Admin Token
+        path: config.systemAdminToken
+      - description: Configures the Grafana Dashboard for the component
+        displayName: Grafana Dashboard
+        path: grafanaDashboard
+      - description: Horizontal Pod Autoscaler for the component
+        displayName: HPA
+        path: hpa
+      - description: Image specification for the component
+        displayName: Image
+        path: image
+      - description: Liveness probe for the component
+        displayName: Liveness Probe
+        path: livenessProbe
+      - description: Pod Disruption Budget for the component
+        displayName: PDB
+        path: pdb
+      - description: Readiness probe for the component
+        displayName: Readiness Probe
+        path: readinessProbe
+      - description: Number of replicas (ignored if hpa is enabled) for the component
+        displayName: Replicas
+        path: replicas
+      - description: Resource requirements for the component
+        displayName: Resources
+        path: resources
+      version: v1alpha1
+  description: |
+    The 3scale SaaS Operator creates and maintains SaaS-ready deployments
+    of each component from the Red Hat 3scale API Management solution.
+
+    ## Supported Features
+
+    - **Installer:** A way to install a SaaS ready deployment of the 3scale API Management components, providing configurability options at the time of installation
+    - **Reconcilliation:** Tunable CRD parameters for each component after 3scale API Management solution is installed
+
+    ## Supported Components
+
+    - **Apicast**
+    - **Autossl**
+    - **Backend**
+    - **CorsProxy**
+    - **MappingService**
+    - **System**
+    - **Zync**
+
+    ## Documentation
+
+    - [Getting started](https://github.com/3scale/saas-operator/blob/master/docs/getting-started.md)
+    - [Custom Resource Definitions reference](https://github.com/3scale/saas-operator/tree/master/docs/reference)
+    - [Development](https://github.com/3scale/saas-operator/blob/master/docs/development.md)
+
+    ## License
+
+    3scale SaaS Operator is licensed under the [Apache 2.0 license](https://github.com/3scale/saas-operator/blob/master/LICENSE)
+  displayName: 3scale SaaS Operator
+  icon:
+  - base64data: |
+      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
+    mediatype: image/png
+  install:
+    spec:
+      deployments: null
+    strategy: ""
+  installModes:
+  - supported: true
+    type: OwnNamespace
+  - supported: true
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: false
+    type: AllNamespaces
+  keywords:
+  - saas
+  - 3scale
+  - operations
+  links:
+  - name: GitHub Repository
+    url: https://github.com/3scale/saas-operator
+  - name: 3scale
+    url: https://3scale.net
+  maintainers:
+  - email: 3scale-operations@redhat.com
+    name: 3scale Ops
+  maturity: alpha
+  provider:
+    name: Red Hat
+    url: https://www.3scale.net/
+  version: 0.0.0
