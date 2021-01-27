@@ -33,9 +33,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
@@ -185,32 +183,12 @@ func (r *MappingServiceReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	return r.ManageSuccess(ctx, instance)
 }
 
-func (r *MappingServiceReconciler) secretEventHandler() handler.EventHandler {
-	return handler.EnqueueRequestsFromMapFunc(
-		func(o client.Object) []reconcile.Request {
-			msList := &saasv1alpha1.MappingServiceList{}
-			if err := r.GetClient().List(context.TODO(), msList); err != nil {
-				r.Log.Error(err, "unable to retrieve the list of mappingservices")
-				return []reconcile.Request{}
-			}
-			if len(msList.Items) == 0 {
-				return []reconcile.Request{}
-			}
-
-			key := types.NamespacedName{
-				Name:      msList.Items[0].GetName(),
-				Namespace: msList.Items[0].GetNamespace(),
-			}
-			return []reconcile.Request{{NamespacedName: key}}
-		},
-	)
-}
-
 // SetupWithManager sets up the controller with the Manager.
 func (r *MappingServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&saasv1alpha1.MappingService{}, builder.WithPredicates(util.ResourceGenerationOrFinalizerChangedPredicate{})).
 		Watches(&source.Channel{Source: r.GetStatusChangeChannel()}, &handler.EnqueueRequestForObject{}).
-		Watches(&source.Kind{Type: &corev1.Secret{TypeMeta: metav1.TypeMeta{Kind: "Secret"}}}, r.secretEventHandler()).
+		Watches(&source.Kind{Type: &corev1.Secret{TypeMeta: metav1.TypeMeta{Kind: "Secret"}}},
+			r.SecretEventHandler(&saasv1alpha1.MappingServiceList{}, r.Log)).
 		Complete(r)
 }
