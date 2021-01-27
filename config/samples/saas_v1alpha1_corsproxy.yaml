@@ -1,0 +1,7 @@
+apiVersion: saas.3scale.net/v1alpha1
+kind: CORSProxy
+metadata:
+  name: corsproxy-sample
+spec:
+  # Add fields here
+  foo: bar
