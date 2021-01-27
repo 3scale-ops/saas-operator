@@ -17,12 +17,14 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/util"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/pointer"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var (
@@ -223,6 +225,19 @@ type ApicastList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []Apicast `json:"items"`
+}
+
+// Ensure ApicastList implements basereconciler.ExtendedObjectList
+var _ basereconciler.ExtendedObjectList = &ApicastList{}
+
+// GetItem returns a client.Objectfrom a ApicastList
+func (al *ApicastList) GetItem(idx int) client.Object {
+	return &al.Items[idx]
+}
+
+// CountItems returns the item count in ApicastList.Items
+func (al *ApicastList) CountItems() int {
+	return len(al.Items)
 }
 
 func init() {

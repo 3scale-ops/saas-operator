@@ -35,7 +35,7 @@ func TCPProbe(port intstr.IntOrString, cfg saasv1alpha1.ProbeSpec) *corev1.Probe
 	}
 	return &corev1.Probe{
 		Handler: corev1.Handler{
-			HTTPGet: &corev1.HTTPGetAction{
+			TCPSocket: &corev1.TCPSocketAction{
 				Port: port,
 			},
 		},

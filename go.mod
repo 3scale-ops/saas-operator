@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
+	github.com/davecgh/go-spew v1.1.1
 	github.com/go-logr/logr v0.3.0
 	github.com/goombaio/namegenerator v0.0.0-20181006234301-989e774b106e
 	github.com/onsi/ginkgo v1.14.1
