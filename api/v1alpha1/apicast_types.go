@@ -227,7 +227,7 @@ type ApicastList struct {
 	Items           []Apicast `json:"items"`
 }
 
-// Ensure AutoSSLList implements basereconciler.ExtendedObjectList
+// Ensure ApicastList implements basereconciler.ExtendedObjectList
 var _ basereconciler.ExtendedObjectList = &ApicastList{}
 
 // GetItem returns a client.Objectfrom a ApicastList

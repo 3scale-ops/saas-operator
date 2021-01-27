@@ -186,7 +186,7 @@ type MappingServiceList struct {
 	Items           []MappingService `json:"items"`
 }
 
-// Ensure AutoSSLList implements basereconciler.ExtendedObjectList
+// Ensure MappingServiceList implements basereconciler.ExtendedObjectList
 var _ basereconciler.ExtendedObjectList = &MappingServiceList{}
 
 // GetItem returns a client.Objectfrom a MappingServiceList
