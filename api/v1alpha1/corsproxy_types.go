@@ -161,7 +161,7 @@ type CORSProxyList struct {
 }
 
 // Ensure CORSProxyList implements basereconciler.ExtendedObjectList
-var _ basereconciler.ExtendedObjectList = &MappingServiceList{}
+var _ basereconciler.ExtendedObjectList = &CORSProxyList{}
 
 // GetItem returns a client.Objectfrom a CORSProxyList
 func (cpl *CORSProxyList) GetItem(idx int) client.Object {
