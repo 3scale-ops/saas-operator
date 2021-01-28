@@ -35,14 +35,14 @@ A Kubernetes Operator based on the Operator SDK to manage 3scale SaaS (hosted ve
 
 ### Custom resources reference
 
-* [Apicast Custom Resource Reference](docs/reference/apicast-crd-reference.md)
-* [AutoSSL Custom Resource Reference](docs/reference/autossl-crd-reference.md)
-* [Backend Custom Resource Reference](docs/reference/backend-crd-reference.md)
-* [CORSProxy Custom Resource Reference](docs/reference/corsproxy-crd-reference.md)
-* [EchoAPI Custom Resource Reference](docs/reference/echoapi-crd-reference.md)
-* [MappingService Custom Resource Reference](docs/reference/mappingservice-crd-reference.md)
-* [System Custom Resource Reference](docs/reference/system-crd-reference.md)
-* [Zync Custom Resource Reference](docs/reference/zync-crd-reference.md)
+* [Apicast Custom Resource Reference](docs/api-reference/reference.asciidoc#k8s-api-github-com-3scale-saas-operator-api-v1alpha1-apicast)
+* [AutoSSL Custom Resource Reference](docs/api-reference/reference.asciidoc#k8s-api-github-com-3scale-saas-operator-api-v1alpha1-autossl)
+* [Backend Custom Resource Reference](docs/api-reference/reference.asciidoc)
+* [CORSProxy Custom Resource Reference](docs/api-reference/reference.asciidoc#k8s-api-github-com-3scale-saas-operator-api-v1alpha1-corsproxy)
+* [EchoAPI Custom Resource Reference](docs/api-reference/reference.asciidoc)
+* [MappingService Custom Resource Reference](docs/api-reference/reference.asciidoc#k8s-api-github-com-3scale-saas-operator-api-v1alpha1-mappingservice)
+* [System Custom Resource Reference](docs/api-reference/reference.asciidoc)
+* [Zync Custom Resource Reference](docs/api-reference/reference.asciidoc)
 
 ## License
 
