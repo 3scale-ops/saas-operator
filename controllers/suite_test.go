@@ -132,6 +132,12 @@ var _ = BeforeSuite(func() {
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
+	err = (&CORSProxyReconciler{
+		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("CORSProxy"), false),
+		Log:        ctrl.Log.WithName("controllers").WithName("CORSProxy"),
+	}).SetupWithManager(mgr)
+	Expect(err).ToNot(HaveOccurred())
+
 }, 60)
 
 var _ = AfterSuite(func() {

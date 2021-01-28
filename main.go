@@ -138,9 +138,8 @@ func main() {
 		os.Exit(1)
 	}
 	if err = (&controllers.CORSProxyReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("CORSProxy"),
-		Scheme: mgr.GetScheme(),
+		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("CORSProxy"), false),
+		Log:        ctrl.Log.WithName("controllers").WithName("CORSProxy"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "CORSProxy")
 		os.Exit(1)

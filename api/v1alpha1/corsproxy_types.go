@@ -137,8 +137,7 @@ type CORSProxyConfig struct {
 func (cfg *CORSProxyConfig) Default() {}
 
 // CORSProxyStatus defines the observed state of CORSProxy
-type CORSProxyStatus struct {
-}
+type CORSProxyStatus struct{}
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status

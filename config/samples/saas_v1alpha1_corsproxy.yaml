@@ -1,7 +1,12 @@
 apiVersion: saas.3scale.net/v1alpha1
 kind: CORSProxy
 metadata:
-  name: corsproxy-sample
+  name: dev-eng-corsproxy
 spec:
-  # Add fields here
-  foo: bar
+  image:
+    tag: latest
+  config:
+    systemDatabaseDSN:
+      fromVault:
+        key: DSN
+        path: secret/data/kubernetes/dev-eng/ocp4-5/3scale-saas/cors-proxy-system-database-mysql
