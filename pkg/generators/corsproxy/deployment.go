@@ -6,7 +6,7 @@ import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/secrets"
+	"github.com/3scale/saas-operator/pkg/generators/corsproxy/config"
 	"github.com/3scale/saas-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -63,10 +63,10 @@ func (gen *Generator) Deployment(hash string) basereconciler.GeneratorFunction {
 									pod.ContainerPortTCP("http", 8080),
 									pod.ContainerPortTCP("metrics", 9145),
 								),
-								Env: []corev1.EnvVar{
-									secrets.EnvVarFromSecret("DATABASE_URL",
-										databaseURLSecretName, gen.Spec.Config.SystemDatabaseDSN.FromVault.Key),
-								},
+								Env: pod.GenerateEnvironment(config.Default,
+									map[string]pod.EnvVarValue{
+										config.DatabaseURL: &pod.SecretRef{SecretName: config.SecretDefinitions.LookupSecretName(config.DatabaseURL)},
+									}),
 								Resources:              corev1.ResourceRequirements(*gen.Spec.Resources),
 								TerminationMessagePath: corev1.TerminationMessagePathDefault,
 								ImagePullPolicy:        *gen.Spec.Image.PullPolicy,

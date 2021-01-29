@@ -1,6 +1,8 @@
 package corsproxy
 
 import (
+	"encoding/json"
+
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/generators"
@@ -8,14 +10,12 @@ import (
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/hpa"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pdb"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/podmonitor"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/secrets"
-
+	"github.com/3scale/saas-operator/pkg/generators/corsproxy/config"
 	"k8s.io/apimachinery/pkg/types"
 )
 
 const (
-	component             string = "cors-proxy"
-	databaseURLSecretName string = "cors-proxy-system-database"
+	component string = "cors-proxy"
 )
 
 // Generator configures the generators for CORSProxy
@@ -66,9 +66,7 @@ func (gen *Generator) GrafanaDashboard() basereconciler.GeneratorFunction {
 
 // SecretDefinition returns a basereconciler.GeneratorFunction
 func (gen *Generator) SecretDefinition() basereconciler.GeneratorFunction {
-	key := types.NamespacedName{
-		Name:      gen.Component + "-system-database",
-		Namespace: gen.Namespace,
-	}
-	return secrets.NewSecretDefinition(key, gen.GetLabels(), key.Name, gen.Spec.Config.SystemDatabaseDSN.FromVault)
+	serializedConfig, _ := json.Marshal(gen.Spec.Config)
+	sc := config.SecretDefinitions.LookupSecretConfiguration("cors-proxy-system-database")
+	return sc.GenerateSecretDefinitionFn(gen.GetNamespace(), gen.GetLabels(), "/spec/config", serializedConfig)
 }

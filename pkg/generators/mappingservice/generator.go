@@ -1,6 +1,8 @@
 package mappingservice
 
 import (
+	"encoding/json"
+
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/generators"
@@ -8,14 +10,13 @@ import (
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/hpa"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pdb"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/podmonitor"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/secrets"
+	"github.com/3scale/saas-operator/pkg/generators/mappingservice/config"
 
 	"k8s.io/apimachinery/pkg/types"
 )
 
 const (
-	component             string = "mapping-service"
-	masterTokenSecretName string = "mapping-service-system-master-access-token"
+	component string = "mapping-service"
 )
 
 // Generator configures the generators for MappingService
@@ -66,9 +67,7 @@ func (gen *Generator) GrafanaDashboard() basereconciler.GeneratorFunction {
 
 // SecretDefinition returns a basereconciler.GeneratorFunction
 func (gen *Generator) SecretDefinition() basereconciler.GeneratorFunction {
-	key := types.NamespacedName{
-		Name:      gen.Component + "-system-master-access-token",
-		Namespace: gen.Namespace,
-	}
-	return secrets.NewSecretDefinition(key, gen.GetLabels(), key.Name, gen.Spec.Config.SystemAdminToken.FromVault)
+	serializedConfig, _ := json.Marshal(gen.Spec.Config)
+	sc := config.SecretDefinitions.LookupSecretConfiguration("mapping-service-system-master-access-token")
+	return sc.GenerateSecretDefinitionFn(gen.GetNamespace(), gen.GetLabels(), "/spec/config", serializedConfig)
 }

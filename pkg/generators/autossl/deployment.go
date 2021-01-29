@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/3scale/saas-operator/pkg/basereconciler"
+	"github.com/3scale/saas-operator/pkg/generators/autossl/config"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
 	"github.com/3scale/saas-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
@@ -80,26 +81,24 @@ func (gen *Generator) Deployment() basereconciler.GeneratorFunction {
 									pod.ContainerPortTCP("https-no-pp", 8443),
 									pod.ContainerPortTCP("metrics", 9145),
 								),
-								Env: []corev1.EnvVar{
-									{
-										Name: "ACME_STAGING",
-										Value: func() string {
-											if *gen.Spec.Config.ACMEStaging {
-												return leACMEStagingEndpoint
-											}
-											return ""
-										}(),
-									},
-									{Name: "CONTACT_EMAIL", Value: gen.Spec.Config.ContactEmail},
-									{Name: "PROXY_ENDPOINT", Value: gen.Spec.Config.ProxyEndpoint},
-									{Name: "STORAGE_ADAPTER", Value: "redis"},
-									{Name: "REDIS_HOST", Value: gen.Spec.Config.RedisHost},
-									{Name: "REDIS_PORT", Value: fmt.Sprintf("%v", *gen.Spec.Config.RedisPort)},
-									{Name: "VERIFICATION_ENDPOINT", Value: gen.Spec.Config.VerificationEndpoint},
-									{Name: "LOG_LEVEL", Value: *gen.Spec.Config.LogLevel},
-									{Name: "DOMAIN_WHITELIST", Value: strings.Join(gen.Spec.Config.DomainWhitelist, ",")},
-									{Name: "DOMAIN_BLACKLIST", Value: strings.Join(gen.Spec.Config.DomainBlacklist, ",")},
-								},
+								Env: pod.GenerateEnvironment(config.Default,
+									func() map[string]pod.EnvVarValue {
+										m := map[string]pod.EnvVarValue{
+											config.ContactEmail:         &pod.DirectValue{Value: gen.Spec.Config.ContactEmail},
+											config.ProxyEndpoint:        &pod.DirectValue{Value: gen.Spec.Config.ProxyEndpoint},
+											config.RedisHost:            &pod.DirectValue{Value: gen.Spec.Config.RedisHost},
+											config.RedisPort:            &pod.DirectValue{Value: fmt.Sprintf("%v", *gen.Spec.Config.RedisPort)},
+											config.VerificationEndpoint: &pod.DirectValue{Value: gen.Spec.Config.VerificationEndpoint},
+											config.LogLevel:             &pod.DirectValue{Value: *gen.Spec.Config.LogLevel},
+											config.DomainWhitelist:      &pod.DirectValue{Value: strings.Join(gen.Spec.Config.DomainWhitelist, ",")},
+											config.DomainBlacklist:      &pod.DirectValue{Value: strings.Join(gen.Spec.Config.DomainBlacklist, ",")},
+										}
+										if *gen.Spec.Config.ACMEStaging {
+											m[config.ACMEStaging] = &pod.DirectValue{Value: leACMEStagingEndpoint}
+										}
+										return m
+									}(),
+								),
 								Resources:              corev1.ResourceRequirements(*gen.Spec.Resources),
 								TerminationMessagePath: corev1.TerminationMessagePathDefault,
 								ImagePullPolicy:        *gen.Spec.Image.PullPolicy,
