@@ -128,7 +128,7 @@ func (a *CORSProxy) Default() {
 
 // CORSProxyConfig defines configuration options for the component
 type CORSProxyConfig struct {
-	// ets the nginx log level
+	// System database connection string
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	SystemDatabaseDSN SecretReference `json:"systemDatabaseDSN"`
 }

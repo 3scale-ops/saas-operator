@@ -40,7 +40,7 @@ spec:
                 description: Application specific configuration options for the component
                 properties:
                   systemDatabaseDSN:
-                    description: ets the nginx log level
+                    description: System database connection string
                     properties:
                       fromVault:
                         description: VaultSecretReference is a reference to a secret

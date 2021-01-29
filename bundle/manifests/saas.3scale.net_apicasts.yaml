@@ -120,6 +120,9 @@ spec:
                       name:
                         description: Docker repository of the image
                         type: string
+                      pullPolicy:
+                        description: Pull policy for the image
+                        type: string
                       pullSecretName:
                         description: Name of the Secret that holds quay.io credentials to access the image repository
                         type: string
@@ -383,6 +386,9 @@ spec:
                     properties:
                       name:
                         description: Docker repository of the image
+                        type: string
+                      pullPolicy:
+                        description: Pull policy for the image
                         type: string
                       pullSecretName:
                         description: Name of the Secret that holds quay.io credentials to access the image repository
