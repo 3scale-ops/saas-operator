@@ -18,7 +18,7 @@ const (
 	databaseURLSecretName string = "cors-proxy-system-database"
 )
 
-// Generator configures the generators for AutoSSL
+// Generator configures the generators for CORSProxy
 type Generator struct {
 	generators.BaseOptions
 	Spec saasv1alpha1.CORSProxySpec

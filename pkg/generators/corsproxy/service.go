@@ -10,7 +10,7 @@ import (
 )
 
 // Service returns a basereconciler.GeneratorFunction function that will return the
-// management Service resource when called
+// Service resource when called
 func (gen *Generator) Service() basereconciler.GeneratorFunction {
 
 	return func() client.Object {
