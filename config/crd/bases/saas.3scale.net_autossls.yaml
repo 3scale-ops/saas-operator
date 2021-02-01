@@ -57,7 +57,7 @@ spec:
                       type: string
                     type: array
                   logLevel:
-                    description: ets the nginx log level
+                    description: Sets the nginx log level
                     type: string
                   proxyEndpoint:
                     description: The endpoint to proxy_pass requests to
