@@ -468,6 +468,121 @@ func TestInitializeLoadBalancerSpec(t *testing.T) {
 	}
 }
 
+func TestNLBLoadBalancerSpec_Default(t *testing.T) {
+	type fields struct {
+		ProxyProtocol                 *bool
+		CrossZoneLoadBalancingEnabled *bool
+	}
+	type args struct {
+		def defaultNLBLoadBalancerSpec
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   *NLBLoadBalancerSpec
+	}{
+		{
+			name:   "Sets defaults",
+			fields: fields{},
+			args: args{def: defaultNLBLoadBalancerSpec{
+				ProxyProtocol:                 pointer.BoolPtr(true),
+				CrossZoneLoadBalancingEnabled: pointer.BoolPtr(true),
+			}},
+			want: &NLBLoadBalancerSpec{
+				ProxyProtocol:                 pointer.BoolPtr(true),
+				CrossZoneLoadBalancingEnabled: pointer.BoolPtr(true),
+			},
+		},
+		{
+			name: "Combines explicitely set values with defaults",
+			fields: fields{
+				ProxyProtocol: pointer.BoolPtr(false),
+			},
+			args: args{def: defaultNLBLoadBalancerSpec{
+				ProxyProtocol:                 pointer.BoolPtr(true),
+				CrossZoneLoadBalancingEnabled: pointer.BoolPtr(true),
+			}},
+			want: &NLBLoadBalancerSpec{
+				ProxyProtocol:                 pointer.BoolPtr(false),
+				CrossZoneLoadBalancingEnabled: pointer.BoolPtr(true),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			spec := &NLBLoadBalancerSpec{
+				ProxyProtocol:                 tt.fields.ProxyProtocol,
+				CrossZoneLoadBalancingEnabled: tt.fields.CrossZoneLoadBalancingEnabled,
+			}
+			spec.Default(tt.args.def)
+			if !reflect.DeepEqual(spec, tt.want) {
+				t.Errorf("NLBLoadBalancerSpec_Default() = %v, want %v", *spec, *tt.want)
+			}
+		})
+	}
+}
+
+func TestNLBLoadBalancerSpec_IsDeactivated(t *testing.T) {
+	tests := []struct {
+		name string
+		spec *NLBLoadBalancerSpec
+		want bool
+	}{
+		{"Wants false if empty", &NLBLoadBalancerSpec{}, false},
+		{"Wants false if nil", nil, false},
+		{"Wants false if other", &NLBLoadBalancerSpec{ProxyProtocol: pointer.BoolPtr(false)}, false}}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.spec.IsDeactivated(); got != tt.want {
+				t.Errorf("NLBLoadBalancerSpec.IsDeactivated() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestInitializeNLBLoadBalancerSpec(t *testing.T) {
+	type args struct {
+		spec *NLBLoadBalancerSpec
+		def  defaultNLBLoadBalancerSpec
+	}
+	tests := []struct {
+		name string
+		args args
+		want *NLBLoadBalancerSpec
+	}{
+		{
+			name: "Initializes the struct with appropriate defaults if nil",
+			args: args{nil, defaultNLBLoadBalancerSpec{
+				ProxyProtocol:                 pointer.BoolPtr(true),
+				CrossZoneLoadBalancingEnabled: pointer.BoolPtr(true),
+			}},
+			want: &NLBLoadBalancerSpec{
+				ProxyProtocol:                 pointer.BoolPtr(true),
+				CrossZoneLoadBalancingEnabled: pointer.BoolPtr(true),
+			},
+		},
+		{
+			name: "Initializes the struct with appropriate defaults if empty",
+			args: args{&NLBLoadBalancerSpec{}, defaultNLBLoadBalancerSpec{
+				ProxyProtocol:                 pointer.BoolPtr(true),
+				CrossZoneLoadBalancingEnabled: pointer.BoolPtr(true),
+			}},
+			want: &NLBLoadBalancerSpec{
+				ProxyProtocol:                 pointer.BoolPtr(true),
+				CrossZoneLoadBalancingEnabled: pointer.BoolPtr(true),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := InitializeNLBLoadBalancerSpec(tt.args.spec, tt.args.def); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("InitializeNLBLoadBalancerSpec() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestGrafanaDashboardSpec_Default(t *testing.T) {
 	type fields struct {
 		SelectorKey   *string

@@ -218,6 +218,51 @@ func InitializeLoadBalancerSpec(spec *LoadBalancerSpec, def defaultLoadBalancerS
 	return spec
 }
 
+// NLBLoadBalancerSpec configures the AWS NLB load balancer for the component
+type NLBLoadBalancerSpec struct {
+	// Enables/disbles use of proxy protocol in the load balancer
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ProxyProtocol *bool `json:"proxyProtocol,omitempty"`
+	// Enables/disables cross zone load balancing
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	CrossZoneLoadBalancingEnabled *bool `json:"crossZoneLoadBalancingEnabled,omitempty"`
+	// The list of optional Elastic IPs allocations
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	EIPAllocations []string `json:"eipAllocations,omitempty"`
+}
+
+type defaultNLBLoadBalancerSpec struct {
+	CrossZoneLoadBalancingEnabled, ProxyProtocol *bool
+	EIPAllocations                               []string
+}
+
+// Default sets default values for any value not specifically set in the NLBLoadBalancerSpec struct
+func (spec *NLBLoadBalancerSpec) Default(def defaultNLBLoadBalancerSpec) {
+	spec.ProxyProtocol = boolOrDefault(spec.ProxyProtocol, def.ProxyProtocol)
+	spec.CrossZoneLoadBalancingEnabled = boolOrDefault(spec.CrossZoneLoadBalancingEnabled, def.CrossZoneLoadBalancingEnabled)
+}
+
+// IsDeactivated true if the field is set with the deactivated value (empty struct)
+func (spec *NLBLoadBalancerSpec) IsDeactivated() bool { return false }
+
+// InitializeNLBLoadBalancerSpec initializes a NLBLoadBalancerSpec struct
+func InitializeNLBLoadBalancerSpec(spec *NLBLoadBalancerSpec, def defaultNLBLoadBalancerSpec) *NLBLoadBalancerSpec {
+	if spec == nil {
+		new := &NLBLoadBalancerSpec{}
+		new.Default(def)
+		return new
+	}
+	if !spec.IsDeactivated() {
+		copy := spec.DeepCopy()
+		copy.Default(def)
+		return copy
+	}
+	return spec
+}
+
 // GrafanaDashboardSpec configures the Grafana Dashboard for the component
 type GrafanaDashboardSpec struct {
 	// Label key used by grafana-operator for dashboard discovery
