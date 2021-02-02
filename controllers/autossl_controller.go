@@ -113,9 +113,9 @@ func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			GeneratorFn: gen.Deployment(),
 			ExcludePaths: func() []string {
 				if instance.Spec.HPA.IsDeactivated() {
-					return basereconciler.DefaultExcludedPaths
+					return basereconciler.DeploymentExcludedPaths
 				}
-				return append(basereconciler.DefaultExcludedPaths, "/spec/replicas")
+				return append(basereconciler.DeploymentExcludedPaths, "/spec/replicas")
 			}(),
 		})
 

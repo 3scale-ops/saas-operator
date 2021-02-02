@@ -28,6 +28,19 @@ import (
 var (
 	// DefaultExcludedPaths is a list of jsonpaths paths to ignore during reconciliation
 	DefaultExcludedPaths []string = []string{".metadata", ".status"}
+	// DeploymentExcludedPaths is a list fo path to ignore for Deployment resources
+	DeploymentExcludedPaths []string = []string{
+		"/metadata",
+		"/status",
+		"/spec/progressDeadlineSeconds",
+		"/spec/revisionHistoryLimit",
+		"/spec/template/metadata/creationTimestamp",
+		"/spec/template/spec/dnsPolicy",
+		"/spec/template/spec/restartPolicy",
+		"/spec/template/spec/schedulerName",
+		"/spec/template/spec/securityContext",
+		"/spec/template/spec/terminationGracePeriodSeconds",
+	}
 )
 
 // Reconciler computes a list of resources that it needs to keep in place
