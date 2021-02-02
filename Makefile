@@ -197,3 +197,21 @@ bundle-publish: bundle-push
 		--from-index $(CATALOG_IMG) \
 		--tag $(CATALOG_IMG)
 	docker push $(CATALOG_IMG)
+
+############################
+#### refdocs generation ####
+############################
+
+# Download crd-ref-docs locally if necessary
+CRD_REFDOCS_VERSION := v0.0.6
+CRD_REFDOCS = $(shell pwd)/bin/crd-ref-docs
+$(CRD_REFDOCS):
+	$(call go-get-tool,$(CRD_REFDOCS),github.com/elastic/crd-ref-docs@$(CRD_REFDOCS_VERSION))
+
+refdocs: $(CRD_REFDOCS) ## Generates api reference documentation from code
+	$(CRD_REFDOCS) \
+		--source-path=api \
+		--config=docs/api-reference/config.yaml \
+		--templates-dir=docs/api-reference/templates/asciidoctor \
+		--renderer=asciidoctor \
+		--output-path=docs/api-reference/reference.asciidoc
