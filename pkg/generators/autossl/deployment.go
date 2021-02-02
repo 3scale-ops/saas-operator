@@ -99,9 +99,8 @@ func (gen *Generator) Deployment() basereconciler.GeneratorFunction {
 										return m
 									}(),
 								),
-								Resources:              corev1.ResourceRequirements(*gen.Spec.Resources),
-								TerminationMessagePath: corev1.TerminationMessagePathDefault,
-								ImagePullPolicy:        *gen.Spec.Image.PullPolicy,
+								Resources:       corev1.ResourceRequirements(*gen.Spec.Resources),
+								ImagePullPolicy: *gen.Spec.Image.PullPolicy,
 								VolumeMounts: []corev1.VolumeMount{
 									{
 										Name:      "autossl-cache",
@@ -112,8 +111,10 @@ func (gen *Generator) Deployment() basereconciler.GeneratorFunction {
 										MountPath: "/var/lib/nginx",
 									},
 								},
-								LivenessProbe:  pod.HTTPProbe("/healthz", intstr.FromInt(9145), corev1.URISchemeHTTP, *gen.Spec.LivenessProbe),
-								ReadinessProbe: pod.HTTPProbe("/healthz", intstr.FromInt(9145), corev1.URISchemeHTTP, *gen.Spec.ReadinessProbe),
+								LivenessProbe:            pod.HTTPProbe("/healthz", intstr.FromInt(9145), corev1.URISchemeHTTP, *gen.Spec.LivenessProbe),
+								ReadinessProbe:           pod.HTTPProbe("/healthz", intstr.FromInt(9145), corev1.URISchemeHTTP, *gen.Spec.ReadinessProbe),
+								TerminationMessagePath:   corev1.TerminationMessagePathDefault,
+								TerminationMessagePolicy: corev1.TerminationMessageReadFile,
 							},
 						},
 						Affinity: pod.Affinity(gen.Selector().MatchLabels),

@@ -128,9 +128,9 @@ func (r *CORSProxyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 			GeneratorFn: gen.Deployment(hash),
 			ExcludePaths: func() []string {
 				if instance.Spec.HPA.IsDeactivated() {
-					return basereconciler.DefaultExcludedPaths
+					return basereconciler.DeploymentExcludedPaths
 				}
-				return append(basereconciler.DefaultExcludedPaths, "/spec/replicas")
+				return append(basereconciler.DeploymentExcludedPaths, "/spec/replicas")
 			}(),
 		})
 

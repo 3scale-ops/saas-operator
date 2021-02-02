@@ -115,9 +115,9 @@ func (r *ApicastReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			GeneratorFn: gen.Staging.Deployment(),
 			ExcludePaths: func() []string {
 				if instance.Spec.Staging.HPA.IsDeactivated() {
-					return basereconciler.DefaultExcludedPaths
+					return basereconciler.DeploymentExcludedPaths
 				}
-				return append(basereconciler.DefaultExcludedPaths, "/spec/replicas")
+				return append(basereconciler.DeploymentExcludedPaths, "/spec/replicas")
 			}(),
 		})
 
@@ -163,9 +163,9 @@ func (r *ApicastReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			GeneratorFn: gen.Production.Deployment(),
 			ExcludePaths: func() []string {
 				if instance.Spec.Production.HPA.IsDeactivated() {
-					return basereconciler.DefaultExcludedPaths
+					return basereconciler.DeploymentExcludedPaths
 				}
-				return append(basereconciler.DefaultExcludedPaths, "/spec/replicas")
+				return append(basereconciler.DeploymentExcludedPaths, "/spec/replicas")
 			}(),
 		})
 
