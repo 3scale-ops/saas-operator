@@ -4,4 +4,5 @@ resources:
 - saas_v1alpha1_apicast.yaml
 - saas_v1alpha1_mappingservice.yaml
 - saas_v1alpha1_corsproxy.yaml
+- saas_v1alpha1_backend.yaml
 # +kubebuilder:scaffold:manifestskustomizesamples
