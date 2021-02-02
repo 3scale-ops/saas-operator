@@ -1505,7 +1505,7 @@
                     "decimals": 2,
                     "link": true,
                     "linkTooltip": "Drill down",
-                    "linkUrl": "/d/6581e46e4e5c7ba40a07646395ef7b55/3scale-kubernetes-compute-resources-pod?var-namespace=$namespace&var-pod=$__cell",
+                    "linkUrl": "/d/6581e46e4e5c7ba40a07646395ef7b55/kubernetes-compute-resources-pod?var-namespace=$namespace&var-pod=$__cell",
                     "pattern": "pod",
                     "thresholds": [],
                     "type": "number",
@@ -1543,7 +1543,7 @@
                     "step": 10
                 },
                 {
-                    "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{namespace=~'$namespace', pod=~'mapping-service.*'}) by (pod) / sum(kube_pod_container_resource_requests_cpu_cores{namespace=~'$namespace', pod=~'apicast-.*'}) by (pod)",
+                    "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{namespace=~'$namespace', pod=~'mapping-service.*'}) by (pod) / sum(kube_pod_container_resource_requests_cpu_cores{namespace=~'$namespace', pod=~'mapping-service-.*'}) by (pod)",
                     "format": "table",
                     "instant": true,
                     "intervalFactor": 2,
@@ -1561,7 +1561,7 @@
                     "step": 10
                 },
                 {
-                    "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{namespace=~'$namespace', pod=~'mapping-service.*'}) by (pod) / sum(kube_pod_container_resource_limits_cpu_cores{namespace=~'$namespace', pod=~'apicast-.*'}) by (pod)",
+                    "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{namespace=~'$namespace', pod=~'mapping-service.*'}) by (pod) / sum(kube_pod_container_resource_limits_cpu_cores{namespace=~'$namespace', pod=~'mapping-service-.*'}) by (pod)",
                     "format": "table",
                     "instant": true,
                     "intervalFactor": 2,
@@ -1853,7 +1853,7 @@
                     "decimals": 2,
                     "link": true,
                     "linkTooltip": "Drill down",
-                    "linkUrl": "/d/6581e46e4e5c7ba40a07646395ef7b55/3scale-kubernetes-compute-resources-pod?var-namespace=$namespace&var-pod=$__cell",
+                    "linkUrl": "/d/6581e46e4e5c7ba40a07646395ef7b55/kubernetes-compute-resources-pod?var-namespace=$namespace&var-pod=$__cell",
                     "pattern": "pod",
                     "thresholds": [],
                     "type": "number",
@@ -1891,7 +1891,7 @@
                     "step": 10
                 },
                 {
-                    "expr": "sum(container_memory_usage_bytes{namespace=~'$namespace', pod=~'mapping-service.*', container!=''}) by (pod) / sum(kube_pod_container_resource_requests_memory_bytes{namespace=~'$namespace', pod=~'apicast-.*'}) by (pod)",
+                    "expr": "sum(container_memory_usage_bytes{namespace=~'$namespace', pod=~'mapping-service.*', container!=''}) by (pod) / sum(kube_pod_container_resource_requests_memory_bytes{namespace=~'$namespace', pod=~'mapping-service-.*'}) by (pod)",
                     "format": "table",
                     "instant": true,
                     "intervalFactor": 2,
@@ -1909,7 +1909,7 @@
                     "step": 10
                 },
                 {
-                    "expr": "sum(container_memory_usage_bytes{namespace=~'$namespace', pod=~'mapping-service.*', container!=''}) by (pod) / sum(kube_pod_container_resource_limits_memory_bytes{namespace=~'$namespace', pod=~'apicast-.*'}) by (pod)",
+                    "expr": "sum(container_memory_usage_bytes{namespace=~'$namespace', pod=~'mapping-service.*', container!=''}) by (pod) / sum(kube_pod_container_resource_limits_memory_bytes{namespace=~'$namespace', pod=~'mapping-service-.*'}) by (pod)",
                     "format": "table",
                     "instant": true,
                     "intervalFactor": 2,
