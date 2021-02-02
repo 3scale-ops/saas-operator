@@ -21,10 +21,6 @@ import (
 	"testing"
 	"time"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
-	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/goombaio/namegenerator"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -37,6 +33,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/envtest/printer"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+
+	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
+	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
+	"github.com/3scale/saas-operator/pkg/basereconciler"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -87,11 +88,6 @@ var _ = BeforeSuite(func() {
 	err = secretsmanagerv1alpha1.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
 
-	err = saasv1alpha1.AddToScheme(scheme.Scheme)
-	Expect(err).NotTo(HaveOccurred())
-
-	// +kubebuilder:scaffold:scheme
-
 	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
 		Scheme: scheme.Scheme,
 		// Disable the metrics port to allow running the
@@ -125,6 +121,12 @@ var _ = BeforeSuite(func() {
 	err = (&MappingServiceReconciler{
 		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("MappingService"), false),
 		Log:        ctrl.Log.WithName("controllers").WithName("MappingService"),
+	}).SetupWithManager(mgr)
+	Expect(err).ToNot(HaveOccurred())
+
+	err = (&CORSProxyReconciler{
+		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("CORSProxy"), false),
+		Log:        ctrl.Log.WithName("controllers").WithName("CORSProxy"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 

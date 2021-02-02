@@ -5,6 +5,7 @@ resources:
 - bases/saas.3scale.net_autossls.yaml
 - bases/saas.3scale.net_apicasts.yaml
 - bases/saas.3scale.net_mappingservices.yaml
+- bases/saas.3scale.net_corsproxies.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patchesStrategicMerge:
@@ -13,6 +14,7 @@ patchesStrategicMerge:
 #- patches/webhook_in_autossls.yaml
 #- patches/webhook_in_apicasts.yaml
 #- patches/webhook_in_mappingservices.yaml
+#- patches/webhook_in_corsproxies.yaml
 # +kubebuilder:scaffold:crdkustomizewebhookpatch
 
 # [CERTMANAGER] To enable webhook, uncomment all the sections with [CERTMANAGER] prefix.
@@ -20,6 +22,7 @@ patchesStrategicMerge:
 #- patches/cainjection_in_autossls.yaml
 #- patches/cainjection_in_apicasts.yaml
 #- patches/cainjection_in_mappingservices.yaml
+#- patches/cainjection_in_corsproxies.yaml
 # +kubebuilder:scaffold:crdkustomizecainjectionpatch
 
 # the following config is for teaching kustomize how to do kustomization for CRDs.

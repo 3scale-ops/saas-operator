@@ -149,7 +149,7 @@ func (a *AutoSSL) Default() {
 
 // AutoSSLConfig defines configuration options for the component
 type AutoSSLConfig struct {
-	// ets the nginx log level
+	// Sets the nginx log level
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	LogLevel *string `json:"logLevel,omitempty"`

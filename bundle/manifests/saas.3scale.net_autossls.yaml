@@ -50,7 +50,7 @@ spec:
                       type: string
                     type: array
                   logLevel:
-                    description: ets the nginx log level
+                    description: Sets the nginx log level
                     type: string
                   proxyEndpoint:
                     description: The endpoint to proxy_pass requests to
@@ -119,6 +119,9 @@ spec:
                 properties:
                   name:
                     description: Docker repository of the image
+                    type: string
+                  pullPolicy:
+                    description: Pull policy for the image
                     type: string
                   pullSecretName:
                     description: Name of the Secret that holds quay.io credentials to access the image repository
