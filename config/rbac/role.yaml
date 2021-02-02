@@ -1,40 +1,6 @@
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  creationTimestamp: null
-  name: manager-role
-rules:
-- apiGroups:
-  - saas.3scale.net
-  resources:
-  - backends
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - saas.3scale.net
-  resources:
-  - backends/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - saas.3scale.net
-  resources:
-  - backends/status
-  verbs:
-  - get
-  - patch
-  - update
-
----
-apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   creationTimestamp: null
@@ -221,6 +187,32 @@ rules:
   - saas.3scale.net
   resources:
   - mappingservices/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - backends
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - backends/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - backends/status
   verbs:
   - get
   - patch
