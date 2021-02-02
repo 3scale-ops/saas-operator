@@ -145,9 +145,8 @@ func main() {
 		os.Exit(1)
 	}
 	if err = (&controllers.BackendReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Backend"),
-		Scheme: mgr.GetScheme(),
+		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("Backend"), false),
+		Log:        ctrl.Log.WithName("controllers").WithName("Backend"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Backend")
 		os.Exit(1)
