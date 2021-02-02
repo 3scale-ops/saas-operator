@@ -6,7 +6,7 @@ import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/secrets"
+	"github.com/3scale/saas-operator/pkg/generators/mappingservice/config"
 	"github.com/3scale/saas-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -64,24 +64,25 @@ func (gen *Generator) Deployment(hash string) basereconciler.GeneratorFunction {
 									pod.ContainerPortTCP("management", 8090),
 									pod.ContainerPortTCP("metrics", 9421),
 								),
-								Env: func() []corev1.EnvVar {
-									vars := []corev1.EnvVar{
-										{Name: "APICAST_CONFIGURATION_LOADER", Value: "lazy"},
-										{Name: "API_HOST", Value: gen.Spec.Config.APIHost},
-										{Name: "APICAST_LOG_LEVEL", Value: *gen.Spec.Config.LogLevel},
-										secrets.EnvVarFromSecret("MASTER_ACCESS_TOKEN",
-											masterTokenSecretName, gen.Spec.Config.SystemAdminToken.FromVault.Key),
-									}
-									if gen.Spec.Config.PreviewBaseDomain != nil {
-										vars = append(vars, corev1.EnvVar{Name: "PREVIEW_BASE_DOMAIN", Value: *gen.Spec.Config.PreviewBaseDomain})
-									}
-									return vars
-								}(),
-								Resources:              corev1.ResourceRequirements(*gen.Spec.Resources),
-								TerminationMessagePath: corev1.TerminationMessagePathDefault,
-								ImagePullPolicy:        *gen.Spec.Image.PullPolicy,
-								LivenessProbe:          pod.TCPProbe(intstr.FromString("mapping"), *gen.Spec.LivenessProbe),
-								ReadinessProbe:         pod.HTTPProbe("/status/ready", intstr.FromString("management"), corev1.URISchemeHTTP, *gen.Spec.ReadinessProbe),
+								Env: pod.GenerateEnvironment(config.Default,
+									func() map[string]pod.EnvVarValue {
+										m := map[string]pod.EnvVarValue{
+											config.APIHost:           &pod.DirectValue{Value: gen.Spec.Config.APIHost},
+											config.ApicastLogLevel:   &pod.DirectValue{Value: *gen.Spec.Config.LogLevel},
+											config.MasterAccessToken: &pod.SecretRef{SecretName: config.SecretDefinitions.LookupSecretName(config.MasterAccessToken)},
+										}
+										if gen.Spec.Config.PreviewBaseDomain != nil {
+											m[config.PreviewBaseDomain] = &pod.DirectValue{Value: *gen.Spec.Config.PreviewBaseDomain}
+										}
+										return m
+									}(),
+								),
+								Resources:                corev1.ResourceRequirements(*gen.Spec.Resources),
+								ImagePullPolicy:          *gen.Spec.Image.PullPolicy,
+								LivenessProbe:            pod.TCPProbe(intstr.FromString("mapping"), *gen.Spec.LivenessProbe),
+								ReadinessProbe:           pod.HTTPProbe("/status/ready", intstr.FromString("management"), corev1.URISchemeHTTP, *gen.Spec.ReadinessProbe),
+								TerminationMessagePath:   corev1.TerminationMessagePathDefault,
+								TerminationMessagePolicy: corev1.TerminationMessageReadFile,
 							},
 						},
 						Affinity: pod.Affinity(gen.Selector().MatchLabels),
