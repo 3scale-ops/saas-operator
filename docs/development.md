@@ -19,7 +19,7 @@ The operator bundle image lifecycle is managed with the `bundle-publish` target 
 
 ## Running the operator
 
-### Run the operator locally against a kind cluster
+### Running the operator locally against a kind cluster
 
 ```bash
 # create a kind cluster
@@ -34,7 +34,7 @@ kubectl apply -f config/test/external-apis/
 make run
 ```
 
-### Running the inside a kind cluster
+### Running the operator inside a kind cluster
 
 You can then run the operator with the following command:
 

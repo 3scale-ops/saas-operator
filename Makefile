@@ -202,7 +202,7 @@ bundle-publish: bundle-push
 #### refdocs generation ####
 ############################
 
-# Download kind locally if necessary
+# Download crd-ref-docs locally if necessary
 CRD_REFDOCS_VERSION := v0.0.6
 CRD_REFDOCS = $(shell pwd)/bin/crd-ref-docs
 $(CRD_REFDOCS):
