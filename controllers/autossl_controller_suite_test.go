@@ -168,7 +168,7 @@ var _ = Describe("AutoSSL controller", func() {
 					svc,
 				)
 				Expect(err).ToNot(HaveOccurred())
-				if svc.GetAnnotations()["service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled"] == "false" {
+				if svc.GetAnnotations()["service.beta.kubernetes.io/aws-load-balancer-connection-draining-enabled"] == "false" {
 					return true
 				}
 				return false
