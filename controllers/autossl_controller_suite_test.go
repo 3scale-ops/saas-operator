@@ -16,6 +16,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/pointer"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ = Describe("AutoSSL controller", func() {
@@ -135,6 +136,44 @@ var _ = Describe("AutoSSL controller", func() {
 				)
 			}, timeout, poll).ShouldNot(HaveOccurred())
 		})
+
+		It("updates the service with non default vaule", func() {
+			svc := &corev1.Service{}
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "autossl", Namespace: namespace},
+					svc,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+
+			autossl := &saasv1alpha1.AutoSSL{}
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "instance", Namespace: namespace},
+					autossl,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+
+			patch := client.MergeFrom(autossl.DeepCopy())
+			autossl.Spec.LoadBalancer = &saasv1alpha1.LoadBalancerSpec{ConnectionDrainingEnabled: pointer.BoolPtr(false)}
+			err := k8sClient.Patch(context.Background(), autossl, patch)
+			Expect(err).ToNot(HaveOccurred())
+
+			Eventually(func() bool {
+				err := k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "autossl", Namespace: namespace},
+					svc,
+				)
+				Expect(err).ToNot(HaveOccurred())
+				if svc.GetAnnotations()["service.beta.kubernetes.io/aws-load-balancer-connection-draining-enabled"] == "false" {
+					return true
+				}
+				return false
+			}, timeout, poll).Should(BeTrue())
+		})
 	})
 
 	Context("AutoSSL resource with deactivated features", func() {
@@ -216,4 +255,5 @@ var _ = Describe("AutoSSL controller", func() {
 			}, timeout, poll).Should(HaveOccurred())
 		})
 	})
+
 })
