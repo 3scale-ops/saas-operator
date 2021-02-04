@@ -53,9 +53,9 @@ func (sc *SecretConfiguration) GenerateSecretDefinitionFn(namespace string, labe
 
 func (sc *SecretConfiguration) keysMap(basePath string, serializedConfig []byte) (map[string]secretsmanagerv1alpha1.DataSource, error) {
 	dsm := map[string]secretsmanagerv1alpha1.DataSource{}
-	w := json.NewDecoder(bytes.NewReader([]byte(serializedConfig)))
 
 	for configOption, path := range sc.ConfigOptions {
+		w := json.NewDecoder(bytes.NewReader([]byte(serializedConfig)))
 		vsr := &saasv1alpha1.VaultSecretReference{}
 		relativePath := strings.TrimPrefix(path, basePath+"/")
 		pathElems := func() []interface{} {

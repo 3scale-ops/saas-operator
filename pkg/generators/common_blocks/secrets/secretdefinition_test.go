@@ -62,6 +62,42 @@ func TestSecretConfiguration_keysMap(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "Builds SecretDefinition DataSources from serialized config, reversed order",
+			fields: fields{
+				SecretName: "secret-name",
+				ConfigOptions: map[string]string{
+					"SOME_CONFIG":  "/spec/config/someConfig",
+					"OTHER_CONFIG": "/spec/config/otherConfig",
+				},
+			},
+			args: args{
+				basePath: "/spec",
+				serializedConfig: []byte(heredoc.Doc(`
+					{
+						"config": {
+							"otherConfig": {
+								"fromVault": {
+									"path": "vault-path2",
+									"key": "vault-key2"
+								}
+							},
+							"someConfig": {
+								"fromVault": {
+									"path": "vault-path1",
+									"key": "vault-key1"
+								}
+							}
+						}
+					}
+				`)),
+			},
+			want: map[string]secretsmanagerv1alpha1.DataSource{
+				"SOME_CONFIG":  {Key: "vault-key1", Path: "vault-path1"},
+				"OTHER_CONFIG": {Key: "vault-key2", Path: "vault-path2"},
+			},
+			wantErr: false,
+		},
+		{
 			name: "Fails if path is not found",
 			fields: fields{
 				SecretName: "secret-name",
