@@ -24,7 +24,7 @@ func (r *Reconciler) SecretEventHandler(ol ExtendedObjectList, logger logr.Logge
 	return handler.EnqueueRequestsFromMapFunc(
 		func(o client.Object) []reconcile.Request {
 			if err := r.GetClient().List(context.TODO(), ol); err != nil {
-				logger.Error(err, "unable to retrieve the list of mappingservices")
+				logger.Error(err, "unable to retrieve the list of resources")
 				return []reconcile.Request{}
 			}
 			if ol.CountItems() == 0 {

@@ -103,11 +103,13 @@ func (r *Reconciler) SecretFromSecretDef(ctx context.Context, fn GeneratorFuncti
 // SecretDefinition ...
 type SecretDefinition struct {
 	Template GeneratorFunction
+	Enabled  bool
 }
 
 // Service ...
 type Service struct {
 	Template GeneratorFunction
+	Enabled  bool
 }
 
 // PodDisruptionBudget ...
@@ -125,6 +127,7 @@ type HorizontalPodAutoscaler struct {
 // PodMonitor ...
 type PodMonitor struct {
 	Template GeneratorFunction
+	Enabled  bool
 }
 
 // GrafanaDashboard ...
@@ -154,27 +157,33 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 	}
 
 	for _, sd := range crs.SecretDefinitions {
-		resources = append(resources,
-			LockedResource{
-				GeneratorFn:  sd.Template,
-				ExcludePaths: DefaultExcludedPaths,
-			})
+		if sd.Enabled {
+			resources = append(resources,
+				LockedResource{
+					GeneratorFn:  sd.Template,
+					ExcludePaths: DefaultExcludedPaths,
+				})
+		}
 	}
 
 	for _, svc := range crs.Services {
-		resources = append(resources,
-			LockedResource{
-				GeneratorFn:  svc.Template,
-				ExcludePaths: append(DefaultExcludedPaths, ServiceExcludes(svc.Template)...),
-			})
+		if svc.Enabled {
+			resources = append(resources,
+				LockedResource{
+					GeneratorFn:  svc.Template,
+					ExcludePaths: append(DefaultExcludedPaths, ServiceExcludes(svc.Template)...),
+				})
+		}
 	}
 
 	for _, pm := range crs.PodMonitors {
-		resources = append(resources,
-			LockedResource{
-				GeneratorFn:  pm.Template,
-				ExcludePaths: DefaultExcludedPaths,
-			})
+		if pm.Enabled {
+			resources = append(resources,
+				LockedResource{
+					GeneratorFn:  pm.Template,
+					ExcludePaths: DefaultExcludedPaths,
+				})
+		}
 	}
 
 	for _, hpa := range crs.HorizontalPodAutoscalers {
