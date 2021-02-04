@@ -17,7 +17,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/util"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -226,9 +225,6 @@ type ApicastList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []Apicast `json:"items"`
 }
-
-// Ensure ApicastList implements basereconciler.ExtendedObjectList
-var _ basereconciler.ExtendedObjectList = &ApicastList{}
 
 // GetItem returns a client.Objectfrom a ApicastList
 func (al *ApicastList) GetItem(idx int) client.Object {

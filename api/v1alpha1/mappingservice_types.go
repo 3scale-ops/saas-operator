@@ -17,7 +17,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/util"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -185,9 +184,6 @@ type MappingServiceList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []MappingService `json:"items"`
 }
-
-// Ensure MappingServiceList implements basereconciler.ExtendedObjectList
-var _ basereconciler.ExtendedObjectList = &MappingServiceList{}
 
 // GetItem returns a client.Objectfrom a MappingServiceList
 func (msl *MappingServiceList) GetItem(idx int) client.Object {

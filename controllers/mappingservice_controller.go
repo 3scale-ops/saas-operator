@@ -118,14 +118,14 @@ func (r *MappingServiceReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 			ExcludePaths: basereconciler.DefaultExcludedPaths,
 		})
 
-	hash, err := r.CalculateSecretHash(ctx, gen.SecretDefinition())
-	if err != nil {
-		return r.ManageError(ctx, instance, err)
-	}
+	// hash, err := r.CalculateSecretHash(ctx, gen.SecretDefinition())
+	// if err != nil {
+	// 	return r.ManageError(ctx, instance, err)
+	// }
 
 	resources = append(resources,
 		basereconciler.LockedResource{
-			GeneratorFn: gen.Deployment(hash),
+			GeneratorFn: gen.Deployment("hash"),
 			ExcludePaths: func() []string {
 				if instance.Spec.HPA.IsDeactivated() {
 					return basereconciler.DeploymentExcludedPaths

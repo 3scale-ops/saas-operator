@@ -45,7 +45,7 @@ func (gen *Generator) Deployment(hash string) basereconciler.GeneratorFunction {
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: gen.LabelsWithSelector(),
 						Annotations: map[string]string{
-							saasv1alpha1.RolloutTriggerAnnotationKeyPrefix + "config.systemAdminToken.hash": hash,
+							saasv1alpha1.AnnotationsDomain + "config.systemAdminToken.hash": hash,
 						},
 					},
 					Spec: corev1.PodSpec{
