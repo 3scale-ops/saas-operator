@@ -59,12 +59,7 @@ func (gen *CronGenerator) Deployment(hashErrorMonitoring string) basereconciler.
 							{
 								Name:  gen.GetComponent(),
 								Image: fmt.Sprintf("%s:%s", *gen.Image.Name, *gen.Image.Tag),
-								Args: func() (args []string) {
-									args = []string{
-										"backend-cron",
-									}
-									return
-								}(),
+								Args: []string{"backend-cron"},
 								Env: pod.GenerateEnvironment(config.CronDefault,
 									func() map[string]pod.EnvVarValue {
 										m := map[string]pod.EnvVarValue{
