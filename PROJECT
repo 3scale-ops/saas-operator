@@ -22,6 +22,9 @@ resources:
 - crdVersion: v1
   group: saas
   kind: Backend
+- crdVersion: v1
+  group: saas
+  kind: System
   version: v1alpha1
 version: 3-alpha
 plugins:
