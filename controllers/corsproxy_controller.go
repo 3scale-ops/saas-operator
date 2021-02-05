@@ -108,29 +108,24 @@ func (r *CORSProxyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	)
 
 	// Calculate rollout triggers
-	triggerName := gen.SecretDefinition()().GetName()
-	secret, err := r.SecretFromSecretDef(ctx, gen.SecretDefinition())
+	triggers, err := r.TriggersFromSecretDefs(ctx, gen.SecretDefinition())
 	if err != nil {
-		return r.ManageError(ctx, instance, err)
-	}
-	var trigger basereconciler.RolloutTrigger
-	if secret != nil {
-		trigger = basereconciler.NewRolloutTrigger(triggerName, secret)
-	} else {
-		trigger = basereconciler.NewRolloutTrigger(triggerName, &corev1.Secret{})
+		return ctrl.Result{}, err
 	}
 
 	err = r.ReconcileOwnedResources(ctx, instance, basereconciler.ControlledResources{
 		Deployments: []basereconciler.Deployment{{
 			Template:        gen.Deployment("hash"),
-			RolloutTriggers: []basereconciler.RolloutTrigger{trigger},
+			RolloutTriggers: triggers,
 			HasHPA:          !instance.Spec.HPA.IsDeactivated(),
 		}},
 		SecretDefinitions: []basereconciler.SecretDefinition{{
 			Template: gen.SecretDefinition(),
+			Enabled:  true,
 		}},
 		Services: []basereconciler.Service{{
 			Template: gen.Service(),
+			Enabled:  true,
 		}},
 		PodDisruptionBudgets: []basereconciler.PodDisruptionBudget{{
 			Template: gen.PDB(),
@@ -142,6 +137,7 @@ func (r *CORSProxyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		}},
 		PodMonitors: []basereconciler.PodMonitor{{
 			Template: gen.PodMonitor(),
+			Enabled:  true,
 		}},
 		GrafanaDashboards: []basereconciler.GrafanaDashboard{{
 			Template: gen.GrafanaDashboard(),

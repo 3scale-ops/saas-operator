@@ -87,22 +87,15 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		return ctrl.Result{}, nil
 	}
 
-	// triggerName := gen.SecretDefinition()().GetName()
-	// secret, err := r.SecretFromSecretDef(ctx, gen.SecretDefinition())
-	// if err != nil {
-	// 	return r.ManageError(ctx, instance, err)
-	// }
-	// var trigger basereconciler.RolloutTrigger
-	// if secret != nil {
-	// 	trigger = basereconciler.NewRolloutTrigger(triggerName, secret)
-	// } else {
-	// 	trigger = basereconciler.NewRolloutTrigger(triggerName, &corev1.Secret{})
-	// }
+	triggers, err := r.TriggersFromSecretDefs(ctx, secretDefinition(req.Namespace))
+	if err != nil {
+		return ctrl.Result{}, err
+	}
 
 	err = r.ReconcileOwnedResources(ctx, instance, basereconciler.ControlledResources{
 		Deployments: []basereconciler.Deployment{{
 			Template:        deployment(req.Namespace),
-			RolloutTriggers: []basereconciler.RolloutTrigger{},
+			RolloutTriggers: triggers,
 			HasHPA:          false,
 		}},
 		SecretDefinitions: []basereconciler.SecretDefinition{{
@@ -197,8 +190,9 @@ func service(namespace string) basereconciler.GeneratorFunction {
 				Type:                  corev1.ServiceTypeLoadBalancer,
 				ExternalTrafficPolicy: corev1.ServiceExternalTrafficPolicyTypeCluster,
 				SessionAffinity:       corev1.ServiceAffinityNone,
-				Ports:                 []corev1.ServicePort{{Name: "port", Port: 80, TargetPort: intstr.FromInt(80)}},
-				Selector:              map[string]string{"selector": "deployment"},
+				Ports: []corev1.ServicePort{{
+					Name: "port", Port: 80, TargetPort: intstr.FromInt(80), Protocol: corev1.ProtocolTCP}},
+				Selector: map[string]string{"selector": "deployment"},
 			},
 		}
 	}
@@ -213,11 +207,11 @@ func secretDefinition(namespace string) basereconciler.GeneratorFunction {
 				APIVersion: secretsmanagerv1alpha1.GroupVersion.String(),
 			},
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      "secret-definition",
+				Name:      "secret",
 				Namespace: namespace,
 			},
 			Spec: secretsmanagerv1alpha1.SecretDefinitionSpec{
-				Name: "secret-definition",
+				Name: "secret",
 				Type: "opaque",
 				KeysMap: map[string]secretsmanagerv1alpha1.DataSource{
 					"KEY": {Key: "vault-key", Path: "vault-path"},

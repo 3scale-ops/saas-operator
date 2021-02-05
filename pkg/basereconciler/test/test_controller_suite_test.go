@@ -130,7 +130,7 @@ var _ = Describe("Test controller", func() {
 			// }, timeout, poll).ShouldNot(HaveOccurred())
 		})
 
-		FIt("Triggers a Deployment rollout on Secret contents change", func() {
+		It("Triggers a Deployment rollout on Secret contents change", func() {
 
 			dep := &appsv1.Deployment{}
 			Eventually(func() error {

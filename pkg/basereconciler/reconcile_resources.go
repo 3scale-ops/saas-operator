@@ -52,13 +52,13 @@ func (rt *RolloutTrigger) GetHash() string {
 		if reflect.DeepEqual(rt.secret, &corev1.Secret{}) {
 			return ""
 		}
-		return hash(rt.secret.Data)
+		return Hash(rt.secret.Data)
 	}
 	if rt.configMap != nil {
 		if reflect.DeepEqual(rt.secret, &corev1.ConfigMap{}) {
 			return ""
 		}
-		return hash(rt.configMap.Data)
+		return Hash(rt.configMap.Data)
 	}
 	return ""
 }
@@ -81,23 +81,32 @@ func NewRolloutTrigger(name string, o client.Object) RolloutTrigger {
 	}
 }
 
-// SecretFromSecretDef calculates the hash of a Secret's contents from the SecretDefinition generator function
-func (r *Reconciler) SecretFromSecretDef(ctx context.Context, fn GeneratorFunction) (*corev1.Secret, error) {
-	sd := fn().(*secretsmanagerv1alpha1.SecretDefinition)
-	key := types.NamespacedName{
-		Name:      sd.Spec.Name,
-		Namespace: sd.GetNamespace(),
-	}
-	secret := &corev1.Secret{}
-	err := r.GetClient().Get(ctx, key, secret)
-	if err != nil {
-		if errors.IsNotFound(err) {
-			// The secret hasn't been created yet
-			return nil, nil
+// TriggersFromSecretDefs generates a list of RolloutTrigger from the given SecretDefinition generator functions
+func (r *Reconciler) TriggersFromSecretDefs(ctx context.Context, sd ...GeneratorFunction) ([]RolloutTrigger, error) {
+
+	triggers := []RolloutTrigger{}
+
+	for _, secretDef := range sd {
+		sd := secretDef().(*secretsmanagerv1alpha1.SecretDefinition)
+		key := types.NamespacedName{
+			Name:      sd.GetName(),
+			Namespace: sd.GetNamespace(),
 		}
-		return nil, err
+		secret := &corev1.Secret{}
+		err := r.GetClient().Get(ctx, key, secret)
+		if err != nil {
+			if errors.IsNotFound(err) {
+				triggers = append(triggers, NewRolloutTrigger(sd.GetName(), &corev1.Secret{}))
+				continue
+			}
+			return nil, err
+		}
+
+		triggers = append(triggers, NewRolloutTrigger(sd.GetName(), secret))
+
 	}
-	return secret, nil
+
+	return triggers, nil
 }
 
 // SecretDefinition ...
@@ -146,7 +155,7 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 
 		resources = append(resources,
 			LockedResource{
-				GeneratorFn: dep.Template,
+				GeneratorFn: r.DeploymentWithRolloutTriggers(dep.Template, dep.RolloutTriggers),
 				ExcludePaths: func() []string {
 					if dep.HasHPA {
 						return append(DeploymentExcludedPaths, "/spec/replicas")
@@ -240,6 +249,9 @@ func (r *Reconciler) DeploymentWithRolloutTriggers(deployment GeneratorFunction,
 
 	return func() client.Object {
 		dep := deployment().(*appsv1.Deployment)
+		if dep.GetAnnotations() == nil {
+			dep.Spec.Template.ObjectMeta.Annotations = map[string]string{}
+		}
 		for _, trigger := range triggers {
 			dep.Spec.Template.ObjectMeta.Annotations[trigger.GetAnnotationKey()] = trigger.GetHash()
 		}
@@ -247,7 +259,7 @@ func (r *Reconciler) DeploymentWithRolloutTriggers(deployment GeneratorFunction,
 	}
 }
 
-func hash(o interface{}) string {
+func Hash(o interface{}) string {
 	hasher := fnv.New32a()
 	hasher.Reset()
 	printer := spew.ConfigState{
