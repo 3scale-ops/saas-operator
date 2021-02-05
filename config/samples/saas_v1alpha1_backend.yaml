@@ -1,7 +1,50 @@
 apiVersion: saas.3scale.net/v1alpha1
 kind: Backend
 metadata:
-  name: backend-sample
+  name: example
 spec:
-  # Add fields here
-  foo: bar
+  image:
+    tag: v3.2.0
+  config:
+    rackEnv: dev
+    redisStorageDSN: backend-redis-storage
+    redisQueuesDSN: backend-redis-queues
+    systemEventsHookURL:
+      fromVault:
+        key: URL
+        path: secret/data/some/path
+    systemEventsHookPassword:
+      fromVault:
+        key: PASSWORD
+        path: secret/data/some/path
+    internalAPIUser:
+      fromVault:
+        key: USER
+        path: secret/data/some/path
+    internalAPIPassword:
+      fromVault:
+        key: PASSWORD
+        path: secret/data/some/path
+  listener:
+    loadBalancer:
+      eipAllocations:
+        - eip-123
+        - eip-456
+    endpoint:
+      dns:
+        - backend.example.com
+    config:
+      redisAsync: false
+    marin3r:
+      ports:
+        - name: backend-http
+          port: 38080
+        - name: http-internal
+          port: 38081
+        - name: backend-htttps
+          port: 38443
+        - name: envoy-metrics
+          port: 9901
+  worker:
+    config:
+      redisAsync: true

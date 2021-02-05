@@ -36,10 +36,636 @@ spec:
           spec:
             description: BackendSpec defines the desired state of Backend
             properties:
-              foo:
-                description: Foo is an example field of Backend. Edit Backend_types.go
-                  to remove/update
-                type: string
+              config:
+                description: Application specific configuration options for the component
+                properties:
+                  errorMonitoringKey:
+                    description: A reference to the secret holding the backend-error-monitoring
+                      key
+                    properties:
+                      fromVault:
+                        description: VaultSecretReference is a reference to a secret
+                          stored in a Hashicorp Vault
+                        properties:
+                          key:
+                            description: The Vault key of the secret
+                            type: string
+                          path:
+                            description: The Vault path where the secret is located
+                            type: string
+                        required:
+                        - key
+                        - path
+                        type: object
+                    required:
+                    - fromVault
+                    type: object
+                  errorMonitoringService:
+                    description: A reference to the secret holding the backend-error-monitoring
+                      service
+                    properties:
+                      fromVault:
+                        description: VaultSecretReference is a reference to a secret
+                          stored in a Hashicorp Vault
+                        properties:
+                          key:
+                            description: The Vault key of the secret
+                            type: string
+                          path:
+                            description: The Vault path where the secret is located
+                            type: string
+                        required:
+                        - key
+                        - path
+                        type: object
+                    required:
+                    - fromVault
+                    type: object
+                  internalAPIPassword:
+                    description: A reference to the secret holding the backend-internal-api
+                      password
+                    properties:
+                      fromVault:
+                        description: VaultSecretReference is a reference to a secret
+                          stored in a Hashicorp Vault
+                        properties:
+                          key:
+                            description: The Vault key of the secret
+                            type: string
+                          path:
+                            description: The Vault path where the secret is located
+                            type: string
+                        required:
+                        - key
+                        - path
+                        type: object
+                    required:
+                    - fromVault
+                    type: object
+                  internalAPIUser:
+                    description: A reference to the secret holding the backend-internal-api
+                      user
+                    properties:
+                      fromVault:
+                        description: VaultSecretReference is a reference to a secret
+                          stored in a Hashicorp Vault
+                        properties:
+                          key:
+                            description: The Vault key of the secret
+                            type: string
+                          path:
+                            description: The Vault path where the secret is located
+                            type: string
+                        required:
+                        - key
+                        - path
+                        type: object
+                    required:
+                    - fromVault
+                    type: object
+                  masterServiceID:
+                    description: Master service account ID in Porta
+                    format: int32
+                    type: integer
+                  rackEnv:
+                    description: Rack environment
+                    type: string
+                  redisQueuesDSN:
+                    description: Redis Queues DSN
+                    type: string
+                  redisStorageDSN:
+                    description: Redis Storage DSN
+                    type: string
+                  systemEventsHookPassword:
+                    description: A reference to the secret holding the backend-system-events-hook
+                      password
+                    properties:
+                      fromVault:
+                        description: VaultSecretReference is a reference to a secret
+                          stored in a Hashicorp Vault
+                        properties:
+                          key:
+                            description: The Vault key of the secret
+                            type: string
+                          path:
+                            description: The Vault path where the secret is located
+                            type: string
+                        required:
+                        - key
+                        - path
+                        type: object
+                    required:
+                    - fromVault
+                    type: object
+                  systemEventsHookURL:
+                    description: A reference to the secret holding the backend-system-events-hook
+                      URL
+                    properties:
+                      fromVault:
+                        description: VaultSecretReference is a reference to a secret
+                          stored in a Hashicorp Vault
+                        properties:
+                          key:
+                            description: The Vault key of the secret
+                            type: string
+                          path:
+                            description: The Vault path where the secret is located
+                            type: string
+                        required:
+                        - key
+                        - path
+                        type: object
+                    required:
+                    - fromVault
+                    type: object
+                required:
+                - internalAPIPassword
+                - internalAPIUser
+                - redisQueuesDSN
+                - redisStorageDSN
+                - systemEventsHookPassword
+                - systemEventsHookURL
+                type: object
+              cron:
+                description: Configures the backend cron
+                properties:
+                  replicas:
+                    description: Number of replicas for the component
+                    format: int32
+                    type: integer
+                  resources:
+                    description: Resource requirements for the component
+                    properties:
+                      limits:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Limits describes the maximum amount of compute
+                          resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        type: object
+                      requests:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Requests describes the minimum amount of compute
+                          resources required. If Requests is omitted for a container,
+                          it defaults to Limits if that is explicitly specified, otherwise
+                          to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        type: object
+                    type: object
+                type: object
+              grafanaDashboard:
+                description: Configures the Grafana Dashboard for the component
+                properties:
+                  selectorKey:
+                    description: Label key used by grafana-operator for dashboard
+                      discovery
+                    type: string
+                  selectorValue:
+                    description: Label value used by grafana-operator for dashboard
+                      discovery
+                    type: string
+                type: object
+              image:
+                description: Image specification for the component
+                properties:
+                  name:
+                    description: Docker repository of the image
+                    type: string
+                  pullPolicy:
+                    description: Pull policy for the image
+                    type: string
+                  pullSecretName:
+                    description: Name of the Secret that holds quay.io credentials
+                      to access the image repository
+                    type: string
+                  tag:
+                    description: Image tag
+                    type: string
+                type: object
+              listener:
+                description: Configures the backend listener
+                properties:
+                  config:
+                    description: Listener specific configuration options for the component
+                      element
+                    properties:
+                      legacyReferrerFilters:
+                        description: Enable (true) or disable (false) Legacy Referrer
+                          Filters
+                        type: boolean
+                      listenerWorkers:
+                        description: Number of worker processes per listener pod
+                        format: int32
+                        type: integer
+                      logFormat:
+                        description: Listener log format
+                        enum:
+                        - test
+                        - json
+                        type: string
+                      redisAsync:
+                        description: Enable (true) or disable (false) listener redis
+                          async mode
+                        type: boolean
+                    type: object
+                  endpoint:
+                    description: The external endpoint/s for the component
+                    properties:
+                      dns:
+                        description: The list of dns records that will point to the
+                          component
+                        items:
+                          type: string
+                        type: array
+                    required:
+                    - dns
+                    type: object
+                  hpa:
+                    description: Horizontal Pod Autoscaler for the component
+                    properties:
+                      maxReplicas:
+                        description: Upper limit for the number of replicas to which
+                          the autoscaler can scale up. It cannot be less that minReplicas.
+                        format: int32
+                        type: integer
+                      minReplicas:
+                        description: Lower limit for the number of replicas to which
+                          the autoscaler can scale down.  It defaults to 1 pod.  minReplicas
+                          is allowed to be 0 if the alpha feature gate HPAScaleToZero
+                          is enabled and at least one Object or External metric is
+                          configured.  Scaling is active as long as at least one metric
+                          value is available.
+                        format: int32
+                        type: integer
+                      resourceName:
+                        description: Target resource used to autoscale (cpu/memory)
+                        enum:
+                        - cpu
+                        - memory
+                        type: string
+                      resourceUtilization:
+                        description: A percentage indicating the target resource consumption
+                          used to autoscale
+                        format: int32
+                        type: integer
+                    type: object
+                  livenessProbe:
+                    description: Liveness probe for the component
+                    properties:
+                      failureThreshold:
+                        description: Minimum consecutive failures for the probe to
+                          be considered failed after having succeeded
+                        format: int32
+                        type: integer
+                      initialDelaySeconds:
+                        description: Number of seconds after the container has started
+                          before liveness probes are initiated
+                        format: int32
+                        type: integer
+                      periodSeconds:
+                        description: How often (in seconds) to perform the probe
+                        format: int32
+                        type: integer
+                      successThreshold:
+                        description: Minimum consecutive successes for the probe to
+                          be considered successful after having failed
+                        format: int32
+                        type: integer
+                      timeoutSeconds:
+                        description: Number of seconds after which the probe times
+                          out
+                        format: int32
+                        type: integer
+                    type: object
+                  loadBalancer:
+                    description: Configures the AWS Network load balancer for the
+                      component
+                    properties:
+                      crossZoneLoadBalancingEnabled:
+                        description: Enables/disables cross zone load balancing
+                        type: boolean
+                      eipAllocations:
+                        description: The list of optional Elastic IPs allocations
+                        items:
+                          type: string
+                        type: array
+                      proxyProtocol:
+                        description: Enables/disbles use of proxy protocol in the
+                          load balancer
+                        type: boolean
+                    type: object
+                  marin3r:
+                    description: Marin3r configures the Marin3r sidecars for the component
+                    properties:
+                      extraPodAnnotations:
+                        additionalProperties:
+                          type: string
+                        description: Extra annotations to pass the Pod to further
+                          configure the sidecar container.
+                        type: object
+                      ports:
+                        description: The ports that the sidecar exposes
+                        items:
+                          description: SidecarPort defines port for the Marin3r sidecar
+                            container
+                          properties:
+                            name:
+                              description: Port name
+                              type: string
+                            port:
+                              description: Port value
+                              format: int32
+                              type: integer
+                          required:
+                          - name
+                          - port
+                          type: object
+                        type: array
+                      resources:
+                        description: Compute Resources required by this container.
+                        properties:
+                          limits:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: 'Limits describes the maximum amount of compute
+                              resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                            type: object
+                          requests:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: 'Requests describes the minimum amount of
+                              compute resources required. If Requests is omitted for
+                              a container, it defaults to Limits if that is explicitly
+                              specified, otherwise to an implementation-defined value.
+                              More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                            type: object
+                        type: object
+                    required:
+                    - ports
+                    type: object
+                  pdb:
+                    description: Pod Disruption Budget for the component
+                    properties:
+                      maxUnavailable:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        description: An eviction is allowed if at most "maxUnavailable"
+                          pods selected by "selector" are unavailable after the eviction,
+                          i.e. even in absence of the evicted pod. For example, one
+                          can prevent all voluntary evictions by specifying 0. This
+                          is a mutually exclusive setting with "minAvailable".
+                        x-kubernetes-int-or-string: true
+                      minAvailable:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        description: An eviction is allowed if at least "minAvailable"
+                          pods selected by "selector" will still be available after
+                          the eviction, i.e. even in the absence of the evicted pod.  So
+                          for example you can prevent all voluntary evictions by specifying
+                          "100%".
+                        x-kubernetes-int-or-string: true
+                    type: object
+                  readinessProbe:
+                    description: Readiness probe for the component
+                    properties:
+                      failureThreshold:
+                        description: Minimum consecutive failures for the probe to
+                          be considered failed after having succeeded
+                        format: int32
+                        type: integer
+                      initialDelaySeconds:
+                        description: Number of seconds after the container has started
+                          before liveness probes are initiated
+                        format: int32
+                        type: integer
+                      periodSeconds:
+                        description: How often (in seconds) to perform the probe
+                        format: int32
+                        type: integer
+                      successThreshold:
+                        description: Minimum consecutive successes for the probe to
+                          be considered successful after having failed
+                        format: int32
+                        type: integer
+                      timeoutSeconds:
+                        description: Number of seconds after which the probe times
+                          out
+                        format: int32
+                        type: integer
+                    type: object
+                  replicas:
+                    description: Number of replicas (ignored if hpa is enabled) for
+                      the component
+                    format: int32
+                    type: integer
+                  resources:
+                    description: Resource requirements for the component
+                    properties:
+                      limits:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Limits describes the maximum amount of compute
+                          resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        type: object
+                      requests:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Requests describes the minimum amount of compute
+                          resources required. If Requests is omitted for a container,
+                          it defaults to Limits if that is explicitly specified, otherwise
+                          to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        type: object
+                    type: object
+                required:
+                - endpoint
+                type: object
+              worker:
+                description: Configures the backend worker
+                properties:
+                  config:
+                    description: Listener specific configuration options for the component
+                      element
+                    properties:
+                      logFormat:
+                        description: Worker log format
+                        enum:
+                        - test
+                        - json
+                        type: string
+                      redisAsync:
+                        description: Enable (true) or disable (false) worker redis
+                          async mode
+                        type: boolean
+                    type: object
+                  hpa:
+                    description: Horizontal Pod Autoscaler for the component
+                    properties:
+                      maxReplicas:
+                        description: Upper limit for the number of replicas to which
+                          the autoscaler can scale up. It cannot be less that minReplicas.
+                        format: int32
+                        type: integer
+                      minReplicas:
+                        description: Lower limit for the number of replicas to which
+                          the autoscaler can scale down.  It defaults to 1 pod.  minReplicas
+                          is allowed to be 0 if the alpha feature gate HPAScaleToZero
+                          is enabled and at least one Object or External metric is
+                          configured.  Scaling is active as long as at least one metric
+                          value is available.
+                        format: int32
+                        type: integer
+                      resourceName:
+                        description: Target resource used to autoscale (cpu/memory)
+                        enum:
+                        - cpu
+                        - memory
+                        type: string
+                      resourceUtilization:
+                        description: A percentage indicating the target resource consumption
+                          used to autoscale
+                        format: int32
+                        type: integer
+                    type: object
+                  livenessProbe:
+                    description: Liveness probe for the component
+                    properties:
+                      failureThreshold:
+                        description: Minimum consecutive failures for the probe to
+                          be considered failed after having succeeded
+                        format: int32
+                        type: integer
+                      initialDelaySeconds:
+                        description: Number of seconds after the container has started
+                          before liveness probes are initiated
+                        format: int32
+                        type: integer
+                      periodSeconds:
+                        description: How often (in seconds) to perform the probe
+                        format: int32
+                        type: integer
+                      successThreshold:
+                        description: Minimum consecutive successes for the probe to
+                          be considered successful after having failed
+                        format: int32
+                        type: integer
+                      timeoutSeconds:
+                        description: Number of seconds after which the probe times
+                          out
+                        format: int32
+                        type: integer
+                    type: object
+                  pdb:
+                    description: Pod Disruption Budget for the component
+                    properties:
+                      maxUnavailable:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        description: An eviction is allowed if at most "maxUnavailable"
+                          pods selected by "selector" are unavailable after the eviction,
+                          i.e. even in absence of the evicted pod. For example, one
+                          can prevent all voluntary evictions by specifying 0. This
+                          is a mutually exclusive setting with "minAvailable".
+                        x-kubernetes-int-or-string: true
+                      minAvailable:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        description: An eviction is allowed if at least "minAvailable"
+                          pods selected by "selector" will still be available after
+                          the eviction, i.e. even in the absence of the evicted pod.  So
+                          for example you can prevent all voluntary evictions by specifying
+                          "100%".
+                        x-kubernetes-int-or-string: true
+                    type: object
+                  readinessProbe:
+                    description: Readiness probe for the component
+                    properties:
+                      failureThreshold:
+                        description: Minimum consecutive failures for the probe to
+                          be considered failed after having succeeded
+                        format: int32
+                        type: integer
+                      initialDelaySeconds:
+                        description: Number of seconds after the container has started
+                          before liveness probes are initiated
+                        format: int32
+                        type: integer
+                      periodSeconds:
+                        description: How often (in seconds) to perform the probe
+                        format: int32
+                        type: integer
+                      successThreshold:
+                        description: Minimum consecutive successes for the probe to
+                          be considered successful after having failed
+                        format: int32
+                        type: integer
+                      timeoutSeconds:
+                        description: Number of seconds after which the probe times
+                          out
+                        format: int32
+                        type: integer
+                    type: object
+                  replicas:
+                    description: Number of replicas (ignored if hpa is enabled) for
+                      the component
+                    format: int32
+                    type: integer
+                  resources:
+                    description: Resource requirements for the component
+                    properties:
+                      limits:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Limits describes the maximum amount of compute
+                          resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        type: object
+                      requests:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Requests describes the minimum amount of compute
+                          resources required. If Requests is omitted for a container,
+                          it defaults to Limits if that is explicitly specified, otherwise
+                          to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        type: object
+                    type: object
+                type: object
+            required:
+            - config
+            - listener
             type: object
           status:
             description: BackendStatus defines the observed state of Backend
