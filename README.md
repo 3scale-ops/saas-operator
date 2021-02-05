@@ -12,7 +12,7 @@ A Kubernetes Operator based on the Operator SDK to manage 3scale SaaS (hosted ve
 
 * Apicast
 * AutoSSL
-* Backend [WIP]
+* Backend
 * CORSProxy
 * EchoAPI [TODO]
 * MappingService
@@ -37,7 +37,7 @@ A Kubernetes Operator based on the Operator SDK to manage 3scale SaaS (hosted ve
 
 * [Apicast Custom Resource Reference](docs/api-reference/reference.asciidoc#k8s-api-github-com-3scale-saas-operator-api-v1alpha1-apicast)
 * [AutoSSL Custom Resource Reference](docs/api-reference/reference.asciidoc#k8s-api-github-com-3scale-saas-operator-api-v1alpha1-autossl)
-* [Backend Custom Resource Reference](docs/api-reference/reference.asciidoc)
+* [Backend Custom Resource Reference](docs/api-reference/reference.asciidoc#k8s-api-github-com-3scale-saas-operator-api-v1alpha1-backend)
 * [CORSProxy Custom Resource Reference](docs/api-reference/reference.asciidoc#k8s-api-github-com-3scale-saas-operator-api-v1alpha1-corsproxy)
 * [EchoAPI Custom Resource Reference](docs/api-reference/reference.asciidoc)
 * [MappingService Custom Resource Reference](docs/api-reference/reference.asciidoc#k8s-api-github-com-3scale-saas-operator-api-v1alpha1-mappingservice)

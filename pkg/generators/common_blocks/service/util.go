@@ -31,6 +31,24 @@ func ELBServiceAnnotations(cfg saasv1alpha1.LoadBalancerSpec, hostnames []string
 
 }
 
+// NLBServiceAnnotations returns annotations for services exposed through AWS Network LoadBalancers
+func NLBServiceAnnotations(cfg saasv1alpha1.NLBLoadBalancerSpec, hostnames []string) map[string]string {
+	annotations := map[string]string{
+		"external-dns.alpha.kubernetes.io/hostname":                                      strings.Join(hostnames, ","),
+		"service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled": fmt.Sprintf("%t", *cfg.CrossZoneLoadBalancingEnabled),
+	}
+
+	if *cfg.ProxyProtocol {
+		annotations["aws-nlb-helper.3scale.net/enable-targetgroups-proxy-protocol"] = "true"
+	}
+
+	if cfg.EIPAllocations != nil {
+		annotations["service.beta.kubernetes.io/aws-load-balancer-eip-allocations"] = strings.Join(cfg.EIPAllocations, ",")
+	}
+	return annotations
+
+}
+
 // TCPPort returns a TCP corev1.ServicePort
 func TCPPort(name string, port int32, targetPort intstr.IntOrString) corev1.ServicePort {
 	return corev1.ServicePort{

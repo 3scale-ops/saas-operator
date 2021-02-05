@@ -144,6 +144,13 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "CORSProxy")
 		os.Exit(1)
 	}
+	if err = (&controllers.BackendReconciler{
+		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("Backend"), false),
+		Log:        ctrl.Log.WithName("controllers").WithName("Backend"),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Backend")
+		os.Exit(1)
+	}
 	// +kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("health", healthz.Ping); err != nil {
