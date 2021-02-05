@@ -21,9 +21,7 @@ import (
 	"encoding/json"
 
 	"github.com/go-logr/logr"
-	"github.com/redhat-cop/operator-utils/pkg/util"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -60,40 +58,9 @@ func (r *CORSProxyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 
 	instance := &saasv1alpha1.CORSProxy{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	err := r.GetClient().Get(ctx, key, instance)
-	if err != nil {
-		if errors.IsNotFound(err) {
-			// Return and don't requeue
-			return ctrl.Result{}, nil
-		}
-		return ctrl.Result{}, err
-	}
-
-	if util.IsBeingDeleted(instance) {
-		if !util.HasFinalizer(instance, saasv1alpha1.Finalizer) {
-			return ctrl.Result{}, nil
-		}
-		err := r.ManageCleanUpLogic(instance, log)
-		if err != nil {
-			log.Error(err, "unable to delete instance")
-			return r.ManageError(ctx, instance, err)
-		}
-		util.RemoveFinalizer(instance, saasv1alpha1.Finalizer)
-		err = r.GetClient().Update(ctx, instance)
-		if err != nil {
-			log.Error(err, "unable to update instance")
-			return r.ManageError(ctx, instance, err)
-		}
-		return ctrl.Result{}, nil
-	}
-
-	if ok := r.IsInitialized(instance, saasv1alpha1.Finalizer); !ok {
-		err := r.GetClient().Update(ctx, instance)
-		if err != nil {
-			log.Error(err, "unable to initialize instance")
-			return r.ManageError(ctx, instance, err)
-		}
-		return ctrl.Result{}, nil
+	result, err := r.GetInstance(ctx, key, instance, saasv1alpha1.Finalizer, log)
+	if result.Requeue || err != nil {
+		return result, err
 	}
 
 	// Apply defaults for reconcile but do not store them in the API
@@ -115,7 +82,7 @@ func (r *CORSProxyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 
 	err = r.ReconcileOwnedResources(ctx, instance, basereconciler.ControlledResources{
 		Deployments: []basereconciler.Deployment{{
-			Template:        gen.Deployment("hash"),
+			Template:        gen.Deployment(),
 			RolloutTriggers: triggers,
 			HasHPA:          !instance.Spec.HPA.IsDeactivated(),
 		}},
@@ -144,6 +111,7 @@ func (r *CORSProxyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 			Enabled:  !instance.Spec.GrafanaDashboard.IsDeactivated(),
 		}},
 	})
+
 	if err != nil {
 		log.Error(err, "unable to reconcile owned resources")
 		return r.ManageError(ctx, instance, err)

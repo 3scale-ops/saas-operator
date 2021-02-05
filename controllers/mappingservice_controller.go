@@ -22,13 +22,10 @@ import (
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/basereconciler"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/service"
 	"github.com/3scale/saas-operator/pkg/generators/mappingservice"
 	"github.com/go-logr/logr"
 	"github.com/redhat-cop/operator-utils/pkg/util"
-	"github.com/redhat-cop/operator-utils/pkg/util/lockedresourcecontroller/lockedpatch"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -62,40 +59,9 @@ func (r *MappingServiceReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 
 	instance := &saasv1alpha1.MappingService{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	err := r.GetClient().Get(ctx, key, instance)
-	if err != nil {
-		if errors.IsNotFound(err) {
-			// Return and don't requeue
-			return ctrl.Result{}, nil
-		}
-		return ctrl.Result{}, err
-	}
-
-	if util.IsBeingDeleted(instance) {
-		if !util.HasFinalizer(instance, saasv1alpha1.Finalizer) {
-			return ctrl.Result{}, nil
-		}
-		err := r.ManageCleanUpLogic(instance, log)
-		if err != nil {
-			log.Error(err, "unable to delete instance")
-			return r.ManageError(ctx, instance, err)
-		}
-		util.RemoveFinalizer(instance, saasv1alpha1.Finalizer)
-		err = r.GetClient().Update(ctx, instance)
-		if err != nil {
-			log.Error(err, "unable to update instance")
-			return r.ManageError(ctx, instance, err)
-		}
-		return ctrl.Result{}, nil
-	}
-
-	if ok := r.IsInitialized(instance, saasv1alpha1.Finalizer); !ok {
-		err := r.GetClient().Update(ctx, instance)
-		if err != nil {
-			log.Error(err, "unable to initialize instance")
-			return r.ManageError(ctx, instance, err)
-		}
-		return ctrl.Result{}, nil
+	result, err := r.GetInstance(ctx, key, instance, saasv1alpha1.Finalizer, log)
+	if result.Requeue || err != nil {
+		return result, err
 	}
 
 	// Apply defaults for reconcile but do not store them in the API
@@ -109,74 +75,46 @@ func (r *MappingServiceReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		instance.Spec,
 	)
 
-	// Calculate resources to enforce
-	resources := []basereconciler.LockedResource{}
-
-	resources = append(resources,
-		basereconciler.LockedResource{
-			GeneratorFn:  gen.SecretDefinition(),
-			ExcludePaths: basereconciler.DefaultExcludedPaths,
-		})
-
-	// hash, err := r.CalculateSecretHash(ctx, gen.SecretDefinition())
-	// if err != nil {
-	// 	return r.ManageError(ctx, instance, err)
-	// }
-
-	resources = append(resources,
-		basereconciler.LockedResource{
-			GeneratorFn: gen.Deployment("hash"),
-			ExcludePaths: func() []string {
-				if instance.Spec.HPA.IsDeactivated() {
-					return basereconciler.DeploymentExcludedPaths
-				}
-				return append(basereconciler.DeploymentExcludedPaths, "/spec/replicas")
-			}(),
-		})
-
-	resources = append(resources,
-		basereconciler.LockedResource{
-			GeneratorFn:  gen.Service(),
-			ExcludePaths: append(basereconciler.DefaultExcludedPaths, service.Excludes(gen.Service())...),
-		})
-
-	resources = append(resources,
-		basereconciler.LockedResource{
-			GeneratorFn:  gen.PodMonitor(),
-			ExcludePaths: basereconciler.DefaultExcludedPaths,
-		})
-
-	if !instance.Spec.HPA.IsDeactivated() {
-		resources = append(resources,
-			basereconciler.LockedResource{
-				GeneratorFn:  gen.HPA(),
-				ExcludePaths: basereconciler.DefaultExcludedPaths,
-			},
-		)
-	}
-
-	if !instance.Spec.PDB.IsDeactivated() {
-		resources = append(resources,
-			basereconciler.LockedResource{
-				GeneratorFn:  gen.PDB(),
-				ExcludePaths: basereconciler.DefaultExcludedPaths,
-			},
-		)
-	}
-
-	if !instance.Spec.GrafanaDashboard.IsDeactivated() {
-		resources = append(resources,
-			basereconciler.LockedResource{
-				GeneratorFn:  gen.GrafanaDashboard(),
-				ExcludePaths: basereconciler.DefaultExcludedPaths,
-			},
-		)
-	}
-
-	lockedResources, err := r.NewLockedResources(resources, instance)
-	err = r.UpdateLockedResources(ctx, instance, lockedResources, []lockedpatch.LockedPatch{})
+	// Calculate rollout triggers
+	triggers, err := r.TriggersFromSecretDefs(ctx, gen.SecretDefinition())
 	if err != nil {
-		log.Error(err, "unable to update locked resources")
+		return ctrl.Result{}, err
+	}
+
+	err = r.ReconcileOwnedResources(ctx, instance, basereconciler.ControlledResources{
+		Deployments: []basereconciler.Deployment{{
+			Template:        gen.Deployment(),
+			RolloutTriggers: triggers,
+			HasHPA:          !instance.Spec.HPA.IsDeactivated(),
+		}},
+		SecretDefinitions: []basereconciler.SecretDefinition{{
+			Template: gen.SecretDefinition(),
+			Enabled:  true,
+		}},
+		Services: []basereconciler.Service{{
+			Template: gen.Service(),
+			Enabled:  true,
+		}},
+		PodDisruptionBudgets: []basereconciler.PodDisruptionBudget{{
+			Template: gen.PDB(),
+			Enabled:  !instance.Spec.PDB.IsDeactivated(),
+		}},
+		HorizontalPodAutoscalers: []basereconciler.HorizontalPodAutoscaler{{
+			Template: gen.HPA(),
+			Enabled:  !instance.Spec.HPA.IsDeactivated(),
+		}},
+		PodMonitors: []basereconciler.PodMonitor{{
+			Template: gen.PodMonitor(),
+			Enabled:  true,
+		}},
+		GrafanaDashboards: []basereconciler.GrafanaDashboard{{
+			Template: gen.GrafanaDashboard(),
+			Enabled:  !instance.Spec.GrafanaDashboard.IsDeactivated(),
+		}},
+	})
+
+	if err != nil {
+		log.Error(err, "unable to update owned resources")
 		return r.ManageError(ctx, instance, err)
 	}
 

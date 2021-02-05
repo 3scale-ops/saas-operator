@@ -3,7 +3,6 @@ package mappingservice
 import (
 	"fmt"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
 	"github.com/3scale/saas-operator/pkg/generators/mappingservice/config"
@@ -17,7 +16,7 @@ import (
 
 // Deployment returns a basereconciler.GeneratorFunction function that will return a Deployment
 // resource when called
-func (gen *Generator) Deployment(hash string) basereconciler.GeneratorFunction {
+func (gen *Generator) Deployment() basereconciler.GeneratorFunction {
 
 	return func() client.Object {
 
@@ -44,9 +43,6 @@ func (gen *Generator) Deployment(hash string) basereconciler.GeneratorFunction {
 				Template: corev1.PodTemplateSpec{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: gen.LabelsWithSelector(),
-						Annotations: map[string]string{
-							saasv1alpha1.AnnotationsDomain + "config.systemAdminToken.hash": hash,
-						},
 					},
 					Spec: corev1.PodSpec{
 						ImagePullSecrets: func() []corev1.LocalObjectReference {
