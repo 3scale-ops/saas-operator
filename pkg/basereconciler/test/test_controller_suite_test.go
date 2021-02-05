@@ -250,6 +250,43 @@ var _ = Describe("Test controller", func() {
 			Expect(k8sClient.Get(context.Background(),
 				types.NamespacedName{Name: "secret-definition", Namespace: namespace}, &secretsmanagerv1alpha1.SecretDefinition{})).To(HaveOccurred())
 		})
+
+		It("updates service annotations", func() {
+			svc := &corev1.Service{}
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "service", Namespace: namespace},
+					svc,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "instance", Namespace: namespace},
+					instance,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+
+			patch := client.MergeFrom(instance.DeepCopy())
+			instance.Spec.ServiceAnnotations = map[string]string{"key": "value"}
+			err := k8sClient.Patch(context.Background(), instance, patch)
+			Expect(err).ToNot(HaveOccurred())
+
+			Eventually(func() bool {
+				err := k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "service", Namespace: namespace},
+					svc,
+				)
+				Expect(err).ToNot(HaveOccurred())
+				if svc.GetAnnotations()["key"] == "value" {
+					return true
+				}
+				return false
+			}, timeout, poll).Should(BeTrue())
+		})
 	})
 
 })

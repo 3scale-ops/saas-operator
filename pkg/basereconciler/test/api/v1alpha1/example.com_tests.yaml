@@ -36,10 +36,10 @@ spec:
           spec:
             description: TestSpec defines the desired state of Test
             properties:
-              foo:
-                description: Foo is an example field of Test. Edit Test_types.go to
-                  remove/update
-                type: string
+              serviceAnnotations:
+                additionalProperties:
+                  type: string
+                type: object
             type: object
           status:
             description: TestStatus defines the observed state of Test

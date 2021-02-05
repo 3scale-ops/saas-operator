@@ -70,7 +70,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 			Enabled:  true,
 		}},
 		Services: []basereconciler.Service{{
-			Template: service(req.Namespace),
+			Template: service(req.Namespace, instance.Spec.ServiceAnnotations),
 			Enabled:  true,
 		}},
 		PodDisruptionBudgets: []basereconciler.PodDisruptionBudget{{
@@ -144,7 +144,7 @@ func deployment(namespace string) basereconciler.GeneratorFunction {
 	}
 }
 
-func service(namespace string) basereconciler.GeneratorFunction {
+func service(namespace string, annotations map[string]string) basereconciler.GeneratorFunction {
 	return func() client.Object {
 		return &corev1.Service{
 			TypeMeta: metav1.TypeMeta{
@@ -152,8 +152,9 @@ func service(namespace string) basereconciler.GeneratorFunction {
 				APIVersion: corev1.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      "service",
-				Namespace: namespace,
+				Name:        "service",
+				Namespace:   namespace,
+				Annotations: annotations,
 			},
 			Spec: corev1.ServiceSpec{
 				Type:                  corev1.ServiceTypeLoadBalancer,
