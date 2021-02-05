@@ -1,13 +1,18 @@
 package basereconciler
 
 import (
+	"context"
+
 	"github.com/go-logr/logr"
 	"github.com/redhat-cop/operator-utils/pkg/util"
 	"github.com/redhat-cop/operator-utils/pkg/util/lockedresourcecontroller"
 	"github.com/redhat-cop/operator-utils/pkg/util/lockedresourcecontroller/lockedresource"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -64,6 +69,48 @@ type GeneratorFunction func() client.Object
 type LockedResource struct {
 	GeneratorFn  GeneratorFunction
 	ExcludePaths []string
+}
+
+// GetInstance tries to retrieve the custom resource instance and perform some standard
+// tasks like initizalization and cleanup when required.
+func (r *Reconciler) GetInstance(ctx context.Context, key types.NamespacedName,
+	instance client.Object, finalizer string, log logr.Logger) (ctrl.Result, error) {
+	err := r.GetClient().Get(ctx, key, instance)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			// Return and don't requeue
+			return ctrl.Result{}, nil
+		}
+		return ctrl.Result{}, err
+	}
+
+	if util.IsBeingDeleted(instance) {
+		if !util.HasFinalizer(instance, finalizer) {
+			return ctrl.Result{}, nil
+		}
+		err := r.ManageCleanUpLogic(instance, log)
+		if err != nil {
+			log.Error(err, "unable to delete instance")
+			return r.ManageError(ctx, instance, err)
+		}
+		util.RemoveFinalizer(instance, finalizer)
+		err = r.GetClient().Update(ctx, instance)
+		if err != nil {
+			log.Error(err, "unable to update instance")
+			return r.ManageError(ctx, instance, err)
+		}
+		return ctrl.Result{}, nil
+	}
+
+	if ok := r.IsInitialized(instance, finalizer); !ok {
+		err := r.GetClient().Update(ctx, instance)
+		if err != nil {
+			log.Error(err, "unable to initialize instance")
+			return r.ManageError(ctx, instance, err)
+		}
+		return ctrl.Result{}, nil
+	}
+	return ctrl.Result{}, nil
 }
 
 // IsInitialized can be used to check if instance is correctly initialized.

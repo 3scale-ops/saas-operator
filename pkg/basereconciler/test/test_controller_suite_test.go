@@ -11,6 +11,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -189,6 +190,65 @@ var _ = Describe("Test controller", func() {
 				}
 				return false
 			}, timeout, poll).ShouldNot(BeTrue())
+		})
+
+		It("Deletes all owned resources when custom resource is deleted", func() {
+			// Wait for all resources to be created
+			Eventually(func() bool {
+				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, instance)
+				Expect(err).ToNot(HaveOccurred())
+				if len(instance.GetFinalizers()) > 0 {
+					return true
+				}
+				return false
+			}, timeout, poll).Should(BeTrue())
+
+			dep := &appsv1.Deployment{}
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "deployment", Namespace: namespace},
+					dep,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+
+			svc := &corev1.Service{}
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "service", Namespace: namespace},
+					svc,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+
+			sd := &secretsmanagerv1alpha1.SecretDefinition{}
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "secret", Namespace: namespace},
+					sd,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+
+			// Delete the custom resource
+			err := k8sClient.Delete(context.Background(), instance)
+			Expect(err).ToNot(HaveOccurred())
+
+			Eventually(func() bool {
+				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, instance)
+				if err != nil && errors.IsNotFound(err) {
+					return true
+				}
+				return false
+			}, timeout, poll).Should(BeTrue())
+
+			// All owned resources should have been deleted
+			Expect(k8sClient.Get(context.Background(),
+				types.NamespacedName{Name: "deployment", Namespace: namespace}, &appsv1.Deployment{})).To(HaveOccurred())
+			Expect(k8sClient.Get(context.Background(),
+				types.NamespacedName{Name: "service", Namespace: namespace}, &corev1.Service{})).To(HaveOccurred())
+			Expect(k8sClient.Get(context.Background(),
+				types.NamespacedName{Name: "secret-definition", Namespace: namespace}, &secretsmanagerv1alpha1.SecretDefinition{})).To(HaveOccurred())
 		})
 	})
 

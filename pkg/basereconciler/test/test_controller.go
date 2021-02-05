@@ -23,10 +23,8 @@ import (
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/basereconciler/test/api/v1alpha1"
 	"github.com/go-logr/logr"
-	"github.com/redhat-cop/operator-utils/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -51,40 +49,9 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 
 	instance := &v1alpha1.Test{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	err := r.GetClient().Get(ctx, key, instance)
-	if err != nil {
-		if errors.IsNotFound(err) {
-			// Return and don't requeue
-			return ctrl.Result{}, nil
-		}
-		return ctrl.Result{}, err
-	}
-
-	if util.IsBeingDeleted(instance) {
-		if !util.HasFinalizer(instance, "finalizer.example.com") {
-			return ctrl.Result{}, nil
-		}
-		err := r.ManageCleanUpLogic(instance, log)
-		if err != nil {
-			log.Error(err, "unable to delete instance")
-			return r.ManageError(ctx, instance, err)
-		}
-		util.RemoveFinalizer(instance, "finalizer.example.com")
-		err = r.GetClient().Update(ctx, instance)
-		if err != nil {
-			log.Error(err, "unable to update instance")
-			return r.ManageError(ctx, instance, err)
-		}
-		return ctrl.Result{}, nil
-	}
-
-	if ok := r.IsInitialized(instance, "finalizer.example.com"); !ok {
-		err := r.GetClient().Update(ctx, instance)
-		if err != nil {
-			log.Error(err, "unable to initialize instance")
-			return r.ManageError(ctx, instance, err)
-		}
-		return ctrl.Result{}, nil
+	result, err := r.GetInstance(ctx, key, instance, "finalizer.example.com", log)
+	if result.Requeue || err != nil {
+		return result, err
 	}
 
 	triggers, err := r.TriggersFromSecretDefs(ctx, secretDefinition(req.Namespace))
@@ -116,12 +83,14 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		}},
 		PodMonitors: []basereconciler.PodMonitor{{
 			Template: nil,
-			Enabled:  false}},
+			Enabled:  false,
+		}},
 		GrafanaDashboards: []basereconciler.GrafanaDashboard{{
 			Template: nil,
 			Enabled:  false,
 		}},
 	})
+
 	if err != nil {
 		log.Error(err, "unable to reconcile owned resources")
 		return r.ManageError(ctx, instance, err)
