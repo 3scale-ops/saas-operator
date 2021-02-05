@@ -61,13 +61,7 @@ func (gen *WorkerGenerator) Deployment(hashSystemEventsHook string, hashErrorMon
 							{
 								Name:  gen.GetComponent(),
 								Image: fmt.Sprintf("%s:%s", *gen.Image.Name, *gen.Image.Tag),
-								Args: func() (args []string) {
-									args = []string{
-										"bin/3scale_backend_worker",
-										"run",
-									}
-									return
-								}(),
+								Args: []string{"bin/3scale_backend_worker", "run"},
 								Ports: pod.ContainerPorts(
 									pod.ContainerPortTCP("metrics", 9421),
 								),
