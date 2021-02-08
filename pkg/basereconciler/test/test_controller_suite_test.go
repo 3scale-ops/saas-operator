@@ -94,41 +94,6 @@ var _ = Describe("Test controller", func() {
 				)
 			}, timeout, poll).ShouldNot(HaveOccurred())
 
-			// pm := &monitoringv1.PodMonitor{}
-			// Eventually(func() error {
-			// 	return k8sClient.Get(
-			// 		context.Background(),
-			// 		types.NamespacedName{Name: "autossl", Namespace: namespace},
-			// 		pm,
-			// 	)
-			// }, timeout, poll).ShouldNot(HaveOccurred())
-
-			// hpa := &autoscalingv2beta2.HorizontalPodAutoscaler{}
-			// Eventually(func() error {
-			// 	return k8sClient.Get(
-			// 		context.Background(),
-			// 		types.NamespacedName{Name: "autossl", Namespace: namespace},
-			// 		hpa,
-			// 	)
-			// }, timeout, poll).ShouldNot(HaveOccurred())
-
-			// pdb := &policyv1beta1.PodDisruptionBudget{}
-			// Eventually(func() error {
-			// 	return k8sClient.Get(
-			// 		context.Background(),
-			// 		types.NamespacedName{Name: "autossl", Namespace: namespace},
-			// 		pdb,
-			// 	)
-			// }, timeout, poll).ShouldNot(HaveOccurred())
-
-			// gd := &grafanav1alpha1.GrafanaDashboard{}
-			// Eventually(func() error {
-			// 	return k8sClient.Get(
-			// 		context.Background(),
-			// 		types.NamespacedName{Name: "autossl", Namespace: namespace},
-			// 		gd,
-			// 	)
-			// }, timeout, poll).ShouldNot(HaveOccurred())
 		})
 
 		It("Triggers a Deployment rollout on Secret contents change", func() {
