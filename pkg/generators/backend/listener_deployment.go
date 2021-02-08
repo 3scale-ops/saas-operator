@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strconv"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/generators/backend/config"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/marin3r"
@@ -19,7 +18,7 @@ import (
 
 // Deployment returns a basereconciler.GeneratorFunction funtion that will return a Deployment
 // resource when called
-func (gen *ListenerGenerator) Deployment(hashInternalAPI string, hashErrorMonitoring string) basereconciler.GeneratorFunction {
+func (gen *ListenerGenerator) Deployment() basereconciler.GeneratorFunction {
 
 	return func() client.Object {
 
@@ -46,10 +45,6 @@ func (gen *ListenerGenerator) Deployment(hashInternalAPI string, hashErrorMonito
 				Template: corev1.PodTemplateSpec{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: gen.LabelsWithSelector(),
-						Annotations: map[string]string{
-							saasv1alpha1.RolloutTriggerAnnotationKeyPrefix + config.InternalAPISecretName:     hashInternalAPI,
-							saasv1alpha1.RolloutTriggerAnnotationKeyPrefix + config.ErrorMonitoringSecretName: hashErrorMonitoring,
-						},
 					},
 					Spec: corev1.PodSpec{
 						ImagePullSecrets: func() []corev1.LocalObjectReference {

@@ -22,9 +22,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/redhat-cop/operator-utils/pkg/util"
-	"github.com/redhat-cop/operator-utils/pkg/util/lockedresourcecontroller/lockedpatch"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -35,7 +33,6 @@ import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/generators/backend"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/service"
 )
 
 // BackendReconciler reconciles a Backend object
@@ -63,40 +60,9 @@ func (r *BackendReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	instance := &saasv1alpha1.Backend{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	err := r.GetClient().Get(ctx, key, instance)
-	if err != nil {
-		if errors.IsNotFound(err) {
-			// Return and don't requeue
-			return ctrl.Result{}, nil
-		}
-		return ctrl.Result{}, err
-	}
-
-	if util.IsBeingDeleted(instance) {
-		if !util.HasFinalizer(instance, saasv1alpha1.Finalizer) {
-			return ctrl.Result{}, nil
-		}
-		err := r.ManageCleanUpLogic(instance, log)
-		if err != nil {
-			log.Error(err, "unable to delete instance")
-			return r.ManageError(ctx, instance, err)
-		}
-		util.RemoveFinalizer(instance, saasv1alpha1.Finalizer)
-		err = r.GetClient().Update(ctx, instance)
-		if err != nil {
-			log.Error(err, "unable to update instance")
-			return r.ManageError(ctx, instance, err)
-		}
-		return ctrl.Result{}, nil
-	}
-
-	if ok := r.IsInitialized(instance, saasv1alpha1.Finalizer); !ok {
-		err := r.GetClient().Update(ctx, instance)
-		if err != nil {
-			log.Error(err, "unable to initialize instance")
-			return r.ManageError(ctx, instance, err)
-		}
-		return ctrl.Result{}, nil
+	result, err := r.GetInstance(ctx, key, instance, saasv1alpha1.Finalizer, log)
+	if result.Requeue || err != nil {
+		return result, err
 	}
 
 	// Apply defaults for reconcile but do not store them in the API
@@ -110,150 +76,100 @@ func (r *BackendReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		instance.Spec,
 	)
 
-	// Calculate resources to enforce
-	resources := []basereconciler.LockedResource{}
-
-	resources = append(resources,
-		basereconciler.LockedResource{
-			GeneratorFn:  gen.SystemEventsHookSecretDefinition(),
-			ExcludePaths: basereconciler.DefaultExcludedPaths,
-		})
-
-	hashSystemEventsHook, err := r.CalculateSecretHash(ctx, gen.SystemEventsHookSecretDefinition())
+	// Calculate rollout triggers
+	triggers, err := r.TriggersFromSecretDefs(ctx,
+		gen.SystemEventsHookSecretDefinition(),
+		gen.InternalAPISecretDefinition(),
+		gen.ErrorMonitoringSecretDefinition(),
+	)
 	if err != nil {
-		return r.ManageError(ctx, instance, err)
+		return ctrl.Result{}, err
 	}
 
-	resources = append(resources,
-		basereconciler.LockedResource{
-			GeneratorFn:  gen.InternalAPISecretDefinition(),
-			ExcludePaths: basereconciler.DefaultExcludedPaths,
-		})
+	err = r.ReconcileOwnedResources(ctx, instance, basereconciler.ControlledResources{
+		Deployments: []basereconciler.Deployment{
+			{
+				Template: gen.Listener.Deployment(),
+				HasHPA:   !instance.Spec.Listener.HPA.IsDeactivated(),
+				// Listener only depends on InternalAPISecretDefinition and ErrorMonitoringSecretDefinition
+				RolloutTriggers: []basereconciler.RolloutTrigger{triggers[1], triggers[2]},
+			},
+			{
+				Template: gen.Worker.Deployment(),
+				HasHPA:   !instance.Spec.Listener.HPA.IsDeactivated(),
+				//Worker only depends on SystemEventsHookSecretDefinition and ErrorMonitoringSecretDefinition
+				RolloutTriggers: []basereconciler.RolloutTrigger{triggers[0], triggers[2]},
+			},
+			{
+				Template: gen.Cron.Deployment(),
+				HasHPA:   !instance.Spec.Listener.HPA.IsDeactivated(),
+				// Cron only depends on ErrorMonitoringSecretDefinition
+				RolloutTriggers: []basereconciler.RolloutTrigger{triggers[2]},
+			},
+		},
+		SecretDefinitions: []basereconciler.SecretDefinition{
+			{
+				Template: gen.SystemEventsHookSecretDefinition(),
+				Enabled:  true,
+			},
+			{
+				Template: gen.InternalAPISecretDefinition(),
+				Enabled:  true,
+			},
+			{
+				Template: gen.ErrorMonitoringSecretDefinition(),
+				Enabled:  (instance.Spec.Config.ErrorMonitoringService != nil && instance.Spec.Config.ErrorMonitoringKey != nil),
+			},
+		},
+		Services: []basereconciler.Service{
+			{
+				Template: gen.Listener.Service(),
+				Enabled:  true,
+			},
+			{
+				Template: gen.Listener.InternalService(),
+				Enabled:  true,
+			}},
+		PodDisruptionBudgets: []basereconciler.PodDisruptionBudget{
+			{
+				Template: gen.Listener.PDB(), // Calculate rollout triggers
+				Enabled:  !instance.Spec.Listener.PDB.IsDeactivated(),
+			},
+			{
+				Template: gen.Worker.PDB(), // Calculate rollout triggers
+				Enabled:  !instance.Spec.Worker.PDB.IsDeactivated(),
+			},
+		},
+		HorizontalPodAutoscalers: []basereconciler.HorizontalPodAutoscaler{
+			{
+				Template: gen.Listener.HPA(),
+				Enabled:  !instance.Spec.Listener.HPA.IsDeactivated(),
+			},
+			{
+				Template: gen.Worker.HPA(),
+				Enabled:  !instance.Spec.Worker.HPA.IsDeactivated(),
+			},
+		},
+		PodMonitors: []basereconciler.PodMonitor{
+			{
+				Template: gen.Listener.PodMonitor(),
+				Enabled:  true,
+			},
+			{
+				Template: gen.Worker.PodMonitor(),
+				Enabled:  true,
+			},
+		},
+		GrafanaDashboards: []basereconciler.GrafanaDashboard{
+			{
+				Template: gen.GrafanaDashboard(),
+				Enabled:  !instance.Spec.GrafanaDashboard.IsDeactivated(),
+			},
+		},
+	})
 
-	hashInternalAPI, err := r.CalculateSecretHash(ctx, gen.InternalAPISecretDefinition())
 	if err != nil {
-		return r.ManageError(ctx, instance, err)
-	}
-
-	var hashErrorMonitoring string
-	if instance.Spec.Config.ErrorMonitoringService != nil && instance.Spec.Config.ErrorMonitoringKey != nil {
-		resources = append(resources,
-			basereconciler.LockedResource{
-				GeneratorFn:  gen.ErrorMonitoringSecretDefinition(),
-				ExcludePaths: basereconciler.DefaultExcludedPaths,
-			})
-
-		hashErrorMonitoring, err = r.CalculateSecretHash(ctx, gen.ErrorMonitoringSecretDefinition())
-		if err != nil {
-			return r.ManageError(ctx, instance, err)
-		}
-	}
-
-	// Backend listener resources
-	resources = append(resources,
-		basereconciler.LockedResource{
-			GeneratorFn: gen.Listener.Deployment(hashInternalAPI, hashErrorMonitoring),
-			ExcludePaths: func() []string {
-				if instance.Spec.Listener.HPA.IsDeactivated() {
-					return basereconciler.DefaultExcludedPaths
-				}
-				return append(basereconciler.DeploymentExcludedPaths, "/spec/replicas")
-			}(),
-		})
-
-	resources = append(resources,
-		basereconciler.LockedResource{
-			GeneratorFn:  gen.Listener.Service(),
-			ExcludePaths: append(basereconciler.DefaultExcludedPaths, service.Excludes(gen.Listener.Service())...),
-		})
-
-	resources = append(resources,
-		basereconciler.LockedResource{
-			GeneratorFn:  gen.Listener.InternalService(),
-			ExcludePaths: append(basereconciler.DefaultExcludedPaths, service.Excludes(gen.Listener.InternalService())...),
-		})
-
-	resources = append(resources,
-		basereconciler.LockedResource{
-			GeneratorFn:  gen.Listener.PodMonitor(),
-			ExcludePaths: basereconciler.DefaultExcludedPaths,
-		})
-
-	if !instance.Spec.Listener.HPA.IsDeactivated() {
-		resources = append(resources,
-			basereconciler.LockedResource{
-				GeneratorFn:  gen.Listener.HPA(),
-				ExcludePaths: basereconciler.DefaultExcludedPaths,
-			},
-		)
-	}
-
-	if !instance.Spec.Listener.PDB.IsDeactivated() {
-		resources = append(resources,
-			basereconciler.LockedResource{
-				GeneratorFn:  gen.Listener.PDB(),
-				ExcludePaths: basereconciler.DefaultExcludedPaths,
-			},
-		)
-	}
-
-	// Backend worker resources
-	resources = append(resources,
-		basereconciler.LockedResource{
-			GeneratorFn: gen.Worker.Deployment(hashSystemEventsHook, hashErrorMonitoring),
-			ExcludePaths: func() []string {
-				if instance.Spec.Worker.HPA.IsDeactivated() {
-					return basereconciler.DefaultExcludedPaths
-				}
-				return append(basereconciler.DeploymentExcludedPaths, "/spec/replicas")
-			}(),
-		})
-
-	resources = append(resources,
-		basereconciler.LockedResource{
-			GeneratorFn:  gen.Worker.PodMonitor(),
-			ExcludePaths: basereconciler.DefaultExcludedPaths,
-		})
-
-	if !instance.Spec.Worker.HPA.IsDeactivated() {
-		resources = append(resources,
-			basereconciler.LockedResource{
-				GeneratorFn:  gen.Worker.HPA(),
-				ExcludePaths: basereconciler.DefaultExcludedPaths,
-			},
-		)
-	}
-
-	if !instance.Spec.Worker.PDB.IsDeactivated() {
-		resources = append(resources,
-			basereconciler.LockedResource{
-				GeneratorFn:  gen.Worker.PDB(),
-				ExcludePaths: basereconciler.DefaultExcludedPaths,
-			},
-		)
-	}
-
-	// Backend cron resources
-	resources = append(resources,
-		basereconciler.LockedResource{
-			GeneratorFn:  gen.Cron.Deployment(hashErrorMonitoring),
-			ExcludePaths: basereconciler.DeploymentExcludedPaths,
-		})
-
-	// Backend grafana dashboard
-	if !instance.Spec.GrafanaDashboard.IsDeactivated() {
-		resources = append(resources,
-			basereconciler.LockedResource{
-				GeneratorFn:  gen.GrafanaDashboard(),
-				ExcludePaths: basereconciler.DefaultExcludedPaths,
-			},
-		)
-	}
-
-	lockedResources, err := r.NewLockedResources(resources, instance)
-	err = r.UpdateLockedResources(ctx, instance, lockedResources, []lockedpatch.LockedPatch{})
-	if err != nil {
-		log.Error(err, "unable to update locked resources")
+		log.Error(err, "unable to reconcile owned resources")
 		return r.ManageError(ctx, instance, err)
 	}
 
