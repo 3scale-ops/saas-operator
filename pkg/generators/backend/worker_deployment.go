@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strconv"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/generators/backend/config"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
@@ -18,7 +17,7 @@ import (
 
 // Deployment returns a basereconciler.GeneratorFunction funtion that will return a Deployment
 // resource when called
-func (gen *WorkerGenerator) Deployment(hashSystemEventsHook string, hashErrorMonitoring string) basereconciler.GeneratorFunction {
+func (gen *WorkerGenerator) Deployment() basereconciler.GeneratorFunction {
 
 	return func() client.Object {
 
@@ -45,10 +44,6 @@ func (gen *WorkerGenerator) Deployment(hashSystemEventsHook string, hashErrorMon
 				Template: corev1.PodTemplateSpec{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: gen.LabelsWithSelector(),
-						Annotations: map[string]string{
-							saasv1alpha1.RolloutTriggerAnnotationKeyPrefix + config.SystemEventsHookSecretName: hashSystemEventsHook,
-							saasv1alpha1.RolloutTriggerAnnotationKeyPrefix + config.ErrorMonitoringSecretName:  hashErrorMonitoring,
-						},
 					},
 					Spec: corev1.PodSpec{
 						ImagePullSecrets: func() []corev1.LocalObjectReference {
@@ -61,7 +56,7 @@ func (gen *WorkerGenerator) Deployment(hashSystemEventsHook string, hashErrorMon
 							{
 								Name:  gen.GetComponent(),
 								Image: fmt.Sprintf("%s:%s", *gen.Image.Name, *gen.Image.Tag),
-								Args: []string{"bin/3scale_backend_worker", "run"},
+								Args:  []string{"bin/3scale_backend_worker", "run"},
 								Ports: pod.ContainerPorts(
 									pod.ContainerPortTCP("metrics", 9421),
 								),

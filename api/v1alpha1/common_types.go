@@ -26,9 +26,9 @@ import (
 const (
 	// Finalizer is the finalizer string for resoures in the saas group
 	Finalizer string = "saas.3scale.net"
-	// RolloutTriggerAnnotationKeyPrefix is a common prefix for all "rollout triggering"
+	// AnnotationsDomain is a common prefix for all "rollout triggering"
 	// annotation keys
-	RolloutTriggerAnnotationKeyPrefix string = "saas.3scale.net/"
+	AnnotationsDomain string = "saas.3scale.net"
 )
 
 // ImageSpec defines the image for the component

@@ -41,8 +41,7 @@ func (sc *SecretConfiguration) GenerateSecretDefinitionFn(namespace string, labe
 				KeysMap: func() map[string]secretsmanagerv1alpha1.DataSource {
 					km, err := sc.keysMap(basePath, serializedConfig)
 					if err != nil {
-						// This is a code error, so panic is ok
-						panic(err)
+						return nil
 					}
 					return km
 				}(),

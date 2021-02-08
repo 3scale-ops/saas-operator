@@ -17,7 +17,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/util"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -223,9 +222,6 @@ type AutoSSLList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []AutoSSL `json:"items"`
 }
-
-// Ensure AutoSSLList implements basereconciler.ExtendedObjectList
-var _ basereconciler.ExtendedObjectList = &AutoSSLList{}
 
 // GetItem returns a client.Objectfrom a AutoSSLList
 func (al *AutoSSLList) GetItem(idx int) client.Object {

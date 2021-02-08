@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controllers
+package test
 
 import (
 	"path/filepath"
@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/3scale/saas-operator/pkg/basereconciler"
+	"github.com/3scale/saas-operator/pkg/basereconciler/test/api/v1alpha1"
 	"github.com/goombaio/namegenerator"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -34,11 +35,9 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
 	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
-	// +kubebuilder:scaffold:imports
 )
 
 // These tests use Ginkgo (BDD-style Go testing framework). Refer to
@@ -67,8 +66,8 @@ var _ = BeforeSuite(func() {
 	By("bootstrapping test environment")
 	testEnv = &envtest.Environment{
 		CRDDirectoryPaths: []string{
-			filepath.Join("..", "config", "crd", "bases"),
-			filepath.Join("..", "config", "test", "external-apis"),
+			filepath.Join("api", "v1alpha1"),
+			filepath.Join("..", "..", "..", "config", "test", "external-apis"),
 		},
 	}
 
@@ -79,7 +78,7 @@ var _ = BeforeSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 	Expect(cfg).NotTo(BeNil())
 
-	err = saasv1alpha1.AddToScheme(scheme.Scheme)
+	err = v1alpha1.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
 	err = monitoringv1.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
@@ -106,33 +105,9 @@ var _ = BeforeSuite(func() {
 	}()
 
 	// Add controllers for testing
-	err = (&AutoSSLReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("AutoSSL"), false),
-		Log:        ctrl.Log.WithName("controllers").WithName("AutoSSL"),
-	}).SetupWithManager(mgr)
-	Expect(err).ToNot(HaveOccurred())
-
-	err = (&ApicastReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("Apicast"), false),
-		Log:        ctrl.Log.WithName("controllers").WithName("Apicast"),
-	}).SetupWithManager(mgr)
-	Expect(err).ToNot(HaveOccurred())
-
-	err = (&MappingServiceReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("MappingService"), false),
-		Log:        ctrl.Log.WithName("controllers").WithName("MappingService"),
-	}).SetupWithManager(mgr)
-	Expect(err).ToNot(HaveOccurred())
-
-	err = (&CORSProxyReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("CORSProxy"), false),
-		Log:        ctrl.Log.WithName("controllers").WithName("CORSProxy"),
-	}).SetupWithManager(mgr)
-	Expect(err).ToNot(HaveOccurred())
-
-	err = (&BackendReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("Backend"), false),
-		Log:        ctrl.Log.WithName("controllers").WithName("Backend"),
+	err = (&Reconciler{
+		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("Test"), false),
+		Log:        ctrl.Log.WithName("controllers").WithName("Test"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 

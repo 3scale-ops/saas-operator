@@ -3,7 +3,6 @@ package backend
 import (
 	"fmt"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/generators/backend/config"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
@@ -17,7 +16,7 @@ import (
 
 // Deployment returns a basereconciler.GeneratorFunction funtion that will return a Deployment
 // resource when called
-func (gen *CronGenerator) Deployment(hashErrorMonitoring string) basereconciler.GeneratorFunction {
+func (gen *CronGenerator) Deployment() basereconciler.GeneratorFunction {
 
 	return func() client.Object {
 
@@ -44,9 +43,6 @@ func (gen *CronGenerator) Deployment(hashErrorMonitoring string) basereconciler.
 				Template: corev1.PodTemplateSpec{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: gen.LabelsWithSelector(),
-						Annotations: map[string]string{
-							saasv1alpha1.RolloutTriggerAnnotationKeyPrefix + config.ErrorMonitoringSecretName: hashErrorMonitoring,
-						},
 					},
 					Spec: corev1.PodSpec{
 						ImagePullSecrets: func() []corev1.LocalObjectReference {
@@ -59,7 +55,7 @@ func (gen *CronGenerator) Deployment(hashErrorMonitoring string) basereconciler.
 							{
 								Name:  gen.GetComponent(),
 								Image: fmt.Sprintf("%s:%s", *gen.Image.Name, *gen.Image.Tag),
-								Args: []string{"backend-cron"},
+								Args:  []string{"backend-cron"},
 								Env: pod.GenerateEnvironment(config.CronDefault,
 									func() map[string]pod.EnvVarValue {
 										m := map[string]pod.EnvVarValue{

@@ -2,27 +2,20 @@ package basereconciler
 
 import (
 	"context"
-	"fmt"
-	"hash/fnv"
 
-	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/go-logr/logr"
 	"github.com/redhat-cop/operator-utils/pkg/util"
 	"github.com/redhat-cop/operator-utils/pkg/util/lockedresourcecontroller"
 	"github.com/redhat-cop/operator-utils/pkg/util/lockedresourcecontroller/lockedresource"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/rand"
 	"k8s.io/client-go/tools/record"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
 var (
@@ -76,6 +69,48 @@ type GeneratorFunction func() client.Object
 type LockedResource struct {
 	GeneratorFn  GeneratorFunction
 	ExcludePaths []string
+}
+
+// GetInstance tries to retrieve the custom resource instance and perform some standard
+// tasks like initizalization and cleanup when required.
+func (r *Reconciler) GetInstance(ctx context.Context, key types.NamespacedName,
+	instance client.Object, finalizer string, log logr.Logger) (ctrl.Result, error) {
+	err := r.GetClient().Get(ctx, key, instance)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			// Return and don't requeue
+			return ctrl.Result{}, nil
+		}
+		return ctrl.Result{}, err
+	}
+
+	if util.IsBeingDeleted(instance) {
+		if !util.HasFinalizer(instance, finalizer) {
+			return ctrl.Result{}, nil
+		}
+		err := r.ManageCleanUpLogic(instance, log)
+		if err != nil {
+			log.Error(err, "unable to delete instance")
+			return r.ManageError(ctx, instance, err)
+		}
+		util.RemoveFinalizer(instance, finalizer)
+		err = r.GetClient().Update(ctx, instance)
+		if err != nil {
+			log.Error(err, "unable to update instance")
+			return r.ManageError(ctx, instance, err)
+		}
+		return ctrl.Result{}, nil
+	}
+
+	if ok := r.IsInitialized(instance, finalizer); !ok {
+		err := r.GetClient().Update(ctx, instance)
+		if err != nil {
+			log.Error(err, "unable to initialize instance")
+			return r.ManageError(ctx, instance, err)
+		}
+		return ctrl.Result{}, nil
+	}
+	return ctrl.Result{}, nil
 }
 
 // IsInitialized can be used to check if instance is correctly initialized.
@@ -139,72 +174,4 @@ func newUnstructured(fn GeneratorFunction, owner client.Object, scheme *runtime.
 		return unstructured.Unstructured{}, err
 	}
 	return unstructured.Unstructured{Object: u}, nil
-}
-
-// CalculateSecretHash claculates the hash of a Secret's contents from the SecretDefinition generator function
-func (r *Reconciler) CalculateSecretHash(ctx context.Context, fn GeneratorFunction) (string, error) {
-	sd := fn().(*secretsmanagerv1alpha1.SecretDefinition)
-	key := types.NamespacedName{
-		Name:      sd.Spec.Name,
-		Namespace: sd.GetNamespace(),
-	}
-	secret := &corev1.Secret{}
-	err := r.GetClient().Get(ctx, key, secret)
-	if err != nil {
-		if errors.IsNotFound(err) {
-			// The secret hasn't been created yet
-			return "", nil
-		}
-		return "", err
-	}
-	return hash(secret.Data), nil
-}
-
-// CalculateConfigMapHash ...
-func (r *Reconciler) CalculateConfigMapHash(ctx context.Context, fn GeneratorFunction) string {
-	cm := fn().(*corev1.ConfigMap)
-	return hash(cm.Data)
-}
-
-func hash(o interface{}) string {
-	hasher := fnv.New32a()
-	hasher.Reset()
-	printer := spew.ConfigState{
-		Indent:         " ",
-		SortKeys:       true,
-		DisableMethods: true,
-		SpewKeys:       true,
-	}
-	printer.Fprintf(hasher, "%#v", o)
-	return rand.SafeEncodeString(fmt.Sprint(hasher.Sum32()))
-}
-
-// ExtendedObjectList is an extension of client.ObjectList with methods
-// to manipulate generically the objects in the list
-type ExtendedObjectList interface {
-	client.ObjectList
-	GetItem(int) client.Object
-	CountItems() int
-}
-
-// SecretEventHandler returns an EventHandler for the specific ExtendedObjectList
-// list object passed as parameter
-func (r *Reconciler) SecretEventHandler(ol ExtendedObjectList, logger logr.Logger) handler.EventHandler {
-	return handler.EnqueueRequestsFromMapFunc(
-		func(o client.Object) []reconcile.Request {
-			if err := r.GetClient().List(context.TODO(), ol); err != nil {
-				logger.Error(err, "unable to retrieve the list of mappingservices")
-				return []reconcile.Request{}
-			}
-			if ol.CountItems() == 0 {
-				return []reconcile.Request{}
-			}
-
-			key := types.NamespacedName{
-				Name:      ol.GetItem(0).GetName(),
-				Namespace: ol.GetItem(0).GetNamespace(),
-			}
-			return []reconcile.Request{{NamespacedName: key}}
-		},
-	)
 }

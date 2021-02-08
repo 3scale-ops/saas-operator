@@ -17,7 +17,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/util"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -159,9 +158,6 @@ type CORSProxyList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []CORSProxy `json:"items"`
 }
-
-// Ensure CORSProxyList implements basereconciler.ExtendedObjectList
-var _ basereconciler.ExtendedObjectList = &CORSProxyList{}
 
 // GetItem returns a client.Objectfrom a CORSProxyList
 func (cpl *CORSProxyList) GetItem(idx int) client.Object {
