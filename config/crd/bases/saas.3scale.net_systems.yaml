@@ -39,6 +39,18 @@ spec:
               app:
                 description: Application specific configuration options
                 properties:
+                  endpoint:
+                    description: System's app endpoint
+                    properties:
+                      dns:
+                        description: The list of dns records that will point to the
+                          component
+                        items:
+                          type: string
+                        type: array
+                    required:
+                    - dns
+                    type: object
                   hpa:
                     description: Horizontal Pod Autoscaler for the component
                     properties:
@@ -270,6 +282,8 @@ spec:
                           to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                         type: object
                     type: object
+                required:
+                - endpoint
                 type: object
               config:
                 description: Application specific configuration options for System
@@ -318,6 +332,26 @@ spec:
                     required:
                     - fromVault
                     type: object
+                  appSecretKeyBase:
+                    description: ???
+                    properties:
+                      fromVault:
+                        description: VaultSecretReference is a reference to a secret
+                          stored in a Hashicorp Vault
+                        properties:
+                          key:
+                            description: The Vault key of the secret
+                            type: string
+                          path:
+                            description: The Vault path where the secret is located
+                            type: string
+                        required:
+                        - key
+                        - path
+                        type: object
+                    required:
+                    - fromVault
+                    type: object
                   assets:
                     description: Assets has configuration to access assets in AWS
                       s3
@@ -344,47 +378,9 @@ spec:
                         - fromVault
                         type: object
                       bucket:
-                        description: SecretReference is a reference to a secret stored
-                          in some secrets engine
-                        properties:
-                          fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
-                            properties:
-                              key:
-                                description: The Vault key of the secret
-                                type: string
-                              path:
-                                description: The Vault path where the secret is located
-                                type: string
-                            required:
-                            - key
-                            - path
-                            type: object
-                        required:
-                        - fromVault
-                        type: object
+                        type: string
                       region:
-                        description: SecretReference is a reference to a secret stored
-                          in some secrets engine
-                        properties:
-                          fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
-                            properties:
-                              key:
-                                description: The Vault key of the secret
-                                type: string
-                              path:
-                                description: The Vault path where the secret is located
-                                type: string
-                            required:
-                            - key
-                            - path
-                            type: object
-                        required:
-                        - fromVault
-                        type: object
+                        type: string
                       secretKey:
                         description: SecretReference is a reference to a secret stored
                           in some secrets engine
@@ -417,26 +413,7 @@ spec:
                       backend
                     properties:
                       externalEndpoint:
-                        description: SecretReference is a reference to a secret stored
-                          in some secrets engine
-                        properties:
-                          fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
-                            properties:
-                              key:
-                                description: The Vault key of the secret
-                                type: string
-                              path:
-                                description: The Vault path where the secret is located
-                                type: string
-                            required:
-                            - key
-                            - path
-                            type: object
-                        required:
-                        - fromVault
-                        type: object
+                        type: string
                       internalAPIPassword:
                         description: SecretReference is a reference to a secret stored
                           in some secrets engine
@@ -480,6 +457,20 @@ spec:
                         - fromVault
                         type: object
                       internalEndpoint:
+                        type: string
+                      redisURL:
+                        type: string
+                    required:
+                    - externalEndpoint
+                    - internalAPIPassword
+                    - internalAPIUser
+                    - internalEndpoint
+                    - redisURL
+                    type: object
+                  bugsnag:
+                    description: Options for configuring Bugsnag integration
+                    properties:
+                      apiKey:
                         description: SecretReference is a reference to a secret stored
                           in some secrets engine
                         properties:
@@ -501,13 +492,43 @@ spec:
                         - fromVault
                         type: object
                     required:
-                    - externalEndpoint
-                    - internalAPIPassword
-                    - internalAPIUser
-                    - internalEndpoint
+                    - apiKey
+                    type: object
+                  configFiles:
+                    description: Extra configuration files to be mounted in the pods
+                    properties:
+                      files:
+                        items:
+                          type: string
+                        type: array
+                      vaultPath:
+                        type: string
+                    required:
+                    - files
+                    - vaultPath
                     type: object
                   databaseSecret:
                     description: Database secret
+                    properties:
+                      fromVault:
+                        description: VaultSecretReference is a reference to a secret
+                          stored in a Hashicorp Vault
+                        properties:
+                          key:
+                            description: The Vault key of the secret
+                            type: string
+                          path:
+                            description: The Vault path where the secret is located
+                            type: string
+                        required:
+                        - key
+                        - path
+                        type: object
+                    required:
+                    - fromVault
+                    type: object
+                  databaseURL:
+                    description: URL of system's main database
                     properties:
                       fromVault:
                         description: VaultSecretReference is a reference to a secret
@@ -600,53 +621,9 @@ spec:
                     type: object
                   memcachedServers:
                     description: Memcached servers
-                    properties:
-                      fromVault:
-                        description: VaultSecretReference is a reference to a secret
-                          stored in a Hashicorp Vault
-                        properties:
-                          key:
-                            description: The Vault key of the secret
-                            type: string
-                          path:
-                            description: The Vault path where the secret is located
-                            type: string
-                        required:
-                        - key
-                        - path
-                        type: object
-                    required:
-                    - fromVault
-                    type: object
-                  newRelic:
-                    description: Options for NewRelic integration
-                    properties:
-                      licenseKey:
-                        description: SecretReference is a reference to a secret stored
-                          in some secrets engine
-                        properties:
-                          fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
-                            properties:
-                              key:
-                                description: The Vault key of the secret
-                                type: string
-                              path:
-                                description: The Vault path where the secret is located
-                                type: string
-                            required:
-                            - key
-                            - path
-                            type: object
-                        required:
-                        - fromVault
-                        type: object
-                    required:
-                    - licenseKey
-                    type: object
-                  prometheus:
-                    description: Options for configuring prometheus metricss
+                    type: string
+                  metrics:
+                    description: Options for configuring metrics publication
                     properties:
                       password:
                         description: SecretReference is a reference to a secret stored
@@ -693,6 +670,33 @@ spec:
                     required:
                     - password
                     - user
+                    type: object
+                  newRelic:
+                    description: Options for NewRelic integration
+                    properties:
+                      licenseKey:
+                        description: SecretReference is a reference to a secret stored
+                          in some secrets engine
+                        properties:
+                          fromVault:
+                            description: VaultSecretReference is a reference to a
+                              secret stored in a Hashicorp Vault
+                            properties:
+                              key:
+                                description: The Vault key of the secret
+                                type: string
+                              path:
+                                description: The Vault path where the secret is located
+                                type: string
+                            required:
+                            - key
+                            - path
+                            type: object
+                        required:
+                        - fromVault
+                        type: object
+                    required:
+                    - licenseKey
                     type: object
                   rails:
                     description: Rails configuration options for system components
@@ -817,122 +821,19 @@ spec:
                   redis:
                     description: Redis configuration options
                     properties:
-                      backendQueuesURL:
-                        description: SecretReference is a reference to a secret stored
-                          in some secrets engine
-                        properties:
-                          fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
-                            properties:
-                              key:
-                                description: The Vault key of the secret
-                                type: string
-                              path:
-                                description: The Vault path where the secret is located
-                                type: string
-                            required:
-                            - key
-                            - path
-                            type: object
-                        required:
-                        - fromVault
-                        type: object
-                      backendStorageURL:
-                        description: SecretReference is a reference to a secret stored
-                          in some secrets engine
-                        properties:
-                          fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
-                            properties:
-                              key:
-                                description: The Vault key of the secret
-                                type: string
-                              path:
-                                description: The Vault path where the secret is located
-                                type: string
-                            required:
-                            - key
-                            - path
-                            type: object
-                        required:
-                        - fromVault
-                        type: object
                       messageBusURL:
-                        description: SecretReference is a reference to a secret stored
-                          in some secrets engine
-                        properties:
-                          fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
-                            properties:
-                              key:
-                                description: The Vault key of the secret
-                                type: string
-                              path:
-                                description: The Vault path where the secret is located
-                                type: string
-                            required:
-                            - key
-                            - path
-                            type: object
-                        required:
-                        - fromVault
-                        type: object
+                        type: string
                       url:
-                        description: SecretReference is a reference to a secret stored
-                          in some secrets engine
-                        properties:
-                          fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
-                            properties:
-                              key:
-                                description: The Vault key of the secret
-                                type: string
-                              path:
-                                description: The Vault path where the secret is located
-                                type: string
-                            required:
-                            - key
-                            - path
-                            type: object
-                        required:
-                        - fromVault
-                        type: object
+                        type: string
                     required:
-                    - backendQueuesURL
-                    - backendStorageURL
                     - messageBusURL
                     - url
                     type: object
                   sandboxProxyOpensslVerifyMode:
-                    description: OpenSSL verification mode for sandbox proxy OpenSSL
-                      verification mode for sandbox proxy
+                    description: OpenSSL verification mode for sandbox proxy
                     type: string
-                  secretKeyReference:
-                    description: ???
-                    properties:
-                      fromVault:
-                        description: VaultSecretReference is a reference to a secret
-                          stored in a Hashicorp Vault
-                        properties:
-                          key:
-                            description: The Vault key of the secret
-                            type: string
-                          path:
-                            description: The Vault path where the secret is located
-                            type: string
-                        required:
-                        - key
-                        - path
-                        type: object
-                    required:
-                    - fromVault
-                    type: object
                   seed:
-                    description: ???
+                    description: System seed
                     properties:
                       adminAccessToken:
                         description: SecretReference is a reference to a secret stored
@@ -956,26 +857,7 @@ spec:
                         - fromVault
                         type: object
                       adminEmail:
-                        description: SecretReference is a reference to a secret stored
-                          in some secrets engine
-                        properties:
-                          fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
-                            properties:
-                              key:
-                                description: The Vault key of the secret
-                                type: string
-                              path:
-                                description: The Vault path where the secret is located
-                                type: string
-                            required:
-                            - key
-                            - path
-                            type: object
-                        required:
-                        - fromVault
-                        type: object
+                        type: string
                       adminPassword:
                         description: SecretReference is a reference to a secret stored
                           in some secrets engine
@@ -1040,26 +922,7 @@ spec:
                         - fromVault
                         type: object
                       masterDomain:
-                        description: SecretReference is a reference to a secret stored
-                          in some secrets engine
-                        properties:
-                          fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
-                            properties:
-                              key:
-                                description: The Vault key of the secret
-                                type: string
-                              path:
-                                description: The Vault path where the secret is located
-                                type: string
-                            required:
-                            - key
-                            - path
-                            type: object
-                        required:
-                        - fromVault
-                        type: object
+                        type: string
                       masterPassword:
                         description: SecretReference is a reference to a secret stored
                           in some secrets engine
@@ -1103,26 +966,7 @@ spec:
                         - fromVault
                         type: object
                       tenantName:
-                        description: SecretReference is a reference to a secret stored
-                          in some secrets engine
-                        properties:
-                          fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
-                            properties:
-                              key:
-                                description: The Vault key of the secret
-                                type: string
-                              path:
-                                description: The Vault path where the secret is located
-                                type: string
-                            required:
-                            - key
-                            - path
-                            type: object
-                        required:
-                        - fromVault
-                        type: object
+                        type: string
                     required:
                     - adminAccessToken
                     - adminEmail
@@ -1159,26 +1003,7 @@ spec:
                         - fromVault
                         type: object
                       deletionWorkspace:
-                        description: SecretReference is a reference to a secret stored
-                          in some secrets engine
-                        properties:
-                          fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
-                            properties:
-                              key:
-                                description: The Vault key of the secret
-                                type: string
-                              path:
-                                description: The Vault path where the secret is located
-                                type: string
-                            required:
-                            - key
-                            - path
-                            type: object
-                        required:
-                        - fromVault
-                        type: object
+                        type: string
                       writeKey:
                         description: SecretReference is a reference to a secret stored
                           in some secrets engine
@@ -1209,68 +1034,11 @@ spec:
                     description: SMTP configuration options
                     properties:
                       address:
-                        description: SecretReference is a reference to a secret stored
-                          in some secrets engine
-                        properties:
-                          fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
-                            properties:
-                              key:
-                                description: The Vault key of the secret
-                                type: string
-                              path:
-                                description: The Vault path where the secret is located
-                                type: string
-                            required:
-                            - key
-                            - path
-                            type: object
-                        required:
-                        - fromVault
-                        type: object
+                        type: string
                       authentication:
-                        description: SecretReference is a reference to a secret stored
-                          in some secrets engine
-                        properties:
-                          fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
-                            properties:
-                              key:
-                                description: The Vault key of the secret
-                                type: string
-                              path:
-                                description: The Vault path where the secret is located
-                                type: string
-                            required:
-                            - key
-                            - path
-                            type: object
-                        required:
-                        - fromVault
-                        type: object
+                        type: string
                       opensslVerifyMode:
-                        description: SecretReference is a reference to a secret stored
-                          in some secrets engine
-                        properties:
-                          fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
-                            properties:
-                              key:
-                                description: The Vault key of the secret
-                                type: string
-                              path:
-                                description: The Vault path where the secret is located
-                                type: string
-                            required:
-                            - key
-                            - path
-                            type: object
-                        required:
-                        - fromVault
-                        type: object
+                        type: string
                       password:
                         description: SecretReference is a reference to a secret stored
                           in some secrets engine
@@ -1293,48 +1061,11 @@ spec:
                         - fromVault
                         type: object
                       port:
-                        description: SecretReference is a reference to a secret stored
-                          in some secrets engine
-                        properties:
-                          fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
-                            properties:
-                              key:
-                                description: The Vault key of the secret
-                                type: string
-                              path:
-                                description: The Vault path where the secret is located
-                                type: string
-                            required:
-                            - key
-                            - path
-                            type: object
-                        required:
-                        - fromVault
-                        type: object
+                        format: int32
+                        type: integer
                       starttlsAuto:
-                        description: SecretReference is a reference to a secret stored
-                          in some secrets engine
-                        properties:
-                          fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
-                            properties:
-                              key:
-                                description: The Vault key of the secret
-                                type: string
-                              path:
-                                description: The Vault path where the secret is located
-                                type: string
-                            required:
-                            - key
-                            - path
-                            type: object
-                        required:
-                        - fromVault
-                        type: object
-                      userName:
+                        type: boolean
+                      user:
                         description: SecretReference is a reference to a secret stored
                           in some secrets engine
                         properties:
@@ -1362,16 +1093,16 @@ spec:
                     - password
                     - port
                     - starttlsAuto
-                    - userName
+                    - user
                     type: object
                   sslCertsDir:
                     description: SSL certificates path
                     type: string
                   threescaleProviderPlan:
-                    description: 3scale superdomain
+                    description: 3scale provider plan
                     type: string
                   threescaleSuperdomain:
-                    description: 3scale provider plan
+                    description: 3scale superdomain
                     type: string
                   zyncAuthToken:
                     description: Zync authentication token
@@ -1396,33 +1127,37 @@ spec:
                 required:
                 - accessCode
                 - apicastAccessToken
+                - appSecretKeyBase
                 - assets
                 - backend
+                - bugsnag
+                - configFiles
                 - databaseSecret
+                - databaseURL
                 - eventsSharedSecret
                 - github
                 - memcachedServers
+                - metrics
                 - newRelic
-                - prometheus
                 - recaptcha
                 - redhatCustomerPortal
                 - redis
-                - secretKeyReference
                 - seed
                 - segment
                 - smtp
                 - zyncAuthToken
                 type: object
-              endpoint:
-                description: System endpoint
+              grafanaDashboard:
+                description: Configures the Grafana Dashboard for the component
                 properties:
-                  dns:
-                    description: The list of dns records that will point to the component
-                    items:
-                      type: string
-                    type: array
-                required:
-                - dns
+                  selectorKey:
+                    description: Label key used by grafana-operator for dashboard
+                      discovery
+                    type: string
+                  selectorValue:
+                    description: Label value used by grafana-operator for dashboard
+                      discovery
+                    type: string
                 type: object
               image:
                 description: Image specification for the component
@@ -1708,7 +1443,6 @@ spec:
                 type: object
             required:
             - config
-            - endpoint
             type: object
           status:
             description: SystemStatus defines the observed state of System

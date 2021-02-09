@@ -38,7 +38,7 @@ var (
 	systemDefaultRailsLogLevel                 string           = "info"
 	systemDefaultLogToStdout                   bool             = true
 	systemDefaultImage                         defaultImageSpec = defaultImageSpec{
-		Name:       pointer.StringPtr("quay.io/3scale/apicast-cloud-hosted"),
+		Name:       pointer.StringPtr("quay.io/3scale/porta"),
 		Tag:        pointer.StringPtr("nightly"),
 		PullPolicy: (*corev1.PullPolicy)(pointer.StringPtr(string(corev1.PullIfNotPresent))),
 	}
@@ -244,9 +244,15 @@ type SystemConfig struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	ThreescaleSuperdomain *string `json:"threescaleSuperdomain,omitempty"`
-	// ???
+	// Extra configuration files to be mounted in the pods
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	ConfigFiles ConfigFilesSpec `json:"configFiles"`
+	// System seed
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Seed SystemSeedSpec `json:"seed"`
+	// URL of system's main database
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	DatabaseURL SecretReference `json:"databaseURL"`
 	// ???
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	EventsSharedSecret SecretReference `json:"eventsSharedSecret"`
@@ -255,7 +261,7 @@ type SystemConfig struct {
 	Recaptcha SystemRecaptchaSpec `json:"recaptcha"`
 	// ???
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	SecretKeyBase SecretReference `json:"secretKeyBase"`
+	AppSecretKeyBase SecretReference `json:"appSecretKeyBase"`
 	// ???
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	AccessCode SecretReference `json:"accessCode"`
@@ -274,12 +280,15 @@ type SystemConfig struct {
 	// Options for configuring RH Customer Portal integration
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	RedHatCustomerPortal RedHatCustomerPortalSpec `json:"redhatCustomerPortal"`
+	// Options for configuring Bugsnag integration
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	Bugsnag BugsnagSpec `json:"bugsnag"`
 	// Database secret
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	DatabaseSecret SecretReference `json:"databaseSecret"`
 	// Memcached servers
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	MemcachedServers SecretReference `json:"memcachedServers"`
+	MemcachedServers string `json:"memcachedServers"`
 	// Redis configuration options
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Redis RedisSpec `json:"redis"`
@@ -313,17 +322,24 @@ func (sc *SystemConfig) Default() {
 	sc.ThreescaleSuperdomain = stringOrDefault(sc.ThreescaleSuperdomain, pointer.StringPtr(systemDefaultThreescaleSuperdomain))
 }
 
+// ConfigFilesSpec defines a vault location to
+// get system config files from
+type ConfigFilesSpec struct {
+	VaultPath string   `json:"vaultPath"`
+	Files     []string `json:"files"`
+}
+
 // SystemSeedSpec whatever this is
 type SystemSeedSpec struct {
 	MasterAccessToken SecretReference `json:"masterAccessToken"`
-	MasterDomain      SecretReference `json:"masterDomain"`
+	MasterDomain      string          `json:"masterDomain"`
 	MasterUser        SecretReference `json:"masterUser"`
 	MasterPassword    SecretReference `json:"masterPassword"`
 	AdminAccessToken  SecretReference `json:"adminAccessToken"`
 	AdminUser         SecretReference `json:"adminUser"`
 	AdminPassword     SecretReference `json:"adminPassword"`
-	AdminEmail        SecretReference `json:"adminEmail"`
-	TenantName        SecretReference `json:"tenantName"`
+	AdminEmail        string          `json:"adminEmail"`
+	TenantName        string          `json:"tenantName"`
 }
 
 // SystemRecaptchaSpec holds recaptcha configurations
@@ -334,9 +350,9 @@ type SystemRecaptchaSpec struct {
 
 // SegmentSpec has configuration for Segment integration
 type SegmentSpec struct {
-	DeletionToken      SecretReference `json:"deletionToken"`
-	DeleteionWorkspace SecretReference `json:"deletionWorkspace"`
-	WriteKey           SecretReference `json:"writeKey"`
+	DeletionWorkspace string          `json:"deletionWorkspace"`
+	DeletionToken     SecretReference `json:"deletionToken"`
+	WriteKey          SecretReference `json:"writeKey"`
 }
 
 // NewRelicSpec has configuration for NewRelic integration
@@ -370,35 +386,34 @@ type BugsnagSpec struct {
 
 // RedisSpec holds redis configuration
 type RedisSpec struct {
-	URL           SecretReference `json:"url"`
-	MessageBusURL SecretReference `json:"messageBusURL"`
+	URL           string `json:"url"`
+	MessageBusURL string `json:"messageBusURL"`
 }
 
 // SMTPSpec has options to configure system's SMTP
 type SMTPSpec struct {
-	Address           SecretReference `json:"address"`
-	UserName          SecretReference `json:"userName"`
+	Address           string          `json:"address"`
+	User              SecretReference `json:"user"`
 	Password          SecretReference `json:"password"`
-	Port              SecretReference `json:"port"`
-	Authentication    SecretReference `json:"authentication"`
-	OpenSSLVerifyMode SecretReference `json:"opensslVerifyMode"`
-	STARTTLSAuto      SecretReference `json:"starttlsAuto"`
+	Port              int32           `json:"port"`
+	Authentication    string          `json:"authentication"`
+	OpenSSLVerifyMode string          `json:"opensslVerifyMode"`
+	STARTTLSAuto      bool            `json:"starttlsAuto"`
 }
 
 // SystemBackendSpec has configuration options for backend
 type SystemBackendSpec struct {
-	ExternalEndpoint    SecretReference `json:"externalEndpoint"`
-	InternalEndpoint    SecretReference `json:"internalEndpoint"`
+	ExternalEndpoint    string          `json:"externalEndpoint"`
+	InternalEndpoint    string          `json:"internalEndpoint"`
 	InternalAPIUser     SecretReference `json:"internalAPIUser"`
 	InternalAPIPassword SecretReference `json:"internalAPIPassword"`
-	BackendStorageURL   SecretReference `json:"backendStorageURL"`
-	BackendQueuesURL    SecretReference `json:"backendQueuesURL"`
+	RedisURL            string          `json:"redisURL"`
 }
 
 // AssetsSpec has configuration to access assets in AWS s3
 type AssetsSpec struct {
-	Bucket    SecretReference `json:"bucket"`
-	Region    SecretReference `json:"region"`
+	Bucket    string          `json:"bucket"`
+	Region    string          `json:"region"`
 	AccessKey SecretReference `json:"accessKey"`
 	SecretKey SecretReference `json:"secretKey"`
 }
@@ -612,7 +627,7 @@ type ThinkingSpec struct {
 }
 
 // Default implements defaulting for ThinkingSpec
-func (tc ThinkingSpec) Default() {
+func (tc *ThinkingSpec) Default() {
 	tc.Port = intOrDefault(tc.Port, pointer.Int32Ptr(systemDefaultSphinxPort))
 	tc.BindAddress = stringOrDefault(tc.BindAddress, pointer.StringPtr(systemDefaultSphinxBindAddress))
 	tc.ConfigFile = stringOrDefault(tc.ConfigFile, pointer.StringPtr(systemDefaultSphinxConfigFile))

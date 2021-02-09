@@ -18,20 +18,25 @@ package controllers
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/go-logr/logr"
-	"k8s.io/apimachinery/pkg/runtime"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	"github.com/3scale/saas-operator/pkg/basereconciler"
+	"github.com/3scale/saas-operator/pkg/generators/system"
 )
 
 // SystemReconciler reconciles a System object
 type SystemReconciler struct {
-	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	basereconciler.Reconciler
+	Log logr.Logger
 }
 
 // +kubebuilder:rbac:groups=saas.3scale.net,resources=systems,verbs=get;list;watch;create;update;patch;delete
@@ -48,16 +53,83 @@ type SystemReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/reconcile
 func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = r.Log.WithValues("system", req.NamespacedName)
+	log := r.Log.WithValues("name", req.Name, "namespace", req.Namespace)
 
-	// your logic here
+	instance := &saasv1alpha1.System{}
+	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
+	result, err := r.GetInstance(ctx, key, instance, saasv1alpha1.Finalizer, log)
+	if result != nil || err != nil {
+		return *result, err
+	}
 
-	return ctrl.Result{}, nil
+	// Apply defaults for reconcile but do not store them in the API
+	instance.Default()
+	json, _ := json.Marshal(instance.Spec)
+	log.V(1).Info("Apply defaults before resolving templates", "JSON", string(json))
+
+	gen := system.NewGenerator(
+		instance.GetName(),
+		instance.GetNamespace(),
+		instance.Spec,
+	)
+
+	err = r.ReconcileOwnedResources(ctx, instance, basereconciler.ControlledResources{
+		Deployments: []basereconciler.Deployment{
+			{
+				Template:        gen.App.Deployment(),
+				RolloutTriggers: nil,
+				HasHPA:          !instance.Spec.App.HPA.IsDeactivated(),
+			},
+		},
+		SecretDefinitions: []basereconciler.SecretDefinition{
+			{Template: gen.ConfigFilesSecretDefinition(), Enabled: true},
+			{Template: gen.SeedSecretDefinition(), Enabled: true},
+			{Template: gen.DatabaseSecretDefinition(), Enabled: true},
+			{Template: gen.RecaptchaSecretDefinition(), Enabled: true},
+			{Template: gen.EventsHookSecretDefinition(), Enabled: true},
+			{Template: gen.SMTPSecretDefinition(), Enabled: true},
+			{Template: gen.MasterApicastSecretDefinition(), Enabled: true},
+			{Template: gen.ZyncSecretDefinition(), Enabled: true},
+			{Template: gen.BackendSecretDefinition(), Enabled: true},
+			{Template: gen.MultitenantAssetsSecretDefinition(), Enabled: true},
+			{Template: gen.AppSecretDefinition(), Enabled: true},
+		},
+		// Services: []basereconciler.Service{{
+		// 	Template: gen.Service(),
+		// 	Enabled:  true,
+		// }},
+		// PodDisruptionBudgets: []basereconciler.PodDisruptionBudget{{
+		// 	Template: gen.PDB(),
+		// 	Enabled:  !instance.Spec.PDB.IsDeactivated(),
+		// }},
+		// HorizontalPodAutoscalers: []basereconciler.HorizontalPodAutoscaler{{
+		// 	Template: gen.HPA(),
+		// 	Enabled:  !instance.Spec.HPA.IsDeactivated(),
+		// }},
+		// PodMonitors: []basereconciler.PodMonitor{{
+		// 	Template: gen.PodMonitor(),
+		// 	Enabled:  true,
+		// }},
+		// GrafanaDashboards: []basereconciler.GrafanaDashboard{{
+		// 	Template: gen.GrafanaDashboard(),
+		// 	Enabled:  !instance.Spec.GrafanaDashboard.IsDeactivated(),
+		// }},
+	})
+
+	if err != nil {
+		log.Error(err, "unable to update owned resources")
+		return r.ManageError(ctx, instance, err)
+	}
+
+	return r.ManageSuccess(ctx, instance)
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *SystemReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&saasv1alpha1.System{}).
+		Watches(&source.Channel{Source: r.GetStatusChangeChannel()}, &handler.EnqueueRequestForObject{}).
+		Watches(&source.Kind{Type: &corev1.Secret{TypeMeta: metav1.TypeMeta{Kind: "Secret"}}},
+			r.SecretEventHandler(&saasv1alpha1.SystemList{}, r.Log)).
 		Complete(r)
 }

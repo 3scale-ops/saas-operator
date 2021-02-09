@@ -28,6 +28,19 @@ func HTTPProbe(path string, port intstr.IntOrString, scheme corev1.URIScheme, cf
 	}
 }
 
+func HTTPProbeWithHeaders(path string, port intstr.IntOrString, scheme corev1.URIScheme, cfg saasv1alpha1.ProbeSpec, headers map[string]string) *corev1.Probe {
+	if probe := HTTPProbe(path, port, scheme, cfg); probe != nil {
+		if probe.HTTPGet.HTTPHeaders == nil {
+			probe.HTTPGet.HTTPHeaders = []corev1.HTTPHeader{}
+		}
+		for header, value := range headers {
+			probe.HTTPGet.HTTPHeaders = append(probe.HTTPGet.HTTPHeaders, corev1.HTTPHeader{Name: header, Value: value})
+		}
+		return probe
+	}
+	return nil
+}
+
 // TCPProbe returns a TCP corev1.Probe struct
 func TCPProbe(port intstr.IntOrString, cfg saasv1alpha1.ProbeSpec) *corev1.Probe {
 	if cfg.IsDeactivated() {

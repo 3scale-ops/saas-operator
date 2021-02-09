@@ -157,9 +157,8 @@ func main() {
 	}
 
 	if err = (&controllers.SystemReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("System"),
-		Scheme: mgr.GetScheme(),
+		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("System"), false),
+		Log:        ctrl.Log.WithName("controllers").WithName("System"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "System")
 		os.Exit(1)

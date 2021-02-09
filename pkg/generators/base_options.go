@@ -1,6 +1,9 @@
 package generators
 
-import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+)
 
 const (
 	// PodSelectorKey is the label key used as Pod selector
@@ -38,6 +41,11 @@ func (bo *BaseOptions) GetLabels() map[string]string {
 		m[k] = v
 	}
 	return m
+}
+
+// Key returns a types.NamespacedName
+func (bo *BaseOptions) Key() types.NamespacedName {
+	return types.NamespacedName{Name: bo.GetComponent(), Namespace: bo.GetNamespace()}
 }
 
 // LabelsWithSelector returns Labels() with the addition of the Pod
