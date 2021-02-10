@@ -13,10 +13,10 @@ type ClearTextValue struct {
 	Value string
 }
 
-func (dv *ClearTextValue) ToEnvVar(key string) corev1.EnvVar {
+func (ctv *ClearTextValue) ToEnvVar(key string) corev1.EnvVar {
 	return corev1.EnvVar{
 		Name:  key,
-		Value: dv.Value,
+		Value: ctv.Value,
 	}
 }
 
@@ -24,10 +24,17 @@ type SecretValue struct {
 	Value saasv1alpha1.SecretReference
 }
 
-func (dv *SecretValue) ToEnvVar(key string) corev1.EnvVar {
+func (sv *SecretValue) ToEnvVar(key string) corev1.EnvVar {
 	s := strings.Split(key, ":")
 	envvar := s[0]
 	secret := s[1]
+
+	if sv.Value.Override != nil {
+		return corev1.EnvVar{
+			Name:  envvar,
+			Value: *sv.Value.Override,
+		}
+	}
 
 	return corev1.EnvVar{
 		Name: envvar,

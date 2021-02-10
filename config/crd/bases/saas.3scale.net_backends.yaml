@@ -57,8 +57,10 @@ spec:
                         - key
                         - path
                         type: object
-                    required:
-                    - fromVault
+                      override:
+                        description: Override allows to directly specify a string
+                          value.
+                        type: string
                     type: object
                   errorMonitoringService:
                     description: A reference to the secret holding the backend-error-monitoring
@@ -78,8 +80,10 @@ spec:
                         - key
                         - path
                         type: object
-                    required:
-                    - fromVault
+                      override:
+                        description: Override allows to directly specify a string
+                          value.
+                        type: string
                     type: object
                   internalAPIPassword:
                     description: A reference to the secret holding the backend-internal-api
@@ -99,8 +103,10 @@ spec:
                         - key
                         - path
                         type: object
-                    required:
-                    - fromVault
+                      override:
+                        description: Override allows to directly specify a string
+                          value.
+                        type: string
                     type: object
                   internalAPIUser:
                     description: A reference to the secret holding the backend-internal-api
@@ -120,8 +126,10 @@ spec:
                         - key
                         - path
                         type: object
-                    required:
-                    - fromVault
+                      override:
+                        description: Override allows to directly specify a string
+                          value.
+                        type: string
                     type: object
                   masterServiceID:
                     description: Master service account ID in Porta
@@ -154,8 +162,10 @@ spec:
                         - key
                         - path
                         type: object
-                    required:
-                    - fromVault
+                      override:
+                        description: Override allows to directly specify a string
+                          value.
+                        type: string
                     type: object
                   systemEventsHookURL:
                     description: A reference to the secret holding the backend-system-events-hook
@@ -175,8 +185,10 @@ spec:
                         - key
                         - path
                         type: object
-                    required:
-                    - fromVault
+                      override:
+                        description: Override allows to directly specify a string
+                          value.
+                        type: string
                     type: object
                 required:
                 - internalAPIPassword

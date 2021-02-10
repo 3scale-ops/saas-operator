@@ -7,6 +7,7 @@ import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/pointer"
 )
 
 func TestGenerateSecretDefinitionFn(t *testing.T) {
@@ -35,11 +36,11 @@ func TestGenerateSecretDefinitionFn(t *testing.T) {
 				}{
 					Option1: &ClearTextValue{Value: "value1"},
 					Option2: &SecretValue{Value: saasv1alpha1.SecretReference{
-						FromVault: saasv1alpha1.VaultSecretReference{Key: "key2", Path: "path2"}}},
+						FromVault: &saasv1alpha1.VaultSecretReference{Key: "key2", Path: "path2"}}},
 					Option3: &SecretValue{Value: saasv1alpha1.SecretReference{
-						FromVault: saasv1alpha1.VaultSecretReference{Key: "key3", Path: "path3"}}},
+						FromVault: &saasv1alpha1.VaultSecretReference{Key: "key3", Path: "path3"}}},
 					Option4: &SecretValue{Value: saasv1alpha1.SecretReference{
-						FromVault: saasv1alpha1.VaultSecretReference{Key: "key3", Path: "path3"}}},
+						FromVault: &saasv1alpha1.VaultSecretReference{Key: "key3", Path: "path3"}}},
 				},
 			},
 			want: &secretsmanagerv1alpha1.SecretDefinition{
@@ -75,11 +76,11 @@ func TestGenerateSecretDefinitionFn(t *testing.T) {
 				}{
 					Option1: &ClearTextValue{Value: "value1"},
 					Option2: &SecretValue{Value: saasv1alpha1.SecretReference{
-						FromVault: saasv1alpha1.VaultSecretReference{Key: "key2", Path: "path2"}}},
+						FromVault: &saasv1alpha1.VaultSecretReference{Key: "key2", Path: "path2"}}},
 					Option3: &SecretValue{Value: saasv1alpha1.SecretReference{
-						FromVault: saasv1alpha1.VaultSecretReference{Key: "key3", Path: "path3"}}},
+						FromVault: &saasv1alpha1.VaultSecretReference{Key: "key3", Path: "path3"}}},
 					Option4: &SecretValue{Value: saasv1alpha1.SecretReference{
-						FromVault: saasv1alpha1.VaultSecretReference{Key: "key4", Path: "path4"}}},
+						FromVault: &saasv1alpha1.VaultSecretReference{Key: "key4", Path: "path4"}}},
 				},
 			},
 			want: &secretsmanagerv1alpha1.SecretDefinition{
@@ -135,16 +136,41 @@ func Test_keysMap(t *testing.T) {
 				}{
 					Option1: &ClearTextValue{Value: "value1"},
 					Option2: &SecretValue{Value: saasv1alpha1.SecretReference{
-						FromVault: saasv1alpha1.VaultSecretReference{Key: "key2", Path: "path2"}}},
+						FromVault: &saasv1alpha1.VaultSecretReference{Key: "key2", Path: "path2"}}},
 					Option3: &SecretValue{Value: saasv1alpha1.SecretReference{
-						FromVault: saasv1alpha1.VaultSecretReference{Key: "key3", Path: "path3"}}},
+						FromVault: &saasv1alpha1.VaultSecretReference{Key: "key3", Path: "path3"}}},
 					Option4: &SecretValue{Value: saasv1alpha1.SecretReference{
-						FromVault: saasv1alpha1.VaultSecretReference{Key: "key4", Path: "path4"}}},
+						FromVault: &saasv1alpha1.VaultSecretReference{Key: "key4", Path: "path4"}}},
 				},
 			},
 			want: map[string]secretsmanagerv1alpha1.DataSource{
 				"OPTION2": {Key: "key2", Path: "path2"},
 				"OPTION3": {Key: "key3", Path: "path3"},
+			},
+			wantPanic: false,
+		},
+		{
+			name: "Generates a DataSources map, with secret overrides",
+			args: args{
+				name: "my-secret",
+				opts: struct {
+					Option1 EnvVarValue `env:"OPTION1"`
+					Option2 EnvVarValue `env:"OPTION2" secret:"my-secret"`
+					Option3 EnvVarValue `env:"OPTION3" secret:"my-secret"`
+					Option4 EnvVarValue `env:"OPTION4" secret:"other-secret"`
+				}{
+					Option1: &ClearTextValue{Value: "value1"},
+					Option2: &SecretValue{Value: saasv1alpha1.SecretReference{
+						FromVault: &saasv1alpha1.VaultSecretReference{Key: "key2", Path: "path2"}}},
+					Option3: &SecretValue{Value: saasv1alpha1.SecretReference{
+						Override: pointer.StringPtr("override")}},
+					Option4: &SecretValue{Value: saasv1alpha1.SecretReference{
+						FromVault: &saasv1alpha1.VaultSecretReference{Key: "key4", Path: "path4"}}},
+				},
+			},
+			want: map[string]secretsmanagerv1alpha1.DataSource{
+				"OPTION2": {Key: "key2", Path: "path2"},
+				// "OPTION3": {Key: "key3", Path: "path3"},
 			},
 			wantPanic: false,
 		},

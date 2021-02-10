@@ -63,25 +63,25 @@ var _ = Describe("Backend controller", func() {
 						RedisStorageDSN: "storageDSN",
 						RedisQueuesDSN:  "queuesDSN",
 						SystemEventsHookURL: saasv1alpha1.SecretReference{
-							FromVault: saasv1alpha1.VaultSecretReference{
+							FromVault: &saasv1alpha1.VaultSecretReference{
 								Path: "some-path",
 								Key:  "some-key",
 							},
 						},
 						SystemEventsHookPassword: saasv1alpha1.SecretReference{
-							FromVault: saasv1alpha1.VaultSecretReference{
+							FromVault: &saasv1alpha1.VaultSecretReference{
 								Path: "some-path",
 								Key:  "some-key",
 							},
 						},
 						InternalAPIUser: saasv1alpha1.SecretReference{
-							FromVault: saasv1alpha1.VaultSecretReference{
+							FromVault: &saasv1alpha1.VaultSecretReference{
 								Path: "some-path",
 								Key:  "some-key",
 							},
 						},
 						InternalAPIPassword: saasv1alpha1.SecretReference{
-							FromVault: saasv1alpha1.VaultSecretReference{
+							FromVault: &saasv1alpha1.VaultSecretReference{
 								Path: "some-path",
 								Key:  "some-key",
 							},

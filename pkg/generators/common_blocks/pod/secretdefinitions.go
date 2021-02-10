@@ -70,6 +70,9 @@ func keysMap(name string, opts interface{}) map[string]secretsmanagerv1alpha1.Da
 		}
 
 		secretValue := value.Elem().Elem().Interface().(SecretValue)
+		if secretValue.Value.Override != nil {
+			continue
+		}
 		m[keyName] = secretsmanagerv1alpha1.DataSource{
 			Path: secretValue.Value.FromVault.Path,
 			Key:  secretValue.Value.FromVault.Key,

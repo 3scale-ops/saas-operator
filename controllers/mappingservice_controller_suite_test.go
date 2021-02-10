@@ -55,7 +55,7 @@ var _ = Describe("MappingService controller", func() {
 					Config: saasv1alpha1.MappingServiceConfig{
 						APIHost: "example.com",
 						SystemAdminToken: saasv1alpha1.SecretReference{
-							FromVault: saasv1alpha1.VaultSecretReference{
+							FromVault: &saasv1alpha1.VaultSecretReference{
 								Path: "some-path",
 								Key:  "some-key",
 							},

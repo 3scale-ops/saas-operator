@@ -306,8 +306,10 @@ spec:
                         - key
                         - path
                         type: object
-                    required:
-                    - fromVault
+                      override:
+                        description: Override allows to directly specify a string
+                          value.
+                        type: string
                     type: object
                   ampRelease:
                     description: AMP release number
@@ -329,8 +331,10 @@ spec:
                         - key
                         - path
                         type: object
-                    required:
-                    - fromVault
+                      override:
+                        description: Override allows to directly specify a string
+                          value.
+                        type: string
                     type: object
                   appSecretKeyBase:
                     description: ???
@@ -349,8 +353,10 @@ spec:
                         - key
                         - path
                         type: object
-                    required:
-                    - fromVault
+                      override:
+                        description: Override allows to directly specify a string
+                          value.
+                        type: string
                     type: object
                   assets:
                     description: Assets has configuration to access assets in AWS
@@ -374,8 +380,10 @@ spec:
                             - key
                             - path
                             type: object
-                        required:
-                        - fromVault
+                          override:
+                            description: Override allows to directly specify a string
+                              value.
+                            type: string
                         type: object
                       bucket:
                         type: string
@@ -399,8 +407,10 @@ spec:
                             - key
                             - path
                             type: object
-                        required:
-                        - fromVault
+                          override:
+                            description: Override allows to directly specify a string
+                              value.
+                            type: string
                         type: object
                     required:
                     - accessKey
@@ -432,8 +442,10 @@ spec:
                             - key
                             - path
                             type: object
-                        required:
-                        - fromVault
+                          override:
+                            description: Override allows to directly specify a string
+                              value.
+                            type: string
                         type: object
                       internalAPIUser:
                         description: SecretReference is a reference to a secret stored
@@ -453,8 +465,10 @@ spec:
                             - key
                             - path
                             type: object
-                        required:
-                        - fromVault
+                          override:
+                            description: Override allows to directly specify a string
+                              value.
+                            type: string
                         type: object
                       internalEndpoint:
                         type: string
@@ -488,8 +502,10 @@ spec:
                             - key
                             - path
                             type: object
-                        required:
-                        - fromVault
+                          override:
+                            description: Override allows to directly specify a string
+                              value.
+                            type: string
                         type: object
                     required:
                     - apiKey
@@ -524,8 +540,10 @@ spec:
                         - key
                         - path
                         type: object
-                    required:
-                    - fromVault
+                      override:
+                        description: Override allows to directly specify a string
+                          value.
+                        type: string
                     type: object
                   databaseURL:
                     description: URL of system's main database
@@ -544,8 +562,10 @@ spec:
                         - key
                         - path
                         type: object
-                    required:
-                    - fromVault
+                      override:
+                        description: Override allows to directly specify a string
+                          value.
+                        type: string
                     type: object
                   eventsSharedSecret:
                     description: ???
@@ -564,8 +584,10 @@ spec:
                         - key
                         - path
                         type: object
-                    required:
-                    - fromVault
+                      override:
+                        description: Override allows to directly specify a string
+                          value.
+                        type: string
                     type: object
                   forceSSL:
                     description: Enable (true) or disable (false) enforcing SSL
@@ -591,8 +613,10 @@ spec:
                             - key
                             - path
                             type: object
-                        required:
-                        - fromVault
+                          override:
+                            description: Override allows to directly specify a string
+                              value.
+                            type: string
                         type: object
                       clientSecret:
                         description: SecretReference is a reference to a secret stored
@@ -612,8 +636,10 @@ spec:
                             - key
                             - path
                             type: object
-                        required:
-                        - fromVault
+                          override:
+                            description: Override allows to directly specify a string
+                              value.
+                            type: string
                         type: object
                     required:
                     - clientID
@@ -643,8 +669,10 @@ spec:
                             - key
                             - path
                             type: object
-                        required:
-                        - fromVault
+                          override:
+                            description: Override allows to directly specify a string
+                              value.
+                            type: string
                         type: object
                       user:
                         description: SecretReference is a reference to a secret stored
@@ -664,8 +692,10 @@ spec:
                             - key
                             - path
                             type: object
-                        required:
-                        - fromVault
+                          override:
+                            description: Override allows to directly specify a string
+                              value.
+                            type: string
                         type: object
                     required:
                     - password
@@ -692,8 +722,10 @@ spec:
                             - key
                             - path
                             type: object
-                        required:
-                        - fromVault
+                          override:
+                            description: Override allows to directly specify a string
+                              value.
+                            type: string
                         type: object
                     required:
                     - licenseKey
@@ -741,8 +773,10 @@ spec:
                             - key
                             - path
                             type: object
-                        required:
-                        - fromVault
+                          override:
+                            description: Override allows to directly specify a string
+                              value.
+                            type: string
                         type: object
                       publicKey:
                         description: SecretReference is a reference to a secret stored
@@ -762,8 +796,10 @@ spec:
                             - key
                             - path
                             type: object
-                        required:
-                        - fromVault
+                          override:
+                            description: Override allows to directly specify a string
+                              value.
+                            type: string
                         type: object
                     required:
                     - privateKey
@@ -790,8 +826,10 @@ spec:
                             - key
                             - path
                             type: object
-                        required:
-                        - fromVault
+                          override:
+                            description: Override allows to directly specify a string
+                              value.
+                            type: string
                         type: object
                       clientSecret:
                         description: SecretReference is a reference to a secret stored
@@ -811,8 +849,10 @@ spec:
                             - key
                             - path
                             type: object
-                        required:
-                        - fromVault
+                          override:
+                            description: Override allows to directly specify a string
+                              value.
+                            type: string
                         type: object
                     required:
                     - clientID
@@ -853,8 +893,10 @@ spec:
                             - key
                             - path
                             type: object
-                        required:
-                        - fromVault
+                          override:
+                            description: Override allows to directly specify a string
+                              value.
+                            type: string
                         type: object
                       adminEmail:
                         type: string
@@ -876,8 +918,10 @@ spec:
                             - key
                             - path
                             type: object
-                        required:
-                        - fromVault
+                          override:
+                            description: Override allows to directly specify a string
+                              value.
+                            type: string
                         type: object
                       adminUser:
                         description: SecretReference is a reference to a secret stored
@@ -897,8 +941,10 @@ spec:
                             - key
                             - path
                             type: object
-                        required:
-                        - fromVault
+                          override:
+                            description: Override allows to directly specify a string
+                              value.
+                            type: string
                         type: object
                       masterAccessToken:
                         description: SecretReference is a reference to a secret stored
@@ -918,8 +964,10 @@ spec:
                             - key
                             - path
                             type: object
-                        required:
-                        - fromVault
+                          override:
+                            description: Override allows to directly specify a string
+                              value.
+                            type: string
                         type: object
                       masterDomain:
                         type: string
@@ -941,8 +989,10 @@ spec:
                             - key
                             - path
                             type: object
-                        required:
-                        - fromVault
+                          override:
+                            description: Override allows to directly specify a string
+                              value.
+                            type: string
                         type: object
                       masterUser:
                         description: SecretReference is a reference to a secret stored
@@ -962,8 +1012,10 @@ spec:
                             - key
                             - path
                             type: object
-                        required:
-                        - fromVault
+                          override:
+                            description: Override allows to directly specify a string
+                              value.
+                            type: string
                         type: object
                       tenantName:
                         type: string
@@ -999,8 +1051,10 @@ spec:
                             - key
                             - path
                             type: object
-                        required:
-                        - fromVault
+                          override:
+                            description: Override allows to directly specify a string
+                              value.
+                            type: string
                         type: object
                       deletionWorkspace:
                         type: string
@@ -1022,8 +1076,10 @@ spec:
                             - key
                             - path
                             type: object
-                        required:
-                        - fromVault
+                          override:
+                            description: Override allows to directly specify a string
+                              value.
+                            type: string
                         type: object
                     required:
                     - deletionToken
@@ -1057,8 +1113,10 @@ spec:
                             - key
                             - path
                             type: object
-                        required:
-                        - fromVault
+                          override:
+                            description: Override allows to directly specify a string
+                              value.
+                            type: string
                         type: object
                       port:
                         format: int32
@@ -1083,8 +1141,10 @@ spec:
                             - key
                             - path
                             type: object
-                        required:
-                        - fromVault
+                          override:
+                            description: Override allows to directly specify a string
+                              value.
+                            type: string
                         type: object
                     required:
                     - address
@@ -1121,8 +1181,10 @@ spec:
                         - key
                         - path
                         type: object
-                    required:
-                    - fromVault
+                      override:
+                        description: Override allows to directly specify a string
+                          value.
+                        type: string
                     type: object
                 required:
                 - accessCode
