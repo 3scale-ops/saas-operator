@@ -39,19 +39,18 @@ type SystemReconciler struct {
 	Log logr.Logger
 }
 
-// +kubebuilder:rbac:groups=saas.3scale.net,resources=systems,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=saas.3scale.net,resources=systems/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=saas.3scale.net,resources=systems/finalizers,verbs=update
+// +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=systems,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=systems/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=systems/finalizers,verbs=update
+// +kubebuilder:rbac:groups="core",namespace=placeholder,resources=services,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="apps",namespace=placeholder,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="monitoring.coreos.com",namespace=placeholder,resources=podmonitors,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="autoscaling",namespace=placeholder,resources=horizontalpodautoscalers,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="policy",namespace=placeholder,resources=poddisruptionbudgets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="integreatly.org",namespace=placeholder,resources=grafanadashboards,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
-// the System object against the actual cluster state, and then
-// perform operations to make the cluster state reflect the state specified by
-// the user.
-//
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/reconcile
 func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("name", req.Name, "namespace", req.Namespace)
 

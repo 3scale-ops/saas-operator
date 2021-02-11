@@ -336,28 +336,6 @@ spec:
                           value.
                         type: string
                     type: object
-                  appSecretKeyBase:
-                    description: ???
-                    properties:
-                      fromVault:
-                        description: VaultSecretReference is a reference to a secret
-                          stored in a Hashicorp Vault
-                        properties:
-                          key:
-                            description: The Vault key of the secret
-                            type: string
-                          path:
-                            description: The Vault path where the secret is located
-                            type: string
-                        required:
-                        - key
-                        - path
-                        type: object
-                      override:
-                        description: Override allows to directly specify a string
-                          value.
-                        type: string
-                    type: object
                   assets:
                     description: Assets has configuration to access assets in AWS
                       s3
@@ -472,14 +450,14 @@ spec:
                         type: object
                       internalEndpoint:
                         type: string
-                      redisURL:
+                      redisDSN:
                         type: string
                     required:
                     - externalEndpoint
                     - internalAPIPassword
                     - internalAPIUser
                     - internalEndpoint
-                    - redisURL
+                    - redisDSN
                     type: object
                   bugsnag:
                     description: Options for configuring Bugsnag integration
@@ -523,8 +501,8 @@ spec:
                     - files
                     - vaultPath
                     type: object
-                  databaseSecret:
-                    description: Database secret
+                  databaseDSN:
+                    description: DSN of system's main database
                     properties:
                       fromVault:
                         description: VaultSecretReference is a reference to a secret
@@ -545,8 +523,8 @@ spec:
                           value.
                         type: string
                     type: object
-                  databaseURL:
-                    description: URL of system's main database
+                  databaseSecret:
+                    description: Database secret
                     properties:
                       fromVault:
                         description: VaultSecretReference is a reference to a secret
@@ -701,35 +679,6 @@ spec:
                     - password
                     - user
                     type: object
-                  newRelic:
-                    description: Options for NewRelic integration
-                    properties:
-                      licenseKey:
-                        description: SecretReference is a reference to a secret stored
-                          in some secrets engine
-                        properties:
-                          fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
-                            properties:
-                              key:
-                                description: The Vault key of the secret
-                                type: string
-                              path:
-                                description: The Vault path where the secret is located
-                                type: string
-                            required:
-                            - key
-                            - path
-                            type: object
-                          override:
-                            description: Override allows to directly specify a string
-                              value.
-                            type: string
-                        type: object
-                    required:
-                    - licenseKey
-                    type: object
                   rails:
                     description: Rails configuration options for system components
                     properties:
@@ -747,10 +696,6 @@ spec:
                         - fatal
                         - unknown
                         type: string
-                      logToStdout:
-                        description: Enable (true) or disable (false) writting logs
-                          to the stdout
-                        type: boolean
                     type: object
                   recaptcha:
                     description: Holds recaptcha configuration options
@@ -861,17 +806,39 @@ spec:
                   redis:
                     description: Redis configuration options
                     properties:
-                      messageBusURL:
+                      dsn:
                         type: string
-                      url:
+                      messageBusDSN:
                         type: string
                     required:
-                    - messageBusURL
-                    - url
+                    - dsn
+                    - messageBusDSN
                     type: object
                   sandboxProxyOpensslVerifyMode:
                     description: OpenSSL verification mode for sandbox proxy
                     type: string
+                  secretKeyBase:
+                    description: ???
+                    properties:
+                      fromVault:
+                        description: VaultSecretReference is a reference to a secret
+                          stored in a Hashicorp Vault
+                        properties:
+                          key:
+                            description: The Vault key of the secret
+                            type: string
+                          path:
+                            description: The Vault path where the secret is located
+                            type: string
+                        required:
+                        - key
+                        - path
+                        type: object
+                      override:
+                        description: Override allows to directly specify a string
+                          value.
+                        type: string
+                    type: object
                   seed:
                     description: System seed
                     properties:
@@ -1091,7 +1058,7 @@ spec:
                     properties:
                       address:
                         type: string
-                      authentication:
+                      authProtocol:
                         type: string
                       opensslVerifyMode:
                         type: string
@@ -1148,7 +1115,7 @@ spec:
                         type: object
                     required:
                     - address
-                    - authentication
+                    - authProtocol
                     - opensslVerifyMode
                     - password
                     - port
@@ -1189,20 +1156,18 @@ spec:
                 required:
                 - accessCode
                 - apicastAccessToken
-                - appSecretKeyBase
                 - assets
                 - backend
-                - bugsnag
+                - databaseDSN
                 - databaseSecret
-                - databaseURL
                 - eventsSharedSecret
                 - github
                 - memcachedServers
                 - metrics
-                - newRelic
                 - recaptcha
                 - redhatCustomerPortal
                 - redis
+                - secretKeyBase
                 - seed
                 - segment
                 - smtp
