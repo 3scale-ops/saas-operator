@@ -60,8 +60,8 @@ func (r *MappingServiceReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	instance := &saasv1alpha1.MappingService{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
 	result, err := r.GetInstance(ctx, key, instance, saasv1alpha1.Finalizer, log)
-	if result.Requeue || err != nil {
-		return result, err
+	if result != nil || err != nil {
+		return *result, err
 	}
 
 	// Apply defaults for reconcile but do not store them in the API
