@@ -50,8 +50,8 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	instance := &v1alpha1.Test{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
 	result, err := r.GetInstance(ctx, key, instance, "finalizer.example.com", log)
-	if result.Requeue || err != nil {
-		return result, err
+	if result != nil || err != nil {
+		return *result, err
 	}
 
 	triggers, err := r.TriggersFromSecretDefs(ctx, secretDefinition(req.Namespace))

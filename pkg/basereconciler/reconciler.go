@@ -74,43 +74,46 @@ type LockedResource struct {
 // GetInstance tries to retrieve the custom resource instance and perform some standard
 // tasks like initizalization and cleanup when required.
 func (r *Reconciler) GetInstance(ctx context.Context, key types.NamespacedName,
-	instance client.Object, finalizer string, log logr.Logger) (ctrl.Result, error) {
+	instance client.Object, finalizer string, log logr.Logger) (*ctrl.Result, error) {
 	err := r.GetClient().Get(ctx, key, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Return and don't requeue
-			return ctrl.Result{}, nil
+			return &ctrl.Result{}, nil
 		}
-		return ctrl.Result{}, err
+		return &ctrl.Result{}, err
 	}
 
 	if util.IsBeingDeleted(instance) {
 		if !util.HasFinalizer(instance, finalizer) {
-			return ctrl.Result{}, nil
+			return &ctrl.Result{}, nil
 		}
 		err := r.ManageCleanUpLogic(instance, log)
 		if err != nil {
 			log.Error(err, "unable to delete instance")
-			return r.ManageError(ctx, instance, err)
+			result, err := r.ManageError(ctx, instance, err)
+			return &result, err
 		}
 		util.RemoveFinalizer(instance, finalizer)
 		err = r.GetClient().Update(ctx, instance)
 		if err != nil {
 			log.Error(err, "unable to update instance")
-			return r.ManageError(ctx, instance, err)
+			result, err := r.ManageError(ctx, instance, err)
+			return &result, err
 		}
-		return ctrl.Result{}, nil
+		return &ctrl.Result{}, nil
 	}
 
 	if ok := r.IsInitialized(instance, finalizer); !ok {
 		err := r.GetClient().Update(ctx, instance)
 		if err != nil {
 			log.Error(err, "unable to initialize instance")
-			return r.ManageError(ctx, instance, err)
+			result, err := r.ManageError(ctx, instance, err)
+			return &result, err
 		}
-		return ctrl.Result{}, nil
+		return &ctrl.Result{}, nil
 	}
-	return ctrl.Result{}, nil
+	return nil, nil
 }
 
 // IsInitialized can be used to check if instance is correctly initialized.
