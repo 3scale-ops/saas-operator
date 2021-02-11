@@ -37,6 +37,7 @@ spec:
         - smtp.yml
         - web_hooks.yml
         - zync.yml
+    # TODO: can be removed?
     seed:
       masterAccessToken:
         fromVault:
@@ -65,7 +66,7 @@ spec:
           key: ADMIN_PASSWORD
       adminEmail: admin@example.com
       tenantName: example
-    databaseURL:
+    databaseDSN:
       fromVault:
         path: secret/data/path/system-database
         key: URL
@@ -77,7 +78,7 @@ spec:
       fromVault:
         path: secret/data/path/system-app
         key: EVENTS_SHARED_SECRET
-    appSecretKeyBase:
+    secretKeyBase:
       fromVault:
         path: secret/data/path/system-app
         key: SECRET_KEY_BASE
@@ -94,6 +95,7 @@ spec:
       fromVault:
         path: secret/data/path/system-app
         key: ACCESS_CODE
+    # TODO: is this used?
     segment:
       deletionWorkspace: example
       deletionToken:
@@ -104,11 +106,6 @@ spec:
         fromVault:
           path: secret/data/path/system-app
           key: SEGMENT_WRITE_KEY
-    newRelic:
-      licenseKey:
-        fromVault:
-          path: secret/data/path/system-app
-          key: NEWRELIC_LICENSE_KEY
     github:
       clientID:
         fromVault:
@@ -118,6 +115,7 @@ spec:
         fromVault:
           path: secret/data/path/system-app
           key: GITHUB_CLIENT_SECRET
+    # TODO: can be removed?
     metrics:
       user:
         fromVault:
@@ -143,8 +141,8 @@ spec:
           key: BUGSNAG_API_KEY
     memcachedServers: ""
     redis:
-      url: redis://system-redis:6379/1
-      messageBusURL: redis://system-redis:6379/2
+      dsn: redis://system-redis:6379/1
+      messageBusDSN: redis://system-redis:6379/2
     smtp:
       address: localhost
       user:
@@ -156,7 +154,7 @@ spec:
           path: secret/data/path/system-smtp
           key: password
       port: 25
-      authentication: none
+      authProtocol: none
       opensslVerifyMode: none
       starttlsAuto: false
     apicastAccessToken:
@@ -169,8 +167,8 @@ spec:
         key: ZYNC_AUTHENTICATION_TOKEN
     backend:
       externalEndpoint: https://backend.example.com
-      internalEndpoint: http://backend-listener:3000
-      redisURL: redis://backend-redis:6379/0
+      internalEndpoint: http://backend-listener-internal
+      redisDSN: redis://backend-redis:6379/0
       internalAPIUser:
         fromVault:
           path: secret/data/path/backend-internal-api
@@ -180,6 +178,7 @@ spec:
           path: secret/data/path/backend-internal-api
           key: password
     assets:
+      # TODO: cdn url??
       bucket: my-bucket
       region: us-east-1
       accessKey:

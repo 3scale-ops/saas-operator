@@ -1667,17 +1667,20 @@ func (in *SystemConfig) DeepCopyInto(out *SystemConfig) {
 		(*in).DeepCopyInto(*out)
 	}
 	in.Seed.DeepCopyInto(&out.Seed)
-	in.DatabaseURL.DeepCopyInto(&out.DatabaseURL)
+	in.DatabaseDSN.DeepCopyInto(&out.DatabaseDSN)
 	in.EventsSharedSecret.DeepCopyInto(&out.EventsSharedSecret)
 	in.Recaptcha.DeepCopyInto(&out.Recaptcha)
-	in.AppSecretKeyBase.DeepCopyInto(&out.AppSecretKeyBase)
+	in.SecretKeyBase.DeepCopyInto(&out.SecretKeyBase)
 	in.AccessCode.DeepCopyInto(&out.AccessCode)
 	in.Segment.DeepCopyInto(&out.Segment)
-	in.NewRelic.DeepCopyInto(&out.NewRelic)
 	in.Github.DeepCopyInto(&out.Github)
 	in.Metrics.DeepCopyInto(&out.Metrics)
 	in.RedHatCustomerPortal.DeepCopyInto(&out.RedHatCustomerPortal)
-	in.Bugsnag.DeepCopyInto(&out.Bugsnag)
+	if in.Bugsnag != nil {
+		in, out := &in.Bugsnag, &out.Bugsnag
+		*out = new(BugsnagSpec)
+		(*in).DeepCopyInto(*out)
+	}
 	in.DatabaseSecret.DeepCopyInto(&out.DatabaseSecret)
 	out.Redis = in.Redis
 	in.SMTP.DeepCopyInto(&out.SMTP)
@@ -1740,11 +1743,6 @@ func (in *SystemRailsSpec) DeepCopyInto(out *SystemRailsSpec) {
 	if in.LogLevel != nil {
 		in, out := &in.LogLevel, &out.LogLevel
 		*out = new(string)
-		**out = **in
-	}
-	if in.LogToStdout != nil {
-		in, out := &in.LogToStdout, &out.LogToStdout
-		*out = new(bool)
 		**out = **in
 	}
 }

@@ -83,7 +83,6 @@ type Options struct {
 	SegmentDeletionToken             pod.EnvVarValue `env:"SEGMENT_DELETION_TOKEN" secret:"system-app"`
 	SegmentDeletionWorkspace         pod.EnvVarValue `env:"SEGMENT_DELETION_WORKSPACE"`
 	SegmentWriteKey                  pod.EnvVarValue `env:"SEGMENT_WRITE_KEY" secret:"system-app"`
-	NewRelicLicenseKey               pod.EnvVarValue `env:"NEWRELIC_LICENSE_KEY" secret:"system-app"`
 	GithubClientID                   pod.EnvVarValue `env:"GITHUB_CLIENT_ID" secret:"system-app"`
 	GithubClientSecret               pod.EnvVarValue `env:"GITHUB_CLIENT_SECRET" secret:"system-app"`
 	PrometheusUser                   pod.EnvVarValue `env:"PROMETHEUS_USER" secret:"system-app"`
@@ -106,7 +105,7 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 
 		RailsEnvironment: &pod.ClearTextValue{Value: *spec.Config.Rails.Environment},
 		RailsLogLevel:    &pod.ClearTextValue{Value: *spec.Config.Rails.LogLevel},
-		RailsLogToStdout: &pod.ClearTextValue{Value: fmt.Sprintf("%t", *spec.Config.Rails.LogToStdout)},
+		RailsLogToStdout: &pod.ClearTextValue{Value: "true"},
 
 		SphinxBindAddress: &pod.ClearTextValue{Value: *spec.Sphinx.Config.Thinking.BindAddress},
 		SphinxPort:        &pod.ClearTextValue{Value: fmt.Sprintf("%d", *spec.Sphinx.Config.Thinking.Port)},
@@ -121,7 +120,7 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 		SeedAdminEmail:        &pod.ClearTextValue{Value: spec.Config.Seed.AdminEmail},
 		SeedTenantName:        &pod.ClearTextValue{Value: spec.Config.Seed.TenantName},
 
-		DatabaseURL: &pod.SecretValue{Value: spec.Config.DatabaseURL},
+		DatabaseURL: &pod.SecretValue{Value: spec.Config.DatabaseDSN},
 
 		MemcachedServers: &pod.ClearTextValue{Value: spec.Config.MemcachedServers},
 
@@ -130,8 +129,8 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 
 		EventsHookPassword: &pod.SecretValue{Value: spec.Config.EventsSharedSecret},
 
-		RedisURL:                     &pod.ClearTextValue{Value: spec.Config.Redis.URL},
-		RedisMessageBusURL:           &pod.ClearTextValue{Value: spec.Config.Redis.MessageBusURL},
+		RedisURL:                     &pod.ClearTextValue{Value: spec.Config.Redis.DSN},
+		RedisMessageBusURL:           &pod.ClearTextValue{Value: spec.Config.Redis.MessageBusDSN},
 		RedisActionCableURL:          &pod.ClearTextValue{Value: ""},
 		RedisNamespace:               &pod.ClearTextValue{Value: ""},
 		RedisMessageBusNamespace:     &pod.ClearTextValue{Value: ""},
@@ -144,7 +143,7 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 		SMPTUserName:          &pod.SecretValue{Value: spec.Config.SMTP.User},
 		SMTPPassword:          &pod.SecretValue{Value: spec.Config.SMTP.Password},
 		SMTPPort:              &pod.ClearTextValue{Value: fmt.Sprintf("%d", spec.Config.SMTP.Port)},
-		SMPTAuthentication:    &pod.ClearTextValue{Value: spec.Config.SMTP.Authentication},
+		SMPTAuthentication:    &pod.ClearTextValue{Value: spec.Config.SMTP.AuthProtocol},
 		SMTPOpensslVerifyMode: &pod.ClearTextValue{Value: spec.Config.SMTP.OpenSSLVerifyMode},
 		SMTPSTARTTLSAuto:      &pod.ClearTextValue{Value: fmt.Sprintf("%t", spec.Config.SMTP.STARTTLSAuto)},
 
@@ -152,7 +151,7 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 
 		ZyncAuthenticationToken: &pod.SecretValue{Value: spec.Config.ZyncAuthToken},
 
-		BackendRedisURL:            &pod.ClearTextValue{Value: spec.Config.Backend.RedisURL},
+		BackendRedisURL:            &pod.ClearTextValue{Value: spec.Config.Backend.RedisDSN},
 		BackendRedisSentinelHosts:  &pod.ClearTextValue{Value: ""},
 		BackendRedisSentinelRole:   &pod.ClearTextValue{Value: ""},
 		ApicastBackendRootEndpoint: &pod.ClearTextValue{Value: spec.Config.Backend.InternalEndpoint},
@@ -166,20 +165,24 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 		AssetsAWSBucket:          &pod.ClearTextValue{Value: spec.Config.Assets.Bucket},
 		AssetsAWSRegion:          &pod.ClearTextValue{Value: spec.Config.Assets.Region},
 
-		AppSecretKeyBase:                 &pod.SecretValue{Value: spec.Config.AppSecretKeyBase},
+		AppSecretKeyBase:                 &pod.SecretValue{Value: spec.Config.SecretKeyBase},
 		AccessCode:                       &pod.SecretValue{Value: spec.Config.AccessCode},
 		SegmentDeletionToken:             &pod.SecretValue{Value: spec.Config.Segment.DeletionToken},
 		SegmentDeletionWorkspace:         &pod.ClearTextValue{Value: spec.Config.Segment.DeletionWorkspace},
 		SegmentWriteKey:                  &pod.SecretValue{Value: spec.Config.Segment.WriteKey},
-		NewRelicLicenseKey:               &pod.SecretValue{Value: spec.Config.NewRelic.LicenseKey},
 		GithubClientID:                   &pod.SecretValue{Value: spec.Config.Github.ClientID},
 		GithubClientSecret:               &pod.SecretValue{Value: spec.Config.Github.ClientSecret},
 		PrometheusUser:                   &pod.SecretValue{Value: spec.Config.Metrics.User},
 		PrometheusPassword:               &pod.SecretValue{Value: spec.Config.Metrics.Password},
 		RedHatCustomerPortalClientID:     &pod.SecretValue{Value: spec.Config.RedHatCustomerPortal.ClientID},
 		RedHatCustomerPortalClientSecret: &pod.SecretValue{Value: spec.Config.RedHatCustomerPortal.ClientSecret},
-		BugsnagAPIKey:                    &pod.SecretValue{Value: spec.Config.Bugsnag.APIKey},
 		DatabaseSecret:                   &pod.SecretValue{Value: spec.Config.DatabaseSecret},
+	}
+
+	if spec.Config.Bugsnag.Enabled() {
+		opts.BugsnagAPIKey = &pod.SecretValue{Value: spec.Config.Bugsnag.APIKey}
+	} else {
+		opts.BugsnagAPIKey = &pod.ClearTextValue{Value: ""}
 	}
 
 	return opts

@@ -40,6 +40,7 @@ var (
 	systemDefaultRailsLogLevel                 string           = "info"
 	systemDefaultLogToStdout                   bool             = true
 	systemDefaultConfigFiles                   ConfigFilesSpec  = ConfigFilesSpec{}
+	systemDefaultBugsnagSpec                   BugsnagSpec      = BugsnagSpec{}
 	systemDefaultImage                         defaultImageSpec = defaultImageSpec{
 		Name:       pointer.StringPtr("quay.io/3scale/porta"),
 		Tag:        pointer.StringPtr("nightly"),
@@ -254,9 +255,9 @@ type SystemConfig struct {
 	// System seed
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Seed SystemSeedSpec `json:"seed"`
-	// URL of system's main database
+	// DSN of system's main database
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	DatabaseURL SecretReference `json:"databaseURL"`
+	DatabaseDSN SecretReference `json:"databaseDSN"`
 	// ???
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	EventsSharedSecret SecretReference `json:"eventsSharedSecret"`
@@ -265,16 +266,13 @@ type SystemConfig struct {
 	Recaptcha SystemRecaptchaSpec `json:"recaptcha"`
 	// ???
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	AppSecretKeyBase SecretReference `json:"appSecretKeyBase"`
+	SecretKeyBase SecretReference `json:"secretKeyBase"`
 	// ???
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	AccessCode SecretReference `json:"accessCode"`
 	// Options for Segment integration
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Segment SegmentSpec `json:"segment"`
-	// Options for NewRelic integration
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	NewRelic NewRelicSpec `json:"newRelic"`
 	// Options for Github integration
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Github GithubSpec `json:"github"`
@@ -286,7 +284,8 @@ type SystemConfig struct {
 	RedHatCustomerPortal RedHatCustomerPortalSpec `json:"redhatCustomerPortal"`
 	// Options for configuring Bugsnag integration
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	Bugsnag BugsnagSpec `json:"bugsnag"`
+	// +optional
+	Bugsnag *BugsnagSpec `json:"bugsnag,omitempty"`
 	// Database secret
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	DatabaseSecret SecretReference `json:"databaseSecret"`
@@ -315,13 +314,20 @@ type SystemConfig struct {
 // Default applies default values to a SystemConfig struct
 func (sc *SystemConfig) Default() {
 	sc.AMPRelease = stringOrDefault(sc.AMPRelease, pointer.StringPtr(systemDefaultAMPRelease))
+
 	if sc.Rails == nil {
 		sc.Rails = &SystemRailsSpec{}
 	}
 	sc.Rails.Default()
+
 	if sc.ConfigFiles == nil {
 		sc.ConfigFiles = &systemDefaultConfigFiles
 	}
+
+	if sc.Bugsnag == nil {
+		sc.Bugsnag = &systemDefaultBugsnagSpec
+	}
+
 	sc.SandboxProxyOpensslVerifyMode = stringOrDefault(sc.SandboxProxyOpensslVerifyMode, pointer.StringPtr(systemDefaultSandboxProxyOpensslVerifyMode))
 	sc.ForceSSL = boolOrDefault(sc.ForceSSL, pointer.BoolPtr(systemDefaultForceSSL))
 	sc.SSLCertsDir = stringOrDefault(sc.SSLCertsDir, pointer.StringPtr(systemDefaultSSLCertsDir))
@@ -400,10 +406,19 @@ type BugsnagSpec struct {
 	APIKey SecretReference `json:"apiKey"`
 }
 
+// Enabled returns a boolean indication whether the
+// Bugsnag integration is enabled or not
+func (bs *BugsnagSpec) Enabled() bool {
+	if reflect.DeepEqual(bs, &BugsnagSpec{}) {
+		return false
+	}
+	return true
+}
+
 // RedisSpec holds redis configuration
 type RedisSpec struct {
-	URL           string `json:"url"`
-	MessageBusURL string `json:"messageBusURL"`
+	DSN           string `json:"dsn"`
+	MessageBusDSN string `json:"messageBusDSN"`
 }
 
 // SMTPSpec has options to configure system's SMTP
@@ -412,7 +427,7 @@ type SMTPSpec struct {
 	User              SecretReference `json:"user"`
 	Password          SecretReference `json:"password"`
 	Port              int32           `json:"port"`
-	Authentication    string          `json:"authentication"`
+	AuthProtocol      string          `json:"authProtocol"`
 	OpenSSLVerifyMode string          `json:"opensslVerifyMode"`
 	STARTTLSAuto      bool            `json:"starttlsAuto"`
 }
@@ -423,7 +438,7 @@ type SystemBackendSpec struct {
 	InternalEndpoint    string          `json:"internalEndpoint"`
 	InternalAPIUser     SecretReference `json:"internalAPIUser"`
 	InternalAPIPassword SecretReference `json:"internalAPIPassword"`
-	RedisURL            string          `json:"redisURL"`
+	RedisDSN            string          `json:"redisDSN"`
 }
 
 // AssetsSpec has configuration to access assets in AWS s3
@@ -445,17 +460,12 @@ type SystemRailsSpec struct {
 	// +kubebuilder:validation:Enum=debug;info;warn;error;fatal;unknown
 	// +optional
 	LogLevel *string `json:"logLevel,omitempty"`
-	// Enable (true) or disable (false) writting logs to the stdout
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	LogToStdout *bool `json:"logToStdout,omitempty"`
 }
 
 // Default applies defaults for SystemRailsSpec
 func (srs *SystemRailsSpec) Default() {
 	srs.Environment = pointer.StringPtr(systemDefaultRailsEnvironment)
 	srs.LogLevel = pointer.StringPtr(systemDefaultRailsLogLevel)
-	srs.LogToStdout = pointer.BoolPtr(systemDefaultLogToStdout)
 }
 
 // SystemAppSpec configures the App component of System
