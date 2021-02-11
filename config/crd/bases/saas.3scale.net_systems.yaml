@@ -1193,7 +1193,6 @@ spec:
                 - assets
                 - backend
                 - bugsnag
-                - configFiles
                 - databaseSecret
                 - databaseURL
                 - eventsSharedSecret

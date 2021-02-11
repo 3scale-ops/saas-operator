@@ -17,6 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"reflect"
+
 	"github.com/3scale/saas-operator/pkg/util"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -37,6 +39,7 @@ var (
 	systemDefaultRailsEnvironment              string           = "preview"
 	systemDefaultRailsLogLevel                 string           = "info"
 	systemDefaultLogToStdout                   bool             = true
+	systemDefaultConfigFiles                   ConfigFilesSpec  = ConfigFilesSpec{}
 	systemDefaultImage                         defaultImageSpec = defaultImageSpec{
 		Name:       pointer.StringPtr("quay.io/3scale/porta"),
 		Tag:        pointer.StringPtr("nightly"),
@@ -246,7 +249,8 @@ type SystemConfig struct {
 	ThreescaleSuperdomain *string `json:"threescaleSuperdomain,omitempty"`
 	// Extra configuration files to be mounted in the pods
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	ConfigFiles ConfigFilesSpec `json:"configFiles"`
+	// +optional
+	ConfigFiles *ConfigFilesSpec `json:"configFiles,omitempty"`
 	// System seed
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Seed SystemSeedSpec `json:"seed"`
@@ -315,6 +319,9 @@ func (sc *SystemConfig) Default() {
 		sc.Rails = &SystemRailsSpec{}
 	}
 	sc.Rails.Default()
+	if sc.ConfigFiles == nil {
+		sc.ConfigFiles = &systemDefaultConfigFiles
+	}
 	sc.SandboxProxyOpensslVerifyMode = stringOrDefault(sc.SandboxProxyOpensslVerifyMode, pointer.StringPtr(systemDefaultSandboxProxyOpensslVerifyMode))
 	sc.ForceSSL = boolOrDefault(sc.ForceSSL, pointer.BoolPtr(systemDefaultForceSSL))
 	sc.SSLCertsDir = stringOrDefault(sc.SSLCertsDir, pointer.StringPtr(systemDefaultSSLCertsDir))
@@ -327,6 +334,15 @@ func (sc *SystemConfig) Default() {
 type ConfigFilesSpec struct {
 	VaultPath string   `json:"vaultPath"`
 	Files     []string `json:"files"`
+}
+
+// Enabled returns a boolean indication whether the
+// ConfigFiles config options is enabled or not
+func (cfs *ConfigFilesSpec) Enabled() bool {
+	if reflect.DeepEqual(cfs, &ConfigFilesSpec{}) {
+		return false
+	}
+	return true
 }
 
 // SystemSeedSpec whatever this is

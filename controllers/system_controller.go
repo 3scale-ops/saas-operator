@@ -82,7 +82,7 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 			},
 		},
 		SecretDefinitions: []basereconciler.SecretDefinition{
-			{Template: gen.ConfigFilesSecretDefinition(), Enabled: true},
+			{Template: gen.ConfigFilesSecretDefinition(), Enabled: instance.Spec.Config.ConfigFiles.Enabled()},
 			{Template: gen.SeedSecretDefinition(), Enabled: true},
 			{Template: gen.DatabaseSecretDefinition(), Enabled: true},
 			{Template: gen.RecaptchaSecretDefinition(), Enabled: true},

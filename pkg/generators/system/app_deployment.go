@@ -77,29 +77,28 @@ func (gen *AppGenerator) Deployment() basereconciler.GeneratorFunction {
 								ImagePullPolicy:          *gen.ImageSpec.PullPolicy,
 								TerminationMessagePath:   corev1.TerminationMessagePathDefault,
 								TerminationMessagePolicy: corev1.TerminationMessageReadFile,
-								VolumeMounts: []corev1.VolumeMount{
-									{
-										Name:      "system-config",
-										ReadOnly:  true,
-										MountPath: "/opt/system-extra-configs",
-									},
-								},
 							},
 						},
 						Affinity: pod.Affinity(gen.Selector().MatchLabels),
-						Volumes: []corev1.Volume{
-							{
-								Name: "system-config",
-								VolumeSource: corev1.VolumeSource{
-									Secret: &corev1.SecretVolumeSource{
-										SecretName: systemConfigSecret,
-									},
-								},
-							},
-						},
 					},
 				},
 			},
+		}
+
+		if gen.ConfigFilesEnabled {
+			dep.Spec.Template.Spec.Volumes = []corev1.Volume{{
+				Name: "system-config",
+				VolumeSource: corev1.VolumeSource{
+					Secret: &corev1.SecretVolumeSource{
+						SecretName: systemConfigSecret,
+					},
+				},
+			}}
+			dep.Spec.Template.Spec.Containers[0].VolumeMounts = []corev1.VolumeMount{{
+				Name:      "system-config",
+				ReadOnly:  true,
+				MountPath: "/opt/system-extra-configs",
+			}}
 		}
 
 		if !gen.Spec.Marin3r.IsDeactivated() {

@@ -1661,7 +1661,11 @@ func (in *SystemConfig) DeepCopyInto(out *SystemConfig) {
 		*out = new(string)
 		**out = **in
 	}
-	in.ConfigFiles.DeepCopyInto(&out.ConfigFiles)
+	if in.ConfigFiles != nil {
+		in, out := &in.ConfigFiles, &out.ConfigFiles
+		*out = new(ConfigFilesSpec)
+		(*in).DeepCopyInto(*out)
+	}
 	in.Seed.DeepCopyInto(&out.Seed)
 	in.DatabaseURL.DeepCopyInto(&out.DatabaseURL)
 	in.EventsSharedSecret.DeepCopyInto(&out.EventsSharedSecret)

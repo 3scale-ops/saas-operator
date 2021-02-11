@@ -114,9 +114,10 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) Gene
 					"threescale_component_element": app,
 				},
 			},
-			Spec:      *spec.App,
-			Options:   config.NewOptions(spec),
-			ImageSpec: *spec.Image,
+			Spec:               *spec.App,
+			Options:            config.NewOptions(spec),
+			ImageSpec:          *spec.Image,
+			ConfigFilesEnabled: spec.Config.ConfigFiles.Enabled(),
 		},
 		Sidekiq: SidekiqGenerator{
 			BaseOptions: generators.BaseOptions{
@@ -129,9 +130,10 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) Gene
 					"threescale_component_element": sidekiq,
 				},
 			},
-			Spec:      *spec.Sidekiq,
-			Options:   config.NewOptions(spec),
-			ImageSpec: *spec.Image,
+			Spec:               *spec.Sidekiq,
+			Options:            config.NewOptions(spec),
+			ImageSpec:          *spec.Image,
+			ConfigFilesEnabled: spec.Config.ConfigFiles.Enabled(),
 		},
 		Sphinx: SphinxGenerator{
 			BaseOptions: generators.BaseOptions{
@@ -149,7 +151,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) Gene
 			ImageSpec: *spec.Image,
 		},
 		GrafanaDashboardSpec: *spec.GrafanaDashboard,
-		ConfigFilesSpec:      spec.Config.ConfigFiles,
+		ConfigFilesSpec:      *spec.Config.ConfigFiles,
 		Options:              config.NewOptions(spec),
 	}
 }
@@ -157,9 +159,10 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) Gene
 // AppGenerator has methods to generate resources for system-app
 type AppGenerator struct {
 	generators.BaseOptions
-	Spec      saasv1alpha1.SystemAppSpec
-	Options   config.Options
-	ImageSpec saasv1alpha1.ImageSpec
+	Spec               saasv1alpha1.SystemAppSpec
+	Options            config.Options
+	ImageSpec          saasv1alpha1.ImageSpec
+	ConfigFilesEnabled bool
 }
 
 // HPA returns a basereconciler.GeneratorFunction
@@ -183,9 +186,10 @@ func (gen *AppGenerator) PodMonitor() basereconciler.GeneratorFunction {
 // SidekiqGenerator has methods to generate resources for system-sidekiq
 type SidekiqGenerator struct {
 	generators.BaseOptions
-	Spec      saasv1alpha1.SystemSidekiqSpec
-	Options   config.Options
-	ImageSpec saasv1alpha1.ImageSpec
+	Spec               saasv1alpha1.SystemSidekiqSpec
+	Options            config.Options
+	ImageSpec          saasv1alpha1.ImageSpec
+	ConfigFilesEnabled bool
 }
 
 // HPA returns a basereconciler.GeneratorFunction
