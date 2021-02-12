@@ -79,6 +79,11 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 				RolloutTriggers: nil,
 				HasHPA:          !instance.Spec.App.HPA.IsDeactivated(),
 			},
+			{
+				Template:        gen.Sidekiq.Deployment(),
+				RolloutTriggers: nil,
+				HasHPA:          !instance.Spec.Sidekiq.HPA.IsDeactivated(),
+			},
 		},
 		SecretDefinitions: []basereconciler.SecretDefinition{
 			{Template: gen.ConfigFilesSecretDefinition(), Enabled: instance.Spec.Config.ConfigFiles.Enabled()},

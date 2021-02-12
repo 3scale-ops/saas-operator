@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/3scale/saas-operator/pkg/basereconciler"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/marin3r"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
 	"github.com/3scale/saas-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
@@ -16,7 +15,7 @@ import (
 
 // Deployment returns a basereconciler.GeneratorFunction function that will return a Deployment
 // resource when called
-func (gen *AppGenerator) Deployment() basereconciler.GeneratorFunction {
+func (gen *SidekiqGenerator) Deployment() basereconciler.GeneratorFunction {
 
 	return func() client.Object {
 
@@ -56,29 +55,32 @@ func (gen *AppGenerator) Deployment() basereconciler.GeneratorFunction {
 								Name:  gen.GetComponent(),
 								Image: fmt.Sprintf("%s:%s", *gen.ImageSpec.Name, *gen.ImageSpec.Tag),
 								Args: []string{
-									"env",
-									"PORT=3000",
-									"container-entrypoint",
-									"bundle",
-									"exec",
-									"unicorn",
-									"-c",
-									"config/unicorn.rb",
+									"rake",
+									"sidekiq:worker",
+									"RAILS_MAX_THREADS=25",
 								},
 								Env: pod.BuildEnvironment(gen.Options),
 								Ports: pod.ContainerPorts(
-									pod.ContainerPortTCP("ui-api", 3000),
 									pod.ContainerPortTCP("metrics", 9394),
 								),
-								Resources:     corev1.ResourceRequirements(*gen.Spec.Resources),
-								LivenessProbe: pod.TCPProbe(intstr.FromString("ui-api"), *gen.Spec.LivenessProbe),
-								ReadinessProbe: pod.HTTPProbeWithHeaders("/check.txt", intstr.FromString("ui-api"),
-									corev1.URISchemeHTTP, *gen.Spec.ReadinessProbe, map[string]string{"X-Forwarded-Proto": "https"}),
+								Resources:                corev1.ResourceRequirements(*gen.Spec.Resources),
+								LivenessProbe:            pod.HTTPProbe("/metrics", intstr.FromString("metrics"), corev1.URISchemeHTTP, *gen.Spec.LivenessProbe),
+								ReadinessProbe:           pod.HTTPProbe("/metrics", intstr.FromString("metrics"), corev1.URISchemeHTTP, *gen.Spec.LivenessProbe),
 								ImagePullPolicy:          *gen.ImageSpec.PullPolicy,
 								TerminationMessagePath:   corev1.TerminationMessagePathDefault,
 								TerminationMessagePolicy: corev1.TerminationMessageReadFile,
+								VolumeMounts: []corev1.VolumeMount{{
+									Name:      "system-tmp",
+									MountPath: "/tmp",
+								}},
 							},
 						},
+						Volumes: []corev1.Volume{{
+							Name: "system-tmp",
+							VolumeSource: corev1.VolumeSource{
+								EmptyDir: &corev1.EmptyDirVolumeSource{},
+							},
+						}},
 						Affinity: pod.Affinity(gen.Selector().MatchLabels),
 					},
 				},
@@ -101,10 +103,6 @@ func (gen *AppGenerator) Deployment() basereconciler.GeneratorFunction {
 					ReadOnly:  true,
 					MountPath: "/opt/system-extra-configs",
 				})
-		}
-
-		if !gen.Spec.Marin3r.IsDeactivated() {
-			dep = marin3r.EnableSidecar(*dep, *gen.Spec.Marin3r)
 		}
 
 		return dep
