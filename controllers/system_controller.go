@@ -129,27 +129,25 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 			{Template: gen.MultitenantAssetsSecretDefinition(), Enabled: true},
 			{Template: gen.AppSecretDefinition(), Enabled: true},
 		},
-
-		// Services: []basereconciler.Service{{
-		// 	Template: gen.Service(),
-		// 	Enabled:  true,
-		// }},
-		// PodDisruptionBudgets: []basereconciler.PodDisruptionBudget{{
-		// 	Template: gen.PDB(),
-		// 	Enabled:  !instance.Spec.PDB.IsDeactivated(),
-		// }},
-		// HorizontalPodAutoscalers: []basereconciler.HorizontalPodAutoscaler{{
-		// 	Template: gen.HPA(),
-		// 	Enabled:  !instance.Spec.HPA.IsDeactivated(),
-		// }},
-		// PodMonitors: []basereconciler.PodMonitor{{
-		// 	Template: gen.PodMonitor(),
-		// 	Enabled:  true,
-		// }},
-		// GrafanaDashboards: []basereconciler.GrafanaDashboard{{
-		// 	Template: gen.GrafanaDashboard(),
-		// 	Enabled:  !instance.Spec.GrafanaDashboard.IsDeactivated(),
-		// }},
+		Services: []basereconciler.Service{
+			{Template: gen.App.Service(), Enabled: true},
+			{Template: gen.Sphinx.Service(), Enabled: true},
+		},
+		PodDisruptionBudgets: []basereconciler.PodDisruptionBudget{
+			{Template: gen.App.PDB(), Enabled: !instance.Spec.App.PDB.IsDeactivated()},
+			{Template: gen.Sidekiq.PDB(), Enabled: !instance.Spec.Sidekiq.PDB.IsDeactivated()},
+		},
+		HorizontalPodAutoscalers: []basereconciler.HorizontalPodAutoscaler{
+			{Template: gen.App.HPA(), Enabled: !instance.Spec.App.HPA.IsDeactivated()},
+			{Template: gen.Sidekiq.HPA(), Enabled: !instance.Spec.Sidekiq.HPA.IsDeactivated()},
+		},
+		PodMonitors: []basereconciler.PodMonitor{
+			{Template: gen.App.PodMonitor(), Enabled: true},
+			{Template: gen.Sidekiq.PodMonitor(), Enabled: true},
+		},
+		GrafanaDashboards: []basereconciler.GrafanaDashboard{
+			{Template: gen.Dashboard(), Enabled: !instance.Spec.GrafanaDashboard.IsDeactivated()},
+		},
 	})
 
 	if err != nil {

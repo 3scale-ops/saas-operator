@@ -147,11 +147,13 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) Gene
 					"threescale_component_element": sphinx,
 				},
 			},
-			Spec:                *spec.Sphinx,
-			Options:             config.NewSphinxOptions(spec),
-			ImageSpec:           *spec.Image,
-			DatabasePath:        *spec.Sphinx.Config.Thinking.DatabasePath,
-			DatabaseStorageSize: *spec.Sphinx.Config.Thinking.DatabaseStorageSize,
+			Spec:                 *spec.Sphinx,
+			Options:              config.NewSphinxOptions(spec),
+			ImageSpec:            *spec.Image,
+			DatabasePort:         *spec.Sphinx.Config.Thinking.Port,
+			DatabasePath:         *spec.Sphinx.Config.Thinking.DatabasePath,
+			DatabaseStorageSize:  *spec.Sphinx.Config.Thinking.DatabaseStorageSize,
+			DatabaseStorageClass: spec.Sphinx.Config.Thinking.DatabaseStorageClass,
 		},
 		GrafanaDashboardSpec: *spec.GrafanaDashboard,
 		ConfigFilesSpec:      *spec.Config.ConfigFiles,
@@ -221,6 +223,7 @@ type SphinxGenerator struct {
 	Spec                 saasv1alpha1.SystemSphinxSpec
 	Options              config.SphinxOptions
 	ImageSpec            saasv1alpha1.ImageSpec
+	DatabasePort         int32
 	DatabasePath         string
 	DatabaseStorageSize  resource.Quantity
 	DatabaseStorageClass *string
