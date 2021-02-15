@@ -72,19 +72,50 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		instance.Spec,
 	)
 
+	// Calculate rollout triggers (app & sidekiq)
+	triggers, err := r.TriggersFromSecretDefs(ctx,
+		gen.ConfigFilesSecretDefinition(),
+		gen.SeedSecretDefinition(),
+		gen.DatabaseSecretDefinition(),
+		gen.RecaptchaSecretDefinition(),
+		gen.EventsHookSecretDefinition(),
+		gen.SMTPSecretDefinition(),
+		gen.MasterApicastSecretDefinition(),
+		gen.ZyncSecretDefinition(),
+		gen.BackendSecretDefinition(),
+		gen.MultitenantAssetsSecretDefinition(),
+		gen.AppSecretDefinition(),
+	)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	// Calculate rollout triggers (sphinx)
+	sphinxTriggers, err := r.TriggersFromSecretDefs(ctx,
+		gen.DatabaseSecretDefinition(),
+	)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
 	err = r.ReconcileOwnedResources(ctx, instance, basereconciler.ControlledResources{
 		Deployments: []basereconciler.Deployment{
 			{
 				Template:        gen.App.Deployment(),
-				RolloutTriggers: nil,
+				RolloutTriggers: triggers,
 				HasHPA:          !instance.Spec.App.HPA.IsDeactivated(),
 			},
 			{
 				Template:        gen.Sidekiq.Deployment(),
-				RolloutTriggers: nil,
+				RolloutTriggers: triggers,
 				HasHPA:          !instance.Spec.Sidekiq.HPA.IsDeactivated(),
 			},
 		},
+		StatefulSets: []basereconciler.StatefulSet{{
+			Template:        gen.Sphinx.StatefulSet(),
+			RolloutTriggers: sphinxTriggers,
+			Enabled:         true,
+		}},
 		SecretDefinitions: []basereconciler.SecretDefinition{
 			{Template: gen.ConfigFilesSecretDefinition(), Enabled: instance.Spec.Config.ConfigFiles.Enabled()},
 			{Template: gen.SeedSecretDefinition(), Enabled: true},
@@ -98,6 +129,7 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 			{Template: gen.MultitenantAssetsSecretDefinition(), Enabled: true},
 			{Template: gen.AppSecretDefinition(), Enabled: true},
 		},
+
 		// Services: []basereconciler.Service{{
 		// 	Template: gen.Service(),
 		// 	Enabled:  true,

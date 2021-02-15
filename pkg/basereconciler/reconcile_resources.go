@@ -26,19 +26,13 @@ import (
 // Custom Resources own
 type ControlledResources struct {
 	Deployments              []Deployment
+	StatefulSets             []StatefulSet
 	SecretDefinitions        []SecretDefinition
 	Services                 []Service
 	PodDisruptionBudgets     []PodDisruptionBudget
 	HorizontalPodAutoscalers []HorizontalPodAutoscaler
 	PodMonitors              []PodMonitor
 	GrafanaDashboards        []GrafanaDashboard
-}
-
-// Deployment specifies a Deployment resources and its rollout triggers
-type Deployment struct {
-	Template        GeneratorFunction
-	RolloutTriggers []RolloutTrigger
-	HasHPA          bool
 }
 
 type RolloutTrigger struct {
@@ -109,6 +103,20 @@ func (r *Reconciler) TriggersFromSecretDefs(ctx context.Context, sd ...Generator
 	return triggers, nil
 }
 
+// Deployment specifies a Deployment resources and its rollout triggers
+type Deployment struct {
+	Template        GeneratorFunction
+	RolloutTriggers []RolloutTrigger
+	HasHPA          bool
+}
+
+// StatefulSet ...
+type StatefulSet struct {
+	Template        GeneratorFunction
+	RolloutTriggers []RolloutTrigger
+	Enabled         bool
+}
+
 // SecretDefinition ...
 type SecretDefinition struct {
 	Template GeneratorFunction
@@ -163,6 +171,16 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 					return DeploymentExcludedPaths
 				}(),
 			})
+	}
+
+	for _, ss := range crs.StatefulSets {
+		if ss.Enabled {
+			resources = append(resources,
+				LockedResource{
+					GeneratorFn:  r.StatefulSetWithRolloutTriggers(ss.Template, ss.RolloutTriggers),
+					ExcludePaths: DefaultExcludedPaths,
+				})
+		}
 	}
 
 	for _, sd := range crs.SecretDefinitions {
@@ -256,6 +274,20 @@ func (r *Reconciler) DeploymentWithRolloutTriggers(deployment GeneratorFunction,
 			dep.Spec.Template.ObjectMeta.Annotations[trigger.GetAnnotationKey()] = trigger.GetHash()
 		}
 		return dep
+	}
+}
+
+func (r *Reconciler) StatefulSetWithRolloutTriggers(statefulset GeneratorFunction, triggers []RolloutTrigger) GeneratorFunction {
+
+	return func() client.Object {
+		ss := statefulset().(*appsv1.StatefulSet)
+		if ss.GetAnnotations() == nil {
+			ss.Spec.Template.ObjectMeta.Annotations = map[string]string{}
+		}
+		for _, trigger := range triggers {
+			ss.Spec.Template.ObjectMeta.Annotations[trigger.GetAnnotationKey()] = trigger.GetHash()
+		}
+		return ss
 	}
 }
 

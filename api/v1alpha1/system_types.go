@@ -141,6 +141,7 @@ var (
 	systemDefaultSphinxBindAddress         string                          = "0.0.0.0"
 	systemDefaultSphinxConfigFile          string                          = "/opt/system/db/sphinx/preview.conf"
 	systemDefaultSphinxDBPath              string                          = "/opt/system/db/sphinx"
+	systemDefaultDatabaseStorageSize       string                          = "30Gi"
 	systemDefaultSphinxPIDFile             string                          = "/opt/system/tmp/pids/searchd.pid"
 	systemDefaultSphinxStorage             string                          = "30Gi"
 	systemDefaultSphinxResources           defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
@@ -645,7 +646,15 @@ type ThinkingSpec struct {
 	// Sphinx database path
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	DBPath *string `json:"dbPath,omitempty"`
+	DatabasePath *string `json:"databasePath,omitempty"`
+	// Sphinx database storage size
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	DatabaseStorageSize *resource.Quantity `json:"databaseStorageSize,omitempty"`
+	// Sphinx database storage type
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	DatabaseStorageClass *string `json:"databaseStorageClass,omitempty"`
 	// Sphinx PID file path
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -657,8 +666,12 @@ func (tc *ThinkingSpec) Default() {
 	tc.Port = intOrDefault(tc.Port, pointer.Int32Ptr(systemDefaultSphinxPort))
 	tc.BindAddress = stringOrDefault(tc.BindAddress, pointer.StringPtr(systemDefaultSphinxBindAddress))
 	tc.ConfigFile = stringOrDefault(tc.ConfigFile, pointer.StringPtr(systemDefaultSphinxConfigFile))
-	tc.DBPath = stringOrDefault(tc.DBPath, pointer.StringPtr(systemDefaultSphinxDBPath))
+	tc.DatabasePath = stringOrDefault(tc.DatabasePath, pointer.StringPtr(systemDefaultSphinxDBPath))
 	tc.PIDFile = stringOrDefault(tc.PIDFile, pointer.StringPtr(systemDefaultSphinxPIDFile))
+	if tc.DatabaseStorageSize == nil {
+		size := resource.MustParse(systemDefaultDatabaseStorageSize)
+		tc.DatabaseStorageSize = &size
+	}
 }
 
 // SystemStatus defines the observed state of System

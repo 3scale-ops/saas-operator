@@ -1372,9 +1372,19 @@ spec:
                           configFile:
                             description: Sphinx configuration file path
                             type: string
-                          dbPath:
+                          databasePath:
                             description: Sphinx database path
                             type: string
+                          databaseStorageClass:
+                            description: Sphinx database storage type
+                            type: string
+                          databaseStorageSize:
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            description: Sphinx database storage size
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
                           pidFile:
                             description: Sphinx PID file path
                             type: string

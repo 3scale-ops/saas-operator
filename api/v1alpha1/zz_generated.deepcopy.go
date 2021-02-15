@@ -1949,8 +1949,18 @@ func (in *ThinkingSpec) DeepCopyInto(out *ThinkingSpec) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.DBPath != nil {
-		in, out := &in.DBPath, &out.DBPath
+	if in.DatabasePath != nil {
+		in, out := &in.DatabasePath, &out.DatabasePath
+		*out = new(string)
+		**out = **in
+	}
+	if in.DatabaseStorageSize != nil {
+		in, out := &in.DatabaseStorageSize, &out.DatabaseStorageSize
+		x := (*in).DeepCopy()
+		*out = &x
+	}
+	if in.DatabaseStorageClass != nil {
+		in, out := &in.DatabaseStorageClass, &out.DatabaseStorageClass
 		*out = new(string)
 		**out = **in
 	}

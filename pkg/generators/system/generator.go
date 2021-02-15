@@ -12,6 +12,7 @@ import (
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/podmonitor"
 	"github.com/3scale/saas-operator/pkg/generators/system/config"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/types"
 )
 
@@ -146,9 +147,11 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) Gene
 					"threescale_component_element": sphinx,
 				},
 			},
-			Spec:      *spec.Sphinx,
-			Config:    spec.Config,
-			ImageSpec: *spec.Image,
+			Spec:                *spec.Sphinx,
+			Options:             config.NewSphinxOptions(spec),
+			ImageSpec:           *spec.Image,
+			DatabasePath:        *spec.Sphinx.Config.Thinking.DatabasePath,
+			DatabaseStorageSize: *spec.Sphinx.Config.Thinking.DatabaseStorageSize,
 		},
 		GrafanaDashboardSpec: *spec.GrafanaDashboard,
 		ConfigFilesSpec:      *spec.Config.ConfigFiles,
@@ -215,7 +218,10 @@ func (gen *SidekiqGenerator) PodMonitor() basereconciler.GeneratorFunction {
 // SphinxGenerator has methods to generate resources for system-sphinx
 type SphinxGenerator struct {
 	generators.BaseOptions
-	Spec      saasv1alpha1.SystemSphinxSpec
-	Config    saasv1alpha1.SystemConfig
-	ImageSpec saasv1alpha1.ImageSpec
+	Spec                 saasv1alpha1.SystemSphinxSpec
+	Options              config.SphinxOptions
+	ImageSpec            saasv1alpha1.ImageSpec
+	DatabasePath         string
+	DatabaseStorageSize  resource.Quantity
+	DatabaseStorageClass *string
 }
