@@ -136,7 +136,7 @@ var _ = Describe("System controller", func() {
 			}, timeout, poll).ShouldNot(HaveOccurred())
 		})
 
-		FIt("creates the required resources", func() {
+		It("creates the required resources", func() {
 
 			Eventually(func() bool {
 				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, system)
