@@ -259,16 +259,16 @@ type SystemConfig struct {
 	// DSN of system's main database
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	DatabaseDSN SecretReference `json:"databaseDSN"`
-	// ???
+	// EventsSharedSecret
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	EventsSharedSecret SecretReference `json:"eventsSharedSecret"`
 	// Holds recaptcha configuration options
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Recaptcha SystemRecaptchaSpec `json:"recaptcha"`
-	// ???
+	// SecretKeyBase
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	SecretKeyBase SecretReference `json:"secretKeyBase"`
-	// ???
+	// AccessCode to protect admin urls
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	AccessCode SecretReference `json:"accessCode"`
 	// Options for Segment integration
@@ -354,56 +354,100 @@ func (cfs *ConfigFilesSpec) Enabled() bool {
 
 // SystemSeedSpec whatever this is
 type SystemSeedSpec struct {
+	// Master access token
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	MasterAccessToken SecretReference `json:"masterAccessToken"`
-	MasterDomain      string          `json:"masterDomain"`
-	MasterUser        SecretReference `json:"masterUser"`
-	MasterPassword    SecretReference `json:"masterPassword"`
-	AdminAccessToken  SecretReference `json:"adminAccessToken"`
-	AdminUser         SecretReference `json:"adminUser"`
-	AdminPassword     SecretReference `json:"adminPassword"`
-	AdminEmail        string          `json:"adminEmail"`
-	TenantName        string          `json:"tenantName"`
+	// Master domain
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	MasterDomain string `json:"masterDomain"`
+	// Master user
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	MasterUser SecretReference `json:"masterUser"`
+	// Master password
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	MasterPassword SecretReference `json:"masterPassword"`
+	// Admin access token
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	AdminAccessToken SecretReference `json:"adminAccessToken"`
+	// Admin user
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	AdminUser SecretReference `json:"adminUser"`
+	// Admin password
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	AdminPassword SecretReference `json:"adminPassword"`
+	// Admin email address
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	AdminEmail string `json:"adminEmail"`
+	// Tenant name
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	TenantName string `json:"tenantName"`
 }
 
 // SystemRecaptchaSpec holds recaptcha configurations
 type SystemRecaptchaSpec struct {
-	PublicKey  SecretReference `json:"publicKey"`
+	// Public key
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	PublicKey SecretReference `json:"publicKey"`
+	// Private key
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	PrivateKey SecretReference `json:"privateKey"`
 }
 
 // SegmentSpec has configuration for Segment integration
 type SegmentSpec struct {
-	DeletionWorkspace string          `json:"deletionWorkspace"`
-	DeletionToken     SecretReference `json:"deletionToken"`
-	WriteKey          SecretReference `json:"writeKey"`
+	// Deletion workspace
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	DeletionWorkspace string `json:"deletionWorkspace"`
+	// Deletion token
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	DeletionToken SecretReference `json:"deletionToken"`
+	// Write key
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	WriteKey SecretReference `json:"writeKey"`
 }
 
 // NewRelicSpec has configuration for NewRelic integration
 type NewRelicSpec struct {
+	// License key
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	LicenseKey SecretReference `json:"licenseKey"`
 }
 
 // GithubSpec has configuration for Github integration
 type GithubSpec struct {
-	ClientID     SecretReference `json:"clientID"`
+	// Client ID
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	ClientID SecretReference `json:"clientID"`
+	// Client secret
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	ClientSecret SecretReference `json:"clientSecret"`
 }
 
 // MetricsSpec has options to configure prometheus metrics
 type MetricsSpec struct {
-	User     SecretReference `json:"user"`
+	// User name
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	User SecretReference `json:"user"`
+	// Password
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Password SecretReference `json:"password"`
 }
 
 // RedHatCustomerPortalSpec has configuration for integration with
 // Red Hat Customer Portal
 type RedHatCustomerPortalSpec struct {
-	ClientID     SecretReference `json:"clientID"`
+	// Client ID
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	ClientID SecretReference `json:"clientID"`
+	// Client secret
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	ClientSecret SecretReference `json:"clientSecret"`
 }
 
 // BugsnagSpec has configuration for Bugsnag integration
 type BugsnagSpec struct {
+	// API key
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	APIKey SecretReference `json:"apiKey"`
 }
 
@@ -418,35 +462,71 @@ func (bs *BugsnagSpec) Enabled() bool {
 
 // RedisSpec holds redis configuration
 type RedisSpec struct {
-	DSN           string `json:"dsn"`
+	// Data source name
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	DSN string `json:"dsn"`
+	// Message bus data source name
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	MessageBusDSN string `json:"messageBusDSN"`
 }
 
 // SMTPSpec has options to configure system's SMTP
 type SMTPSpec struct {
-	Address           string          `json:"address"`
-	User              SecretReference `json:"user"`
-	Password          SecretReference `json:"password"`
-	Port              int32           `json:"port"`
-	AuthProtocol      string          `json:"authProtocol"`
-	OpenSSLVerifyMode string          `json:"opensslVerifyMode"`
-	STARTTLSAuto      bool            `json:"starttlsAuto"`
+	// Address
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	Address string `json:"address"`
+	// User
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	User SecretReference `json:"user"`
+	// Password
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	Password SecretReference `json:"password"`
+	// Port
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	Port int32 `json:"port"`
+	// Authentication protocol
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	AuthProtocol string `json:"authProtocol"`
+	// OpenSSL verify mode
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	OpenSSLVerifyMode string `json:"opensslVerifyMode"`
+	// Enable/disable auto STARTTLS
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	STARTTLSAuto bool `json:"starttlsAuto"`
 }
 
 // SystemBackendSpec has configuration options for backend
 type SystemBackendSpec struct {
-	ExternalEndpoint    string          `json:"externalEndpoint"`
-	InternalEndpoint    string          `json:"internalEndpoint"`
-	InternalAPIUser     SecretReference `json:"internalAPIUser"`
+	// External endpoint
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	ExternalEndpoint string `json:"externalEndpoint"`
+	// Internal endpoint
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	InternalEndpoint string `json:"internalEndpoint"`
+	// Internal API user
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	InternalAPIUser SecretReference `json:"internalAPIUser"`
+	// Internal API password
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	InternalAPIPassword SecretReference `json:"internalAPIPassword"`
-	RedisDSN            string          `json:"redisDSN"`
+	// Redis data source name
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	RedisDSN string `json:"redisDSN"`
 }
 
 // AssetsSpec has configuration to access assets in AWS s3
 type AssetsSpec struct {
-	Bucket    string          `json:"bucket"`
-	Region    string          `json:"region"`
+	// AWS S3 bucket name
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	Bucket string `json:"bucket"`
+	// AWS S3 region
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	Region string `json:"region"`
+	// AWS access key
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	AccessKey SecretReference `json:"accessKey"`
+	// AWS secret access key
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	SecretKey SecretReference `json:"secretKey"`
 }
 
