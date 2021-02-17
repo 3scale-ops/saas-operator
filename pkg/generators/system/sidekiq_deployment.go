@@ -78,7 +78,9 @@ func (gen *SidekiqGenerator) Deployment() basereconciler.GeneratorFunction {
 						Volumes: []corev1.Volume{{
 							Name: "system-tmp",
 							VolumeSource: corev1.VolumeSource{
-								EmptyDir: &corev1.EmptyDirVolumeSource{},
+								EmptyDir: &corev1.EmptyDirVolumeSource{
+									Medium: corev1.StorageMediumMemory,
+								},
 							},
 						}},
 						Affinity: pod.Affinity(gen.Selector().MatchLabels),
