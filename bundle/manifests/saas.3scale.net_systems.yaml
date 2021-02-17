@@ -1,5 +1,3 @@
-
----
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -22,14 +20,10 @@ spec:
         description: System is the Schema for the systems API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
             type: string
           metadata:
             type: object
@@ -43,17 +37,11 @@ spec:
                     description: Horizontal Pod Autoscaler for the component
                     properties:
                       maxReplicas:
-                        description: Upper limit for the number of replicas to which
-                          the autoscaler can scale up. It cannot be less that minReplicas.
+                        description: Upper limit for the number of replicas to which the autoscaler can scale up. It cannot be less that minReplicas.
                         format: int32
                         type: integer
                       minReplicas:
-                        description: Lower limit for the number of replicas to which
-                          the autoscaler can scale down.  It defaults to 1 pod.  minReplicas
-                          is allowed to be 0 if the alpha feature gate HPAScaleToZero
-                          is enabled and at least one Object or External metric is
-                          configured.  Scaling is active as long as at least one metric
-                          value is available.
+                        description: Lower limit for the number of replicas to which the autoscaler can scale down.  It defaults to 1 pod.  minReplicas is allowed to be 0 if the alpha feature gate HPAScaleToZero is enabled and at least one Object or External metric is configured.  Scaling is active as long as at least one metric value is available.
                         format: int32
                         type: integer
                       resourceName:
@@ -63,8 +51,7 @@ spec:
                         - memory
                         type: string
                       resourceUtilization:
-                        description: A percentage indicating the target resource consumption
-                          used to autoscale
+                        description: A percentage indicating the target resource consumption used to autoscale
                         format: int32
                         type: integer
                     type: object
@@ -72,13 +59,11 @@ spec:
                     description: Liveness probe for the component
                     properties:
                       failureThreshold:
-                        description: Minimum consecutive failures for the probe to
-                          be considered failed after having succeeded
+                        description: Minimum consecutive failures for the probe to be considered failed after having succeeded
                         format: int32
                         type: integer
                       initialDelaySeconds:
-                        description: Number of seconds after the container has started
-                          before liveness probes are initiated
+                        description: Number of seconds after the container has started before liveness probes are initiated
                         format: int32
                         type: integer
                       periodSeconds:
@@ -86,13 +71,11 @@ spec:
                         format: int32
                         type: integer
                       successThreshold:
-                        description: Minimum consecutive successes for the probe to
-                          be considered successful after having failed
+                        description: Minimum consecutive successes for the probe to be considered successful after having failed
                         format: int32
                         type: integer
                       timeoutSeconds:
-                        description: Number of seconds after which the probe times
-                          out
+                        description: Number of seconds after which the probe times out
                         format: int32
                         type: integer
                     type: object
@@ -102,14 +85,12 @@ spec:
                       extraPodAnnotations:
                         additionalProperties:
                           type: string
-                        description: Extra annotations to pass the Pod to further
-                          configure the sidecar container.
+                        description: Extra annotations to pass the Pod to further configure the sidecar container.
                         type: object
                       ports:
                         description: The ports that the sidecar exposes
                         items:
-                          description: SidecarPort defines port for the Marin3r sidecar
-                            container
+                          description: SidecarPort defines port for the Marin3r sidecar container
                           properties:
                             name:
                               description: Port name
@@ -133,8 +114,7 @@ spec:
                               - type: string
                               pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                               x-kubernetes-int-or-string: true
-                            description: 'Limits describes the maximum amount of compute
-                              resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                            description: 'Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                             type: object
                           requests:
                             additionalProperties:
@@ -143,11 +123,7 @@ spec:
                               - type: string
                               pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                               x-kubernetes-int-or-string: true
-                            description: 'Requests describes the minimum amount of
-                              compute resources required. If Requests is omitted for
-                              a container, it defaults to Limits if that is explicitly
-                              specified, otherwise to an implementation-defined value.
-                              More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                            description: 'Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                             type: object
                         type: object
                     required:
@@ -160,34 +136,24 @@ spec:
                         anyOf:
                         - type: integer
                         - type: string
-                        description: An eviction is allowed if at most "maxUnavailable"
-                          pods selected by "selector" are unavailable after the eviction,
-                          i.e. even in absence of the evicted pod. For example, one
-                          can prevent all voluntary evictions by specifying 0. This
-                          is a mutually exclusive setting with "minAvailable".
+                        description: An eviction is allowed if at most "maxUnavailable" pods selected by "selector" are unavailable after the eviction, i.e. even in absence of the evicted pod. For example, one can prevent all voluntary evictions by specifying 0. This is a mutually exclusive setting with "minAvailable".
                         x-kubernetes-int-or-string: true
                       minAvailable:
                         anyOf:
                         - type: integer
                         - type: string
-                        description: An eviction is allowed if at least "minAvailable"
-                          pods selected by "selector" will still be available after
-                          the eviction, i.e. even in the absence of the evicted pod.  So
-                          for example you can prevent all voluntary evictions by specifying
-                          "100%".
+                        description: An eviction is allowed if at least "minAvailable" pods selected by "selector" will still be available after the eviction, i.e. even in the absence of the evicted pod.  So for example you can prevent all voluntary evictions by specifying "100%".
                         x-kubernetes-int-or-string: true
                     type: object
                   readinessProbe:
                     description: Readiness probe for the component
                     properties:
                       failureThreshold:
-                        description: Minimum consecutive failures for the probe to
-                          be considered failed after having succeeded
+                        description: Minimum consecutive failures for the probe to be considered failed after having succeeded
                         format: int32
                         type: integer
                       initialDelaySeconds:
-                        description: Number of seconds after the container has started
-                          before liveness probes are initiated
+                        description: Number of seconds after the container has started before liveness probes are initiated
                         format: int32
                         type: integer
                       periodSeconds:
@@ -195,19 +161,16 @@ spec:
                         format: int32
                         type: integer
                       successThreshold:
-                        description: Minimum consecutive successes for the probe to
-                          be considered successful after having failed
+                        description: Minimum consecutive successes for the probe to be considered successful after having failed
                         format: int32
                         type: integer
                       timeoutSeconds:
-                        description: Number of seconds after which the probe times
-                          out
+                        description: Number of seconds after which the probe times out
                         format: int32
                         type: integer
                     type: object
                   replicas:
-                    description: Number of replicas (ignored if hpa is enabled) for
-                      the component
+                    description: Number of replicas (ignored if hpa is enabled) for the component
                     format: int32
                     type: integer
                   resources:
@@ -220,8 +183,7 @@ spec:
                           - type: string
                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                           x-kubernetes-int-or-string: true
-                        description: 'Limits describes the maximum amount of compute
-                          resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        description: 'Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                         type: object
                       requests:
                         additionalProperties:
@@ -230,23 +192,18 @@ spec:
                           - type: string
                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                           x-kubernetes-int-or-string: true
-                        description: 'Requests describes the minimum amount of compute
-                          resources required. If Requests is omitted for a container,
-                          it defaults to Limits if that is explicitly specified, otherwise
-                          to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        description: 'Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                         type: object
                     type: object
                 type: object
               config:
-                description: Application specific configuration options for System
-                  components
+                description: Application specific configuration options for System components
                 properties:
                   accessCode:
                     description: AccessCode to protect admin urls
                     properties:
                       fromVault:
-                        description: VaultSecretReference is a reference to a secret
-                          stored in a Hashicorp Vault
+                        description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                         properties:
                           key:
                             description: The Vault key of the secret
@@ -259,8 +216,7 @@ spec:
                         - path
                         type: object
                       override:
-                        description: Override allows to directly specify a string
-                          value.
+                        description: Override allows to directly specify a string value.
                         type: string
                     type: object
                   ampRelease:
@@ -270,8 +226,7 @@ spec:
                     description: Master access token for Apicast
                     properties:
                       fromVault:
-                        description: VaultSecretReference is a reference to a secret
-                          stored in a Hashicorp Vault
+                        description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                         properties:
                           key:
                             description: The Vault key of the secret
@@ -284,20 +239,17 @@ spec:
                         - path
                         type: object
                       override:
-                        description: Override allows to directly specify a string
-                          value.
+                        description: Override allows to directly specify a string value.
                         type: string
                     type: object
                   assets:
-                    description: Assets has configuration to access assets in AWS
-                      s3
+                    description: Assets has configuration to access assets in AWS s3
                     properties:
                       accessKey:
                         description: AWS access key
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -310,8 +262,7 @@ spec:
                             - path
                             type: object
                           override:
-                            description: Override allows to directly specify a string
-                              value.
+                            description: Override allows to directly specify a string value.
                             type: string
                         type: object
                       bucket:
@@ -324,8 +275,7 @@ spec:
                         description: AWS secret access key
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -338,8 +288,7 @@ spec:
                             - path
                             type: object
                           override:
-                            description: Override allows to directly specify a string
-                              value.
+                            description: Override allows to directly specify a string value.
                             type: string
                         type: object
                     required:
@@ -349,8 +298,7 @@ spec:
                     - secretKey
                     type: object
                   backend:
-                    description: Backend has configuration options for system to contact
-                      backend
+                    description: Backend has configuration options for system to contact backend
                     properties:
                       externalEndpoint:
                         description: External endpoint
@@ -359,8 +307,7 @@ spec:
                         description: Internal API password
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -373,16 +320,14 @@ spec:
                             - path
                             type: object
                           override:
-                            description: Override allows to directly specify a string
-                              value.
+                            description: Override allows to directly specify a string value.
                             type: string
                         type: object
                       internalAPIUser:
                         description: Internal API user
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -395,8 +340,7 @@ spec:
                             - path
                             type: object
                           override:
-                            description: Override allows to directly specify a string
-                              value.
+                            description: Override allows to directly specify a string value.
                             type: string
                         type: object
                       internalEndpoint:
@@ -419,8 +363,7 @@ spec:
                         description: API key
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -433,8 +376,7 @@ spec:
                             - path
                             type: object
                           override:
-                            description: Override allows to directly specify a string
-                              value.
+                            description: Override allows to directly specify a string value.
                             type: string
                         type: object
                     required:
@@ -457,8 +399,7 @@ spec:
                     description: DSN of system's main database
                     properties:
                       fromVault:
-                        description: VaultSecretReference is a reference to a secret
-                          stored in a Hashicorp Vault
+                        description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                         properties:
                           key:
                             description: The Vault key of the secret
@@ -471,16 +412,14 @@ spec:
                         - path
                         type: object
                       override:
-                        description: Override allows to directly specify a string
-                          value.
+                        description: Override allows to directly specify a string value.
                         type: string
                     type: object
                   databaseSecret:
                     description: Database secret
                     properties:
                       fromVault:
-                        description: VaultSecretReference is a reference to a secret
-                          stored in a Hashicorp Vault
+                        description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                         properties:
                           key:
                             description: The Vault key of the secret
@@ -493,16 +432,14 @@ spec:
                         - path
                         type: object
                       override:
-                        description: Override allows to directly specify a string
-                          value.
+                        description: Override allows to directly specify a string value.
                         type: string
                     type: object
                   eventsSharedSecret:
                     description: EventsSharedSecret
                     properties:
                       fromVault:
-                        description: VaultSecretReference is a reference to a secret
-                          stored in a Hashicorp Vault
+                        description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                         properties:
                           key:
                             description: The Vault key of the secret
@@ -515,8 +452,7 @@ spec:
                         - path
                         type: object
                       override:
-                        description: Override allows to directly specify a string
-                          value.
+                        description: Override allows to directly specify a string value.
                         type: string
                     type: object
                   forceSSL:
@@ -529,8 +465,7 @@ spec:
                         description: Client ID
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -543,16 +478,14 @@ spec:
                             - path
                             type: object
                           override:
-                            description: Override allows to directly specify a string
-                              value.
+                            description: Override allows to directly specify a string value.
                             type: string
                         type: object
                       clientSecret:
                         description: Client secret
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -565,8 +498,7 @@ spec:
                             - path
                             type: object
                           override:
-                            description: Override allows to directly specify a string
-                              value.
+                            description: Override allows to directly specify a string value.
                             type: string
                         type: object
                     required:
@@ -583,8 +515,7 @@ spec:
                         description: Password
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -597,16 +528,14 @@ spec:
                             - path
                             type: object
                           override:
-                            description: Override allows to directly specify a string
-                              value.
+                            description: Override allows to directly specify a string value.
                             type: string
                         type: object
                       user:
                         description: User name
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -619,8 +548,7 @@ spec:
                             - path
                             type: object
                           override:
-                            description: Override allows to directly specify a string
-                              value.
+                            description: Override allows to directly specify a string value.
                             type: string
                         type: object
                     required:
@@ -634,8 +562,7 @@ spec:
                         description: Rails environment
                         type: string
                       logLevel:
-                        description: Rails log level (debug, info, warn, error, fatal
-                          or unknown)
+                        description: Rails log level (debug, info, warn, error, fatal or unknown)
                         enum:
                         - debug
                         - info
@@ -652,8 +579,7 @@ spec:
                         description: Private key
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -666,16 +592,14 @@ spec:
                             - path
                             type: object
                           override:
-                            description: Override allows to directly specify a string
-                              value.
+                            description: Override allows to directly specify a string value.
                             type: string
                         type: object
                       publicKey:
                         description: Public key
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -688,8 +612,7 @@ spec:
                             - path
                             type: object
                           override:
-                            description: Override allows to directly specify a string
-                              value.
+                            description: Override allows to directly specify a string value.
                             type: string
                         type: object
                     required:
@@ -703,8 +626,7 @@ spec:
                         description: Client ID
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -717,16 +639,14 @@ spec:
                             - path
                             type: object
                           override:
-                            description: Override allows to directly specify a string
-                              value.
+                            description: Override allows to directly specify a string value.
                             type: string
                         type: object
                       clientSecret:
                         description: Client secret
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -739,8 +659,7 @@ spec:
                             - path
                             type: object
                           override:
-                            description: Override allows to directly specify a string
-                              value.
+                            description: Override allows to directly specify a string value.
                             type: string
                         type: object
                     required:
@@ -767,8 +686,7 @@ spec:
                     description: SecretKeyBase
                     properties:
                       fromVault:
-                        description: VaultSecretReference is a reference to a secret
-                          stored in a Hashicorp Vault
+                        description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                         properties:
                           key:
                             description: The Vault key of the secret
@@ -781,8 +699,7 @@ spec:
                         - path
                         type: object
                       override:
-                        description: Override allows to directly specify a string
-                          value.
+                        description: Override allows to directly specify a string value.
                         type: string
                     type: object
                   seed:
@@ -792,8 +709,7 @@ spec:
                         description: Admin access token
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -806,8 +722,7 @@ spec:
                             - path
                             type: object
                           override:
-                            description: Override allows to directly specify a string
-                              value.
+                            description: Override allows to directly specify a string value.
                             type: string
                         type: object
                       adminEmail:
@@ -817,8 +732,7 @@ spec:
                         description: Admin password
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -831,16 +745,14 @@ spec:
                             - path
                             type: object
                           override:
-                            description: Override allows to directly specify a string
-                              value.
+                            description: Override allows to directly specify a string value.
                             type: string
                         type: object
                       adminUser:
                         description: Admin user
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -853,16 +765,14 @@ spec:
                             - path
                             type: object
                           override:
-                            description: Override allows to directly specify a string
-                              value.
+                            description: Override allows to directly specify a string value.
                             type: string
                         type: object
                       masterAccessToken:
                         description: Master access token
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -875,8 +785,7 @@ spec:
                             - path
                             type: object
                           override:
-                            description: Override allows to directly specify a string
-                              value.
+                            description: Override allows to directly specify a string value.
                             type: string
                         type: object
                       masterDomain:
@@ -886,8 +795,7 @@ spec:
                         description: Master password
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -900,16 +808,14 @@ spec:
                             - path
                             type: object
                           override:
-                            description: Override allows to directly specify a string
-                              value.
+                            description: Override allows to directly specify a string value.
                             type: string
                         type: object
                       masterUser:
                         description: Master user
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -922,8 +828,7 @@ spec:
                             - path
                             type: object
                           override:
-                            description: Override allows to directly specify a string
-                              value.
+                            description: Override allows to directly specify a string value.
                             type: string
                         type: object
                       tenantName:
@@ -947,8 +852,7 @@ spec:
                         description: Deletion token
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -961,8 +865,7 @@ spec:
                             - path
                             type: object
                           override:
-                            description: Override allows to directly specify a string
-                              value.
+                            description: Override allows to directly specify a string value.
                             type: string
                         type: object
                       deletionWorkspace:
@@ -972,8 +875,7 @@ spec:
                         description: Write key
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -986,8 +888,7 @@ spec:
                             - path
                             type: object
                           override:
-                            description: Override allows to directly specify a string
-                              value.
+                            description: Override allows to directly specify a string value.
                             type: string
                         type: object
                     required:
@@ -1011,8 +912,7 @@ spec:
                         description: Password
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -1025,8 +925,7 @@ spec:
                             - path
                             type: object
                           override:
-                            description: Override allows to directly specify a string
-                              value.
+                            description: Override allows to directly specify a string value.
                             type: string
                         type: object
                       port:
@@ -1040,8 +939,7 @@ spec:
                         description: User
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -1054,8 +952,7 @@ spec:
                             - path
                             type: object
                           override:
-                            description: Override allows to directly specify a string
-                              value.
+                            description: Override allows to directly specify a string value.
                             type: string
                         type: object
                     required:
@@ -1080,8 +977,7 @@ spec:
                     description: Zync authentication token
                     properties:
                       fromVault:
-                        description: VaultSecretReference is a reference to a secret
-                          stored in a Hashicorp Vault
+                        description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
                         properties:
                           key:
                             description: The Vault key of the secret
@@ -1094,8 +990,7 @@ spec:
                         - path
                         type: object
                       override:
-                        description: Override allows to directly specify a string
-                          value.
+                        description: Override allows to directly specify a string value.
                         type: string
                     type: object
                 required:
@@ -1122,12 +1017,10 @@ spec:
                 description: Configures the Grafana Dashboard for the component
                 properties:
                   selectorKey:
-                    description: Label key used by grafana-operator for dashboard
-                      discovery
+                    description: Label key used by grafana-operator for dashboard discovery
                     type: string
                   selectorValue:
-                    description: Label value used by grafana-operator for dashboard
-                      discovery
+                    description: Label value used by grafana-operator for dashboard discovery
                     type: string
                 type: object
               image:
@@ -1140,8 +1033,7 @@ spec:
                     description: Pull policy for the image
                     type: string
                   pullSecretName:
-                    description: Name of the Secret that holds quay.io credentials
-                      to access the image repository
+                    description: Name of the Secret that holds quay.io credentials to access the image repository
                     type: string
                   tag:
                     description: Image tag
@@ -1154,17 +1046,11 @@ spec:
                     description: Horizontal Pod Autoscaler for the component
                     properties:
                       maxReplicas:
-                        description: Upper limit for the number of replicas to which
-                          the autoscaler can scale up. It cannot be less that minReplicas.
+                        description: Upper limit for the number of replicas to which the autoscaler can scale up. It cannot be less that minReplicas.
                         format: int32
                         type: integer
                       minReplicas:
-                        description: Lower limit for the number of replicas to which
-                          the autoscaler can scale down.  It defaults to 1 pod.  minReplicas
-                          is allowed to be 0 if the alpha feature gate HPAScaleToZero
-                          is enabled and at least one Object or External metric is
-                          configured.  Scaling is active as long as at least one metric
-                          value is available.
+                        description: Lower limit for the number of replicas to which the autoscaler can scale down.  It defaults to 1 pod.  minReplicas is allowed to be 0 if the alpha feature gate HPAScaleToZero is enabled and at least one Object or External metric is configured.  Scaling is active as long as at least one metric value is available.
                         format: int32
                         type: integer
                       resourceName:
@@ -1174,8 +1060,7 @@ spec:
                         - memory
                         type: string
                       resourceUtilization:
-                        description: A percentage indicating the target resource consumption
-                          used to autoscale
+                        description: A percentage indicating the target resource consumption used to autoscale
                         format: int32
                         type: integer
                     type: object
@@ -1183,13 +1068,11 @@ spec:
                     description: Liveness probe for the component
                     properties:
                       failureThreshold:
-                        description: Minimum consecutive failures for the probe to
-                          be considered failed after having succeeded
+                        description: Minimum consecutive failures for the probe to be considered failed after having succeeded
                         format: int32
                         type: integer
                       initialDelaySeconds:
-                        description: Number of seconds after the container has started
-                          before liveness probes are initiated
+                        description: Number of seconds after the container has started before liveness probes are initiated
                         format: int32
                         type: integer
                       periodSeconds:
@@ -1197,13 +1080,11 @@ spec:
                         format: int32
                         type: integer
                       successThreshold:
-                        description: Minimum consecutive successes for the probe to
-                          be considered successful after having failed
+                        description: Minimum consecutive successes for the probe to be considered successful after having failed
                         format: int32
                         type: integer
                       timeoutSeconds:
-                        description: Number of seconds after which the probe times
-                          out
+                        description: Number of seconds after which the probe times out
                         format: int32
                         type: integer
                     type: object
@@ -1214,34 +1095,24 @@ spec:
                         anyOf:
                         - type: integer
                         - type: string
-                        description: An eviction is allowed if at most "maxUnavailable"
-                          pods selected by "selector" are unavailable after the eviction,
-                          i.e. even in absence of the evicted pod. For example, one
-                          can prevent all voluntary evictions by specifying 0. This
-                          is a mutually exclusive setting with "minAvailable".
+                        description: An eviction is allowed if at most "maxUnavailable" pods selected by "selector" are unavailable after the eviction, i.e. even in absence of the evicted pod. For example, one can prevent all voluntary evictions by specifying 0. This is a mutually exclusive setting with "minAvailable".
                         x-kubernetes-int-or-string: true
                       minAvailable:
                         anyOf:
                         - type: integer
                         - type: string
-                        description: An eviction is allowed if at least "minAvailable"
-                          pods selected by "selector" will still be available after
-                          the eviction, i.e. even in the absence of the evicted pod.  So
-                          for example you can prevent all voluntary evictions by specifying
-                          "100%".
+                        description: An eviction is allowed if at least "minAvailable" pods selected by "selector" will still be available after the eviction, i.e. even in the absence of the evicted pod.  So for example you can prevent all voluntary evictions by specifying "100%".
                         x-kubernetes-int-or-string: true
                     type: object
                   readinessProbe:
                     description: Readiness probe for the component
                     properties:
                       failureThreshold:
-                        description: Minimum consecutive failures for the probe to
-                          be considered failed after having succeeded
+                        description: Minimum consecutive failures for the probe to be considered failed after having succeeded
                         format: int32
                         type: integer
                       initialDelaySeconds:
-                        description: Number of seconds after the container has started
-                          before liveness probes are initiated
+                        description: Number of seconds after the container has started before liveness probes are initiated
                         format: int32
                         type: integer
                       periodSeconds:
@@ -1249,19 +1120,16 @@ spec:
                         format: int32
                         type: integer
                       successThreshold:
-                        description: Minimum consecutive successes for the probe to
-                          be considered successful after having failed
+                        description: Minimum consecutive successes for the probe to be considered successful after having failed
                         format: int32
                         type: integer
                       timeoutSeconds:
-                        description: Number of seconds after which the probe times
-                          out
+                        description: Number of seconds after which the probe times out
                         format: int32
                         type: integer
                     type: object
                   replicas:
-                    description: Number of replicas (ignored if hpa is enabled) for
-                      the component
+                    description: Number of replicas (ignored if hpa is enabled) for the component
                     format: int32
                     type: integer
                   resources:
@@ -1274,8 +1142,7 @@ spec:
                           - type: string
                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                           x-kubernetes-int-or-string: true
-                        description: 'Limits describes the maximum amount of compute
-                          resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        description: 'Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                         type: object
                       requests:
                         additionalProperties:
@@ -1284,10 +1151,7 @@ spec:
                           - type: string
                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                           x-kubernetes-int-or-string: true
-                        description: 'Requests describes the minimum amount of compute
-                          resources required. If Requests is omitted for a container,
-                          it defaults to Limits if that is explicitly specified, otherwise
-                          to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        description: 'Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                         type: object
                     type: object
                 type: object
@@ -1298,9 +1162,7 @@ spec:
                     description: Configuration options for System's sphinx
                     properties:
                       deltaIndexInterval:
-                        description: Interval used for adding chunks of brand new
-                          documents to the primary index at certain intervals without
-                          having to do a full re-index
+                        description: Interval used for adding chunks of brand new documents to the primary index at certain intervals without having to do a full re-index
                         format: int32
                         type: integer
                       fullReindexInterval:
@@ -1311,8 +1173,7 @@ spec:
                         description: Thinking configuration for sphinx
                         properties:
                           bindAddress:
-                            description: Allows setting the TCP host for Sphinx to
-                              a different address
+                            description: Allows setting the TCP host for Sphinx to a different address
                             type: string
                           configFile:
                             description: Sphinx configuration file path
@@ -1343,13 +1204,11 @@ spec:
                     description: Liveness probe for the component
                     properties:
                       failureThreshold:
-                        description: Minimum consecutive failures for the probe to
-                          be considered failed after having succeeded
+                        description: Minimum consecutive failures for the probe to be considered failed after having succeeded
                         format: int32
                         type: integer
                       initialDelaySeconds:
-                        description: Number of seconds after the container has started
-                          before liveness probes are initiated
+                        description: Number of seconds after the container has started before liveness probes are initiated
                         format: int32
                         type: integer
                       periodSeconds:
@@ -1357,13 +1216,11 @@ spec:
                         format: int32
                         type: integer
                       successThreshold:
-                        description: Minimum consecutive successes for the probe to
-                          be considered successful after having failed
+                        description: Minimum consecutive successes for the probe to be considered successful after having failed
                         format: int32
                         type: integer
                       timeoutSeconds:
-                        description: Number of seconds after which the probe times
-                          out
+                        description: Number of seconds after which the probe times out
                         format: int32
                         type: integer
                     type: object
@@ -1371,13 +1228,11 @@ spec:
                     description: Readiness probe for the component
                     properties:
                       failureThreshold:
-                        description: Minimum consecutive failures for the probe to
-                          be considered failed after having succeeded
+                        description: Minimum consecutive failures for the probe to be considered failed after having succeeded
                         format: int32
                         type: integer
                       initialDelaySeconds:
-                        description: Number of seconds after the container has started
-                          before liveness probes are initiated
+                        description: Number of seconds after the container has started before liveness probes are initiated
                         format: int32
                         type: integer
                       periodSeconds:
@@ -1385,13 +1240,11 @@ spec:
                         format: int32
                         type: integer
                       successThreshold:
-                        description: Minimum consecutive successes for the probe to
-                          be considered successful after having failed
+                        description: Minimum consecutive successes for the probe to be considered successful after having failed
                         format: int32
                         type: integer
                       timeoutSeconds:
-                        description: Number of seconds after which the probe times
-                          out
+                        description: Number of seconds after which the probe times out
                         format: int32
                         type: integer
                     type: object
@@ -1405,8 +1258,7 @@ spec:
                           - type: string
                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                           x-kubernetes-int-or-string: true
-                        description: 'Limits describes the maximum amount of compute
-                          resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        description: 'Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                         type: object
                       requests:
                         additionalProperties:
@@ -1415,10 +1267,7 @@ spec:
                           - type: string
                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                           x-kubernetes-int-or-string: true
-                        description: 'Requests describes the minimum amount of compute
-                          resources required. If Requests is omitted for a container,
-                          it defaults to Limits if that is explicitly specified, otherwise
-                          to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        description: 'Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                         type: object
                     type: object
                 type: object

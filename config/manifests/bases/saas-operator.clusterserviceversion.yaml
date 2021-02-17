@@ -191,6 +191,135 @@ spec:
         displayName: Resources
         path: resources
       version: v1alpha1
+    - description: Backend is the Schema for the backends API
+      displayName: Backend
+      kind: Backend
+      name: backends.saas.3scale.net
+      specDescriptors:
+      - description: Application specific configuration options for the component
+        displayName: Config
+        path: config
+      - description: A reference to the secret holding the backend-error-monitoring key
+        displayName: Error Monitoring Key
+        path: config.errorMonitoringKey
+      - description: A reference to the secret holding the backend-error-monitoring service
+        displayName: Error Monitoring Service
+        path: config.errorMonitoringService
+      - description: A reference to the secret holding the backend-internal-api password
+        displayName: Internal APIPassword
+        path: config.internalAPIPassword
+      - description: A reference to the secret holding the backend-internal-api user
+        displayName: Internal APIUser
+        path: config.internalAPIUser
+      - description: Master service account ID in Porta
+        displayName: Master Service ID
+        path: config.masterServiceID
+      - description: Rack environment
+        displayName: Rack Env
+        path: config.rackEnv
+      - description: Redis Queues DSN
+        displayName: Redis Queues DSN
+        path: config.redisQueuesDSN
+      - description: Redis Storage DSN
+        displayName: Redis Storage DSN
+        path: config.redisStorageDSN
+      - description: A reference to the secret holding the backend-system-events-hook password
+        displayName: System Events Hook Password
+        path: config.systemEventsHookPassword
+      - description: A reference to the secret holding the backend-system-events-hook URL
+        displayName: System Events Hook URL
+        path: config.systemEventsHookURL
+      - description: Configures the backend cron
+        displayName: Cron
+        path: cron
+      - description: Number of replicas for the component
+        displayName: Replicas
+        path: cron.replicas
+      - description: Resource requirements for the component
+        displayName: Resources
+        path: cron.resources
+      - description: Configures the Grafana Dashboard for the component
+        displayName: Grafana Dashboard
+        path: grafanaDashboard
+      - description: Image specification for the component
+        displayName: Image
+        path: image
+      - description: Configures the backend listener
+        displayName: Listener
+        path: listener
+      - description: Listener specific configuration options for the component element
+        displayName: Config
+        path: listener.config
+      - description: Enable (true) or disable (false) Legacy Referrer Filters
+        displayName: Legacy Referrer Filters
+        path: listener.config.legacyReferrerFilters
+      - description: Number of worker processes per listener pod
+        displayName: Listener Workers
+        path: listener.config.listenerWorkers
+      - description: Listener log format
+        displayName: Log Format
+        path: listener.config.logFormat
+      - description: Enable (true) or disable (false) listener redis async mode
+        displayName: Redis Async
+        path: listener.config.redisAsync
+      - description: The external endpoint/s for the component
+        displayName: Endpoint
+        path: listener.endpoint
+      - description: Horizontal Pod Autoscaler for the component
+        displayName: HPA
+        path: listener.hpa
+      - description: Liveness probe for the component
+        displayName: Liveness Probe
+        path: listener.livenessProbe
+      - description: Configures the AWS Network load balancer for the component
+        displayName: Load Balancer
+        path: listener.loadBalancer
+      - description: Marin3r configures the Marin3r sidecars for the component
+        displayName: Marin3r
+        path: listener.marin3r
+      - description: Pod Disruption Budget for the component
+        displayName: PDB
+        path: listener.pdb
+      - description: Readiness probe for the component
+        displayName: Readiness Probe
+        path: listener.readinessProbe
+      - description: Number of replicas (ignored if hpa is enabled) for the component
+        displayName: Replicas
+        path: listener.replicas
+      - description: Resource requirements for the component
+        displayName: Resources
+        path: listener.resources
+      - description: Configures the backend worker
+        displayName: Worker
+        path: worker
+      - description: Listener specific configuration options for the component element
+        displayName: Config
+        path: worker.config
+      - description: Worker log format
+        displayName: Log Format
+        path: worker.config.logFormat
+      - description: Enable (true) or disable (false) worker redis async mode
+        displayName: Redis Async
+        path: worker.config.redisAsync
+      - description: Horizontal Pod Autoscaler for the component
+        displayName: HPA
+        path: worker.hpa
+      - description: Liveness probe for the component
+        displayName: Liveness Probe
+        path: worker.livenessProbe
+      - description: Pod Disruption Budget for the component
+        displayName: PDB
+        path: worker.pdb
+      - description: Readiness probe for the component
+        displayName: Readiness Probe
+        path: worker.readinessProbe
+      - description: Number of replicas (ignored if hpa is enabled) for the component
+        displayName: Replicas
+        path: worker.replicas
+      - description: Resource requirements for the component
+        displayName: Resources
+        path: worker.resources
+      version: ""
     - description: CORSProxy is the Schema for the corsproxies API
       displayName: CORSProxy
       kind: CORSProxy
@@ -271,6 +400,312 @@ spec:
       - description: Resource requirements for the component
         displayName: Resources
         path: resources
+      version: v1alpha1
+    - description: System is the Schema for the systems API
+      displayName: System
+      kind: System
+      name: systems.saas.3scale.net
+      specDescriptors:
+      - description: Application specific configuration options
+        displayName: App
+        path: app
+      - description: Horizontal Pod Autoscaler for the component
+        displayName: HPA
+        path: app.hpa
+      - description: Liveness probe for the component
+        displayName: Liveness Probe
+        path: app.livenessProbe
+      - description: Marin3r configures the Marin3r sidecars for the component
+        displayName: Marin3r
+        path: app.marin3r
+      - description: Pod Disruption Budget for the component
+        displayName: PDB
+        path: app.pdb
+      - description: Readiness probe for the component
+        displayName: Readiness Probe
+        path: app.readinessProbe
+      - description: Number of replicas (ignored if hpa is enabled) for the component
+        displayName: Replicas
+        path: app.replicas
+      - description: Resource requirements for the component
+        displayName: Resources
+        path: app.resources
+      - description: Application specific configuration options for System components
+        displayName: Config
+        path: config
+      - description: AccessCode to protect admin urls
+        displayName: Access Code
+        path: config.accessCode
+      - description: AMP release number
+        displayName: AMPRelease
+        path: config.ampRelease
+      - description: Master access token for Apicast
+        displayName: Apicast Access Token
+        path: config.apicastAccessToken
+      - description: AWS access key
+        displayName: Access Key
+        path: config.assets.accessKey
+      - description: AWS S3 bucket name
+        displayName: Bucket
+        path: config.assets.bucket
+      - description: AWS S3 region
+        displayName: Region
+        path: config.assets.region
+      - description: AWS secret access key
+        displayName: Secret Key
+        path: config.assets.secretKey
+      - description: Backend has configuration options for system to contact backend
+        displayName: Backend
+        path: config.backend
+      - description: External endpoint
+        displayName: External Endpoint
+        path: config.backend.externalEndpoint
+      - description: Internal API password
+        displayName: Internal APIPassword
+        path: config.backend.internalAPIPassword
+      - description: Internal API user
+        displayName: Internal APIUser
+        path: config.backend.internalAPIUser
+      - description: Internal endpoint
+        displayName: Internal Endpoint
+        path: config.backend.internalEndpoint
+      - description: Redis data source name
+        displayName: Redis DSN
+        path: config.backend.redisDSN
+      - description: Options for configuring Bugsnag integration
+        displayName: Bugsnag
+        path: config.bugsnag
+      - description: API key
+        displayName: APIKey
+        path: config.bugsnag.apiKey
+      - description: Extra configuration files to be mounted in the pods
+        displayName: Config Files
+        path: config.configFiles
+      - description: DSN of system's main database
+        displayName: Database DSN
+        path: config.databaseDSN
+      - description: Database secret
+        displayName: Database Secret
+        path: config.databaseSecret
+      - description: EventsSharedSecret
+        displayName: Events Shared Secret
+        path: config.eventsSharedSecret
+      - description: Enable (true) or disable (false) enforcing SSL
+        displayName: Force SSL
+        path: config.forceSSL
+      - description: Options for Github integration
+        displayName: Github
+        path: config.github
+      - description: Client ID
+        displayName: Client ID
+        path: config.github.clientID
+      - description: Client secret
+        displayName: Client Secret
+        path: config.github.clientSecret
+      - description: Memcached servers
+        displayName: Memcached Servers
+        path: config.memcachedServers
+      - description: Options for configuring metrics publication
+        displayName: Metrics
+        path: config.metrics
+      - description: Password
+        displayName: Password
+        path: config.metrics.password
+      - description: User name
+        displayName: User
+        path: config.metrics.user
+      - description: Rails configuration options for system components
+        displayName: Rails
+        path: config.rails
+      - description: Rails environment
+        displayName: Environment
+        path: config.rails.environment
+      - description: Rails log level (debug, info, warn, error, fatal or unknown)
+        displayName: Log Level
+        path: config.rails.logLevel
+      - description: Holds recaptcha configuration options
+        displayName: Recaptcha
+        path: config.recaptcha
+      - description: Private key
+        displayName: Private Key
+        path: config.recaptcha.privateKey
+      - description: Public key
+        displayName: Public Key
+        path: config.recaptcha.publicKey
+      - description: Options for configuring RH Customer Portal integration
+        displayName: Red Hat Customer Portal
+        path: config.redhatCustomerPortal
+      - description: Client ID
+        displayName: Client ID
+        path: config.redhatCustomerPortal.clientID
+      - description: Client secret
+        displayName: Client Secret
+        path: config.redhatCustomerPortal.clientSecret
+      - description: Redis configuration options
+        displayName: Redis
+        path: config.redis
+      - description: Data source name
+        displayName: DSN
+        path: config.redis.dsn
+      - description: Message bus data source name
+        displayName: Message Bus DSN
+        path: config.redis.messageBusDSN
+      - description: OpenSSL verification mode for sandbox proxy
+        displayName: Sandbox Proxy Openssl Verify Mode
+        path: config.sandboxProxyOpensslVerifyMode
+      - description: SecretKeyBase
+        displayName: Secret Key Base
+        path: config.secretKeyBase
+      - description: System seed
+        displayName: Seed
+        path: config.seed
+      - description: Admin access token
+        displayName: Admin Access Token
+        path: config.seed.adminAccessToken
+      - description: Admin email address
+        displayName: Admin Email
+        path: config.seed.adminEmail
+      - description: Admin password
+        displayName: Admin Password
+        path: config.seed.adminPassword
+      - description: Admin user
+        displayName: Admin User
+        path: config.seed.adminUser
+      - description: Master access token
+        displayName: Master Access Token
+        path: config.seed.masterAccessToken
+      - description: Master domain
+        displayName: Master Domain
+        path: config.seed.masterDomain
+      - description: Master password
+        displayName: Master Password
+        path: config.seed.masterPassword
+      - description: Master user
+        displayName: Master User
+        path: config.seed.masterUser
+      - description: Tenant name
+        displayName: Tenant Name
+        path: config.seed.tenantName
+      - description: Options for Segment integration
+        displayName: Segment
+        path: config.segment
+      - description: Deletion token
+        displayName: Deletion Token
+        path: config.segment.deletionToken
+      - description: Deletion workspace
+        displayName: Deletion Workspace
+        path: config.segment.deletionWorkspace
+      - description: Write key
+        displayName: Write Key
+        path: config.segment.writeKey
+      - description: SMTP configuration options
+        displayName: SMTP
+        path: config.smtp
+      - description: Address
+        displayName: Address
+        path: config.smtp.address
+      - description: Authentication protocol
+        displayName: Auth Protocol
+        path: config.smtp.authProtocol
+      - description: OpenSSL verify mode
+        displayName: Open SSLVerify Mode
+        path: config.smtp.opensslVerifyMode
+      - description: Password
+        displayName: Password
+        path: config.smtp.password
+      - description: Port
+        displayName: Port
+        path: config.smtp.port
+      - description: Enable/disable auto STARTTLS
+        displayName: STARTTLSAuto
+        path: config.smtp.starttlsAuto
+      - description: User
+        displayName: User
+        path: config.smtp.user
+      - description: SSL certificates path
+        displayName: SSLCerts Dir
+        path: config.sslCertsDir
+      - description: 3scale provider plan
+        displayName: Threescale Provider Plan
+        path: config.threescaleProviderPlan
+      - description: 3scale superdomain
+        displayName: Threescale Superdomain
+        path: config.threescaleSuperdomain
+      - description: Zync authentication token
+        displayName: Zync Auth Token
+        path: config.zyncAuthToken
+      - description: Configures the Grafana Dashboard for the component
+        displayName: Grafana Dashboard
+        path: grafanaDashboard
+      - description: Image specification for the component
+        displayName: Image
+        path: image
+      - description: Sidekiq specific configuration options
+        displayName: Sidekiq
+        path: sidekiq
+      - description: Horizontal Pod Autoscaler for the component
+        displayName: HPA
+        path: sidekiq.hpa
+      - description: Liveness probe for the component
+        displayName: Liveness Probe
+        path: sidekiq.livenessProbe
+      - description: Pod Disruption Budget for the component
+        displayName: PDB
+        path: sidekiq.pdb
+      - description: Readiness probe for the component
+        displayName: Readiness Probe
+        path: sidekiq.readinessProbe
+      - description: Number of replicas (ignored if hpa is enabled) for the component
+        displayName: Replicas
+        path: sidekiq.replicas
+      - description: Resource requirements for the component
+        displayName: Resources
+        path: sidekiq.resources
+      - description: Sphinx specific configuration options
+        displayName: Sphinx
+        path: sphinx
+      - description: Configuration options for System's sphinx
+        displayName: Config
+        path: sphinx.config
+      - description: Interval used for adding chunks of brand new documents to the primary index at certain intervals without having to do a full re-index
+        displayName: Delta Index Interval
+        path: sphinx.config.deltaIndexInterval
+      - description: Interval used to do a full re-index
+        displayName: Full Reindex Interval
+        path: sphinx.config.fullReindexInterval
+      - description: Thinking configuration for sphinx
+        displayName: Thinking
+        path: sphinx.config.thinking
+      - description: Allows setting the TCP host for Sphinx to a different address
+        displayName: Bind Address
+        path: sphinx.config.thinking.bindAddress
+      - description: Sphinx configuration file path
+        displayName: Config File
+        path: sphinx.config.thinking.configFile
+      - description: Sphinx database path
+        displayName: Database Path
+        path: sphinx.config.thinking.databasePath
+      - description: Sphinx database storage type
+        displayName: Database Storage Class
+        path: sphinx.config.thinking.databaseStorageClass
+      - description: Sphinx database storage size
+        displayName: Database Storage Size
+        path: sphinx.config.thinking.databaseStorageSize
+      - description: Sphinx PID file path
+        displayName: PIDFile
+        path: sphinx.config.thinking.pidFile
+      - description: The TCP port Sphinx will run its daemon on
+        displayName: Port
+        path: sphinx.config.thinking.port
+      - description: Liveness probe for the component
+        displayName: Liveness Probe
+        path: sphinx.livenessProbe
+      - description: Readiness probe for the component
+        displayName: Readiness Probe
+        path: sphinx.readinessProbe
+      - description: Resource requirements for the component
+        displayName: Resources
+        path: sphinx.resources
       version: v1alpha1
   description: |
     The 3scale SaaS Operator creates and maintains SaaS-ready deployments

@@ -102,6 +102,88 @@ metadata:
         },
         {
           "apiVersion": "saas.3scale.net/v1alpha1",
+          "kind": "Backend",
+          "metadata": {
+            "name": "example"
+          },
+          "spec": {
+            "config": {
+              "internalAPIPassword": {
+                "fromVault": {
+                  "key": "PASSWORD",
+                  "path": "secret/data/some/path"
+                }
+              },
+              "internalAPIUser": {
+                "fromVault": {
+                  "key": "USER",
+                  "path": "secret/data/some/path"
+                }
+              },
+              "rackEnv": "dev",
+              "redisQueuesDSN": "backend-redis-queues",
+              "redisStorageDSN": "backend-redis-storage",
+              "systemEventsHookPassword": {
+                "fromVault": {
+                  "key": "PASSWORD",
+                  "path": "secret/data/some/path"
+                }
+              },
+              "systemEventsHookURL": {
+                "fromVault": {
+                  "key": "URL",
+                  "path": "secret/data/some/path"
+                }
+              }
+            },
+            "image": {
+              "tag": "v3.2.0"
+            },
+            "listener": {
+              "config": {
+                "redisAsync": false
+              },
+              "endpoint": {
+                "dns": [
+                  "backend.example.com"
+                ]
+              },
+              "loadBalancer": {
+                "eipAllocations": [
+                  "eip-123",
+                  "eip-456"
+                ]
+              },
+              "marin3r": {
+                "ports": [
+                  {
+                    "name": "backend-http",
+                    "port": 38080
+                  },
+                  {
+                    "name": "http-internal",
+                    "port": 38081
+                  },
+                  {
+                    "name": "backend-htttps",
+                    "port": 38443
+                  },
+                  {
+                    "name": "envoy-metrics",
+                    "port": 9901
+                  }
+                ]
+              }
+            },
+            "worker": {
+              "config": {
+                "redisAsync": true
+              }
+            }
+          }
+        },
+        {
+          "apiVersion": "saas.3scale.net/v1alpha1",
           "kind": "CORSProxy",
           "metadata": {
             "name": "example"
@@ -140,6 +222,272 @@ metadata:
               "tag": "v0.1.0"
             }
           }
+        },
+        {
+          "apiVersion": "saas.3scale.net/v1alpha1",
+          "kind": "System",
+          "metadata": {
+            "name": "system-sample"
+          },
+          "spec": {
+            "config": {
+              "accessCode": {
+                "fromVault": {
+                  "key": "ACCESS_CODE",
+                  "path": "secret/data/path/system-app"
+                }
+              },
+              "apicastAccessToken": {
+                "fromVault": {
+                  "key": "ACCESS_TOKEN",
+                  "path": "secret/data/path/system-master-apicast"
+                }
+              },
+              "assets": {
+                "accessKey": {
+                  "fromVault": {
+                    "key": "AWS_ACCESS_KEY_ID",
+                    "path": "secret/data/path/system-multitenant-assets-s3"
+                  }
+                },
+                "bucket": "my-bucket",
+                "region": "us-east-1",
+                "secretKey": {
+                  "fromVault": {
+                    "key": "AWS_SECRET_ACCESS_KEY",
+                    "path": "secret/data/path/system-multitenant-assets-s3"
+                  }
+                }
+              },
+              "backend": {
+                "externalEndpoint": "https://backend.example.com",
+                "internalAPIPassword": {
+                  "fromVault": {
+                    "key": "password",
+                    "path": "secret/data/path/backend-internal-api"
+                  }
+                },
+                "internalAPIUser": {
+                  "fromVault": {
+                    "key": "username",
+                    "path": "secret/data/path/backend-internal-api"
+                  }
+                },
+                "internalEndpoint": "http://backend-listener-internal",
+                "redisDSN": "redis://backend-redis:6379/0"
+              },
+              "bugsnag": {
+                "apiKey": {
+                  "fromVault": {
+                    "key": "BUGSNAG_API_KEY",
+                    "path": "secret/data/path/system-app"
+                  }
+                }
+              },
+              "configFiles": {
+                "files": [
+                  "amazon_s3.yml",
+                  "backend.yml",
+                  "backend_redis.yml",
+                  "banned_domains.yml",
+                  "cable.yml",
+                  "cache_store.yml",
+                  "core.yml",
+                  "database.yml",
+                  "domain_substitution.yml",
+                  "features.yml",
+                  "internal_domains.yml",
+                  "message_bus.yml",
+                  "newrelic.yml",
+                  "oauth2.yml",
+                  "paperclip.yml",
+                  "plan_rules.yml",
+                  "prometheus.yml",
+                  "redhat_customer_portal.yml",
+                  "redis.yml",
+                  "rolling_updates.yml",
+                  "sandbox_proxy.yml",
+                  "secrets.yml",
+                  "segment.yml",
+                  "settings.yml",
+                  "sidekiq_schedule.yml",
+                  "smtp.yml",
+                  "web_hooks.yml",
+                  "zync.yml"
+                ],
+                "vaultPath": "secret/data/path/system-config"
+              },
+              "databaseDSN": {
+                "fromVault": {
+                  "key": "URL",
+                  "path": "secret/data/path/system-database"
+                }
+              },
+              "databaseSecret": {
+                "fromVault": {
+                  "key": "DB_SECRET",
+                  "path": "secret/data/path/system-app"
+                }
+              },
+              "eventsSharedSecret": {
+                "fromVault": {
+                  "key": "EVENTS_SHARED_SECRET",
+                  "path": "secret/data/path/system-app"
+                }
+              },
+              "github": {
+                "clientID": {
+                  "fromVault": {
+                    "key": "GITHUB_CLIENT_ID",
+                    "path": "secret/data/path/system-app"
+                  }
+                },
+                "clientSecret": {
+                  "fromVault": {
+                    "key": "GITHUB_CLIENT_SECRET",
+                    "path": "secret/data/path/system-app"
+                  }
+                }
+              },
+              "memcachedServers": "",
+              "metrics": {
+                "password": {
+                  "fromVault": {
+                    "key": "PROMETHEUS_PASSWORD",
+                    "path": "secret/data/path/system-app"
+                  }
+                },
+                "user": {
+                  "fromVault": {
+                    "key": "PROMETHEUS_USER",
+                    "path": "secret/data/path/system-app"
+                  }
+                }
+              },
+              "recaptcha": {
+                "privateKey": {
+                  "fromVault": {
+                    "key": "RECAPTCHA_PRIVATE_KEY",
+                    "path": "secret/data/path/system-recaptcha"
+                  }
+                },
+                "publicKey": {
+                  "fromVault": {
+                    "key": "RECAPTCHA_PUBLIC_KEY",
+                    "path": "secret/data/path/system-recaptcha"
+                  }
+                }
+              },
+              "redhatCustomerPortal": {
+                "clientID": {
+                  "fromVault": {
+                    "key": "RH_CUSTOMER_PORTAL_CLIENT_ID",
+                    "path": "secret/data/path/system-app"
+                  }
+                },
+                "clientSecret": {
+                  "fromVault": {
+                    "key": "RH_CUSTOMER_PORTAL_CLIENT_SECRET",
+                    "path": "secret/data/path/system-app"
+                  }
+                }
+              },
+              "redis": {
+                "dsn": "redis://system-redis:6379/1",
+                "messageBusDSN": "redis://system-redis:6379/2"
+              },
+              "secretKeyBase": {
+                "fromVault": {
+                  "key": "SECRET_KEY_BASE",
+                  "path": "secret/data/path/system-app"
+                }
+              },
+              "seed": {
+                "adminAccessToken": {
+                  "fromVault": {
+                    "key": "ADMIN_ACCESS_TOKEN",
+                    "path": "secret/data/path/system-seed"
+                  }
+                },
+                "adminEmail": "admin@example.com",
+                "adminPassword": {
+                  "fromVault": {
+                    "key": "ADMIN_PASSWORD",
+                    "path": "secret/data/path/system-seed"
+                  }
+                },
+                "adminUser": {
+                  "fromVault": {
+                    "key": "ADMIN_USER",
+                    "path": "secret/data/path/system-seed"
+                  }
+                },
+                "masterAccessToken": {
+                  "fromVault": {
+                    "key": "MASTER_ACCESS_TOKEN",
+                    "path": "secret/data/path/system-seed"
+                  }
+                },
+                "masterDomain": "multitenant-admin",
+                "masterPassword": {
+                  "fromVault": {
+                    "key": "MASTER_PASSWORD",
+                    "path": "secret/data/path/system-seed"
+                  }
+                },
+                "masterUser": {
+                  "fromVault": {
+                    "key": "MASTER_USER",
+                    "path": "secret/data/path/system-seed"
+                  }
+                },
+                "tenantName": "example"
+              },
+              "segment": {
+                "deletionToken": {
+                  "fromVault": {
+                    "key": "SEGMENT_DELETION_TOKEN",
+                    "path": "secret/data/path/system-app"
+                  }
+                },
+                "deletionWorkspace": "example",
+                "writeKey": {
+                  "fromVault": {
+                    "key": "SEGMENT_WRITE_KEY",
+                    "path": "secret/data/path/system-app"
+                  }
+                }
+              },
+              "smtp": {
+                "address": "localhost",
+                "authProtocol": "none",
+                "opensslVerifyMode": "none",
+                "password": {
+                  "fromVault": {
+                    "key": "password",
+                    "path": "secret/data/path/system-smtp"
+                  }
+                },
+                "port": 25,
+                "starttlsAuto": false,
+                "user": {
+                  "fromVault": {
+                    "key": "username",
+                    "path": "secret/data/path/system-smtp"
+                  }
+                }
+              },
+              "zyncAuthToken": {
+                "fromVault": {
+                  "key": "ZYNC_AUTHENTICATION_TOKEN",
+                  "path": "secret/data/path/zync"
+                }
+              }
+            },
+            "image": {
+              "pullPolicy": "Always"
+            }
+          }
         }
       ]
     capabilities: Basic Install
@@ -153,7 +501,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/3scale/saas-operator
     support: Red Hat
-  name: saas-operator.v0.9.0-alpha21
+  name: saas-operator.v0.9.0-alpha25
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -330,6 +678,9 @@ spec:
         displayName: Resources
         path: resources
       version: v1alpha1
+    - kind: Backend
+      name: backends.saas.3scale.net
+      version: v1alpha1
     - description: CORSProxy is the Schema for the corsproxies API
       displayName: CORSProxy
       kind: CORSProxy
@@ -410,6 +761,312 @@ spec:
       - description: Resource requirements for the component
         displayName: Resources
         path: resources
+      version: v1alpha1
+    - description: System is the Schema for the systems API
+      displayName: System
+      kind: System
+      name: systems.saas.3scale.net
+      specDescriptors:
+      - description: Application specific configuration options
+        displayName: App
+        path: app
+      - description: Horizontal Pod Autoscaler for the component
+        displayName: HPA
+        path: app.hpa
+      - description: Liveness probe for the component
+        displayName: Liveness Probe
+        path: app.livenessProbe
+      - description: Marin3r configures the Marin3r sidecars for the component
+        displayName: Marin3r
+        path: app.marin3r
+      - description: Pod Disruption Budget for the component
+        displayName: PDB
+        path: app.pdb
+      - description: Readiness probe for the component
+        displayName: Readiness Probe
+        path: app.readinessProbe
+      - description: Number of replicas (ignored if hpa is enabled) for the component
+        displayName: Replicas
+        path: app.replicas
+      - description: Resource requirements for the component
+        displayName: Resources
+        path: app.resources
+      - description: Application specific configuration options for System components
+        displayName: Config
+        path: config
+      - description: AccessCode to protect admin urls
+        displayName: Access Code
+        path: config.accessCode
+      - description: AMP release number
+        displayName: AMPRelease
+        path: config.ampRelease
+      - description: Master access token for Apicast
+        displayName: Apicast Access Token
+        path: config.apicastAccessToken
+      - description: AWS access key
+        displayName: Access Key
+        path: config.assets.accessKey
+      - description: AWS S3 bucket name
+        displayName: Bucket
+        path: config.assets.bucket
+      - description: AWS S3 region
+        displayName: Region
+        path: config.assets.region
+      - description: AWS secret access key
+        displayName: Secret Key
+        path: config.assets.secretKey
+      - description: Backend has configuration options for system to contact backend
+        displayName: Backend
+        path: config.backend
+      - description: External endpoint
+        displayName: External Endpoint
+        path: config.backend.externalEndpoint
+      - description: Internal API password
+        displayName: Internal APIPassword
+        path: config.backend.internalAPIPassword
+      - description: Internal API user
+        displayName: Internal APIUser
+        path: config.backend.internalAPIUser
+      - description: Internal endpoint
+        displayName: Internal Endpoint
+        path: config.backend.internalEndpoint
+      - description: Redis data source name
+        displayName: Redis DSN
+        path: config.backend.redisDSN
+      - description: Options for configuring Bugsnag integration
+        displayName: Bugsnag
+        path: config.bugsnag
+      - description: API key
+        displayName: APIKey
+        path: config.bugsnag.apiKey
+      - description: Extra configuration files to be mounted in the pods
+        displayName: Config Files
+        path: config.configFiles
+      - description: DSN of system's main database
+        displayName: Database DSN
+        path: config.databaseDSN
+      - description: Database secret
+        displayName: Database Secret
+        path: config.databaseSecret
+      - description: EventsSharedSecret
+        displayName: Events Shared Secret
+        path: config.eventsSharedSecret
+      - description: Enable (true) or disable (false) enforcing SSL
+        displayName: Force SSL
+        path: config.forceSSL
+      - description: Options for Github integration
+        displayName: Github
+        path: config.github
+      - description: Client ID
+        displayName: Client ID
+        path: config.github.clientID
+      - description: Client secret
+        displayName: Client Secret
+        path: config.github.clientSecret
+      - description: Memcached servers
+        displayName: Memcached Servers
+        path: config.memcachedServers
+      - description: Options for configuring metrics publication
+        displayName: Metrics
+        path: config.metrics
+      - description: Password
+        displayName: Password
+        path: config.metrics.password
+      - description: User name
+        displayName: User
+        path: config.metrics.user
+      - description: Rails configuration options for system components
+        displayName: Rails
+        path: config.rails
+      - description: Rails environment
+        displayName: Environment
+        path: config.rails.environment
+      - description: Rails log level (debug, info, warn, error, fatal or unknown)
+        displayName: Log Level
+        path: config.rails.logLevel
+      - description: Holds recaptcha configuration options
+        displayName: Recaptcha
+        path: config.recaptcha
+      - description: Private key
+        displayName: Private Key
+        path: config.recaptcha.privateKey
+      - description: Public key
+        displayName: Public Key
+        path: config.recaptcha.publicKey
+      - description: Options for configuring RH Customer Portal integration
+        displayName: Red Hat Customer Portal
+        path: config.redhatCustomerPortal
+      - description: Client ID
+        displayName: Client ID
+        path: config.redhatCustomerPortal.clientID
+      - description: Client secret
+        displayName: Client Secret
+        path: config.redhatCustomerPortal.clientSecret
+      - description: Redis configuration options
+        displayName: Redis
+        path: config.redis
+      - description: Data source name
+        displayName: DSN
+        path: config.redis.dsn
+      - description: Message bus data source name
+        displayName: Message Bus DSN
+        path: config.redis.messageBusDSN
+      - description: OpenSSL verification mode for sandbox proxy
+        displayName: Sandbox Proxy Openssl Verify Mode
+        path: config.sandboxProxyOpensslVerifyMode
+      - description: SecretKeyBase
+        displayName: Secret Key Base
+        path: config.secretKeyBase
+      - description: System seed
+        displayName: Seed
+        path: config.seed
+      - description: Admin access token
+        displayName: Admin Access Token
+        path: config.seed.adminAccessToken
+      - description: Admin email address
+        displayName: Admin Email
+        path: config.seed.adminEmail
+      - description: Admin password
+        displayName: Admin Password
+        path: config.seed.adminPassword
+      - description: Admin user
+        displayName: Admin User
+        path: config.seed.adminUser
+      - description: Master access token
+        displayName: Master Access Token
+        path: config.seed.masterAccessToken
+      - description: Master domain
+        displayName: Master Domain
+        path: config.seed.masterDomain
+      - description: Master password
+        displayName: Master Password
+        path: config.seed.masterPassword
+      - description: Master user
+        displayName: Master User
+        path: config.seed.masterUser
+      - description: Tenant name
+        displayName: Tenant Name
+        path: config.seed.tenantName
+      - description: Options for Segment integration
+        displayName: Segment
+        path: config.segment
+      - description: Deletion token
+        displayName: Deletion Token
+        path: config.segment.deletionToken
+      - description: Deletion workspace
+        displayName: Deletion Workspace
+        path: config.segment.deletionWorkspace
+      - description: Write key
+        displayName: Write Key
+        path: config.segment.writeKey
+      - description: SMTP configuration options
+        displayName: SMTP
+        path: config.smtp
+      - description: Address
+        displayName: Address
+        path: config.smtp.address
+      - description: Authentication protocol
+        displayName: Auth Protocol
+        path: config.smtp.authProtocol
+      - description: OpenSSL verify mode
+        displayName: Open SSLVerify Mode
+        path: config.smtp.opensslVerifyMode
+      - description: Password
+        displayName: Password
+        path: config.smtp.password
+      - description: Port
+        displayName: Port
+        path: config.smtp.port
+      - description: Enable/disable auto STARTTLS
+        displayName: STARTTLSAuto
+        path: config.smtp.starttlsAuto
+      - description: User
+        displayName: User
+        path: config.smtp.user
+      - description: SSL certificates path
+        displayName: SSLCerts Dir
+        path: config.sslCertsDir
+      - description: 3scale provider plan
+        displayName: Threescale Provider Plan
+        path: config.threescaleProviderPlan
+      - description: 3scale superdomain
+        displayName: Threescale Superdomain
+        path: config.threescaleSuperdomain
+      - description: Zync authentication token
+        displayName: Zync Auth Token
+        path: config.zyncAuthToken
+      - description: Configures the Grafana Dashboard for the component
+        displayName: Grafana Dashboard
+        path: grafanaDashboard
+      - description: Image specification for the component
+        displayName: Image
+        path: image
+      - description: Sidekiq specific configuration options
+        displayName: Sidekiq
+        path: sidekiq
+      - description: Horizontal Pod Autoscaler for the component
+        displayName: HPA
+        path: sidekiq.hpa
+      - description: Liveness probe for the component
+        displayName: Liveness Probe
+        path: sidekiq.livenessProbe
+      - description: Pod Disruption Budget for the component
+        displayName: PDB
+        path: sidekiq.pdb
+      - description: Readiness probe for the component
+        displayName: Readiness Probe
+        path: sidekiq.readinessProbe
+      - description: Number of replicas (ignored if hpa is enabled) for the component
+        displayName: Replicas
+        path: sidekiq.replicas
+      - description: Resource requirements for the component
+        displayName: Resources
+        path: sidekiq.resources
+      - description: Sphinx specific configuration options
+        displayName: Sphinx
+        path: sphinx
+      - description: Configuration options for System's sphinx
+        displayName: Config
+        path: sphinx.config
+      - description: Interval used for adding chunks of brand new documents to the primary index at certain intervals without having to do a full re-index
+        displayName: Delta Index Interval
+        path: sphinx.config.deltaIndexInterval
+      - description: Interval used to do a full re-index
+        displayName: Full Reindex Interval
+        path: sphinx.config.fullReindexInterval
+      - description: Thinking configuration for sphinx
+        displayName: Thinking
+        path: sphinx.config.thinking
+      - description: Allows setting the TCP host for Sphinx to a different address
+        displayName: Bind Address
+        path: sphinx.config.thinking.bindAddress
+      - description: Sphinx configuration file path
+        displayName: Config File
+        path: sphinx.config.thinking.configFile
+      - description: Sphinx database path
+        displayName: Database Path
+        path: sphinx.config.thinking.databasePath
+      - description: Sphinx database storage type
+        displayName: Database Storage Class
+        path: sphinx.config.thinking.databaseStorageClass
+      - description: Sphinx database storage size
+        displayName: Database Storage Size
+        path: sphinx.config.thinking.databaseStorageSize
+      - description: Sphinx PID file path
+        displayName: PIDFile
+        path: sphinx.config.thinking.pidFile
+      - description: The TCP port Sphinx will run its daemon on
+        displayName: Port
+        path: sphinx.config.thinking.port
+      - description: Liveness probe for the component
+        displayName: Liveness Probe
+        path: sphinx.livenessProbe
+      - description: Readiness probe for the component
+        displayName: Readiness Probe
+        path: sphinx.readinessProbe
+      - description: Resource requirements for the component
+        displayName: Resources
+        path: sphinx.resources
       version: v1alpha1
   description: |
     The 3scale SaaS Operator creates and maintains SaaS-ready deployments
@@ -497,7 +1154,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/3scale/saas-operator:0.9.0-alpha21
+                image: quay.io/3scale/saas-operator:0.9.0-alpha25
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -549,6 +1206,18 @@ spec:
           - apps
           resources:
           - deployments
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - apps
+          resources:
+          - statefulsets
           verbs:
           - create
           - delete
@@ -680,6 +1349,32 @@ spec:
         - apiGroups:
           - saas.3scale.net
           resources:
+          - backends
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - saas.3scale.net
+          resources:
+          - backends/finalizers
+          verbs:
+          - update
+        - apiGroups:
+          - saas.3scale.net
+          resources:
+          - backends/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - saas.3scale.net
+          resources:
           - corsproxies
           verbs:
           - create
@@ -730,6 +1425,32 @@ spec:
           - patch
           - update
         - apiGroups:
+          - saas.3scale.net
+          resources:
+          - systems
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - saas.3scale.net
+          resources:
+          - systems/finalizers
+          verbs:
+          - update
+        - apiGroups:
+          - saas.3scale.net
+          resources:
+          - systems/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
           - secrets-manager.tuenti.io
           resources:
           - secretdefinitions
@@ -768,4 +1489,4 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
-  version: 0.9.0-alpha21
+  version: 0.9.0-alpha25
