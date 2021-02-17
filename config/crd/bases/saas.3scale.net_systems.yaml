@@ -39,18 +39,6 @@ spec:
               app:
                 description: Application specific configuration options
                 properties:
-                  endpoint:
-                    description: System's app endpoint
-                    properties:
-                      dns:
-                        description: The list of dns records that will point to the
-                          component
-                        items:
-                          type: string
-                        type: array
-                    required:
-                    - dns
-                    type: object
                   hpa:
                     description: Horizontal Pod Autoscaler for the component
                     properties:
@@ -107,40 +95,6 @@ spec:
                           out
                         format: int32
                         type: integer
-                    type: object
-                  loadBalancer:
-                    description: Configures the AWS load balancer for the component
-                    properties:
-                      connectionDrainingEnabled:
-                        description: Enables/disables connection draining
-                        type: boolean
-                      connectionDrainingTimeout:
-                        description: Sets the timeout for connection draining
-                        format: int32
-                        type: integer
-                      crossZoneLoadBalancingEnabled:
-                        description: Enables/disables cross zone load balancing
-                        type: boolean
-                      healthcheckHealthyThreshold:
-                        description: Sets the healthy threshold for the load balancer
-                        format: int32
-                        type: integer
-                      healthcheckInterval:
-                        description: Sets the interval between health checks
-                        format: int32
-                        type: integer
-                      healthcheckTimeout:
-                        description: Sets the timeout for the health check
-                        format: int32
-                        type: integer
-                      healthcheckUnhealthyThreshold:
-                        description: Sets the unhealthy threshold for the load balancer
-                        format: int32
-                        type: integer
-                      proxyProtocol:
-                        description: Enables/disbles use of proxy protocol in the
-                          load balancer
-                        type: boolean
                     type: object
                   marin3r:
                     description: Marin3r configures the Marin3r sidecars for the component
@@ -282,8 +236,6 @@ spec:
                           to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                         type: object
                     type: object
-                required:
-                - endpoint
                 type: object
               config:
                 description: Application specific configuration options for System

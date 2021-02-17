@@ -499,13 +499,13 @@ type SystemAppSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Marin3r *Marin3rSidecarSpec `json:"marin3r,omitempty"`
-	// Configures the AWS load balancer for the component
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	LoadBalancer *LoadBalancerSpec `json:"loadBalancer,omitempty"`
-	// System's app endpoint
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	Endpoint Endpoint `json:"endpoint"`
+	// // Configures the AWS load balancer for the component
+	// // +operator-sdk:csv:customresourcedefinitions:type=spec
+	// // +optional
+	// LoadBalancer *LoadBalancerSpec `json:"loadBalancer,omitempty"`
+	// // System's app endpoint
+	// // +operator-sdk:csv:customresourcedefinitions:type=spec
+	// Endpoint Endpoint `json:"endpoint"`
 }
 
 // Default implements defaulting for the system App component
@@ -522,7 +522,7 @@ func (spec *SystemAppSpec) Default() {
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, systemDefaultAppResources)
 	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, systemDefaultAppLivenessProbe)
 	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, systemDefaultAppReadinessProbe)
-	spec.LoadBalancer = InitializeLoadBalancerSpec(spec.LoadBalancer, systemDefaultAppLoadBalancer)
+	// spec.LoadBalancer = InitializeLoadBalancerSpec(spec.LoadBalancer, systemDefaultAppLoadBalancer)
 	spec.Marin3r = InitializeMarin3rSidecarSpec(spec.Marin3r, systemDefaultAppMarin3rSpec)
 }
 
