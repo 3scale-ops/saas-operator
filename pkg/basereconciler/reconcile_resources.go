@@ -35,12 +35,16 @@ type ControlledResources struct {
 	GrafanaDashboards        []GrafanaDashboard
 }
 
+// RolloutTrigger defines a configuration source that should trigger a
+// rollout whenever the data within that configuration source changes
 type RolloutTrigger struct {
 	name      string
 	configMap *corev1.ConfigMap
 	secret    *corev1.Secret
 }
 
+// GetHash returns the hash of the data container in the RolloutTrigger
+// config source
 func (rt *RolloutTrigger) GetHash() string {
 	if rt.secret != nil {
 		if reflect.DeepEqual(rt.secret, &corev1.Secret{}) {
@@ -57,6 +61,8 @@ func (rt *RolloutTrigger) GetHash() string {
 	return ""
 }
 
+// GetAnnotationKey returns the annotation key to be used in the Pods that read
+// from the config source defined in the RolloutTrigger
 func (rt *RolloutTrigger) GetAnnotationKey() string {
 	if rt.secret != nil {
 		return fmt.Sprintf("%s/%s.%s", saasv1alpha1.AnnotationsDomain, rt.name, "secret-hash")
@@ -64,6 +70,8 @@ func (rt *RolloutTrigger) GetAnnotationKey() string {
 	return fmt.Sprintf("%s/%s.%s", saasv1alpha1.AnnotationsDomain, rt.name, "configmap-hash")
 }
 
+// NewRolloutTrigger returns a new RolloutTrigger from a Secret or ConfigMap
+// It panics if the passed client.Object is not a Secret or ConfigMap
 func NewRolloutTrigger(name string, o client.Object) RolloutTrigger {
 	switch trigger := o.(type) {
 	case *corev1.Secret:
@@ -103,51 +111,51 @@ func (r *Reconciler) TriggersFromSecretDefs(ctx context.Context, sd ...Generator
 	return triggers, nil
 }
 
-// Deployment specifies a Deployment resources and its rollout triggers
+// Deployment specifies a Deployment resource and its rollout triggers
 type Deployment struct {
 	Template        GeneratorFunction
 	RolloutTriggers []RolloutTrigger
 	HasHPA          bool
 }
 
-// StatefulSet ...
+// StatefulSet specifies a StatefulSet resource and its rollout triggers
 type StatefulSet struct {
 	Template        GeneratorFunction
 	RolloutTriggers []RolloutTrigger
 	Enabled         bool
 }
 
-// SecretDefinition ...
+// SecretDefinition specifies a SecretDefinition resource
 type SecretDefinition struct {
 	Template GeneratorFunction
 	Enabled  bool
 }
 
-// Service ...
+// Service specifies a Service resource
 type Service struct {
 	Template GeneratorFunction
 	Enabled  bool
 }
 
-// PodDisruptionBudget ...
+// PodDisruptionBudget specifies a PodDisruptionBudget resource
 type PodDisruptionBudget struct {
 	Template GeneratorFunction
 	Enabled  bool
 }
 
-// HorizontalPodAutoscaler ...
+// HorizontalPodAutoscaler specifies a HorizontalPodAutoscaler resource
 type HorizontalPodAutoscaler struct {
 	Template GeneratorFunction
 	Enabled  bool
 }
 
-// PodMonitor ...
+// PodMonitor specifies a PodMonitor resource
 type PodMonitor struct {
 	Template GeneratorFunction
 	Enabled  bool
 }
 
-// GrafanaDashboard ...
+// GrafanaDashboard specifies a GrafanaDashboard resource
 type GrafanaDashboard struct {
 	Template GeneratorFunction
 	Enabled  bool
@@ -263,6 +271,7 @@ func ServiceExcludes(fn GeneratorFunction) []string {
 	return paths
 }
 
+// DeploymentWithRolloutTriggers returns the Deployment modified with the appropriate rollout triggers (annotations)
 func (r *Reconciler) DeploymentWithRolloutTriggers(deployment GeneratorFunction, triggers []RolloutTrigger) GeneratorFunction {
 
 	return func() client.Object {
@@ -277,6 +286,7 @@ func (r *Reconciler) DeploymentWithRolloutTriggers(deployment GeneratorFunction,
 	}
 }
 
+// StatefulSetWithRolloutTriggers returns the StatefulSet modified with the appropriate rollout triggers (annotations)
 func (r *Reconciler) StatefulSetWithRolloutTriggers(statefulset GeneratorFunction, triggers []RolloutTrigger) GeneratorFunction {
 
 	return func() client.Object {
@@ -291,6 +301,7 @@ func (r *Reconciler) StatefulSetWithRolloutTriggers(statefulset GeneratorFunctio
 	}
 }
 
+// Hash returns a hash of the passed object
 func Hash(o interface{}) string {
 	hasher := fnv.New32a()
 	hasher.Reset()
