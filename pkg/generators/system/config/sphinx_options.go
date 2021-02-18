@@ -41,7 +41,7 @@ func NewSphinxOptions(spec saasv1alpha1.SystemSpec) SphinxOptions {
 		FUllReindexInterval:          &pod.ClearTextValue{Value: fmt.Sprintf("%d", *spec.Sphinx.Config.FullReindexInterval)},
 		RailsEnvironment:             &pod.ClearTextValue{Value: *spec.Config.Rails.Environment},
 		DatabaseURL:                  &pod.SecretValue{Value: spec.Config.DatabaseDSN},
-		RedisURL:                     &pod.ClearTextValue{Value: spec.Config.Redis.DSN},
+		RedisURL:                     &pod.ClearTextValue{Value: spec.Config.Redis.QueuesDSN},
 		RedisMessageBusURL:           &pod.ClearTextValue{Value: spec.Config.Redis.MessageBusDSN},
 		RedisNamespace:               &pod.ClearTextValue{Value: ""},
 		RedisMessageBusNamespace:     &pod.ClearTextValue{Value: ""},

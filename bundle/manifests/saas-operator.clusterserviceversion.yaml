@@ -227,7 +227,7 @@ metadata:
           "apiVersion": "saas.3scale.net/v1alpha1",
           "kind": "System",
           "metadata": {
-            "name": "system-sample"
+            "name": "example"
           },
           "spec": {
             "config": {
@@ -393,8 +393,8 @@ metadata:
                 }
               },
               "redis": {
-                "dsn": "redis://system-redis:6379/1",
-                "messageBusDSN": "redis://system-redis:6379/2"
+                "messageBusDSN": "redis://system-redis:6379/2",
+                "queuesDSN": "redis://system-redis:6379/1"
               },
               "secretKeyBase": {
                 "fromVault": {
@@ -905,12 +905,12 @@ spec:
       - description: Redis configuration options
         displayName: Redis
         path: config.redis
-      - description: Data source name
-        displayName: DSN
-        path: config.redis.dsn
       - description: Message bus data source name
         displayName: Message Bus DSN
         path: config.redis.messageBusDSN
+      - description: Data source name
+        displayName: Queues DSN
+        path: config.redis.queuesDSN
       - description: OpenSSL verification mode for sandbox proxy
         displayName: Sandbox Proxy Openssl Verify Mode
         path: config.sandboxProxyOpensslVerifyMode

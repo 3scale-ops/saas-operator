@@ -464,7 +464,7 @@ func (bs *BugsnagSpec) Enabled() bool {
 type RedisSpec struct {
 	// Data source name
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	DSN string `json:"dsn"`
+	QueuesDSN string `json:"queuesDSN"`
 	// Message bus data source name
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	MessageBusDSN string `json:"messageBusDSN"`

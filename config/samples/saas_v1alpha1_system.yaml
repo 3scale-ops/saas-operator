@@ -1,7 +1,7 @@
 apiVersion: saas.3scale.net/v1alpha1
 kind: System
 metadata:
-  name: system-sample
+  name: example
 spec:
   image:
     pullPolicy: Always
@@ -141,7 +141,7 @@ spec:
           key: BUGSNAG_API_KEY
     memcachedServers: ""
     redis:
-      dsn: redis://system-redis:6379/1
+      queuesDSN: redis://system-redis:6379/1
       messageBusDSN: redis://system-redis:6379/2
     smtp:
       address: localhost

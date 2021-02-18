@@ -129,7 +129,7 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 
 		EventsHookPassword: &pod.SecretValue{Value: spec.Config.EventsSharedSecret},
 
-		RedisURL:                     &pod.ClearTextValue{Value: spec.Config.Redis.DSN},
+		RedisURL:                     &pod.ClearTextValue{Value: spec.Config.Redis.QueuesDSN},
 		RedisMessageBusURL:           &pod.ClearTextValue{Value: spec.Config.Redis.MessageBusDSN},
 		RedisActionCableURL:          &pod.ClearTextValue{Value: ""},
 		RedisNamespace:               &pod.ClearTextValue{Value: ""},

@@ -544,12 +544,12 @@ spec:
       - description: Redis configuration options
         displayName: Redis
         path: config.redis
-      - description: Data source name
-        displayName: DSN
-        path: config.redis.dsn
       - description: Message bus data source name
         displayName: Message Bus DSN
         path: config.redis.messageBusDSN
+      - description: Data source name
+        displayName: Queues DSN
+        path: config.redis.queuesDSN
       - description: OpenSSL verification mode for sandbox proxy
         displayName: Sandbox Proxy Openssl Verify Mode
         path: config.sandboxProxyOpensslVerifyMode

@@ -669,15 +669,15 @@ spec:
                   redis:
                     description: Redis configuration options
                     properties:
-                      dsn:
-                        description: Data source name
-                        type: string
                       messageBusDSN:
                         description: Message bus data source name
                         type: string
+                      queuesDSN:
+                        description: Data source name
+                        type: string
                     required:
-                    - dsn
                     - messageBusDSN
+                    - queuesDSN
                     type: object
                   sandboxProxyOpensslVerifyMode:
                     description: OpenSSL verification mode for sandbox proxy

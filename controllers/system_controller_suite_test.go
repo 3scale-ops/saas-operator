@@ -99,7 +99,7 @@ var _ = Describe("System controller", func() {
 						DatabaseSecret:   saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 						MemcachedServers: "value",
 						Redis: saasv1alpha1.RedisSpec{
-							DSN:           "value",
+							QueuesDSN:     "value",
 							MessageBusDSN: "value",
 						},
 						SMTP: saasv1alpha1.SMTPSpec{
