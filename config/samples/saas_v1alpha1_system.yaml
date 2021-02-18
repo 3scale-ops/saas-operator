@@ -37,7 +37,6 @@ spec:
         - smtp.yml
         - web_hooks.yml
         - zync.yml
-    # TODO: can be removed?
     seed:
       masterAccessToken:
         fromVault:
@@ -95,7 +94,6 @@ spec:
       fromVault:
         path: secret/data/path/system-app
         key: ACCESS_CODE
-    # TODO: is this used?
     segment:
       deletionWorkspace: example
       deletionToken:
@@ -115,7 +113,6 @@ spec:
         fromVault:
           path: secret/data/path/system-app
           key: GITHUB_CLIENT_SECRET
-    # TODO: can be removed?
     metrics:
       user:
         fromVault:
@@ -178,7 +175,6 @@ spec:
           path: secret/data/path/backend-internal-api
           key: password
     assets:
-      # TODO: cdn url??
       bucket: my-bucket
       region: us-east-1
       accessKey:
