@@ -141,7 +141,7 @@ var (
 	systemDefaultSphinxBindAddress         string                          = "0.0.0.0"
 	systemDefaultSphinxConfigFile          string                          = "/opt/system/db/sphinx/preview.conf"
 	systemDefaultSphinxDBPath              string                          = "/opt/system/db/sphinx"
-	systemDefaultDatabaseStorageSize       string                          = "30Gi"
+	systemDefaultSphinxDatabaseStorageSize string                          = "30Gi"
 	systemDefaultSphinxPIDFile             string                          = "/opt/system/tmp/pids/searchd.pid"
 	systemDefaultSphinxStorage             string                          = "30Gi"
 	systemDefaultSphinxResources           defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
@@ -749,7 +749,7 @@ func (tc *ThinkingSpec) Default() {
 	tc.DatabasePath = stringOrDefault(tc.DatabasePath, pointer.StringPtr(systemDefaultSphinxDBPath))
 	tc.PIDFile = stringOrDefault(tc.PIDFile, pointer.StringPtr(systemDefaultSphinxPIDFile))
 	if tc.DatabaseStorageSize == nil {
-		size := resource.MustParse(systemDefaultDatabaseStorageSize)
+		size := resource.MustParse(systemDefaultSphinxDatabaseStorageSize)
 		tc.DatabaseStorageSize = &size
 	}
 }
