@@ -1,8 +1,11 @@
 package pod
 
 import (
-	"sort"
+	"fmt"
+	"reflect"
+	"strings"
 
+	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -10,56 +13,95 @@ type EnvVarValue interface {
 	ToEnvVar(key string) corev1.EnvVar
 }
 
-type DirectValue struct {
+type ClearTextValue struct {
 	Value string
 }
 
-func (dv *DirectValue) ToEnvVar(key string) corev1.EnvVar {
+func (ctv *ClearTextValue) ToEnvVar(key string) corev1.EnvVar {
 	return corev1.EnvVar{
 		Name:  key,
-		Value: dv.Value,
+		Value: ctv.Value,
 	}
 }
 
-type SecretRef struct {
-	SecretName string
+type SecretValue struct {
+	Value saasv1alpha1.SecretReference
 }
 
-func (dv *SecretRef) ToEnvVar(key string) corev1.EnvVar {
+func (sv *SecretValue) ToEnvVar(key string) corev1.EnvVar {
+	s := strings.Split(key, ":")
+	envvar := s[0]
+	secret := s[1]
+
+	if sv.Value.Override != nil {
+		return corev1.EnvVar{
+			Name:  envvar,
+			Value: *sv.Value.Override,
+		}
+	}
+
 	return corev1.EnvVar{
-		Name: key,
+		Name: envvar,
 		ValueFrom: &corev1.EnvVarSource{
 			SecretKeyRef: &corev1.SecretKeySelector{
-				Key: key,
+				Key: envvar,
 				LocalObjectReference: corev1.LocalObjectReference{
-					Name: dv.SecretName,
+					Name: secret,
 				},
 			},
 		},
 	}
 }
 
-func GenerateEnvironment(base map[string]string, config map[string]EnvVarValue) []corev1.EnvVar {
-
-	envmap := map[string]EnvVarValue{}
-
-	for k, v := range base {
-		envmap[k] = &DirectValue{Value: v}
-	}
-
-	for k, v := range config {
-		envmap[k] = v
-	}
-
+func BuildEnvironment(opts interface{}) []corev1.EnvVar {
 	env := []corev1.EnvVar{}
-	for k, v := range envmap {
-		env = append(env, v.ToEnvVar(k))
-	}
 
-	// Sort to return always the same result
-	sort.Slice(env, func(i, j int) bool {
-		return env[i].Name < env[j].Name
-	})
+	t := reflect.TypeOf(opts)
+
+	for i := 0; i < t.NumField(); i++ {
+
+		field := t.Field(i)
+
+		// Ensure field is of EnvVarValue type
+		if field.Type.String() != "pod.EnvVarValue" {
+			panic(fmt.Errorf("Field in '%s/%s' is not a 'pod.EnvVarValue'", t.Name(), field.Name))
+		}
+
+		value := reflect.ValueOf(opts).FieldByName(field.Name)
+		// Skip field if its value is not set
+		if value.IsZero() {
+			continue
+		}
+
+		// Parse the field "env" tag
+		envVarName, ok := field.Tag.Lookup("env")
+		if !ok {
+			panic(fmt.Errorf("missing 'env' tag in  %s/%s", t.Name(), field.Name))
+		}
+
+		secretName, hasSecretTag := field.Tag.Lookup("secret")
+
+		valueType := value.Elem().Elem().Type().String()
+		// If value is of ClearTextValue type it shoud not have the 'secret' tag
+		if valueType == "pod.ClearTextValue" && hasSecretTag {
+			panic(fmt.Errorf("unexpected 'secret' tag in field  %s/%s", t.Name(), field.Name))
+		}
+
+		// If value is of SecretValue type it shoud have the 'secret' tag
+		if valueType == "pod.SecretValue" && !hasSecretTag {
+			panic(fmt.Errorf("missing 'secret' tag in field  %s/%s", t.Name(), field.Name))
+		}
+
+		var arg reflect.Value
+		if valueType == "pod.ClearTextValue" {
+			arg = reflect.ValueOf(envVarName)
+		} else {
+			arg = reflect.ValueOf(strings.Join([]string{envVarName, secretName}, ":"))
+		}
+
+		envvar := value.MethodByName("ToEnvVar").Call([]reflect.Value{arg})
+		env = append(env, envvar[0].Interface().(corev1.EnvVar))
+	}
 
 	return env
 }
