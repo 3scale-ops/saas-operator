@@ -107,6 +107,7 @@ func TestBuildEnvironment(t *testing.T) {
 					Option1 EnvVarValue `env:"OPTION1"`
 					Option2 EnvVarValue `env:"OPTION2"`
 					Option3 EnvVarValue `env:"OPTION3" secret:"my-secret"`
+					Option4 EnvVarValue `env:"OPTION4"`
 				}{
 					Option1: &ClearTextValue{Value: "value1"},
 					Option2: &ClearTextValue{Value: "value2"},

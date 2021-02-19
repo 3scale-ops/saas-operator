@@ -60,9 +60,13 @@ func keysMap(name string, opts interface{}) map[string]secretsmanagerv1alpha1.Da
 		}
 
 		value := reflect.ValueOf(opts).FieldByName(field.Name)
-		valueType := value.Elem().Elem().Type().String()
+		// Skip field if its value is not set
+		if value.IsZero() {
+			continue
+		}
 
 		// Value should be of SecretValue type
+		valueType := value.Elem().Elem().Type().String()
 		if valueType != "pod.SecretValue" {
 			panic(fmt.Errorf("wrong type '%s' for field %s/%s", valueType, t.Name(), field.Name))
 		}

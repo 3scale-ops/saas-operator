@@ -64,6 +64,10 @@ func BuildEnvironment(opts interface{}) []corev1.EnvVar {
 		}
 
 		value := reflect.ValueOf(opts).FieldByName(field.Name)
+		// Skip field if its value is not set
+		if value.IsZero() {
+			continue
+		}
 
 		// Parse the field "env" tag
 		envVarName, ok := field.Tag.Lookup("env")
