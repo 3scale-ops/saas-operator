@@ -2,10 +2,8 @@ package autossl
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/3scale/saas-operator/pkg/basereconciler"
-	"github.com/3scale/saas-operator/pkg/generators/autossl/config"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
 	"github.com/3scale/saas-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
@@ -13,10 +11,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-)
-
-const (
-	leACMEStagingEndpoint = "https://acme-staging-v02.api.letsencrypt.org/directory"
 )
 
 // Deployment returns a basereconciler.GeneratorFunction function that will return a Deployment
@@ -81,24 +75,7 @@ func (gen *Generator) Deployment() basereconciler.GeneratorFunction {
 									pod.ContainerPortTCP("https-no-pp", 8443),
 									pod.ContainerPortTCP("metrics", 9145),
 								),
-								Env: pod.GenerateEnvironment(config.Default,
-									func() map[string]pod.EnvVarValue {
-										m := map[string]pod.EnvVarValue{
-											config.ContactEmail:         &pod.DirectValue{Value: gen.Spec.Config.ContactEmail},
-											config.ProxyEndpoint:        &pod.DirectValue{Value: gen.Spec.Config.ProxyEndpoint},
-											config.RedisHost:            &pod.DirectValue{Value: gen.Spec.Config.RedisHost},
-											config.RedisPort:            &pod.DirectValue{Value: fmt.Sprintf("%v", *gen.Spec.Config.RedisPort)},
-											config.VerificationEndpoint: &pod.DirectValue{Value: gen.Spec.Config.VerificationEndpoint},
-											config.LogLevel:             &pod.DirectValue{Value: *gen.Spec.Config.LogLevel},
-											config.DomainWhitelist:      &pod.DirectValue{Value: strings.Join(gen.Spec.Config.DomainWhitelist, ",")},
-											config.DomainBlacklist:      &pod.DirectValue{Value: strings.Join(gen.Spec.Config.DomainBlacklist, ",")},
-										}
-										if *gen.Spec.Config.ACMEStaging {
-											m[config.ACMEStaging] = &pod.DirectValue{Value: leACMEStagingEndpoint}
-										}
-										return m
-									}(),
-								),
+								Env:             pod.BuildEnvironment(gen.Options),
 								Resources:       corev1.ResourceRequirements(*gen.Spec.Resources),
 								ImagePullPolicy: *gen.Spec.Image.PullPolicy,
 								VolumeMounts: []corev1.VolumeMount{

@@ -4,6 +4,7 @@ import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/generators"
+	"github.com/3scale/saas-operator/pkg/generators/autossl/config"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/grafanadashboard"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/hpa"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pdb"
@@ -19,7 +20,8 @@ const (
 // Generator configures the generators for AutoSSL
 type Generator struct {
 	generators.BaseOptions
-	Spec saasv1alpha1.AutoSSLSpec
+	Spec    saasv1alpha1.AutoSSLSpec
+	Options config.Options
 }
 
 // NewGenerator returns a new Options struct
@@ -34,7 +36,8 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.AutoSSLSpec) Gen
 				"part-of": "3scale-saas",
 			},
 		},
-		Spec: spec,
+		Spec:    spec,
+		Options: config.NewOptions(spec),
 	}
 }
 
