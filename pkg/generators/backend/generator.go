@@ -90,6 +90,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.BackendSpec) Gen
 			Config:   spec.Config,
 		},
 		GrafanaDashboardSpec: *spec.GrafanaDashboard,
+		Config:               spec.Config,
 	}
 }
 

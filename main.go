@@ -123,6 +123,7 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "AutoSSL")
 		os.Exit(1)
 	}
+
 	if err = (&controllers.ApicastReconciler{
 		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("Apicast"), false),
 		Log:        ctrl.Log.WithName("controllers").WithName("Apicast"),
@@ -130,6 +131,7 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Apicast")
 		os.Exit(1)
 	}
+
 	if err = (&controllers.MappingServiceReconciler{
 		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("MappingService"), false),
 		Log:        ctrl.Log.WithName("controllers").WithName("MappingService"),
@@ -137,6 +139,7 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "MappingService")
 		os.Exit(1)
 	}
+
 	if err = (&controllers.CORSProxyReconciler{
 		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("CORSProxy"), false),
 		Log:        ctrl.Log.WithName("controllers").WithName("CORSProxy"),
@@ -144,6 +147,7 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "CORSProxy")
 		os.Exit(1)
 	}
+
 	if err = (&controllers.BackendReconciler{
 		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("Backend"), false),
 		Log:        ctrl.Log.WithName("controllers").WithName("Backend"),
@@ -151,6 +155,15 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Backend")
 		os.Exit(1)
 	}
+
+	if err = (&controllers.SystemReconciler{
+		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("System"), false),
+		Log:        ctrl.Log.WithName("controllers").WithName("System"),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "System")
+		os.Exit(1)
+	}
+
 	// +kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("health", healthz.Ping); err != nil {

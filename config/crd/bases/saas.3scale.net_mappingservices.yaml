@@ -66,8 +66,10 @@ spec:
                         - key
                         - path
                         type: object
-                    required:
-                    - fromVault
+                      override:
+                        description: Override allows to directly specify a string
+                          value.
+                        type: string
                     type: object
                 required:
                 - apiHost

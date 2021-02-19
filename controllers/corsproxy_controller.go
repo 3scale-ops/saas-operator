@@ -126,6 +126,6 @@ func (r *CORSProxyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&saasv1alpha1.CORSProxy{}).
 		Watches(&source.Channel{Source: r.GetStatusChangeChannel()}, &handler.EnqueueRequestForObject{}).
 		Watches(&source.Kind{Type: &corev1.Secret{TypeMeta: metav1.TypeMeta{Kind: "Secret"}}},
-			r.SecretEventHandler(&saasv1alpha1.MappingServiceList{}, r.Log)).
+			r.SecretEventHandler(&saasv1alpha1.CORSProxyList{}, r.Log)).
 		Complete(r)
 }

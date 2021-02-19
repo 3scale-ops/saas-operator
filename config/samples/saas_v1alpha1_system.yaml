@@ -1,0 +1,187 @@
+apiVersion: saas.3scale.net/v1alpha1
+kind: System
+metadata:
+  name: example
+spec:
+  image:
+    pullPolicy: Always
+  config:
+    configFiles:
+      vaultPath: secret/data/path/system-config
+      files:
+        - amazon_s3.yml
+        - backend.yml
+        - backend_redis.yml
+        - banned_domains.yml
+        - cable.yml
+        - cache_store.yml
+        - core.yml
+        - database.yml
+        - domain_substitution.yml
+        - features.yml
+        - internal_domains.yml
+        - message_bus.yml
+        - newrelic.yml
+        - oauth2.yml
+        - paperclip.yml
+        - plan_rules.yml
+        - prometheus.yml
+        - redhat_customer_portal.yml
+        - redis.yml
+        - rolling_updates.yml
+        - sandbox_proxy.yml
+        - secrets.yml
+        - segment.yml
+        - settings.yml
+        - sidekiq_schedule.yml
+        - smtp.yml
+        - web_hooks.yml
+        - zync.yml
+    seed:
+      masterAccessToken:
+        fromVault:
+          path: secret/data/path/system-seed
+          key: MASTER_ACCESS_TOKEN
+      masterDomain: multitenant-admin
+      masterUser:
+        fromVault:
+          path: secret/data/path/system-seed
+          key: MASTER_USER
+      masterPassword:
+        fromVault:
+          path: secret/data/path/system-seed
+          key: MASTER_PASSWORD
+      adminAccessToken:
+        fromVault:
+          path: secret/data/path/system-seed
+          key: ADMIN_ACCESS_TOKEN
+      adminUser:
+        fromVault:
+          path: secret/data/path/system-seed
+          key: ADMIN_USER
+      adminPassword:
+        fromVault:
+          path: secret/data/path/system-seed
+          key: ADMIN_PASSWORD
+      adminEmail: admin@example.com
+      tenantName: example
+    databaseDSN:
+      fromVault:
+        path: secret/data/path/system-database
+        key: URL
+    databaseSecret:
+      fromVault:
+        path: secret/data/path/system-app
+        key: DB_SECRET
+    eventsSharedSecret:
+      fromVault:
+        path: secret/data/path/system-app
+        key: EVENTS_SHARED_SECRET
+    secretKeyBase:
+      fromVault:
+        path: secret/data/path/system-app
+        key: SECRET_KEY_BASE
+    recaptcha:
+      publicKey:
+        fromVault:
+          path: secret/data/path/system-recaptcha
+          key: RECAPTCHA_PUBLIC_KEY
+      privateKey:
+        fromVault:
+          path: secret/data/path/system-recaptcha
+          key: RECAPTCHA_PRIVATE_KEY
+    accessCode:
+      fromVault:
+        path: secret/data/path/system-app
+        key: ACCESS_CODE
+    segment:
+      deletionWorkspace: example
+      deletionToken:
+        fromVault:
+          path: secret/data/path/system-app
+          key: SEGMENT_DELETION_TOKEN
+      writeKey:
+        fromVault:
+          path: secret/data/path/system-app
+          key: SEGMENT_WRITE_KEY
+    github:
+      clientID:
+        fromVault:
+          path: secret/data/path/system-app
+          key: GITHUB_CLIENT_ID
+      clientSecret:
+        fromVault:
+          path: secret/data/path/system-app
+          key: GITHUB_CLIENT_SECRET
+    metrics:
+      user:
+        fromVault:
+          path: secret/data/path/system-app
+          key: PROMETHEUS_USER
+      password:
+        fromVault:
+          path: secret/data/path/system-app
+          key: PROMETHEUS_PASSWORD
+    redhatCustomerPortal:
+      clientID:
+        fromVault:
+          path: secret/data/path/system-app
+          key: RH_CUSTOMER_PORTAL_CLIENT_ID
+      clientSecret:
+        fromVault:
+          path: secret/data/path/system-app
+          key: RH_CUSTOMER_PORTAL_CLIENT_SECRET
+    bugsnag:
+      apiKey:
+        fromVault:
+          path: secret/data/path/system-app
+          key: BUGSNAG_API_KEY
+    memcachedServers: ""
+    redis:
+      queuesDSN: redis://system-redis:6379/1
+      messageBusDSN: redis://system-redis:6379/2
+    smtp:
+      address: localhost
+      user:
+        fromVault:
+          path: secret/data/path/system-smtp
+          key: username
+      password:
+        fromVault:
+          path: secret/data/path/system-smtp
+          key: password
+      port: 25
+      authProtocol: none
+      opensslVerifyMode: none
+      starttlsAuto: false
+    apicastAccessToken:
+      fromVault:
+        path: secret/data/path/system-master-apicast
+        key: ACCESS_TOKEN
+    zyncAuthToken:
+      fromVault:
+        path: secret/data/path/zync
+        key: ZYNC_AUTHENTICATION_TOKEN
+    backend:
+      externalEndpoint: https://backend.example.com
+      internalEndpoint: http://backend-listener-internal
+      redisDSN: redis://backend-redis:6379/0
+      internalAPIUser:
+        fromVault:
+          path: secret/data/path/backend-internal-api
+          key: username
+      internalAPIPassword:
+        fromVault:
+          path: secret/data/path/backend-internal-api
+          key: password
+    assets:
+      bucket: my-bucket
+      region: us-east-1
+      accessKey:
+        fromVault:
+          path: secret/data/path/system-multitenant-assets-s3
+          key: AWS_ACCESS_KEY_ID
+      secretKey:
+        fromVault:
+          path: secret/data/path/system-multitenant-assets-s3
+          key: AWS_SECRET_ACCESS_KEY

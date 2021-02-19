@@ -567,7 +567,12 @@ func InitializeMarin3rSidecarSpec(spec *Marin3rSidecarSpec, def defaultMarin3rSi
 type SecretReference struct {
 	// VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	FromVault VaultSecretReference `json:"fromVault"`
+	// +optional
+	FromVault *VaultSecretReference `json:"fromVault,omitempty"`
+	// Override allows to directly specify a string value.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Override *string `json:"override,omitempty"`
 }
 
 // VaultSecretReference is a reference to a secret stored in

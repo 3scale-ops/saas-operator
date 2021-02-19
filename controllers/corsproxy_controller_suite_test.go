@@ -54,7 +54,7 @@ var _ = Describe("CORSProxy controller", func() {
 				Spec: saasv1alpha1.CORSProxySpec{
 					Config: saasv1alpha1.CORSProxyConfig{
 						SystemDatabaseDSN: saasv1alpha1.SecretReference{
-							FromVault: saasv1alpha1.VaultSecretReference{
+							FromVault: &saasv1alpha1.VaultSecretReference{
 								Path: "some-path",
 								Key:  "some-key",
 							},
