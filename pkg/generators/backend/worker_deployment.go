@@ -2,10 +2,8 @@ package backend
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/3scale/saas-operator/pkg/basereconciler"
-	"github.com/3scale/saas-operator/pkg/generators/backend/config"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
 	"github.com/3scale/saas-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
@@ -60,25 +58,7 @@ func (gen *WorkerGenerator) Deployment() basereconciler.GeneratorFunction {
 								Ports: pod.ContainerPorts(
 									pod.ContainerPortTCP("metrics", 9421),
 								),
-								Env: pod.GenerateEnvironment(config.WorkerDefault,
-									func() map[string]pod.EnvVarValue {
-										m := map[string]pod.EnvVarValue{
-											config.RackEnv:                      &pod.DirectValue{Value: *gen.Config.RackEnv},
-											config.ConfigMasterServiceID:        &pod.DirectValue{Value: fmt.Sprintf("%d", *gen.Config.MasterServiceID)},
-											config.ConfigWorkersLoggerFormatter: &pod.DirectValue{Value: *gen.WorkerSpec.Config.LogFormat},
-											config.ConfigRedisAsync:             &pod.DirectValue{Value: strconv.FormatBool(*gen.WorkerSpec.Config.RedisAsync)},
-											config.ConfigRedisProxy:             &pod.DirectValue{Value: gen.Config.RedisStorageDSN},
-											config.ConfigQueuesMasterName:       &pod.DirectValue{Value: gen.Config.RedisQueuesDSN},
-											config.ConfigEventsHook:             &pod.SecretRef{SecretName: config.SecretDefinitions.LookupSecretName(config.ConfigEventsHook)},
-											config.ConfigEventsHookSharedSecret: &pod.SecretRef{SecretName: config.SecretDefinitions.LookupSecretName(config.ConfigEventsHookSharedSecret)},
-										}
-										if gen.Config.ErrorMonitoringService != nil && gen.Config.ErrorMonitoringKey != nil {
-											m[config.ConfigHoptoadService] = &pod.SecretRef{SecretName: config.SecretDefinitions.LookupSecretName(config.ConfigHoptoadService)}
-											m[config.ConfigHoptoadAPIKey] = &pod.SecretRef{SecretName: config.SecretDefinitions.LookupSecretName(config.ConfigHoptoadAPIKey)}
-										}
-										return m
-									}(),
-								),
+								Env:                      pod.BuildEnvironment(gen.Options),
 								Resources:                corev1.ResourceRequirements(*gen.WorkerSpec.Resources),
 								ImagePullPolicy:          *gen.Image.PullPolicy,
 								LivenessProbe:            pod.HTTPProbe("/metrics", intstr.FromString("metrics"), corev1.URISchemeHTTP, *gen.WorkerSpec.LivenessProbe),
