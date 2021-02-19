@@ -63,9 +63,7 @@ func BuildEnvironment(opts interface{}) []corev1.EnvVar {
 			panic(fmt.Errorf("Field in '%s/%s' is not a 'pod.EnvVarValue'", t.Name(), field.Name))
 		}
 
-		// NOTE: Conversion is always:
-		// 	interface (reflect.ValueOf(&opts)) -> pointer (.Elem()) -> struct (.Elem()) -> field (.FieldByName())
-		value := reflect.ValueOf(&opts).Elem().Elem().FieldByName(field.Name)
+		value := reflect.ValueOf(opts).FieldByName(field.Name)
 
 		// Parse the field "env" tag
 		envVarName, ok := field.Tag.Lookup("env")

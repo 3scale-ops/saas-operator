@@ -59,9 +59,7 @@ func keysMap(name string, opts interface{}) map[string]secretsmanagerv1alpha1.Da
 			panic(fmt.Errorf("missing 'env' tag from field '%s/%s'", t.Name(), field.Name))
 		}
 
-		// NOTE: Conversion is always:
-		// 	interface (reflect.ValueOf(&opts)) -> pointer (.Elem()) -> struct (.Elem()) -> field (.FieldByName())
-		value := reflect.ValueOf(&opts).Elem().Elem().FieldByName(field.Name)
+		value := reflect.ValueOf(opts).FieldByName(field.Name)
 		valueType := value.Elem().Elem().Type().String()
 
 		// Value should be of SecretValue type
