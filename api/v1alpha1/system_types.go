@@ -529,8 +529,8 @@ type SystemRailsSpec struct {
 
 // Default applies defaults for SystemRailsSpec
 func (srs *SystemRailsSpec) Default() {
-	srs.Environment = pointer.StringPtr(systemDefaultRailsEnvironment)
-	srs.LogLevel = pointer.StringPtr(systemDefaultRailsLogLevel)
+	srs.Environment = stringOrDefault(srs.Environment, pointer.StringPtr(systemDefaultRailsEnvironment))
+	srs.LogLevel = stringOrDefault(srs.LogLevel, pointer.StringPtr(systemDefaultRailsLogLevel))
 }
 
 // SystemAppSpec configures the App component of System
