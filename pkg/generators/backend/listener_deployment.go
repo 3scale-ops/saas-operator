@@ -59,9 +59,12 @@ func (gen *ListenerGenerator) Deployment() basereconciler.GeneratorFunction {
 									args = []string{
 										"bin/3scale_backend",
 										"start",
-										"-e production",
-										"-p 3000",
-										"-x /dev/stdout",
+										"-e",
+										"production",
+										"-p",
+										"3000",
+										"-x",
+										"/dev/stdout",
 									}
 									if *gen.ListenerSpec.Config.RedisAsync {
 										args = append(args, "-s falcon")
