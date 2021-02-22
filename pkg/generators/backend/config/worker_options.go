@@ -20,10 +20,8 @@ type WorkerOptions struct {
 	ConfigMasterServiceID                pod.EnvVarValue `env:"CONFIG_MASTER_SERVICE_ID"`
 	ConfigRedisAsync                     pod.EnvVarValue `env:"CONFIG_REDIS_ASYNC"`
 	ConfigWorkersLoggerFormatter         pod.EnvVarValue `env:"CONFIG_WORKERS_LOGGER_FORMATTER"`
-	ConfigWorkerPrometheusMetricsEnabled pod.EnvVarValue `env:"CONFIG_WORKER_PROMETHEUS_METRICS_PORT"`
-	ConfigWorkerPrometheusMetricsPort    pod.EnvVarValue `env:"CONFIG_WORKER_PROMETHEUS_METRICS_ENABLED"`
-	ConfigInternalAPIUser                pod.EnvVarValue `env:"CONFIG_INTERNAL_API_USER" secret:"backend-internal-api"`
-	ConfigInternalAPIPassword            pod.EnvVarValue `env:"CONFIG_INTERNAL_API_PASSWORD" secret:"backend-internal-api"`
+	ConfigWorkerPrometheusMetricsEnabled pod.EnvVarValue `env:"CONFIG_WORKER_PROMETHEUS_METRICS_ENABLED"`
+	ConfigWorkerPrometheusMetricsPort    pod.EnvVarValue `env:"CONFIG_WORKER_PROMETHEUS_METRICS_PORT"`
 	ConfigEventsHook                     pod.EnvVarValue `env:"CONFIG_EVENTS_HOOK" secret:"backend-system-events-hook"`
 	ConfigEventsHookSharedSecret         pod.EnvVarValue `env:"CONFIG_EVENTS_HOOK_SHARED_SECRET" secret:"backend-system-events-hook"`
 	ConfigHoptoadService                 pod.EnvVarValue `env:"CONFIG_HOPTOAD_SERVICE" secret:"backend-error-monitoring"`
@@ -46,8 +44,6 @@ func NewWorkerOptions(spec saasv1alpha1.BackendSpec) WorkerOptions {
 		ConfigWorkerPrometheusMetricsEnabled: &pod.ClearTextValue{Value: "true"},
 		ConfigWorkerPrometheusMetricsPort:    &pod.ClearTextValue{Value: "9421"},
 
-		ConfigInternalAPIUser:        &pod.SecretValue{Value: spec.Config.InternalAPIUser},
-		ConfigInternalAPIPassword:    &pod.SecretValue{Value: spec.Config.InternalAPIPassword},
 		ConfigEventsHook:             &pod.SecretValue{Value: spec.Config.SystemEventsHookURL},
 		ConfigEventsHookSharedSecret: &pod.SecretValue{Value: spec.Config.SystemEventsHookPassword},
 	}
