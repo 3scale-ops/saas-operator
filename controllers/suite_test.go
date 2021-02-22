@@ -144,6 +144,12 @@ var _ = BeforeSuite(func() {
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
+	err = (&ZyncReconciler{
+		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("Zync"), false),
+		Log:        ctrl.Log.WithName("controllers").WithName("Zync"),
+	}).SetupWithManager(mgr)
+	Expect(err).ToNot(HaveOccurred())
+
 }, 60)
 
 var _ = AfterSuite(func() {

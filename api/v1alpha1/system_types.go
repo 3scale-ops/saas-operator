@@ -444,22 +444,6 @@ type RedHatCustomerPortalSpec struct {
 	ClientSecret SecretReference `json:"clientSecret"`
 }
 
-// BugsnagSpec has configuration for Bugsnag integration
-type BugsnagSpec struct {
-	// API key
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	APIKey SecretReference `json:"apiKey"`
-}
-
-// Enabled returns a boolean indication whether the
-// Bugsnag integration is enabled or not
-func (bs *BugsnagSpec) Enabled() bool {
-	if reflect.DeepEqual(bs, &BugsnagSpec{}) {
-		return false
-	}
-	return true
-}
-
 // RedisSpec holds redis configuration
 type RedisSpec struct {
 	// Data source name
@@ -545,8 +529,8 @@ type SystemRailsSpec struct {
 
 // Default applies defaults for SystemRailsSpec
 func (srs *SystemRailsSpec) Default() {
-	srs.Environment = pointer.StringPtr(systemDefaultRailsEnvironment)
-	srs.LogLevel = pointer.StringPtr(systemDefaultRailsLogLevel)
+	srs.Environment = stringOrDefault(srs.Environment, pointer.StringPtr(systemDefaultRailsEnvironment))
+	srs.LogLevel = stringOrDefault(srs.LogLevel, pointer.StringPtr(systemDefaultRailsLogLevel))
 }
 
 // SystemAppSpec configures the App component of System

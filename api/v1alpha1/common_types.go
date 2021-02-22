@@ -586,6 +586,22 @@ type VaultSecretReference struct {
 	Key string `json:"key"`
 }
 
+// BugsnagSpec has configuration for Bugsnag integration
+type BugsnagSpec struct {
+	// API key
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	APIKey SecretReference `json:"apiKey"`
+}
+
+// Enabled returns a boolean indication whether the
+// Bugsnag integration is enabled or not
+func (bs *BugsnagSpec) Enabled() bool {
+	if reflect.DeepEqual(bs, &BugsnagSpec{}) {
+		return false
+	}
+	return true
+}
+
 func stringOrDefault(value *string, defValue *string) *string {
 	if value == nil {
 		return defValue

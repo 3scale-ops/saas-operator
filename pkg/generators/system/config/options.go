@@ -5,6 +5,7 @@ import (
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
+	"k8s.io/utils/pointer"
 )
 
 // Options holds configuration for system app and sidekiq pods
@@ -182,7 +183,7 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 	if spec.Config.Bugsnag.Enabled() {
 		opts.BugsnagAPIKey = &pod.SecretValue{Value: spec.Config.Bugsnag.APIKey}
 	} else {
-		opts.BugsnagAPIKey = &pod.ClearTextValue{Value: ""}
+		opts.BugsnagAPIKey = &pod.SecretValue{Value: saasv1alpha1.SecretReference{Override: pointer.StringPtr("")}}
 	}
 
 	return opts
