@@ -98,7 +98,7 @@ func dashboardsApicastServicesJsonTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "dashboards/apicast-services.json.tpl", size: 17479, mode: os.FileMode(436), modTime: time.Unix(1613987062, 0)}
+	info := bindataFileInfo{name: "dashboards/apicast-services.json.tpl", size: 17479, mode: os.FileMode(420), modTime: time.Unix(1614032948, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -118,7 +118,7 @@ func dashboardsApicastJsonTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "dashboards/apicast.json.tpl", size: 84527, mode: os.FileMode(436), modTime: time.Unix(1613987062, 0)}
+	info := bindataFileInfo{name: "dashboards/apicast.json.tpl", size: 84527, mode: os.FileMode(420), modTime: time.Unix(1614032948, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -138,7 +138,7 @@ func dashboardsAutosslJsonTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "dashboards/autossl.json.tpl", size: 59359, mode: os.FileMode(436), modTime: time.Unix(1613987062, 0)}
+	info := bindataFileInfo{name: "dashboards/autossl.json.tpl", size: 59359, mode: os.FileMode(420), modTime: time.Unix(1614032948, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -158,7 +158,7 @@ func dashboardsBackendJsonTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "dashboards/backend.json.tpl", size: 78552, mode: os.FileMode(436), modTime: time.Unix(1613987062, 0)}
+	info := bindataFileInfo{name: "dashboards/backend.json.tpl", size: 78552, mode: os.FileMode(420), modTime: time.Unix(1614032948, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -178,7 +178,7 @@ func dashboardsCorsProxyJsonTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "dashboards/cors-proxy.json.tpl", size: 78730, mode: os.FileMode(436), modTime: time.Unix(1613987062, 0)}
+	info := bindataFileInfo{name: "dashboards/cors-proxy.json.tpl", size: 78730, mode: os.FileMode(420), modTime: time.Unix(1614032948, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -198,7 +198,7 @@ func dashboardsMappingServiceJsonTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "dashboards/mapping-service.json.tpl", size: 70503, mode: os.FileMode(436), modTime: time.Unix(1613987062, 0)}
+	info := bindataFileInfo{name: "dashboards/mapping-service.json.tpl", size: 70503, mode: os.FileMode(420), modTime: time.Unix(1614032948, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -218,7 +218,7 @@ func dashboardsZyncJsonTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "dashboards/zync.json.tpl", size: 70320, mode: os.FileMode(436), modTime: time.Unix(1613991565, 0)}
+	info := bindataFileInfo{name: "dashboards/zync.json.tpl", size: 70320, mode: os.FileMode(420), modTime: time.Unix(1614033395, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

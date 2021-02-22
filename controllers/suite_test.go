@@ -120,6 +120,12 @@ var _ = BeforeSuite(func() {
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
+	err = (&EchoAPIReconciler{
+		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("EchoAPI"), false),
+		Log:        ctrl.Log.WithName("controllers").WithName("EchoAPI"),
+	}).SetupWithManager(mgr)
+	Expect(err).ToNot(HaveOccurred())
+
 	err = (&MappingServiceReconciler{
 		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("MappingService"), false),
 		Log:        ctrl.Log.WithName("controllers").WithName("MappingService"),

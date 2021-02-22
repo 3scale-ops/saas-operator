@@ -171,6 +171,15 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Zync")
 		os.Exit(1)
 	}
+
+	if err = (&controllers.EchoAPIReconciler{
+		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("EchoAPI"), false),
+		Log:        ctrl.Log.WithName("controllers").WithName("EchoAPI"),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "EchoAPI")
+		os.Exit(1)
+	}
+
 	// +kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("health", healthz.Ping); err != nil {
