@@ -20,6 +20,135 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
+    - description: Backend is the Schema for the backends API
+      displayName: Backend
+      kind: Backend
+      name: backends.saas.3scale.net
+      specDescriptors:
+      - description: Application specific configuration options for the component
+        displayName: Config
+        path: config
+      - description: A reference to the secret holding the backend-error-monitoring key
+        displayName: Error Monitoring Key
+        path: config.errorMonitoringKey
+      - description: A reference to the secret holding the backend-error-monitoring service
+        displayName: Error Monitoring Service
+        path: config.errorMonitoringService
+      - description: A reference to the secret holding the backend-internal-api password
+        displayName: Internal APIPassword
+        path: config.internalAPIPassword
+      - description: A reference to the secret holding the backend-internal-api user
+        displayName: Internal APIUser
+        path: config.internalAPIUser
+      - description: Master service account ID in Porta
+        displayName: Master Service ID
+        path: config.masterServiceID
+      - description: Rack environment
+        displayName: Rack Env
+        path: config.rackEnv
+      - description: Redis Queues DSN
+        displayName: Redis Queues DSN
+        path: config.redisQueuesDSN
+      - description: Redis Storage DSN
+        displayName: Redis Storage DSN
+        path: config.redisStorageDSN
+      - description: A reference to the secret holding the backend-system-events-hook password
+        displayName: System Events Hook Password
+        path: config.systemEventsHookPassword
+      - description: A reference to the secret holding the backend-system-events-hook URL
+        displayName: System Events Hook URL
+        path: config.systemEventsHookURL
+      - description: Configures the backend cron
+        displayName: Cron
+        path: cron
+      - description: Number of replicas for the component
+        displayName: Replicas
+        path: cron.replicas
+      - description: Resource requirements for the component
+        displayName: Resources
+        path: cron.resources
+      - description: Configures the Grafana Dashboard for the component
+        displayName: Grafana Dashboard
+        path: grafanaDashboard
+      - description: Image specification for the component
+        displayName: Image
+        path: image
+      - description: Configures the backend listener
+        displayName: Listener
+        path: listener
+      - description: Listener specific configuration options for the component element
+        displayName: Config
+        path: listener.config
+      - description: Enable (true) or disable (false) Legacy Referrer Filters
+        displayName: Legacy Referrer Filters
+        path: listener.config.legacyReferrerFilters
+      - description: Number of worker processes per listener pod
+        displayName: Listener Workers
+        path: listener.config.listenerWorkers
+      - description: Listener log format
+        displayName: Log Format
+        path: listener.config.logFormat
+      - description: Enable (true) or disable (false) listener redis async mode
+        displayName: Redis Async
+        path: listener.config.redisAsync
+      - description: The external endpoint/s for the component
+        displayName: Endpoint
+        path: listener.endpoint
+      - description: Horizontal Pod Autoscaler for the component
+        displayName: HPA
+        path: listener.hpa
+      - description: Liveness probe for the component
+        displayName: Liveness Probe
+        path: listener.livenessProbe
+      - description: Configures the AWS Network load balancer for the component
+        displayName: Load Balancer
+        path: listener.loadBalancer
+      - description: Marin3r configures the Marin3r sidecars for the component
+        displayName: Marin3r
+        path: listener.marin3r
+      - description: Pod Disruption Budget for the component
+        displayName: PDB
+        path: listener.pdb
+      - description: Readiness probe for the component
+        displayName: Readiness Probe
+        path: listener.readinessProbe
+      - description: Number of replicas (ignored if hpa is enabled) for the component
+        displayName: Replicas
+        path: listener.replicas
+      - description: Resource requirements for the component
+        displayName: Resources
+        path: listener.resources
+      - description: Configures the backend worker
+        displayName: Worker
+        path: worker
+      - description: Listener specific configuration options for the component element
+        displayName: Config
+        path: worker.config
+      - description: Worker log format
+        displayName: Log Format
+        path: worker.config.logFormat
+      - description: Enable (true) or disable (false) worker redis async mode
+        displayName: Redis Async
+        path: worker.config.redisAsync
+      - description: Horizontal Pod Autoscaler for the component
+        displayName: HPA
+        path: worker.hpa
+      - description: Liveness probe for the component
+        displayName: Liveness Probe
+        path: worker.livenessProbe
+      - description: Pod Disruption Budget for the component
+        displayName: PDB
+        path: worker.pdb
+      - description: Readiness probe for the component
+        displayName: Readiness Probe
+        path: worker.readinessProbe
+      - description: Number of replicas (ignored if hpa is enabled) for the component
+        displayName: Replicas
+        path: worker.replicas
+      - description: Resource requirements for the component
+        displayName: Resources
+        path: worker.resources
+      version: ""
     - description: Apicast is the Schema for the apicasts API
       displayName: Apicast
       kind: Apicast
@@ -319,7 +448,7 @@ spec:
       - description: Resource requirements for the component
         displayName: Resources
         path: worker.resources
-      version: ""
+      version: v1alpha1
     - description: CORSProxy is the Schema for the corsproxies API
       displayName: CORSProxy
       kind: CORSProxy
@@ -353,6 +482,42 @@ spec:
         displayName: Replicas
         path: replicas
       - description: Resource requirements for the component
+        displayName: Resources
+        path: resources
+      version: v1alpha1
+    - description: EchoAPI is the Schema for the echoapis API
+      displayName: Echo API
+      kind: EchoAPI
+      name: echoapis.saas.3scale.net
+      specDescriptors:
+      - description: The external endpoint/s for the component
+        displayName: Endpoint
+        path: endpoint
+      - description: Resource requirements for the component
+        displayName: HPA
+        path: hpa
+      - description: Image specification for the component
+        displayName: Image
+        path: image
+      - description: Liveness probe for the component
+        displayName: Liveness Probe
+        path: livenessProbe
+      - description: Configures the AWS Network load balancer for the component
+        displayName: Load Balancer
+        path: loadBalancer
+      - description: Marin3r configures the Marin3r sidecars for the component
+        displayName: Marin3r
+        path: marin3r
+      - description: Number of replicas (ignored if hpa is enabled) for the component
+        displayName: PDB
+        path: pdb
+      - description: Readiness probe for the component
+        displayName: Readiness Probe
+        path: readinessProbe
+      - description: Configures the Grafana Dashboard for the component
+        displayName: Replicas
+        path: replicas
+      - description: Horizontal Pod Autoscaler for the component
         displayName: Resources
         path: resources
       version: v1alpha1
@@ -475,9 +640,6 @@ spec:
       - description: Options for configuring Bugsnag integration
         displayName: Bugsnag
         path: config.bugsnag
-      - description: API key
-        displayName: APIKey
-        path: config.bugsnag.apiKey
       - description: Extra configuration files to be mounted in the pods
         displayName: Config Files
         path: config.configFiles
@@ -706,6 +868,87 @@ spec:
       - description: Resource requirements for the component
         displayName: Resources
         path: sphinx.resources
+      version: v1alpha1
+    - description: Zync is the Schema for the zyncs API
+      displayName: Zync
+      kind: Zync
+      name: zyncs.saas.3scale.net
+      specDescriptors:
+      - description: Configures the main zync api component
+        displayName: API
+        path: api
+      - description: Horizontal Pod Autoscaler for the component
+        displayName: HPA
+        path: api.hpa
+      - description: Liveness probe for the component
+        displayName: Liveness Probe
+        path: api.livenessProbe
+      - description: Pod Disruption Budget for the component
+        displayName: PDB
+        path: api.pdb
+      - description: Readiness probe for the component
+        displayName: Readiness Probe
+        path: api.readinessProbe
+      - description: Number of replicas (ignored if hpa is enabled) for the component
+        displayName: Replicas
+        path: api.replicas
+      - description: Resource requirements for the component
+        displayName: Resources
+        path: api.resources
+      - description: Application specific configuration options for the component
+        displayName: Config
+        path: config
+      - description: Options for configuring Bugsnag integration
+        displayName: Bugsnag
+        path: config.bugsnag
+      - description: A reference to the secret holding the database DSN
+        displayName: Database DSN
+        path: config.databaseDSN
+      - description: Rails configuration options for zync components
+        displayName: Rails
+        path: config.rails
+      - description: Rails environment
+        displayName: Environment
+        path: config.rails.environment
+      - description: Rails log level (debug, info, warn, error, fatal or unknown)
+        displayName: Log Level
+        path: config.rails.logLevel
+      - description: Rails max threads (only applies to api)
+        displayName: Max Threads
+        path: config.rails.maxThreads
+      - description: A reference to the secret holding the secret-key-base
+        displayName: Secret Key Base
+        path: config.secretKeyBase
+      - description: A reference to the secret holding the zync authentication token
+        displayName: Zync Auth Token
+        path: config.zyncAuthToken
+      - description: Configures the Grafana Dashboard for the component
+        displayName: Grafana Dashboard
+        path: grafanaDashboard
+      - description: Image specification for the component
+        displayName: Image
+        path: image
+      - description: Configures the zync que component
+        displayName: Que
+        path: que
+      - description: Horizontal Pod Autoscaler for the component
+        displayName: HPA
+        path: que.hpa
+      - description: Liveness probe for the component
+        displayName: Liveness Probe
+        path: que.livenessProbe
+      - description: Pod Disruption Budget for the component
+        displayName: PDB
+        path: que.pdb
+      - description: Readiness probe for the component
+        displayName: Readiness Probe
+        path: que.readinessProbe
+      - description: Number of replicas (ignored if hpa is enabled) for the component
+        displayName: Replicas
+        path: que.replicas
+      - description: Resource requirements for the component
+        displayName: Resources
+        path: que.resources
       version: v1alpha1
   description: |
     The 3scale SaaS Operator creates and maintains SaaS-ready deployments

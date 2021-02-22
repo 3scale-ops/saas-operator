@@ -2,9 +2,10 @@
 resources:
 - saas_v1alpha1_autossl.yaml
 - saas_v1alpha1_apicast.yaml
-- saas_v1alpha1_mappingservice.yaml
-- saas_v1alpha1_corsproxy.yaml
 - saas_v1alpha1_backend.yaml
+- saas_v1alpha1_corsproxy.yaml
+- saas_v1alpha1_echoapi.yaml
+- saas_v1alpha1_mappingservice.yaml
 - saas_v1alpha1_system.yaml
 - saas_v1alpha1_zync.yaml
 # +kubebuilder:scaffold:manifestskustomizesamples
