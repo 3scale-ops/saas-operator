@@ -444,22 +444,6 @@ type RedHatCustomerPortalSpec struct {
 	ClientSecret SecretReference `json:"clientSecret"`
 }
 
-// BugsnagSpec has configuration for Bugsnag integration
-type BugsnagSpec struct {
-	// API key
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	APIKey SecretReference `json:"apiKey"`
-}
-
-// Enabled returns a boolean indication whether the
-// Bugsnag integration is enabled or not
-func (bs *BugsnagSpec) Enabled() bool {
-	if reflect.DeepEqual(bs, &BugsnagSpec{}) {
-		return false
-	}
-	return true
-}
-
 // RedisSpec holds redis configuration
 type RedisSpec struct {
 	// Data source name
