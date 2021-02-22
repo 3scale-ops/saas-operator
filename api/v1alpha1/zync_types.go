@@ -290,9 +290,9 @@ type ZyncRailsSpec struct {
 
 // Default applies defaults for ZyncRailsSpec
 func (zrs *ZyncRailsSpec) Default() {
-	zrs.Environment = pointer.StringPtr(zyncDefaultConfigRailsEnvironment)
-	zrs.LogLevel = pointer.StringPtr(zyncDefaultConfigRailsLogLevel)
-	zrs.MaxThreads = pointer.Int32Ptr(zyncDefaultConfigRailsMaxThreads)
+	zrs.Environment = stringOrDefault(zrs.Environment, pointer.StringPtr(zyncDefaultConfigRailsEnvironment))
+	zrs.LogLevel = stringOrDefault(zrs.LogLevel, pointer.StringPtr(zyncDefaultConfigRailsLogLevel))
+	zrs.MaxThreads = intOrDefault(zrs.MaxThreads, pointer.Int32Ptr(zyncDefaultConfigRailsMaxThreads))
 }
 
 // ZyncStatus defines the observed state of Zync
