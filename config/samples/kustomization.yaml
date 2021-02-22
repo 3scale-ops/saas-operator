@@ -6,4 +6,5 @@ resources:
 - saas_v1alpha1_corsproxy.yaml
 - saas_v1alpha1_backend.yaml
 - saas_v1alpha1_system.yaml
+- saas_v1alpha1_zync.yaml
 # +kubebuilder:scaffold:manifestskustomizesamples
