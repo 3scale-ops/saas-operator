@@ -5,7 +5,6 @@ import (
 
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
-	"github.com/3scale/saas-operator/pkg/generators/mappingservice/config"
 	"github.com/3scale/saas-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -60,19 +59,7 @@ func (gen *Generator) Deployment() basereconciler.GeneratorFunction {
 									pod.ContainerPortTCP("management", 8090),
 									pod.ContainerPortTCP("metrics", 9421),
 								),
-								Env: pod.GenerateEnvironment(config.Default,
-									func() map[string]pod.EnvVarValue {
-										m := map[string]pod.EnvVarValue{
-											config.APIHost:           &pod.DirectValue{Value: gen.Spec.Config.APIHost},
-											config.ApicastLogLevel:   &pod.DirectValue{Value: *gen.Spec.Config.LogLevel},
-											config.MasterAccessToken: &pod.SecretRef{SecretName: config.SecretDefinitions.LookupSecretName(config.MasterAccessToken)},
-										}
-										if gen.Spec.Config.PreviewBaseDomain != nil {
-											m[config.PreviewBaseDomain] = &pod.DirectValue{Value: *gen.Spec.Config.PreviewBaseDomain}
-										}
-										return m
-									}(),
-								),
+								Env:                      pod.BuildEnvironment(gen.Options),
 								Resources:                corev1.ResourceRequirements(*gen.Spec.Resources),
 								ImagePullPolicy:          *gen.Spec.Image.PullPolicy,
 								LivenessProbe:            pod.TCPProbe(intstr.FromString("mapping"), *gen.Spec.LivenessProbe),

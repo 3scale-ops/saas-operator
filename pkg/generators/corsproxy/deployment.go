@@ -5,7 +5,6 @@ import (
 
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
-	"github.com/3scale/saas-operator/pkg/generators/corsproxy/config"
 	"github.com/3scale/saas-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -59,10 +58,7 @@ func (gen *Generator) Deployment() basereconciler.GeneratorFunction {
 									pod.ContainerPortTCP("http", 8080),
 									pod.ContainerPortTCP("metrics", 9145),
 								),
-								Env: pod.GenerateEnvironment(config.Default,
-									map[string]pod.EnvVarValue{
-										config.DatabaseURL: &pod.SecretRef{SecretName: config.SecretDefinitions.LookupSecretName(config.DatabaseURL)},
-									}),
+								Env:                      pod.BuildEnvironment(gen.Options),
 								Resources:                corev1.ResourceRequirements(*gen.Spec.Resources),
 								ImagePullPolicy:          *gen.Spec.Image.PullPolicy,
 								LivenessProbe:            pod.HTTPProbe("/healthz", intstr.FromString("metrics"), corev1.URISchemeHTTP, *gen.Spec.LivenessProbe),

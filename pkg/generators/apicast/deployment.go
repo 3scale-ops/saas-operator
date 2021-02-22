@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/3scale/saas-operator/pkg/basereconciler"
-	"github.com/3scale/saas-operator/pkg/generators/apicast/config"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/marin3r"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
 	"github.com/3scale/saas-operator/pkg/util"
@@ -61,14 +60,7 @@ func (gen *EnvGenerator) Deployment() basereconciler.GeneratorFunction {
 									pod.ContainerPortTCP("management", 8090),
 									pod.ContainerPortTCP("metrics", 9421),
 								),
-								Env: pod.GenerateEnvironment(config.Default,
-									map[string]pod.EnvVarValue{
-										config.ApicastConfigurationCache: &pod.DirectValue{Value: fmt.Sprintf("%d", gen.Spec.Config.ConfigurationCache)},
-										config.ThreeScaleDeploymentEnv:   &pod.DirectValue{Value: gen.EnvName},
-										config.ThreescalePortalEndpoint:  &pod.DirectValue{Value: gen.Spec.Config.ThreescalePortalEndpoint},
-										config.ApicastLogLevel:           &pod.DirectValue{Value: *gen.Spec.Config.LogLevel},
-										config.ApicastOIDCLogLevel:       &pod.DirectValue{Value: *gen.Spec.Config.OIDCLogLevel},
-									}),
+								Env:                      pod.BuildEnvironment(gen.Options),
 								Resources:                corev1.ResourceRequirements(*gen.Spec.Resources),
 								LivenessProbe:            pod.TCPProbe(intstr.FromString("gateway"), *gen.Spec.LivenessProbe),
 								ReadinessProbe:           pod.HTTPProbe("/status/ready", intstr.FromString("management"), corev1.URISchemeHTTP, *gen.Spec.ReadinessProbe),

@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/3scale/saas-operator/pkg/basereconciler"
-	"github.com/3scale/saas-operator/pkg/generators/backend/config"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
 	"github.com/3scale/saas-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
@@ -53,23 +52,10 @@ func (gen *CronGenerator) Deployment() basereconciler.GeneratorFunction {
 						}(),
 						Containers: []corev1.Container{
 							{
-								Name:  gen.GetComponent(),
-								Image: fmt.Sprintf("%s:%s", *gen.Image.Name, *gen.Image.Tag),
-								Args:  []string{"backend-cron"},
-								Env: pod.GenerateEnvironment(config.CronDefault,
-									func() map[string]pod.EnvVarValue {
-										m := map[string]pod.EnvVarValue{
-											config.RackEnv:                &pod.DirectValue{Value: *gen.Config.RackEnv},
-											config.ConfigRedisProxy:       &pod.DirectValue{Value: gen.Config.RedisStorageDSN},
-											config.ConfigQueuesMasterName: &pod.DirectValue{Value: gen.Config.RedisQueuesDSN},
-										}
-										if gen.Config.ErrorMonitoringService != nil && gen.Config.ErrorMonitoringKey != nil {
-											m[config.ConfigHoptoadService] = &pod.SecretRef{SecretName: config.SecretDefinitions.LookupSecretName(config.ConfigHoptoadService)}
-											m[config.ConfigHoptoadAPIKey] = &pod.SecretRef{SecretName: config.SecretDefinitions.LookupSecretName(config.ConfigHoptoadAPIKey)}
-										}
-										return m
-									}(),
-								),
+								Name:                     gen.GetComponent(),
+								Image:                    fmt.Sprintf("%s:%s", *gen.Image.Name, *gen.Image.Tag),
+								Args:                     []string{"backend-cron"},
+								Env:                      pod.BuildEnvironment(gen.Options),
 								Resources:                corev1.ResourceRequirements(*gen.CronSpec.Resources),
 								ImagePullPolicy:          *gen.Image.PullPolicy,
 								TerminationMessagePath:   corev1.TerminationMessagePathDefault,

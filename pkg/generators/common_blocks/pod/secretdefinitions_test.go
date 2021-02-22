@@ -33,6 +33,7 @@ func TestGenerateSecretDefinitionFn(t *testing.T) {
 					Option2 EnvVarValue `env:"OPTION2" secret:"my-secret"`
 					Option3 EnvVarValue `env:"OPTION3" secret:"my-secret"`
 					Option4 EnvVarValue `env:"OPTION4" secret:"other-secret"`
+					Option5 EnvVarValue `env:"OPTION5" secret:"not-set"`
 				}{
 					Option1: &ClearTextValue{Value: "value1"},
 					Option2: &SecretValue{Value: saasv1alpha1.SecretReference{

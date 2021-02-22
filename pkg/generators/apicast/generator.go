@@ -4,6 +4,7 @@ import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/generators"
+	"github.com/3scale/saas-operator/pkg/generators/apicast/config"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/grafanadashboard"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/hpa"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pdb"
@@ -61,8 +62,8 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.ApicastSpec) Gen
 					"threescale_component_element": "gateway",
 				},
 			},
-			EnvName: "staging",
 			Spec:    spec.Staging,
+			Options: config.NewEnvOptions(spec.Staging, "staging"),
 		},
 		Production: EnvGenerator{
 			BaseOptions: generators.BaseOptions{
@@ -75,8 +76,8 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.ApicastSpec) Gen
 					"threescale_component_element": "gateway",
 				},
 			},
-			EnvName: "production",
 			Spec:    spec.Production,
+			Options: config.NewEnvOptions(spec.Production, "production"),
 		},
 		GrafanaDashboardSpec: *spec.GrafanaDashboard,
 	}
@@ -86,8 +87,8 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.ApicastSpec) Gen
 // Apicast environment
 type EnvGenerator struct {
 	generators.BaseOptions
-	EnvName string
 	Spec    saasv1alpha1.ApicastEnvironmentSpec
+	Options config.EnvOptions
 }
 
 // HPA returns a basereconciler.GeneratorFunction

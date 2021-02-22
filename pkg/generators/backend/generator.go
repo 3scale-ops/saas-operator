@@ -1,7 +1,6 @@
 package backend
 
 import (
-	"encoding/json"
 	"strings"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
@@ -11,6 +10,7 @@ import (
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/grafanadashboard"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/hpa"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pdb"
+	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/podmonitor"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -57,7 +57,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.BackendSpec) Gen
 			},
 			ListenerSpec: spec.Listener,
 			Image:        *spec.Image,
-			Config:       spec.Config,
+			Options:      config.NewListenerOptions(spec),
 		},
 		Worker: WorkerGenerator{
 			BaseOptions: generators.BaseOptions{
@@ -72,7 +72,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.BackendSpec) Gen
 			},
 			WorkerSpec: *spec.Worker,
 			Image:      *spec.Image,
-			Config:     spec.Config,
+			Options:    config.NewWorkerOptions(spec),
 		},
 		Cron: CronGenerator{
 			BaseOptions: generators.BaseOptions{
@@ -87,7 +87,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.BackendSpec) Gen
 			},
 			CronSpec: *spec.Cron,
 			Image:    *spec.Image,
-			Config:   spec.Config,
+			Options:  config.NewCronOptions(spec),
 		},
 		GrafanaDashboardSpec: *spec.GrafanaDashboard,
 		Config:               spec.Config,
@@ -102,23 +102,18 @@ func (gen *Generator) GrafanaDashboard() basereconciler.GeneratorFunction {
 
 // SystemEventsHookSecretDefinition returns a basereconciler.GeneratorFunction
 func (gen *Generator) SystemEventsHookSecretDefinition() basereconciler.GeneratorFunction {
-	serializedConfig, _ := json.Marshal(gen.Config)
-	sc := config.SecretDefinitions.LookupSecretConfiguration(config.SystemEventsHookSecretName)
-	return sc.GenerateSecretDefinitionFn(gen.GetNamespace(), gen.GetLabels(), "/spec/config", serializedConfig)
+	return pod.GenerateSecretDefinitionFn("backend-system-events-hook", gen.GetNamespace(), gen.GetLabels(), gen.Worker.Options)
 }
 
 // InternalAPISecretDefinition returns a basereconciler.GeneratorFunction
 func (gen *Generator) InternalAPISecretDefinition() basereconciler.GeneratorFunction {
-	serializedConfig, _ := json.Marshal(gen.Config)
-	sc := config.SecretDefinitions.LookupSecretConfiguration(config.InternalAPISecretName)
-	return sc.GenerateSecretDefinitionFn(gen.GetNamespace(), gen.GetLabels(), "/spec/config", serializedConfig)
+	return pod.GenerateSecretDefinitionFn("backend-internal-api", gen.GetNamespace(), gen.GetLabels(), gen.Listener.Options)
 }
 
 // ErrorMonitoringSecretDefinition returns a basereconciler.GeneratorFunction
 func (gen *Generator) ErrorMonitoringSecretDefinition() basereconciler.GeneratorFunction {
-	serializedConfig, _ := json.Marshal(gen.Config)
-	sc := config.SecretDefinitions.LookupSecretConfiguration(config.ErrorMonitoringSecretName)
-	return sc.GenerateSecretDefinitionFn(gen.GetNamespace(), gen.GetLabels(), "/spec/config", serializedConfig)
+	return pod.GenerateSecretDefinitionFn("backend-error-monitoring", gen.GetNamespace(), gen.GetLabels(), gen.Listener.Options)
+
 }
 
 // ListenerGenerator has methods to generate resources for a
@@ -127,7 +122,7 @@ type ListenerGenerator struct {
 	generators.BaseOptions
 	Image        saasv1alpha1.ImageSpec
 	ListenerSpec saasv1alpha1.ListenerSpec
-	Config       saasv1alpha1.BackendConfig
+	Options      config.ListenerOptions
 }
 
 // HPA returns a basereconciler.GeneratorFunction
@@ -157,7 +152,7 @@ type WorkerGenerator struct {
 	generators.BaseOptions
 	Image      saasv1alpha1.ImageSpec
 	WorkerSpec saasv1alpha1.WorkerSpec
-	Config     saasv1alpha1.BackendConfig
+	Options    config.WorkerOptions
 }
 
 // HPA returns a basereconciler.GeneratorFunction
@@ -186,5 +181,5 @@ type CronGenerator struct {
 	generators.BaseOptions
 	Image    saasv1alpha1.ImageSpec
 	CronSpec saasv1alpha1.CronSpec
-	Config   saasv1alpha1.BackendConfig
+	Options  config.CronOptions
 }

@@ -1,14 +1,13 @@
 package corsproxy
 
 import (
-	"encoding/json"
-
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/generators"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/grafanadashboard"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/hpa"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pdb"
+	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/podmonitor"
 	"github.com/3scale/saas-operator/pkg/generators/corsproxy/config"
 	"k8s.io/apimachinery/pkg/types"
@@ -21,7 +20,8 @@ const (
 // Generator configures the generators for CORSProxy
 type Generator struct {
 	generators.BaseOptions
-	Spec saasv1alpha1.CORSProxySpec
+	Spec    saasv1alpha1.CORSProxySpec
+	Options config.Options
 }
 
 // NewGenerator returns a new Options struct
@@ -36,7 +36,8 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.CORSProxySpec) G
 				"part-of": "3scale-saas",
 			},
 		},
-		Spec: spec,
+		Spec:    spec,
+		Options: config.NewOptions(spec),
 	}
 }
 
@@ -66,7 +67,5 @@ func (gen *Generator) GrafanaDashboard() basereconciler.GeneratorFunction {
 
 // SecretDefinition returns a basereconciler.GeneratorFunction
 func (gen *Generator) SecretDefinition() basereconciler.GeneratorFunction {
-	serializedConfig, _ := json.Marshal(gen.Spec.Config)
-	sc := config.SecretDefinitions.LookupSecretConfiguration("cors-proxy-system-database")
-	return sc.GenerateSecretDefinitionFn(gen.GetNamespace(), gen.GetLabels(), "/spec/config", serializedConfig)
+	return pod.GenerateSecretDefinitionFn("cors-proxy-system-database", gen.GetNamespace(), gen.GetLabels(), gen.Options)
 }
