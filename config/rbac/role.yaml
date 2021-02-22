@@ -256,18 +256,6 @@ rules:
   - patch
   - update
 - apiGroups:
-  - secrets-manager.tuenti.io
-  resources:
-  - secretdefinitions
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
   - saas.3scale.net
   resources:
   - zyncs
@@ -293,3 +281,15 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - secrets-manager.tuenti.io
+  resources:
+  - secretdefinitions
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch

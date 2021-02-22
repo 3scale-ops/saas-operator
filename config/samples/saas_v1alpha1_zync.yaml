@@ -1,7 +1,32 @@
 apiVersion: saas.3scale.net/v1alpha1
 kind: Zync
 metadata:
-  name: zync-sample
+  name: example
 spec:
-  # Add fields here
-  foo: bar
+  config:
+    rails:
+      environment: development
+      logLevel: info
+    databaseDSN:
+      fromVault:
+        path: secret/data/path/zync
+        key: URL
+    secretKeyBase:
+      fromVault:
+        path: secret/data/path/zync
+        key: SECRET_KEY_BASE
+    bugsnag:
+      apiKey:
+        fromVault:
+          path: secret/data/path/zync
+          key: BUGSNAG_API_KEY
+    zyncAuthToken:
+      fromVault:
+        path: secret/data/path/zync
+        key: ZYNC_AUTHENTICATION_TOKEN
+  api:
+    hpa:
+      minReplicas: 1
+  que:
+    hpa:
+      minReplicas: 1
