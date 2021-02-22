@@ -110,11 +110,11 @@ func (r *ZyncReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 			}},
 		PodDisruptionBudgets: []basereconciler.PodDisruptionBudget{
 			{
-				Template: gen.API.PDB(), // Calculate rollout triggers
+				Template: gen.API.PDB(),
 				Enabled:  !instance.Spec.API.PDB.IsDeactivated(),
 			},
 			{
-				Template: gen.Que.PDB(), // Calculate rollout triggers
+				Template: gen.Que.PDB(),
 				Enabled:  !instance.Spec.Que.PDB.IsDeactivated(),
 			},
 		},
