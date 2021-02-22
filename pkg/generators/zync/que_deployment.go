@@ -55,14 +55,11 @@ func (gen *QueGenerator) Deployment() basereconciler.GeneratorFunction {
 							{
 								Name:  gen.GetComponent(),
 								Image: fmt.Sprintf("%s:%s", *gen.Image.Name, *gen.Image.Tag),
-								Command: func() (commands []string) {
-									commands = []string{
-										"/usr/bin/bash",
-										"-c",
-										"bundle exec rake 'que[--worker-count 10]",
-									}
-									return
-								}(),
+								Command: []string{
+									"/usr/bin/bash",
+									"-c",
+									"bundle exec rake 'que[--worker-count 10]",
+								},
 								Ports: pod.ContainerPorts(
 									pod.ContainerPortTCP("metrics", 9394),
 								),
