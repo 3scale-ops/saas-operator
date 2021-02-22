@@ -13,6 +13,10 @@ resources:
   version: v1alpha1
 - crdVersion: v1
   group: saas
+  kind: EchoAPI
+  version: v1alpha1
+- crdVersion: v1
+  group: saas
   kind: MappingService
   version: v1alpha1
 - crdVersion: v1
