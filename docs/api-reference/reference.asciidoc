@@ -24,7 +24,33 @@ Package v1alpha1 contains API Schema definitions for the saas v1alpha1 API group
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxylist[$$CORSProxyList$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservice[$$MappingService$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicelist[$$MappingServiceList$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-system[$$System$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemlist[$$SystemList$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zync[$$Zync$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zynclist[$$ZyncList$$]
 
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apispec"]
+==== APISpec 
+
+APISpec is the configuration for main Zync api component
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
+| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
+| *`replicas`* __integer__ | Number of replicas (ignored if hpa is enabled) for the component
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
+| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
+| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+|===
 
 
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicast"]
@@ -133,6 +159,26 @@ ApicastSpec defines the desired state of Apicast
 |===
 
 
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-assetsspec"]
+==== AssetsSpec 
+
+AssetsSpec has configuration to access assets in AWS s3
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`bucket`* __string__ | AWS S3 bucket name
+| *`region`* __string__ | AWS S3 region
+| *`accessKey`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | AWS access key
+| *`secretKey`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | AWS secret access key
+|===
 
 
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autossl"]
@@ -319,6 +365,24 @@ BackendSpec defines the desired state of Backend
 
 
 
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-bugsnagspec"]
+==== BugsnagSpec 
+
+BugsnagSpec has configuration for Bugsnag integration
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncconfig[$$ZyncConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`apiKey`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | API key
+|===
+
+
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxy"]
 ==== CORSProxy 
 
@@ -403,6 +467,24 @@ CORSProxySpec defines the desired state of CORSProxy
 
 
 
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-configfilesspec"]
+==== ConfigFilesSpec 
+
+ConfigFilesSpec defines a vault location to get system config files from
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`vaultPath`* __string__ | 
+| *`files`* __string array__ | 
+|===
+
+
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-cronspec"]
 ==== CronSpec 
 
@@ -440,6 +522,24 @@ Endpoint sets the external endpoint for the component
 |===
 
 
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-githubspec"]
+==== GithubSpec 
+
+GithubSpec has configuration for Github integration
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`clientID`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Client ID
+| *`clientSecret`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Client secret
+|===
+
+
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-grafanadashboardspec"]
 ==== GrafanaDashboardSpec 
 
@@ -452,6 +552,8 @@ GrafanaDashboardSpec configures the Grafana Dashboard for the component
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backendspec[$$BackendSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -469,11 +571,15 @@ HorizontalPodAutoscalerSpec defines the HPA for the component
 
 .Appears In:
 ****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apispec[$$APISpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-quespec[$$QueSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
 ****
 
@@ -499,6 +605,8 @@ ImageSpec defines the image for the component
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backendspec[$$BackendSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -678,6 +786,7 @@ Marin3rSidecarSpec defines the marin3r sidecar for the component
 ****
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -686,6 +795,24 @@ Marin3rSidecarSpec defines the marin3r sidecar for the component
 | *`ports`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sidecarport[$$SidecarPort$$] array__ | The ports that the sidecar exposes
 | *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Compute Resources required by this container.
 | *`extraPodAnnotations`* __object (keys:string, values:string)__ | Extra annotations to pass the Pod to further configure the sidecar container.
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-metricsspec"]
+==== MetricsSpec 
+
+MetricsSpec has options to configure prometheus metrics
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`user`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | User name
+| *`password`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Password
 |===
 
 
@@ -708,6 +835,8 @@ NLBLoadBalancerSpec configures the AWS NLB load balancer for the component
 |===
 
 
+
+
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec"]
 ==== PodDisruptionBudgetSpec 
 
@@ -715,11 +844,15 @@ PodDisruptionBudgetSpec defines the PDB for the component
 
 .Appears In:
 ****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apispec[$$APISpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-quespec[$$QueSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
 ****
 
@@ -738,11 +871,16 @@ ProbeSpec specifies configuration for a probe
 
 .Appears In:
 ****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apispec[$$APISpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-quespec[$$QueSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsphinxspec[$$SystemSphinxSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
 ****
 
@@ -757,6 +895,64 @@ ProbeSpec specifies configuration for a probe
 |===
 
 
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-quespec"]
+==== QueSpec 
+
+QueSpec is the configuration for Zync que
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
+| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
+| *`replicas`* __integer__ | Number of replicas (ignored if hpa is enabled) for the component
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
+| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
+| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redhatcustomerportalspec"]
+==== RedHatCustomerPortalSpec 
+
+RedHatCustomerPortalSpec has configuration for integration with Red Hat Customer Portal
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`clientID`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Client ID
+| *`clientSecret`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Client secret
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisspec"]
+==== RedisSpec 
+
+RedisSpec holds redis configuration
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`queuesDSN`* __string__ | Data source name
+| *`messageBusDSN`* __string__ | Message bus data source name
+|===
+
+
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec"]
 ==== ResourceRequirementsSpec 
 
@@ -764,6 +960,7 @@ ResourceRequirementsSpec defines the resource requirements for the component
 
 .Appears In:
 ****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apispec[$$APISpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]
@@ -771,6 +968,10 @@ ResourceRequirementsSpec defines the resource requirements for the component
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-quespec[$$QueSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsphinxspec[$$SystemSphinxSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
 ****
 
@@ -782,6 +983,29 @@ ResourceRequirementsSpec defines the resource requirements for the component
 |===
 
 
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-smtpspec"]
+==== SMTPSpec 
+
+SMTPSpec has options to configure system's SMTP
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`address`* __string__ | Address
+| *`user`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | User
+| *`password`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Password
+| *`port`* __integer__ | Port
+| *`authProtocol`* __string__ | Authentication protocol
+| *`opensslVerifyMode`* __string__ | OpenSSL verify mode
+| *`starttlsAuto`* __boolean__ | Enable/disable auto STARTTLS
+|===
+
+
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference"]
 ==== SecretReference 
 
@@ -789,15 +1013,48 @@ SecretReference is a reference to a secret stored in some secrets engine
 
 .Appears In:
 ****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-assetsspec[$$AssetsSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backendconfig[$$BackendConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-bugsnagspec[$$BugsnagSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyconfig[$$CORSProxyConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-githubspec[$$GithubSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingserviceconfig[$$MappingServiceConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-metricsspec[$$MetricsSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-newrelicspec[$$NewRelicSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redhatcustomerportalspec[$$RedHatCustomerPortalSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-smtpspec[$$SMTPSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-segmentspec[$$SegmentSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systembackendspec[$$SystemBackendSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemrecaptchaspec[$$SystemRecaptchaSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemseedspec[$$SystemSeedSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncconfig[$$ZyncConfig$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
 | *`fromVault`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-vaultsecretreference[$$VaultSecretReference$$]__ | VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
+| *`override`* __string__ | Override allows to directly specify a string value.
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-segmentspec"]
+==== SegmentSpec 
+
+SegmentSpec has configuration for Segment integration
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`deletionWorkspace`* __string__ | Deletion workspace
+| *`deletionToken`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Deletion token
+| *`writeKey`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Write key
 |===
 
 
@@ -816,6 +1073,302 @@ SidecarPort defines port for the Marin3r sidecar container
 | Field | Description
 | *`name`* __string__ | Port name
 | *`port`* __integer__ | Port value
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sphinxconfig"]
+==== SphinxConfig 
+
+SphinxConfig has configuration options for System's sphinx
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsphinxspec[$$SystemSphinxSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`thinking`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-thinkingspec[$$ThinkingSpec$$]__ | Thinking configuration for sphinx
+| *`deltaIndexInterval`* __integer__ | Interval used for adding chunks of brand new documents to the primary index at certain intervals without having to do a full re-index
+| *`fullReindexInterval`* __integer__ | Interval used to do a full re-index
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-system"]
+==== System 
+
+System is the Schema for the systems API
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemlist[$$SystemList$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
+| *`kind`* __string__ | `System`
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+
+| *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]__ | 
+| *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemstatus[$$SystemStatus$$]__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec"]
+==== SystemAppSpec 
+
+SystemAppSpec configures the App component of System
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
+| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
+| *`replicas`* __integer__ | Number of replicas (ignored if hpa is enabled) for the component
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
+| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
+| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+| *`marin3r`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]__ | Marin3r configures the Marin3r sidecars for the component
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systembackendspec"]
+==== SystemBackendSpec 
+
+SystemBackendSpec has configuration options for backend
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`externalEndpoint`* __string__ | External endpoint
+| *`internalEndpoint`* __string__ | Internal endpoint
+| *`internalAPIUser`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Internal API user
+| *`internalAPIPassword`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Internal API password
+| *`redisDSN`* __string__ | Redis data source name
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig"]
+==== SystemConfig 
+
+SystemConfig holds configuration for SystemApp component
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`ampRelease`* __string__ | AMP release number
+| *`rails`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemrailsspec[$$SystemRailsSpec$$]__ | Rails configuration options for system components
+| *`sandboxProxyOpensslVerifyMode`* __string__ | OpenSSL verification mode for sandbox proxy
+| *`forceSSL`* __boolean__ | Enable (true) or disable (false) enforcing SSL
+| *`sslCertsDir`* __string__ | SSL certificates path
+| *`threescaleProviderPlan`* __string__ | 3scale provider plan
+| *`threescaleSuperdomain`* __string__ | 3scale superdomain
+| *`configFiles`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-configfilesspec[$$ConfigFilesSpec$$]__ | Extra configuration files to be mounted in the pods
+| *`seed`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemseedspec[$$SystemSeedSpec$$]__ | System seed
+| *`databaseDSN`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | DSN of system's main database
+| *`eventsSharedSecret`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | EventsSharedSecret
+| *`recaptcha`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemrecaptchaspec[$$SystemRecaptchaSpec$$]__ | Holds recaptcha configuration options
+| *`secretKeyBase`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | SecretKeyBase
+| *`accessCode`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | AccessCode to protect admin urls
+| *`segment`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-segmentspec[$$SegmentSpec$$]__ | Options for Segment integration
+| *`github`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-githubspec[$$GithubSpec$$]__ | Options for Github integration
+| *`metrics`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-metricsspec[$$MetricsSpec$$]__ | Options for configuring metrics publication
+| *`redhatCustomerPortal`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redhatcustomerportalspec[$$RedHatCustomerPortalSpec$$]__ | Options for configuring RH Customer Portal integration
+| *`bugsnag`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-bugsnagspec[$$BugsnagSpec$$]__ | Options for configuring Bugsnag integration
+| *`databaseSecret`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Database secret
+| *`memcachedServers`* __string__ | Memcached servers
+| *`redis`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisspec[$$RedisSpec$$]__ | Redis configuration options
+| *`smtp`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-smtpspec[$$SMTPSpec$$]__ | SMTP configuration options
+| *`apicastAccessToken`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Master access token for Apicast
+| *`zyncAuthToken`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Zync authentication token
+| *`backend`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systembackendspec[$$SystemBackendSpec$$]__ | Backend has configuration options for system to contact backend
+| *`assets`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-assetsspec[$$AssetsSpec$$]__ | Assets has configuration to access assets in AWS s3
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemlist"]
+==== SystemList 
+
+SystemList contains a list of System
+
+
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
+| *`kind`* __string__ | `SystemList`
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+
+| *`items`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-system[$$System$$]__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemrailsspec"]
+==== SystemRailsSpec 
+
+SystemRailsSpec configures rails for system components
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`environment`* __string__ | Rails environment
+| *`logLevel`* __string__ | Rails log level (debug, info, warn, error, fatal or unknown)
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemrecaptchaspec"]
+==== SystemRecaptchaSpec 
+
+SystemRecaptchaSpec holds recaptcha configurations
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`publicKey`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Public key
+| *`privateKey`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Private key
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemseedspec"]
+==== SystemSeedSpec 
+
+SystemSeedSpec whatever this is
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`masterAccessToken`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Master access token
+| *`masterDomain`* __string__ | Master domain
+| *`masterUser`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Master user
+| *`masterPassword`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Master password
+| *`adminAccessToken`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Admin access token
+| *`adminUser`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Admin user
+| *`adminPassword`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Admin password
+| *`adminEmail`* __string__ | Admin email address
+| *`tenantName`* __string__ | Tenant name
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec"]
+==== SystemSidekiqSpec 
+
+SystemSidekiqSpec configures the App component of System
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
+| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
+| *`replicas`* __integer__ | Number of replicas (ignored if hpa is enabled) for the component
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
+| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
+| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec"]
+==== SystemSpec 
+
+SystemSpec defines the desired state of System
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-system[$$System$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]__ | Application specific configuration options for System components
+| *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
+| *`app`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]__ | Application specific configuration options
+| *`sidekiq`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]__ | Sidekiq specific configuration options
+| *`sphinx`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsphinxspec[$$SystemSphinxSpec$$]__ | Sphinx specific configuration options
+| *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsphinxspec"]
+==== SystemSphinxSpec 
+
+SystemSphinxSpec configures the App component of System
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sphinxconfig[$$SphinxConfig$$]__ | Configuration options for System's sphinx
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
+| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
+| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+|===
+
+
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-thinkingspec"]
+==== ThinkingSpec 
+
+ThinkingSpec configures the thinking library for sphinx
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sphinxconfig[$$SphinxConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`port`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-int32[$$int32$$]__ | The TCP port Sphinx will run its daemon on
+| *`bindAddress`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-string[$$string$$]__ | Allows setting the TCP host for Sphinx to a different address
+| *`configFile`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-string[$$string$$]__ | Sphinx configuration file path
+| *`databasePath`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-string[$$string$$]__ | Sphinx database path
+| *`databaseStorageSize`* __Quantity__ | Sphinx database storage size
+| *`databaseStorageClass`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-string[$$string$$]__ | Sphinx database storage type
+| *`pidFile`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-string[$$string$$]__ | Sphinx PID file path
 |===
 
 
@@ -876,5 +1429,108 @@ WorkerSpec is the configuration for Backend Worker
 | *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
 | *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
 |===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zync"]
+==== Zync 
+
+Zync is the Schema for the zyncs API
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zynclist[$$ZyncList$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
+| *`kind`* __string__ | `Zync`
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+
+| *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]__ | 
+| *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncstatus[$$ZyncStatus$$]__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncconfig"]
+==== ZyncConfig 
+
+ZyncConfig configures app behavior for Zync
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`rails`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncrailsspec[$$ZyncRailsSpec$$]__ | Rails configuration options for zync components
+| *`databaseDSN`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the database DSN
+| *`secretKeyBase`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the secret-key-base
+| *`zyncAuthToken`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the zync authentication token
+| *`bugsnag`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-bugsnagspec[$$BugsnagSpec$$]__ | Options for configuring Bugsnag integration
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zynclist"]
+==== ZyncList 
+
+ZyncList contains a list of Zync
+
+
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
+| *`kind`* __string__ | `ZyncList`
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+
+| *`items`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zync[$$Zync$$]__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncrailsspec"]
+==== ZyncRailsSpec 
+
+ZyncRailsSpec configures rails for system components
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncconfig[$$ZyncConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`environment`* __string__ | Rails environment
+| *`logLevel`* __string__ | Rails log level (debug, info, warn, error, fatal or unknown)
+| *`maxThreads`* __integer__ | Rails max threads (only applies to api)
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncspec"]
+==== ZyncSpec 
+
+ZyncSpec defines the desired state of Zync
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zync[$$Zync$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
+| *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncconfig[$$ZyncConfig$$]__ | Application specific configuration options for the component
+| *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
+| *`api`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apispec[$$APISpec$$]__ | Configures the main zync api component
+| *`que`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-quespec[$$QueSpec$$]__ | Configures the zync que component
+|===
+
+
 
 
