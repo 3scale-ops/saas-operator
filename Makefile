@@ -192,7 +192,7 @@ bump-release:
 bundle-push: bundle bundle-build
 	docker push $(BUNDLE_IMG)
 
-bundle-publish: bundle-push
+bundle-publish: docker-build docker-push bundle-push
 	opm index add \
 		--build-tool docker \
 		--mode replaces \
