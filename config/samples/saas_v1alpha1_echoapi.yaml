@@ -4,7 +4,15 @@ metadata:
   name: example
 spec:
   image:
-    tag: latest
+    tag: latest 
+  marin3r:
+    ports:
+      - name: echo-api-http
+        port: 38080
+      - name: echo-api-https
+        port: 38443
+      - name: envoy-metrics
+        port: 9901
   endpoint:
     dns:
       - echoapi.example.com
