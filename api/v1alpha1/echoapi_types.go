@@ -29,7 +29,7 @@ import (
 var (
 	echoapiDefaultImage defaultImageSpec = defaultImageSpec{
 		Name:       pointer.StringPtr("quay.io/3scale/echoapi"),
-		Tag:        pointer.StringPtr("v1.0.1"),
+		Tag:        pointer.StringPtr("v1.0.3"),
 		PullPolicy: (*corev1.PullPolicy)(pointer.StringPtr(string(corev1.PullIfNotPresent))),
 	}
 	echoapiDefaultReplicas int32                              = 2
