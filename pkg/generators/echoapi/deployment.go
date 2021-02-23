@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/3scale/saas-operator/pkg/basereconciler"
+	"github.com/3scale/saas-operator/pkg/generators/common_blocks/marin3r"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
 	"github.com/3scale/saas-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
@@ -19,7 +20,7 @@ func (gen *Generator) Deployment() basereconciler.GeneratorFunction {
 
 	return func() client.Object {
 
-		return &appsv1.Deployment{
+		dep := &appsv1.Deployment{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Deployment",
 				APIVersion: appsv1.SchemeGroupVersion.String(),
@@ -70,5 +71,11 @@ func (gen *Generator) Deployment() basereconciler.GeneratorFunction {
 				},
 			},
 		}
+
+		if !gen.Spec.Marin3r.IsDeactivated() {
+			dep = marin3r.EnableSidecar(*dep, *gen.Spec.Marin3r)
+		}
+
+		return dep
 	}
 }
