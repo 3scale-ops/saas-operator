@@ -58,7 +58,7 @@ func (gen *QueGenerator) Deployment() basereconciler.GeneratorFunction {
 								Command: []string{
 									"/usr/bin/bash",
 									"-c",
-									"bundle exec rake 'que[--worker-count 10]",
+									"bundle exec rake 'que[--worker-count 10]'",
 								},
 								Ports: pod.ContainerPorts(
 									pod.ContainerPortTCP("metrics", 9394),
