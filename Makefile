@@ -183,6 +183,9 @@ kind-undeploy: manifests kustomize
 
 prepare-release: bump-release generate fmt vet manifests bundle
 
+prepare-stable-release: bump-release generate fmt vet manifests
+	$(MAKE) bundle CHANNELS=alpha,stable DEFAULT_CHANNEL=alpha
+
 bump-release:
 	sed -i 's/version string = "v\(.*\)"/version string = "v$(VERSION)"/g' pkg/version/version.go
 
