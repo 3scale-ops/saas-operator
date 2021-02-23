@@ -195,7 +195,7 @@ bundle-push: bundle bundle-build
 bundle-publish: docker-build docker-push bundle-push
 	opm index add \
 		--build-tool docker \
-		--mode replaces \
+		--mode semver-skippatch \
 		--bundles $(BUNDLE_IMG) \
 		--from-index $(CATALOG_IMG) \
 		--tag $(CATALOG_IMG)
