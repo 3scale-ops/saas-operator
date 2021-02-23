@@ -1,9 +1,9 @@
 # Current Operator version
 VERSION ?= 0.9.0-alpha25
 # Default catalog image
-CATALOG_IMG ?= quay.io/3scaleops/go-saas-operator-catalog:latest
+CATALOG_IMG ?= quay.io/3scaleops/saas-operator-bundle:catalog
 # Default bundle image tag
-BUNDLE_IMG ?= quay.io/3scaleops/go-saas-operator-catalog:$(VERSION)
+BUNDLE_IMG ?= quay.io/3scaleops/saas-operator-bundle:$(VERSION)
 # Options for 'bundle-build'
 ifneq ($(origin CHANNELS), undefined)
 BUNDLE_CHANNELS := --channels=$(CHANNELS)
