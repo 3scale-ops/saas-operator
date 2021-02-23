@@ -206,6 +206,32 @@ rules:
 - apiGroups:
   - saas.3scale.net
   resources:
+  - echoapis
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - echoapis/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - echoapis/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - saas.3scale.net
+  resources:
   - mappingservices
   verbs:
   - create

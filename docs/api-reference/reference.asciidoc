@@ -22,6 +22,8 @@ Package v1alpha1 contains API Schema definitions for the saas v1alpha1 API group
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backendlist[$$BackendList$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxy[$$CORSProxy$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxylist[$$CORSProxyList$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapi[$$EchoAPI$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapilist[$$EchoAPIList$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservice[$$MappingService$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicelist[$$MappingServiceList$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-system[$$System$$]
@@ -503,6 +505,74 @@ CronSpec is the configuration for Backend Cron
 |===
 
 
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapi"]
+==== EchoAPI 
+
+EchoAPI is the Schema for the echoapis API
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapilist[$$EchoAPIList$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
+| *`kind`* __string__ | `EchoAPI`
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+
+| *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]__ | 
+| *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapistatus[$$EchoAPIStatus$$]__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapilist"]
+==== EchoAPIList 
+
+EchoAPIList contains a list of echoapi
+
+
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
+| *`kind`* __string__ | `EchoAPIList`
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+
+| *`items`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapi[$$EchoAPI$$]__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapispec"]
+==== EchoAPISpec 
+
+EchoAPISpec defines the desired state of echoapi
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapi[$$EchoAPI$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
+| *`replicas`* __integer__ | Configures the Grafana Dashboard for the component
+| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Resource requirements for the component
+| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Number of replicas (ignored if hpa is enabled) for the component
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Horizontal Pod Autoscaler for the component
+| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
+| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+| *`marin3r`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]__ | Marin3r configures the Marin3r sidecars for the component
+| *`loadBalancer`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-nlbloadbalancerspec[$$NLBLoadBalancerSpec$$]__ | Configures the AWS Network load balancer for the component
+| *`endpoint`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-endpoint[$$Endpoint$$]__ | The external endpoint/s for the component
+|===
+
+
+
+
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-endpoint"]
 ==== Endpoint 
 
@@ -512,6 +582,7 @@ Endpoint sets the external endpoint for the component
 ****
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
 ****
 
@@ -575,6 +646,7 @@ HorizontalPodAutoscalerSpec defines the HPA for the component
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-quespec[$$QueSpec$$]
@@ -604,6 +676,7 @@ ImageSpec defines the image for the component
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backendspec[$$BackendSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]
@@ -785,6 +858,7 @@ Marin3rSidecarSpec defines the marin3r sidecar for the component
 .Appears In:
 ****
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
 ****
@@ -823,6 +897,7 @@ NLBLoadBalancerSpec configures the AWS NLB load balancer for the component
 
 .Appears In:
 ****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
 ****
 
@@ -848,6 +923,7 @@ PodDisruptionBudgetSpec defines the PDB for the component
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-quespec[$$QueSpec$$]
@@ -875,6 +951,7 @@ ProbeSpec specifies configuration for a probe
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-quespec[$$QueSpec$$]
@@ -965,6 +1042,7 @@ ResourceRequirementsSpec defines the resource requirements for the component
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-cronspec[$$CronSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]

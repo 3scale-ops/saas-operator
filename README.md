@@ -14,7 +14,7 @@ A Kubernetes Operator based on the Operator SDK to manage 3scale SaaS (hosted ve
 * AutoSSL
 * Backend
 * CORSProxy
-* EchoAPI [TODO]
+* EchoAPI
 * MappingService
 * System
 * Zync
@@ -39,7 +39,7 @@ A Kubernetes Operator based on the Operator SDK to manage 3scale SaaS (hosted ve
 * [AutoSSL Custom Resource Reference](docs/api-reference/reference.asciidoc#k8s-api-github-com-3scale-saas-operator-api-v1alpha1-autossl)
 * [Backend Custom Resource Reference](docs/api-reference/reference.asciidoc#k8s-api-github-com-3scale-saas-operator-api-v1alpha1-backend)
 * [CORSProxy Custom Resource Reference](docs/api-reference/reference.asciidoc#k8s-api-github-com-3scale-saas-operator-api-v1alpha1-corsproxy)
-* [EchoAPI Custom Resource Reference](docs/api-reference/reference.asciidoc)
+* [EchoAPI Custom Resource Reference](docs/api-reference/reference.asciidoc#k8s-api-github-com-3scale-saas-operator-api-v1alpha1-echoapi)
 * [MappingService Custom Resource Reference](docs/api-reference/reference.asciidoc#k8s-api-github-com-3scale-saas-operator-api-v1alpha1-mappingservice)
 * [System Custom Resource Reference](docs/api-reference/reference.asciidoc#k8s-api-github-com-3scale-saas-operator-api-v1alpha1-system)
 * [Zync Custom Resource Reference](docs/api-reference/reference.asciidoc#k8s-api-github-com-3scale-saas-operator-api-v1alpha1-zync)
