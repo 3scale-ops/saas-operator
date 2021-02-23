@@ -15,7 +15,7 @@ const (
 	component string = "echo-api"
 )
 
-// Generator configures the generators for AutoSSL
+// Generator configures the generators for EchoAPI
 type Generator struct {
 	generators.BaseOptions
 	Spec saasv1alpha1.EchoAPISpec
