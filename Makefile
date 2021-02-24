@@ -1,9 +1,9 @@
 # Current Operator version
-VERSION ?= 0.9.0-alpha25
+VERSION ?= 0.9.0-alpha.35
 # Default catalog image
-CATALOG_IMG ?= quay.io/3scaleops/go-saas-operator-catalog:latest
+CATALOG_IMG ?= quay.io/3scaleops/saas-operator-bundle:catalog
 # Default bundle image tag
-BUNDLE_IMG ?= quay.io/3scaleops/go-saas-operator-catalog:$(VERSION)
+BUNDLE_IMG ?= quay.io/3scaleops/saas-operator-bundle:$(VERSION)
 # Options for 'bundle-build'
 ifneq ($(origin CHANNELS), undefined)
 BUNDLE_CHANNELS := --channels=$(CHANNELS)
@@ -18,6 +18,8 @@ IMG ?= quay.io/3scale/saas-operator:$(VERSION)
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
 
+all: manager
+
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
 GOBIN=$(shell go env GOPATH)/bin
@@ -25,7 +27,81 @@ else
 GOBIN=$(shell go env GOBIN)
 endif
 
-all: manager
+#############################
+### Makefile requirements ###
+#############################
+
+OS=$(shell uname | awk '{print tolower($$0)}')
+ARCH = $(shell arch)
+ifeq ($(shell arch),x86_64)
+ARCH := amd64
+endif
+ifeq ($(shell arch),aarch64)
+ARCH := arm64
+endif
+
+# Download operator-sdk binary if necesasry
+OPERATOR_SDK_RELEASE = v1.3.2
+OPERATOR_SDK = $(shell pwd)/bin/operator-sdk-$(OPERATOR_SDK_RELEASE)
+OPERATOR_SDK_DL_URL = https://github.com/operator-framework/operator-sdk/releases/download/$(OPERATOR_SDK_RELEASE)/operator-sdk_$(OS)_$(ARCH)
+$(OPERATOR_SDK):
+	curl -sL -o $(OPERATOR_SDK) $(OPERATOR_SDK_DL_URL)
+	chmod +x $(OPERATOR_SDK)
+
+# Download operator package manager if necessary
+OPM_RELEASE = v1.16.1
+OPM = $(shell pwd)/bin/opm-$(OPM_RELEASE)
+OPM_DL_URL = https://github.com/operator-framework/operator-registry/releases/download/$(OPM_RELEASE)/$(OS)-$(ARCH)-opm
+$(OPM):
+	curl -sL -o $(OPM) $(OPM_DL_URL)
+	chmod +x $(OPM)
+
+# go-get-tool will 'go get' any package $2 and install it to $1.
+PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
+define go-get-tool
+@[ -f $(1) ] || { \
+set -e ;\
+TMP_DIR=$$(mktemp -d) ;\
+cd $$TMP_DIR ;\
+go mod init tmp ;\
+echo "Downloading $(2)" ;\
+GOBIN=$(PROJECT_DIR)/bin go get $(2) ;\
+rm -rf $$TMP_DIR ;\
+}
+endef
+
+# Download controller-gen locally if necessary
+CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
+controller-gen:
+	$(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@v0.4.1)
+
+# Download kustomize locally if necessary
+KUSTOMIZE = $(shell pwd)/bin/kustomize
+kustomize:
+	$(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v3@v3.8.7)
+
+# Download ginkgo locally if necessary
+GINKGO = $(shell pwd)/bin/ginkgo
+ginkgo:
+	$(call go-get-tool,$(GINKGO),github.com/onsi/ginkgo/ginkgo)
+
+GOBINDATA=$(shell pwd)/bin/go-bindata
+go-bindata:
+	$(call go-get-tool,$(GOBINDATA),github.com/go-bindata/go-bindata/...)
+
+# Download kind locally if necessary
+KIND = $(shell pwd)/bin/kind
+kind:
+	$(call go-get-tool,$(KIND),sigs.k8s.io/kind@v0.9.0)
+
+# Download crd-ref-docs locally if necessary
+CRD_REFDOCS = $(shell pwd)/bin/crd-ref-docs
+$(CRD_REFDOCS):
+	$(call go-get-tool,$(CRD_REFDOCS),github.com/elastic/crd-ref-docs@v0.0.6)
+
+###########################
+### Kubebuilder targets ###
+###########################
 
 # Run tests
 ENVTEST_ASSETS_DIR=$(shell pwd)/testbin
@@ -90,37 +166,13 @@ docker-build: test
 docker-push:
 	docker push ${IMG}
 
-# Download controller-gen locally if necessary
-CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
-controller-gen:
-	$(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@v0.4.1)
-
-# Download kustomize locally if necessary
-KUSTOMIZE = $(shell pwd)/bin/kustomize
-kustomize:
-	$(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v3@v3.8.7)
-
-# go-get-tool will 'go get' any package $2 and install it to $1.
-PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
-define go-get-tool
-@[ -f $(1) ] || { \
-set -e ;\
-TMP_DIR=$$(mktemp -d) ;\
-cd $$TMP_DIR ;\
-go mod init tmp ;\
-echo "Downloading $(2)" ;\
-GOBIN=$(PROJECT_DIR)/bin go get $(2) ;\
-rm -rf $$TMP_DIR ;\
-}
-endef
-
 # Generate bundle manifests and metadata, then validate generated files.
 .PHONY: bundle
-bundle: manifests kustomize
-	operator-sdk generate kustomize manifests -q
+bundle: $(OPERATOR_SDK) manifests kustomize
+	$(OPERATOR_SDK) generate kustomize manifests -q
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
-	$(KUSTOMIZE) build config/manifests | operator-sdk generate bundle -q --overwrite --version $(VERSION) $(BUNDLE_METADATA_OPTS)
-	operator-sdk bundle validate ./bundle
+	$(KUSTOMIZE) build config/manifests | $(OPERATOR_SDK) generate bundle -q --overwrite --version $(VERSION) $(BUNDLE_METADATA_OPTS)
+	$(OPERATOR_SDK) bundle validate ./bundle
 
 # Build the bundle image.
 .PHONY: bundle-build
@@ -130,25 +182,33 @@ bundle-build:
 tmp:
 	mkdir -p $@
 
-# Download ginkgo locally if necessary
-GINKGO = $(shell pwd)/bin/ginkgo
-ginkgo:
-	$(call go-get-tool,$(GINKGO),github.com/onsi/ginkgo/ginkgo)
+#########################
+#### Release targets ####
+#########################
 
-GOBINDATA=$(shell pwd)/bin/go-bindata
-go-bindata:
-	$(call go-get-tool,$(GOBINDATA),github.com/go-bindata/go-bindata/...)
+prepare-release: bump-release generate fmt vet manifests bundle
+
+prepare-stable-release: bump-release generate fmt vet manifests
+	$(MAKE) bundle CHANNELS=alpha,stable DEFAULT_CHANNEL=alpha
+
+bump-release:
+	sed -i 's/version string = "v\(.*\)"/version string = "v$(VERSION)"/g' pkg/version/version.go
+
+bundle-push: bundle bundle-build
+	docker push $(BUNDLE_IMG)
+
+bundle-publish: $(OPM) docker-build docker-push bundle-push
+	$(OPM) index add \
+		--build-tool docker \
+		--mode semver-skippatch \
+		--bundles $(BUNDLE_IMG) \
+		--from-index $(CATALOG_IMG) \
+		--tag $(CATALOG_IMG)
+	docker push $(CATALOG_IMG)
 
 ############################################
 #### Targets to manually test with Kind ####
 ############################################
-
-KIND_VERSION ?= v0.9.0
-
-# Download kind locally if necessary
-KIND = $(shell pwd)/bin/kind
-kind:
-	$(call go-get-tool,$(KIND),sigs.k8s.io/kind@$(KIND_VERSION))
 
 kind-create: ## runs a k8s kind cluster for testing
 kind-create: export KUBECONFIG = ${PWD}/kubeconfig
@@ -177,36 +237,9 @@ kind-undeploy: export KUBECONFIG = ${PWD}/kubeconfig
 kind-undeploy: manifests kustomize
 	$(KUSTOMIZE) build config/test | kubectl delete -f -
 
-#########################
-#### Release targets ####
-#########################
-
-prepare-release: bump-release generate fmt vet manifests bundle
-
-bump-release:
-	sed -i 's/version string = "v\(.*\)"/version string = "v$(VERSION)"/g' pkg/version/version.go
-
-bundle-push: bundle bundle-build
-	docker push $(BUNDLE_IMG)
-
-bundle-publish: bundle-push
-	opm index add \
-		--build-tool docker \
-		--mode replaces \
-		--bundles $(BUNDLE_IMG) \
-		--from-index $(CATALOG_IMG) \
-		--tag $(CATALOG_IMG)
-	docker push $(CATALOG_IMG)
-
 ############################
 #### refdocs generation ####
 ############################
-
-# Download crd-ref-docs locally if necessary
-CRD_REFDOCS_VERSION := v0.0.6
-CRD_REFDOCS = $(shell pwd)/bin/crd-ref-docs
-$(CRD_REFDOCS):
-	$(call go-get-tool,$(CRD_REFDOCS),github.com/elastic/crd-ref-docs@$(CRD_REFDOCS_VERSION))
 
 refdocs: $(CRD_REFDOCS) ## Generates api reference documentation from code
 	$(CRD_REFDOCS) \
