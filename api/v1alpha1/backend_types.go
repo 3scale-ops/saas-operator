@@ -121,11 +121,11 @@ var (
 	backendDefaultCronResources          defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
 		Requests: corev1.ResourceList{
 			corev1.ResourceCPU:    resource.MustParse("50m"),
-			corev1.ResourceMemory: resource.MustParse("40Mi"),
+			corev1.ResourceMemory: resource.MustParse("50Mi"),
 		},
 		Limits: corev1.ResourceList{
 			corev1.ResourceCPU:    resource.MustParse("150m"),
-			corev1.ResourceMemory: resource.MustParse("80Mi"),
+			corev1.ResourceMemory: resource.MustParse("150Mi"),
 		},
 	}
 )
