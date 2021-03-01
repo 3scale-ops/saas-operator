@@ -190,9 +190,9 @@ tmp:
 #### Release targets ####
 #########################
 
-prepare-release: bump-release generate fmt vet manifests bundle
+prepare-alpha-release: bump-release generate fmt vet manifests bundle
 
-prepare-stable-release: bump-release generate fmt vet manifests
+prepare-release: bump-release generate fmt vet manifests
 	$(MAKE) bundle CHANNELS=alpha,stable DEFAULT_CHANNEL=alpha
 
 bump-release:
@@ -201,7 +201,7 @@ bump-release:
 bundle-push: bundle bundle-build
 	docker push $(BUNDLE_IMG)
 
-bundle-publish: $(OPM) docker-build docker-push bundle-push
+bundle-publish: $(OPM) bundle-push
 	$(OPM) index add \
 		--build-tool docker \
 		--mode semver-skippatch \
@@ -209,6 +209,9 @@ bundle-publish: $(OPM) docker-build docker-push bundle-push
 		--from-index $(CATALOG_IMG) \
 		--tag $(CATALOG_IMG)
 	docker push $(CATALOG_IMG)
+
+get-new-release:
+	@hack/new-release.sh v$(VERSION)
 
 ############################################
 #### Targets to manually test with Kind ####
