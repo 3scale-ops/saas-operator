@@ -1,3 +1,4 @@
+SHELL:=/bin/bash
 # Current Operator version
 VERSION ?= 0.9.0-alpha.35
 # Default catalog image
@@ -104,18 +105,14 @@ $(CRD_REFDOCS):
 ###########################
 
 # Run tests
-COVERPROFILE=cover.out
 ENVTEST_ASSETS_DIR=$(shell pwd)/testbin
-test: generate fmt vet manifests assets
+test: generate fmt vet manifests assets ginkgo
 	mkdir -p ${ENVTEST_ASSETS_DIR}
 	test -f ${ENVTEST_ASSETS_DIR}/setup-envtest.sh || curl -sSLo ${ENVTEST_ASSETS_DIR}/setup-envtest.sh https://raw.githubusercontent.com/kubernetes-sigs/controller-runtime/v0.7.0/hack/setup-envtest.sh
 	source ${ENVTEST_ASSETS_DIR}/setup-envtest.sh; \
 		fetch_envtest_tools $(ENVTEST_ASSETS_DIR); \
 		setup_envtest_env $(ENVTEST_ASSETS_DIR); \
 		$(GINKGO) -p -r ./
-
-fix-cover:
-	tmpfile=$$(mktemp) && grep -v "_generated.deepcopy.go" $(COVERPROFILE) > $${tmpfile} && cat $${tmpfile} > $(COVERPROFILE) && rm -f $${tmpfile}
 
 # Build manager binary
 manager: generate fmt vet
