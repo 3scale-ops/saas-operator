@@ -2912,5 +2912,5 @@
     ]
   },
   "timezone": "",
-  "title": "{{ .Namespace }} / 3scale Zync",
+  "title": "{{ .Namespace }} / 3scale Zync"
 }
