@@ -20,6 +20,7 @@
     "panels": [
       {
         "collapsed": false,
+        "datasource": null,
         "gridPos": {
           "h": 1,
           "w": 24,
@@ -37,13 +38,21 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "fill": 1,
+        "fillGradient": 0,
         "gridPos": {
           "h": 8,
           "w": 12,
           "x": 0,
           "y": 1
         },
+        "hiddenSeries": false,
         "id": 39,
         "legend": {
           "avg": false,
@@ -58,8 +67,8 @@
         "linewidth": 1,
         "links": [],
         "nullPointMode": "null",
-        "options": {},
         "percentage": false,
+        "pluginVersion": "7.1.1",
         "pointradius": 2,
         "points": false,
         "renderer": "flot",
@@ -69,44 +78,12 @@
         "steppedLine": false,
         "targets": [
           {
-            "expr": "sum(rate(apisonator_listener_response_codes{namespace=\"$namespace\",request_type=\"authorize\"}[1m]))",
+            "expr": "sum(rate(apisonator_listener_response_codes{namespace=\"$namespace\"}[1m])) by (request_type)",
             "format": "time_series",
             "interval": "1m",
             "intervalFactor": 10,
-            "legendFormat": "authorize",
+            "legendFormat": "{{`{{request_type}}`}}",
             "refId": "A"
-          },
-          {
-            "expr": "sum(rate(apisonator_listener_response_codes{namespace=\"$namespace\",request_type=\"authrep\"}[1m]))",
-            "format": "time_series",
-            "interval": "1m",
-            "intervalFactor": 10,
-            "legendFormat": "authrep",
-            "refId": "B"
-          },
-          {
-            "expr": "sum(rate(apisonator_listener_response_codes{namespace=\"$namespace\",request_type=\"report\"}[1m]))",
-            "format": "time_series",
-            "interval": "1m",
-            "intervalFactor": 10,
-            "legendFormat": "report",
-            "refId": "C"
-          },
-          {
-            "expr": "sum(rate(apisonator_listener_response_codes{namespace=\"$namespace\",request_type=\"authorize_oauth\"}[1m]))",
-            "format": "time_series",
-            "interval": "1m",
-            "intervalFactor": 10,
-            "legendFormat": "authorize_oauth",
-            "refId": "D"
-          },
-          {
-            "expr": "sum(rate(apisonator_listener_response_codes{namespace=\"$namespace\",request_type=\"authrep_oauth\"}[1m]))",
-            "format": "time_series",
-            "interval": "1m",
-            "intervalFactor": 10,
-            "legendFormat": "authrep_oauth",
-            "refId": "E"
           }
         ],
         "thresholds": [],
@@ -134,7 +111,7 @@
             "label": null,
             "logBase": 1,
             "max": null,
-            "min": null,
+            "min": "0",
             "show": true
           },
           {
@@ -157,13 +134,21 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "fill": 1,
+        "fillGradient": 0,
         "gridPos": {
           "h": 8,
           "w": 12,
           "x": 12,
           "y": 1
         },
+        "hiddenSeries": false,
         "id": 41,
         "legend": {
           "avg": false,
@@ -180,8 +165,8 @@
         "linewidth": 1,
         "links": [],
         "nullPointMode": "null",
-        "options": {},
         "percentage": false,
+        "pluginVersion": "7.1.1",
         "pointradius": 2,
         "points": false,
         "renderer": "flot",
@@ -191,44 +176,12 @@
         "steppedLine": false,
         "targets": [
           {
-            "expr": "sum(rate(apisonator_listener_response_codes{namespace=\"$namespace\",resp_code=\"2xx\"}[1m]))",
+            "expr": "sum(rate(apisonator_listener_response_codes{namespace=\"$namespace\"}[1m])) by (resp_code)",
             "format": "time_series",
             "interval": "1m",
             "intervalFactor": 10,
-            "legendFormat": "2XX",
+            "legendFormat": "{{`{{resp_code}}`}}",
             "refId": "A"
-          },
-          {
-            "expr": "sum(rate(apisonator_listener_response_codes{namespace=\"$namespace\",resp_code=\"403\"}[1m]))",
-            "format": "time_series",
-            "interval": "1m",
-            "intervalFactor": 10,
-            "legendFormat": "403",
-            "refId": "B"
-          },
-          {
-            "expr": "sum(rate(apisonator_listener_response_codes{namespace=\"$namespace\",resp_code=\"404\"}[1m]))",
-            "format": "time_series",
-            "interval": "1m",
-            "intervalFactor": 10,
-            "legendFormat": "404",
-            "refId": "C"
-          },
-          {
-            "expr": "sum(rate(apisonator_listener_response_codes{namespace=\"$namespace\",resp_code=\"409\"}[1m]))",
-            "format": "time_series",
-            "interval": "1m",
-            "intervalFactor": 10,
-            "legendFormat": "409",
-            "refId": "D"
-          },
-          {
-            "expr": "sum(rate(apisonator_listener_response_codes{namespace=\"$namespace\",resp_code=\"5xx\"}[1m]))",
-            "format": "time_series",
-            "interval": "1m",
-            "intervalFactor": 10,
-            "legendFormat": "5XX",
-            "refId": "E"
           }
         ],
         "thresholds": [],
@@ -256,7 +209,7 @@
             "label": null,
             "logBase": 1,
             "max": null,
-            "min": null,
+            "min": "0",
             "show": true
           },
           {
@@ -279,13 +232,21 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "fill": 1,
+        "fillGradient": 0,
         "gridPos": {
           "h": 8,
           "w": 12,
           "x": 0,
           "y": 9
         },
+        "hiddenSeries": false,
         "id": 43,
         "legend": {
           "avg": false,
@@ -300,8 +261,8 @@
         "linewidth": 1,
         "links": [],
         "nullPointMode": "null",
-        "options": {},
         "percentage": false,
+        "pluginVersion": "7.1.1",
         "pointradius": 2,
         "points": false,
         "renderer": "flot",
@@ -344,7 +305,7 @@
             "label": null,
             "logBase": 1,
             "max": null,
-            "min": null,
+            "min": "0",
             "show": true
           },
           {
@@ -375,6 +336,12 @@
         },
         "dataFormat": "tsbuckets",
         "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "gridPos": {
           "h": 8,
           "w": 12,
@@ -389,7 +356,6 @@
           "show": false
         },
         "links": [],
-        "options": {},
         "reverseYBuckets": false,
         "targets": [
           {
@@ -433,13 +399,21 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "fill": 1,
+        "fillGradient": 0,
         "gridPos": {
           "h": 8,
           "w": 12,
           "x": 0,
           "y": 17
         },
+        "hiddenSeries": false,
         "id": 47,
         "legend": {
           "avg": false,
@@ -454,8 +428,8 @@
         "linewidth": 1,
         "links": [],
         "nullPointMode": "null",
-        "options": {},
         "percentage": false,
+        "pluginVersion": "7.1.1",
         "pointradius": 2,
         "points": false,
         "renderer": "flot",
@@ -498,7 +472,7 @@
             "label": null,
             "logBase": 1,
             "max": null,
-            "min": null,
+            "min": "0",
             "show": true
           },
           {
@@ -529,6 +503,12 @@
         },
         "dataFormat": "tsbuckets",
         "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "gridPos": {
           "h": 8,
           "w": 12,
@@ -543,7 +523,6 @@
           "show": false
         },
         "links": [],
-        "options": {},
         "reverseYBuckets": false,
         "targets": [
           {
@@ -587,13 +566,21 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "fill": 1,
+        "fillGradient": 0,
         "gridPos": {
           "h": 8,
           "w": 12,
           "x": 0,
           "y": 25
         },
+        "hiddenSeries": false,
         "id": 50,
         "legend": {
           "avg": false,
@@ -608,8 +595,8 @@
         "linewidth": 1,
         "links": [],
         "nullPointMode": "null",
-        "options": {},
         "percentage": false,
+        "pluginVersion": "7.1.1",
         "pointradius": 2,
         "points": false,
         "renderer": "flot",
@@ -652,7 +639,7 @@
             "label": null,
             "logBase": 1,
             "max": null,
-            "min": null,
+            "min": "0",
             "show": true
           },
           {
@@ -683,6 +670,12 @@
         },
         "dataFormat": "tsbuckets",
         "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "gridPos": {
           "h": 8,
           "w": 12,
@@ -697,7 +690,6 @@
           "show": false
         },
         "links": [],
-        "options": {},
         "reverseYBuckets": false,
         "targets": [
           {
@@ -741,13 +733,21 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "fill": 1,
+        "fillGradient": 0,
         "gridPos": {
           "h": 8,
           "w": 12,
           "x": 0,
           "y": 33
         },
+        "hiddenSeries": false,
         "id": 60,
         "legend": {
           "avg": false,
@@ -762,8 +762,8 @@
         "linewidth": 1,
         "links": [],
         "nullPointMode": "null",
-        "options": {},
         "percentage": false,
+        "pluginVersion": "7.1.1",
         "pointradius": 2,
         "points": false,
         "renderer": "flot",
@@ -806,7 +806,7 @@
             "label": null,
             "logBase": 1,
             "max": null,
-            "min": null,
+            "min": "0",
             "show": true
           },
           {
@@ -837,6 +837,12 @@
         },
         "dataFormat": "tsbuckets",
         "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "gridPos": {
           "h": 8,
           "w": 12,
@@ -851,7 +857,6 @@
           "show": false
         },
         "links": [],
-        "options": {},
         "reverseYBuckets": false,
         "targets": [
           {
@@ -895,13 +900,21 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "fill": 1,
+        "fillGradient": 0,
         "gridPos": {
           "h": 8,
           "w": 12,
           "x": 0,
           "y": 41
         },
+        "hiddenSeries": false,
         "id": 62,
         "legend": {
           "avg": false,
@@ -916,8 +929,8 @@
         "linewidth": 1,
         "links": [],
         "nullPointMode": "null",
-        "options": {},
         "percentage": false,
+        "pluginVersion": "7.1.1",
         "pointradius": 2,
         "points": false,
         "renderer": "flot",
@@ -960,7 +973,7 @@
             "label": null,
             "logBase": 1,
             "max": null,
-            "min": null,
+            "min": "0",
             "show": true
           },
           {
@@ -991,6 +1004,12 @@
         },
         "dataFormat": "tsbuckets",
         "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "gridPos": {
           "h": 8,
           "w": 12,
@@ -1005,7 +1024,6 @@
           "show": false
         },
         "links": [],
-        "options": {},
         "reverseYBuckets": false,
         "targets": [
           {
@@ -1045,11 +1063,2242 @@
       },
       {
         "collapsed": false,
+        "datasource": null,
         "gridPos": {
           "h": 1,
           "w": 24,
           "x": 0,
           "y": 49
+        },
+        "id": 66,
+        "panels": [],
+        "title": "Listeners Internal API",
+        "type": "row"
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 50
+        },
+        "hiddenSeries": false,
+        "id": 67,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "percentage": false,
+        "pluginVersion": "7.1.1",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "sum(rate(apisonator_listener_internal_api_response_codes{namespace=\"$namespace\"}[1m])) by (request_type)",
+            "format": "time_series",
+            "interval": "1m",
+            "intervalFactor": 10,
+            "legendFormat": "{{`{{request_type}}`}}",
+            "refId": "A"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Listener Internal API requests per second (by request type)",
+        "tooltip": {
+          "shared": true,
+          "sort": 2,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": 0,
+            "format": "reqps",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 50
+        },
+        "hiddenSeries": false,
+        "id": 68,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "hideEmpty": true,
+          "hideZero": true,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "percentage": false,
+        "pluginVersion": "7.1.1",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "sum(rate(apisonator_listener_internal_api_response_codes{namespace=\"$namespace\"}[1m])) by (resp_code)",
+            "format": "time_series",
+            "interval": "1m",
+            "intervalFactor": 10,
+            "legendFormat": "{{`{{resp_code}}`}}",
+            "refId": "A"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Listener Internal API requests per second (by response code)",
+        "tooltip": {
+          "shared": true,
+          "sort": 2,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": 0,
+            "format": "reqps",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "$datasource",
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 58
+        },
+        "hiddenSeries": false,
+        "id": 69,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "percentage": false,
+        "pluginVersion": "7.1.1",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "sum(rate(apisonator_listener_internal_api_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"alerts\"}[1m])) by (le)",
+            "format": "heatmap",
+            "interval": "1m",
+            "intervalFactor": 10,
+            "legendFormat": "{{`{{le}}`}}",
+            "refId": "A"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Alerts requests per second (by response time bucket in seconds)",
+        "tooltip": {
+          "shared": true,
+          "sort": 2,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": 0,
+            "format": "reqps",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "cards": {
+          "cardPadding": null,
+          "cardRound": null
+        },
+        "color": {
+          "cardColor": "#FADE2A",
+          "colorScale": "sqrt",
+          "colorScheme": "interpolateOranges",
+          "exponent": 0.5,
+          "mode": "opacity"
+        },
+        "dataFormat": "tsbuckets",
+        "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 58
+        },
+        "heatmap": {},
+        "hideZeroBuckets": false,
+        "highlightCards": true,
+        "id": 70,
+        "legend": {
+          "show": false
+        },
+        "links": [],
+        "reverseYBuckets": false,
+        "targets": [
+          {
+            "expr": "sum(rate(apisonator_listener_internal_api_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"alerts\"}[1m])) by (le)",
+            "format": "heatmap",
+            "interval": "1m",
+            "intervalFactor": 10,
+            "legendFormat": "{{`{{le}}`}}",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Alerts requests per second heatmap (by response time bucket in seconds)",
+        "tooltip": {
+          "show": true,
+          "showHistogram": false
+        },
+        "type": "heatmap",
+        "xAxis": {
+          "show": true
+        },
+        "xBucketNumber": null,
+        "xBucketSize": null,
+        "yAxis": {
+          "decimals": 0,
+          "format": "s",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true,
+          "splitFactor": null
+        },
+        "yBucketBound": "auto",
+        "yBucketNumber": null,
+        "yBucketSize": null
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "$datasource",
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 66
+        },
+        "hiddenSeries": false,
+        "id": 71,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "percentage": false,
+        "pluginVersion": "7.1.1",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "sum(rate(apisonator_listener_internal_api_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"application_keys\"}[1m])) by (le)",
+            "format": "heatmap",
+            "interval": "1m",
+            "intervalFactor": 10,
+            "legendFormat": "{{`{{le}}`}}",
+            "refId": "A"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Application Keys requests per second (by response time bucket in seconds)",
+        "tooltip": {
+          "shared": true,
+          "sort": 2,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": 0,
+            "format": "reqps",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "cards": {
+          "cardPadding": null,
+          "cardRound": null
+        },
+        "color": {
+          "cardColor": "#FADE2A",
+          "colorScale": "sqrt",
+          "colorScheme": "interpolateOranges",
+          "exponent": 0.5,
+          "mode": "opacity"
+        },
+        "dataFormat": "tsbuckets",
+        "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 66
+        },
+        "heatmap": {},
+        "hideZeroBuckets": false,
+        "highlightCards": true,
+        "id": 72,
+        "legend": {
+          "show": false
+        },
+        "links": [],
+        "reverseYBuckets": false,
+        "targets": [
+          {
+            "expr": "sum(rate(apisonator_listener_internal_api_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"application_keys\"}[1m])) by (le)",
+            "format": "heatmap",
+            "interval": "1m",
+            "intervalFactor": 10,
+            "legendFormat": "{{`{{le}}`}}",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Application Keys requests per second heatmap (by response time bucket in seconds)",
+        "tooltip": {
+          "show": true,
+          "showHistogram": false
+        },
+        "type": "heatmap",
+        "xAxis": {
+          "show": true
+        },
+        "xBucketNumber": null,
+        "xBucketSize": null,
+        "yAxis": {
+          "decimals": 0,
+          "format": "s",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true,
+          "splitFactor": null
+        },
+        "yBucketBound": "auto",
+        "yBucketNumber": null,
+        "yBucketSize": null
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "$datasource",
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 74
+        },
+        "hiddenSeries": false,
+        "id": 73,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "percentage": false,
+        "pluginVersion": "7.1.1",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "sum(rate(apisonator_listener_internal_api_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"application_referrer_filters\"}[1m])) by (le)",
+            "format": "heatmap",
+            "interval": "1m",
+            "intervalFactor": 10,
+            "legendFormat": "{{`{{le}}`}}",
+            "refId": "A"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Referrer Filters requests per second (by response time bucket in seconds)",
+        "tooltip": {
+          "shared": true,
+          "sort": 2,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": 0,
+            "format": "reqps",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "cards": {
+          "cardPadding": null,
+          "cardRound": null
+        },
+        "color": {
+          "cardColor": "#FADE2A",
+          "colorScale": "sqrt",
+          "colorScheme": "interpolateOranges",
+          "exponent": 0.5,
+          "mode": "opacity"
+        },
+        "dataFormat": "tsbuckets",
+        "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 74
+        },
+        "heatmap": {},
+        "hideZeroBuckets": false,
+        "highlightCards": true,
+        "id": 74,
+        "legend": {
+          "show": false
+        },
+        "links": [],
+        "reverseYBuckets": false,
+        "targets": [
+          {
+            "expr": "sum(rate(apisonator_listener_internal_api_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"application_referrer_filters\"}[1m])) by (le)",
+            "format": "heatmap",
+            "interval": "1m",
+            "intervalFactor": 10,
+            "legendFormat": "{{`{{le}}`}}",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Referrer Filters requests per second heatmap (by response time bucket in seconds)",
+        "tooltip": {
+          "show": true,
+          "showHistogram": false
+        },
+        "type": "heatmap",
+        "xAxis": {
+          "show": true
+        },
+        "xBucketNumber": null,
+        "xBucketSize": null,
+        "yAxis": {
+          "decimals": 0,
+          "format": "s",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true,
+          "splitFactor": null
+        },
+        "yBucketBound": "auto",
+        "yBucketNumber": null,
+        "yBucketSize": null
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "$datasource",
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 82
+        },
+        "hiddenSeries": false,
+        "id": 75,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "percentage": false,
+        "pluginVersion": "7.1.1",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "sum(rate(apisonator_listener_internal_api_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"applications\"}[1m])) by (le)",
+            "format": "heatmap",
+            "interval": "1m",
+            "intervalFactor": 10,
+            "legendFormat": "{{`{{le}}`}}",
+            "refId": "A"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Applications requests per second (by response time bucket in seconds)",
+        "tooltip": {
+          "shared": true,
+          "sort": 2,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": 0,
+            "format": "reqps",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "cards": {
+          "cardPadding": null,
+          "cardRound": null
+        },
+        "color": {
+          "cardColor": "#FADE2A",
+          "colorScale": "sqrt",
+          "colorScheme": "interpolateOranges",
+          "exponent": 0.5,
+          "mode": "opacity"
+        },
+        "dataFormat": "tsbuckets",
+        "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 82
+        },
+        "heatmap": {},
+        "hideZeroBuckets": false,
+        "highlightCards": true,
+        "id": 76,
+        "legend": {
+          "show": false
+        },
+        "links": [],
+        "reverseYBuckets": false,
+        "targets": [
+          {
+            "expr": "sum(rate(apisonator_listener_internal_api_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"applications\"}[1m])) by (le)",
+            "format": "heatmap",
+            "interval": "1m",
+            "intervalFactor": 10,
+            "legendFormat": "{{`{{le}}`}}",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Applications requests per second heatmap (by response time bucket in seconds)",
+        "tooltip": {
+          "show": true,
+          "showHistogram": false
+        },
+        "type": "heatmap",
+        "xAxis": {
+          "show": true
+        },
+        "xBucketNumber": null,
+        "xBucketSize": null,
+        "yAxis": {
+          "decimals": 0,
+          "format": "s",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true,
+          "splitFactor": null
+        },
+        "yBucketBound": "auto",
+        "yBucketNumber": null,
+        "yBucketSize": null
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "$datasource",
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 90
+        },
+        "hiddenSeries": false,
+        "id": 77,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "percentage": false,
+        "pluginVersion": "7.1.1",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "sum(rate(apisonator_listener_internal_api_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"errors\"}[1m])) by (le)",
+            "format": "heatmap",
+            "interval": "1m",
+            "intervalFactor": 10,
+            "legendFormat": "{{`{{le}}`}}",
+            "refId": "A"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Integration Errors API requests per second (by response time bucket in seconds)",
+        "tooltip": {
+          "shared": true,
+          "sort": 2,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": 0,
+            "format": "reqps",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "cards": {
+          "cardPadding": null,
+          "cardRound": null
+        },
+        "color": {
+          "cardColor": "#FADE2A",
+          "colorScale": "sqrt",
+          "colorScheme": "interpolateOranges",
+          "exponent": 0.5,
+          "mode": "opacity"
+        },
+        "dataFormat": "tsbuckets",
+        "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 90
+        },
+        "heatmap": {},
+        "hideZeroBuckets": false,
+        "highlightCards": true,
+        "id": 78,
+        "legend": {
+          "show": false
+        },
+        "links": [],
+        "reverseYBuckets": false,
+        "targets": [
+          {
+            "expr": "sum(rate(apisonator_listener_internal_api_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"errors\"}[1m])) by (le)",
+            "format": "heatmap",
+            "interval": "1m",
+            "intervalFactor": 10,
+            "legendFormat": "{{`{{le}}`}}",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Errors requests per second heatmap (by response time bucket in seconds)",
+        "tooltip": {
+          "show": true,
+          "showHistogram": false
+        },
+        "type": "heatmap",
+        "xAxis": {
+          "show": true
+        },
+        "xBucketNumber": null,
+        "xBucketSize": null,
+        "yAxis": {
+          "decimals": 0,
+          "format": "s",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true,
+          "splitFactor": null
+        },
+        "yBucketBound": "auto",
+        "yBucketNumber": null,
+        "yBucketSize": null
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "$datasource",
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 98
+        },
+        "hiddenSeries": false,
+        "id": 79,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "percentage": false,
+        "pluginVersion": "7.1.1",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "sum(rate(apisonator_listener_internal_api_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"events\"}[1m])) by (le)",
+            "format": "heatmap",
+            "interval": "1m",
+            "intervalFactor": 10,
+            "legendFormat": "{{`{{le}}`}}",
+            "refId": "A"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Events requests per second (by response time bucket in seconds)",
+        "tooltip": {
+          "shared": true,
+          "sort": 2,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": 0,
+            "format": "reqps",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "cards": {
+          "cardPadding": null,
+          "cardRound": null
+        },
+        "color": {
+          "cardColor": "#FADE2A",
+          "colorScale": "sqrt",
+          "colorScheme": "interpolateOranges",
+          "exponent": 0.5,
+          "mode": "opacity"
+        },
+        "dataFormat": "tsbuckets",
+        "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 98
+        },
+        "heatmap": {},
+        "hideZeroBuckets": false,
+        "highlightCards": true,
+        "id": 80,
+        "legend": {
+          "show": false
+        },
+        "links": [],
+        "reverseYBuckets": false,
+        "targets": [
+          {
+            "expr": "sum(rate(apisonator_listener_internal_api_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"events\"}[1m])) by (le)",
+            "format": "heatmap",
+            "interval": "1m",
+            "intervalFactor": 10,
+            "legendFormat": "{{`{{le}}`}}",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Events requests per second heatmap (by response time bucket in seconds)",
+        "tooltip": {
+          "show": true,
+          "showHistogram": false
+        },
+        "type": "heatmap",
+        "xAxis": {
+          "show": true
+        },
+        "xBucketNumber": null,
+        "xBucketSize": null,
+        "yAxis": {
+          "decimals": 0,
+          "format": "s",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true,
+          "splitFactor": null
+        },
+        "yBucketBound": "auto",
+        "yBucketNumber": null,
+        "yBucketSize": null
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "$datasource",
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 106
+        },
+        "hiddenSeries": false,
+        "id": 81,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "percentage": false,
+        "pluginVersion": "7.1.1",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "sum(rate(apisonator_listener_internal_api_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"metrics\"}[1m])) by (le)",
+            "format": "heatmap",
+            "interval": "1m",
+            "intervalFactor": 10,
+            "legendFormat": "{{`{{le}}`}}",
+            "refId": "A"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Metrics requests per second (by response time bucket in seconds)",
+        "tooltip": {
+          "shared": true,
+          "sort": 2,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": 0,
+            "format": "reqps",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "cards": {
+          "cardPadding": null,
+          "cardRound": null
+        },
+        "color": {
+          "cardColor": "#FADE2A",
+          "colorScale": "sqrt",
+          "colorScheme": "interpolateOranges",
+          "exponent": 0.5,
+          "mode": "opacity"
+        },
+        "dataFormat": "tsbuckets",
+        "datasource": "$datasource",
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 106
+        },
+        "heatmap": {},
+        "hideZeroBuckets": false,
+        "highlightCards": true,
+        "id": 82,
+        "legend": {
+          "show": false
+        },
+        "links": [],
+        "reverseYBuckets": false,
+        "targets": [
+          {
+            "expr": "sum(rate(apisonator_listener_internal_api_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"metrics\"}[1m])) by (le)",
+            "format": "heatmap",
+            "interval": "1m",
+            "intervalFactor": 10,
+            "legendFormat": "{{`{{le}}`}}",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Metrics requests per second heatmap (by response time bucket in seconds)",
+        "tooltip": {
+          "show": true,
+          "showHistogram": false
+        },
+        "type": "heatmap",
+        "xAxis": {
+          "show": true
+        },
+        "xBucketNumber": null,
+        "xBucketSize": null,
+        "yAxis": {
+          "decimals": 0,
+          "format": "s",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true,
+          "splitFactor": null
+        },
+        "yBucketBound": "auto",
+        "yBucketNumber": null,
+        "yBucketSize": null
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "$datasource",
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 114
+        },
+        "hiddenSeries": false,
+        "id": 83,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "percentage": false,
+        "pluginVersion": "7.1.1",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "sum(rate(apisonator_listener_internal_api_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"service_tokens\"}[1m])) by (le)",
+            "format": "heatmap",
+            "interval": "1m",
+            "intervalFactor": 10,
+            "legendFormat": "{{`{{le}}`}}",
+            "refId": "A"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Service Tokens requests per second (by response time bucket in seconds)",
+        "tooltip": {
+          "shared": true,
+          "sort": 2,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": 0,
+            "format": "reqps",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "cards": {
+          "cardPadding": null,
+          "cardRound": null
+        },
+        "color": {
+          "cardColor": "#FADE2A",
+          "colorScale": "sqrt",
+          "colorScheme": "interpolateOranges",
+          "exponent": 0.5,
+          "mode": "opacity"
+        },
+        "dataFormat": "tsbuckets",
+        "datasource": "$datasource",
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 114
+        },
+        "heatmap": {},
+        "hideZeroBuckets": false,
+        "highlightCards": true,
+        "id": 84,
+        "legend": {
+          "show": false
+        },
+        "links": [],
+        "reverseYBuckets": false,
+        "targets": [
+          {
+            "expr": "sum(rate(apisonator_listener_internal_api_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"service_tokens\"}[1m])) by (le)",
+            "format": "heatmap",
+            "interval": "1m",
+            "intervalFactor": 10,
+            "legendFormat": "{{`{{le}}`}}",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Service Tokens requests per second heatmap (by response time bucket in seconds)",
+        "tooltip": {
+          "show": true,
+          "showHistogram": false
+        },
+        "type": "heatmap",
+        "xAxis": {
+          "show": true
+        },
+        "xBucketNumber": null,
+        "xBucketSize": null,
+        "yAxis": {
+          "decimals": 0,
+          "format": "s",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true,
+          "splitFactor": null
+        },
+        "yBucketBound": "auto",
+        "yBucketNumber": null,
+        "yBucketSize": null
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "$datasource",
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 122
+        },
+        "hiddenSeries": false,
+        "id": 85,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "percentage": false,
+        "pluginVersion": "7.1.1",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "sum(rate(apisonator_listener_internal_api_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"services\"}[1m])) by (le)",
+            "format": "heatmap",
+            "interval": "1m",
+            "intervalFactor": 10,
+            "legendFormat": "{{`{{le}}`}}",
+            "refId": "A"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Services requests per second (by response time bucket in seconds)",
+        "tooltip": {
+          "shared": true,
+          "sort": 2,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": 0,
+            "format": "reqps",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "cards": {
+          "cardPadding": null,
+          "cardRound": null
+        },
+        "color": {
+          "cardColor": "#FADE2A",
+          "colorScale": "sqrt",
+          "colorScheme": "interpolateOranges",
+          "exponent": 0.5,
+          "mode": "opacity"
+        },
+        "dataFormat": "tsbuckets",
+        "datasource": "$datasource",
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 122
+        },
+        "heatmap": {},
+        "hideZeroBuckets": false,
+        "highlightCards": true,
+        "id": 86,
+        "legend": {
+          "show": false
+        },
+        "links": [],
+        "reverseYBuckets": false,
+        "targets": [
+          {
+            "expr": "sum(rate(apisonator_listener_internal_api_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"services\"}[1m])) by (le)",
+            "format": "heatmap",
+            "interval": "1m",
+            "intervalFactor": 10,
+            "legendFormat": "{{`{{le}}`}}",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Services requests per second heatmap (by response time bucket in seconds)",
+        "tooltip": {
+          "show": true,
+          "showHistogram": false
+        },
+        "type": "heatmap",
+        "xAxis": {
+          "show": true
+        },
+        "xBucketNumber": null,
+        "xBucketSize": null,
+        "yAxis": {
+          "decimals": 0,
+          "format": "s",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true,
+          "splitFactor": null
+        },
+        "yBucketBound": "auto",
+        "yBucketNumber": null,
+        "yBucketSize": null
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "$datasource",
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 130
+        },
+        "hiddenSeries": false,
+        "id": 87,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "percentage": false,
+        "pluginVersion": "7.1.1",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "sum(rate(apisonator_listener_internal_api_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"stats\"}[1m])) by (le)",
+            "format": "heatmap",
+            "interval": "1m",
+            "intervalFactor": 10,
+            "legendFormat": "{{`{{le}}`}}",
+            "refId": "A"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Stats requests per second (by response time bucket in seconds)",
+        "tooltip": {
+          "shared": true,
+          "sort": 2,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": 0,
+            "format": "reqps",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "cards": {
+          "cardPadding": null,
+          "cardRound": null
+        },
+        "color": {
+          "cardColor": "#FADE2A",
+          "colorScale": "sqrt",
+          "colorScheme": "interpolateOranges",
+          "exponent": 0.5,
+          "mode": "opacity"
+        },
+        "dataFormat": "tsbuckets",
+        "datasource": "$datasource",
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 130
+        },
+        "heatmap": {},
+        "hideZeroBuckets": false,
+        "highlightCards": true,
+        "id": 88,
+        "legend": {
+          "show": false
+        },
+        "links": [],
+        "reverseYBuckets": false,
+        "targets": [
+          {
+            "expr": "sum(rate(apisonator_listener_internal_api_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"stats\"}[1m])) by (le)",
+            "format": "heatmap",
+            "interval": "1m",
+            "intervalFactor": 10,
+            "legendFormat": "{{`{{le}}`}}",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Stats requests per second heatmap (by response time bucket in seconds)",
+        "tooltip": {
+          "show": true,
+          "showHistogram": false
+        },
+        "type": "heatmap",
+        "xAxis": {
+          "show": true
+        },
+        "xBucketNumber": null,
+        "xBucketSize": null,
+        "yAxis": {
+          "decimals": 0,
+          "format": "s",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true,
+          "splitFactor": null
+        },
+        "yBucketBound": "auto",
+        "yBucketNumber": null,
+        "yBucketSize": null
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "$datasource",
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 138
+        },
+        "hiddenSeries": false,
+        "id": 89,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "percentage": false,
+        "pluginVersion": "7.1.1",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "sum(rate(apisonator_listener_internal_api_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"usage_limits\"}[1m])) by (le)",
+            "format": "heatmap",
+            "interval": "1m",
+            "intervalFactor": 10,
+            "legendFormat": "{{`{{le}}`}}",
+            "refId": "A"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Usage Limits requests per second (by response time bucket in seconds)",
+        "tooltip": {
+          "shared": true,
+          "sort": 2,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": 0,
+            "format": "reqps",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "cards": {
+          "cardPadding": null,
+          "cardRound": null
+        },
+        "color": {
+          "cardColor": "#FADE2A",
+          "colorScale": "sqrt",
+          "colorScheme": "interpolateOranges",
+          "exponent": 0.5,
+          "mode": "opacity"
+        },
+        "dataFormat": "tsbuckets",
+        "datasource": "$datasource",
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 138
+        },
+        "heatmap": {},
+        "hideZeroBuckets": false,
+        "highlightCards": true,
+        "id": 90,
+        "legend": {
+          "show": false
+        },
+        "links": [],
+        "reverseYBuckets": false,
+        "targets": [
+          {
+            "expr": "sum(rate(apisonator_listener_internal_api_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"usage_limits\"}[1m])) by (le)",
+            "format": "heatmap",
+            "interval": "1m",
+            "intervalFactor": 10,
+            "legendFormat": "{{`{{le}}`}}",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Usage Limits  requests per second heatmap (by response time bucket in seconds)",
+        "tooltip": {
+          "show": true,
+          "showHistogram": false
+        },
+        "type": "heatmap",
+        "xAxis": {
+          "show": true
+        },
+        "xBucketNumber": null,
+        "xBucketSize": null,
+        "yAxis": {
+          "decimals": 0,
+          "format": "s",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true,
+          "splitFactor": null
+        },
+        "yBucketBound": "auto",
+        "yBucketNumber": null,
+        "yBucketSize": null
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "$datasource",
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 146
+        },
+        "hiddenSeries": false,
+        "id": 91,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "percentage": false,
+        "pluginVersion": "7.1.1",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "sum(rate(apisonator_listener_internal_api_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"utilization\"}[1m])) by (le)",
+            "format": "heatmap",
+            "interval": "1m",
+            "intervalFactor": 10,
+            "legendFormat": "{{`{{le}}`}}",
+            "refId": "A"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Utilization requests per second (by response time bucket in seconds)",
+        "tooltip": {
+          "shared": true,
+          "sort": 2,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": 0,
+            "format": "reqps",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "cards": {
+          "cardPadding": null,
+          "cardRound": null
+        },
+        "color": {
+          "cardColor": "#FADE2A",
+          "colorScale": "sqrt",
+          "colorScheme": "interpolateOranges",
+          "exponent": 0.5,
+          "mode": "opacity"
+        },
+        "dataFormat": "tsbuckets",
+        "datasource": "$datasource",
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 146
+        },
+        "heatmap": {},
+        "hideZeroBuckets": false,
+        "highlightCards": true,
+        "id": 92,
+        "legend": {
+          "show": false
+        },
+        "links": [],
+        "reverseYBuckets": false,
+        "targets": [
+          {
+            "expr": "sum(rate(apisonator_listener_internal_api_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"utilization\"}[1m])) by (le)",
+            "format": "heatmap",
+            "interval": "1m",
+            "intervalFactor": 10,
+            "legendFormat": "{{`{{le}}`}}",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Utilization  requests per second heatmap (by response time bucket in seconds)",
+        "tooltip": {
+          "show": true,
+          "showHistogram": false
+        },
+        "type": "heatmap",
+        "xAxis": {
+          "show": true
+        },
+        "xBucketNumber": null,
+        "xBucketSize": null,
+        "yAxis": {
+          "decimals": 0,
+          "format": "s",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true,
+          "splitFactor": null
+        },
+        "yBucketBound": "auto",
+        "yBucketNumber": null,
+        "yBucketSize": null
+      },
+      {
+        "collapsed": false,
+        "datasource": null,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 154
         },
         "id": 52,
         "panels": [],
@@ -1062,13 +3311,21 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "fill": 1,
+        "fillGradient": 0,
         "gridPos": {
           "h": 8,
           "w": 24,
           "x": 0,
-          "y": 50
+          "y": 155
         },
+        "hiddenSeries": false,
         "id": 49,
         "legend": {
           "avg": false,
@@ -1083,8 +3340,8 @@
         "linewidth": 1,
         "links": [],
         "nullPointMode": "null",
-        "options": {},
         "percentage": false,
+        "pluginVersion": "7.1.1",
         "pointradius": 2,
         "points": false,
         "renderer": "flot",
@@ -1127,7 +3384,7 @@
             "label": null,
             "logBase": 1,
             "max": null,
-            "min": null,
+            "min": "0",
             "show": true
           },
           {
@@ -1150,13 +3407,21 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "fill": 1,
+        "fillGradient": 0,
         "gridPos": {
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 58
+          "y": 163
         },
+        "hiddenSeries": false,
         "id": 54,
         "legend": {
           "avg": false,
@@ -1171,8 +3436,8 @@
         "linewidth": 1,
         "links": [],
         "nullPointMode": "null",
-        "options": {},
         "percentage": false,
+        "pluginVersion": "7.1.1",
         "pointradius": 2,
         "points": false,
         "renderer": "flot",
@@ -1215,7 +3480,7 @@
             "label": null,
             "logBase": 1,
             "max": null,
-            "min": null,
+            "min": "0",
             "show": true
           },
           {
@@ -1246,11 +3511,17 @@
         },
         "dataFormat": "tsbuckets",
         "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "gridPos": {
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 58
+          "y": 163
         },
         "heatmap": {},
         "hideZeroBuckets": false,
@@ -1260,7 +3531,6 @@
           "show": false
         },
         "links": [],
-        "options": {},
         "reverseYBuckets": false,
         "targets": [
           {
@@ -1304,13 +3574,21 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "fill": 1,
+        "fillGradient": 0,
         "gridPos": {
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 66
+          "y": 171
         },
+        "hiddenSeries": false,
         "id": 56,
         "legend": {
           "avg": false,
@@ -1325,8 +3603,8 @@
         "linewidth": 1,
         "links": [],
         "nullPointMode": "null",
-        "options": {},
         "percentage": false,
+        "pluginVersion": "7.1.1",
         "pointradius": 2,
         "points": false,
         "renderer": "flot",
@@ -1369,7 +3647,7 @@
             "label": null,
             "logBase": 1,
             "max": null,
-            "min": null,
+            "min": "0",
             "show": true
           },
           {
@@ -1400,11 +3678,17 @@
         },
         "dataFormat": "tsbuckets",
         "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "gridPos": {
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 66
+          "y": 171
         },
         "heatmap": {},
         "hideZeroBuckets": false,
@@ -1414,7 +3698,6 @@
           "show": false
         },
         "links": [],
-        "options": {},
         "reverseYBuckets": false,
         "targets": [
           {
@@ -1454,11 +3737,12 @@
       },
       {
         "collapsed": false,
+        "datasource": null,
         "gridPos": {
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 74
+          "y": 179
         },
         "id": 13,
         "panels": [],
@@ -1477,6 +3761,12 @@
         ],
         "datasource": "$datasource",
         "decimals": 0,
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "format": "none",
         "gauge": {
           "maxValue": 100,
@@ -1489,7 +3779,7 @@
           "h": 3,
           "w": 6,
           "x": 0,
-          "y": 75
+          "y": 180
         },
         "hideTimeOverride": true,
         "id": 30,
@@ -1509,7 +3799,6 @@
         "maxDataPoints": 100,
         "nullPointMode": "connected",
         "nullText": null,
-        "options": {},
         "pluginVersion": "6.2.4",
         "postfix": "",
         "postfixFontSize": "50%",
@@ -1565,6 +3854,12 @@
         ],
         "datasource": "$datasource",
         "decimals": 0,
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "format": "none",
         "gauge": {
           "maxValue": 100,
@@ -1577,7 +3872,7 @@
           "h": 3,
           "w": 6,
           "x": 6,
-          "y": 75
+          "y": 180
         },
         "hideTimeOverride": true,
         "id": 32,
@@ -1597,7 +3892,6 @@
         "maxDataPoints": 100,
         "nullPointMode": "connected",
         "nullText": null,
-        "options": {},
         "postfix": "",
         "postfixFontSize": "50%",
         "prefix": "",
@@ -1650,6 +3944,12 @@
         ],
         "datasource": "$datasource",
         "decimals": 0,
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "format": "none",
         "gauge": {
           "maxValue": 100,
@@ -1662,7 +3962,7 @@
           "h": 3,
           "w": 6,
           "x": 12,
-          "y": 75
+          "y": 180
         },
         "hideTimeOverride": true,
         "id": 37,
@@ -1682,7 +3982,6 @@
         "maxDataPoints": 100,
         "nullPointMode": "connected",
         "nullText": null,
-        "options": {},
         "pluginVersion": "6.2.4",
         "postfix": "",
         "postfixFontSize": "50%",
@@ -1737,6 +4036,12 @@
         ],
         "datasource": "$datasource",
         "decimals": 0,
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "format": "none",
         "gauge": {
           "maxValue": 100,
@@ -1749,7 +4054,7 @@
           "h": 3,
           "w": 6,
           "x": 18,
-          "y": 75
+          "y": 180
         },
         "hideTimeOverride": true,
         "id": 36,
@@ -1769,7 +4074,6 @@
         "maxDataPoints": 100,
         "nullPointMode": "connected",
         "nullText": null,
-        "options": {},
         "postfix": "",
         "postfixFontSize": "50%",
         "prefix": "",
@@ -1818,13 +4122,21 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "fill": 1,
+        "fillGradient": 0,
         "gridPos": {
           "h": 7,
           "w": 24,
           "x": 0,
-          "y": 78
+          "y": 183
         },
+        "hiddenSeries": false,
         "id": 11,
         "legend": {
           "avg": false,
@@ -1841,8 +4153,8 @@
         "linewidth": 1,
         "links": [],
         "nullPointMode": "null as zero",
-        "options": {},
         "percentage": false,
+        "pluginVersion": "7.1.1",
         "pointradius": 5,
         "points": false,
         "renderer": "flot",
@@ -1930,13 +4242,21 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "fill": 1,
+        "fillGradient": 0,
         "gridPos": {
           "h": 6,
           "w": 24,
           "x": 0,
-          "y": 85
+          "y": 190
         },
+        "hiddenSeries": false,
         "id": 9,
         "legend": {
           "avg": false,
@@ -1953,8 +4273,8 @@
         "linewidth": 1,
         "links": [],
         "nullPointMode": "null",
-        "options": {},
         "percentage": false,
+        "pluginVersion": "7.1.1",
         "pointradius": 2,
         "points": false,
         "renderer": "flot",
@@ -1968,7 +4288,7 @@
             "expr": "sum(delta(kube_pod_container_status_restarts_total{namespace='$namespace',pod=~'$deployment-[a-z0-9]+-[a-z0-9]+'}[5m])) by (pod)",
             "format": "time_series",
             "intervalFactor": 1,
-            "legendFormat": "{{ `{{pod}}` }}",
+            "legendFormat": "{{`{{pod}}`}}",
             "refId": "A"
           }
         ],
@@ -2015,11 +4335,12 @@
       },
       {
         "collapsed": false,
+        "datasource": null,
         "gridPos": {
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 91
+          "y": 196
         },
         "id": 4,
         "panels": [],
@@ -2033,13 +4354,21 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "fill": 1,
+        "fillGradient": 0,
         "gridPos": {
           "h": 7,
           "w": 24,
           "x": 0,
-          "y": 92
+          "y": 197
         },
+        "hiddenSeries": false,
         "id": 64,
         "interval": "",
         "legend": {
@@ -2055,8 +4384,8 @@
         "linewidth": 1,
         "links": [],
         "nullPointMode": "null as zero",
-        "options": {},
         "percentage": false,
+        "pluginVersion": "7.1.1",
         "pointradius": 5,
         "points": false,
         "renderer": "flot",
@@ -2069,7 +4398,7 @@
             "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{namespace=~'$namespace',pod=~'$deployment-[a-z0-9]+-[a-z0-9]+'}) by (pod)",
             "format": "time_series",
             "intervalFactor": 2,
-            "legendFormat": "{{ `{{pod}}` }}",
+            "legendFormat": "{{`{{pod}}`}}",
             "legendLink": null,
             "refId": "A",
             "step": 10
@@ -2118,11 +4447,12 @@
       },
       {
         "collapsed": false,
+        "datasource": null,
         "gridPos": {
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 99
+          "y": 204
         },
         "id": 5,
         "panels": [],
@@ -2137,13 +4467,19 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "fill": 1,
         "fontSize": "100%",
         "gridPos": {
           "h": 7,
           "w": 24,
           "x": 0,
-          "y": 100
+          "y": 205
         },
         "id": 1,
         "legend": {
@@ -2159,7 +4495,6 @@
         "linewidth": 1,
         "links": [],
         "nullPointMode": "null as zero",
-        "options": {},
         "pageSize": null,
         "percentage": false,
         "pointradius": 5,
@@ -2178,12 +4513,14 @@
         "styles": [
           {
             "alias": "Time",
+            "align": "auto",
             "dateFormat": "YYYY-MM-DD HH:mm:ss",
             "pattern": "Time",
             "type": "hidden"
           },
           {
             "alias": "CPU Usage",
+            "align": "auto",
             "colorMode": null,
             "colors": [],
             "dateFormat": "YYYY-MM-DD HH:mm:ss",
@@ -2198,6 +4535,7 @@
           },
           {
             "alias": "CPU Requests",
+            "align": "auto",
             "colorMode": null,
             "colors": [],
             "dateFormat": "YYYY-MM-DD HH:mm:ss",
@@ -2212,6 +4550,7 @@
           },
           {
             "alias": "CPU Requests %",
+            "align": "auto",
             "colorMode": null,
             "colors": [],
             "dateFormat": "YYYY-MM-DD HH:mm:ss",
@@ -2226,6 +4565,7 @@
           },
           {
             "alias": "CPU Limits",
+            "align": "auto",
             "colorMode": null,
             "colors": [],
             "dateFormat": "YYYY-MM-DD HH:mm:ss",
@@ -2240,6 +4580,7 @@
           },
           {
             "alias": "CPU Limits %",
+            "align": "auto",
             "colorMode": null,
             "colors": [],
             "dateFormat": "YYYY-MM-DD HH:mm:ss",
@@ -2254,6 +4595,7 @@
           },
           {
             "alias": "Pod",
+            "align": "auto",
             "colorMode": null,
             "colors": [],
             "dateFormat": "YYYY-MM-DD HH:mm:ss",
@@ -2268,6 +4610,7 @@
           },
           {
             "alias": "",
+            "align": "auto",
             "colorMode": null,
             "colors": [],
             "dateFormat": "YYYY-MM-DD HH:mm:ss",
@@ -2335,7 +4678,7 @@
           "value_type": "individual"
         },
         "transform": "table",
-        "type": "table",
+        "type": "table-old",
         "xaxis": {
           "buckets": null,
           "mode": "time",
@@ -2364,11 +4707,12 @@
       },
       {
         "collapsed": false,
+        "datasource": null,
         "gridPos": {
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 107
+          "y": 212
         },
         "id": 6,
         "panels": [],
@@ -2382,13 +4726,21 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "fill": 1,
+        "fillGradient": 0,
         "gridPos": {
           "h": 7,
           "w": 24,
           "x": 0,
-          "y": 108
+          "y": 213
         },
+        "hiddenSeries": false,
         "id": 2,
         "legend": {
           "avg": false,
@@ -2403,8 +4755,8 @@
         "linewidth": 1,
         "links": [],
         "nullPointMode": "null as zero",
-        "options": {},
         "percentage": false,
+        "pluginVersion": "7.1.1",
         "pointradius": 5,
         "points": false,
         "renderer": "flot",
@@ -2417,7 +4769,7 @@
             "expr": "sum(container_memory_working_set_bytes{namespace=~'$namespace', pod=~'$deployment-[a-z0-9]+-[a-z0-9]+', container!=''}) by (pod)",
             "format": "time_series",
             "intervalFactor": 2,
-            "legendFormat": "{{ `{{pod}}` }}",
+            "legendFormat": "{{`{{pod}}`}}",
             "legendLink": null,
             "refId": "A",
             "step": 10
@@ -2466,11 +4818,12 @@
       },
       {
         "collapsed": false,
+        "datasource": null,
         "gridPos": {
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 115
+          "y": 220
         },
         "id": 7,
         "panels": [],
@@ -2485,13 +4838,19 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "fill": 1,
         "fontSize": "100%",
         "gridPos": {
           "h": 7,
           "w": 24,
           "x": 0,
-          "y": 116
+          "y": 221
         },
         "id": 3,
         "legend": {
@@ -2507,7 +4866,6 @@
         "linewidth": 1,
         "links": [],
         "nullPointMode": "null as zero",
-        "options": {},
         "pageSize": null,
         "percentage": false,
         "pointradius": 5,
@@ -2526,12 +4884,14 @@
         "styles": [
           {
             "alias": "Time",
+            "align": "auto",
             "dateFormat": "YYYY-MM-DD HH:mm:ss",
             "pattern": "Time",
             "type": "hidden"
           },
           {
             "alias": "Memory Usage",
+            "align": "auto",
             "colorMode": null,
             "colors": [],
             "dateFormat": "YYYY-MM-DD HH:mm:ss",
@@ -2546,6 +4906,7 @@
           },
           {
             "alias": "Memory Requests",
+            "align": "auto",
             "colorMode": null,
             "colors": [],
             "dateFormat": "YYYY-MM-DD HH:mm:ss",
@@ -2560,6 +4921,7 @@
           },
           {
             "alias": "Memory Requests %",
+            "align": "auto",
             "colorMode": null,
             "colors": [],
             "dateFormat": "YYYY-MM-DD HH:mm:ss",
@@ -2574,6 +4936,7 @@
           },
           {
             "alias": "Memory Limits",
+            "align": "auto",
             "colorMode": null,
             "colors": [],
             "dateFormat": "YYYY-MM-DD HH:mm:ss",
@@ -2588,6 +4951,7 @@
           },
           {
             "alias": "Memory Limits %",
+            "align": "auto",
             "colorMode": null,
             "colors": [],
             "dateFormat": "YYYY-MM-DD HH:mm:ss",
@@ -2602,6 +4966,7 @@
           },
           {
             "alias": "Pod",
+            "align": "auto",
             "colorMode": null,
             "colors": [],
             "dateFormat": "YYYY-MM-DD HH:mm:ss",
@@ -2616,6 +4981,7 @@
           },
           {
             "alias": "",
+            "align": "auto",
             "colorMode": null,
             "colors": [],
             "dateFormat": "YYYY-MM-DD HH:mm:ss",
@@ -2683,7 +5049,7 @@
           "value_type": "individual"
         },
         "transform": "table",
-        "type": "table",
+        "type": "table-old",
         "xaxis": {
           "buckets": null,
           "mode": "time",
@@ -2712,11 +5078,12 @@
       },
       {
         "collapsed": false,
+        "datasource": null,
         "gridPos": {
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 123
+          "y": 228
         },
         "id": 15,
         "panels": [],
@@ -2730,12 +5097,18 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "fill": 1,
         "gridPos": {
           "h": 6,
           "w": 24,
           "x": 0,
-          "y": 124
+          "y": 229
         },
         "id": 17,
         "legend": {
@@ -2751,8 +5124,8 @@
         "linewidth": 1,
         "links": [],
         "nullPointMode": "null",
-        "options": {},
         "percentage": false,
+        "pluginVersion": "7.1.1",
         "pointradius": 2,
         "points": false,
         "renderer": "flot",
@@ -2765,7 +5138,7 @@
             "expr": "sum(irate(container_network_receive_bytes_total{namespace=~'$namespace',pod=~'$deployment-[a-z0-9]+-[a-z0-9]+'}[5m])) by (pod)",
             "format": "time_series",
             "intervalFactor": 2,
-            "legendFormat": "{{ `{{pod}}` }}",
+            "legendFormat": "{{`{{pod}}`}}",
             "refId": "A"
           }
         ],
@@ -2817,12 +5190,18 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
         "fill": 1,
         "gridPos": {
           "h": 6,
           "w": 24,
           "x": 0,
-          "y": 130
+          "y": 235
         },
         "id": 18,
         "legend": {
@@ -2838,8 +5217,8 @@
         "linewidth": 1,
         "links": [],
         "nullPointMode": "null",
-        "options": {},
         "percentage": false,
+        "pluginVersion": "7.1.1",
         "pointradius": 2,
         "points": false,
         "renderer": "flot",
@@ -2852,7 +5231,7 @@
             "expr": "sum(irate(container_network_transmit_bytes_total{namespace=~'$namespace',pod=~'$deployment-[a-z0-9]+-[a-z0-9]+'}[5m])) by (pod)",
             "format": "time_series",
             "intervalFactor": 2,
-            "legendFormat": "{{ `{{pod}}` }}",
+            "legendFormat": "{{`{{pod}}`}}",
             "refId": "A"
           }
         ],
@@ -2899,7 +5278,7 @@
       }
     ],
     "refresh": "10s",
-    "schemaVersion": 18,
+    "schemaVersion": 26,
     "style": "dark",
     "tags": [
       "3scale",
@@ -2972,7 +5351,6 @@
     },
     "timepicker": {
       "refresh_intervals": [
-        "5s",
         "10s",
         "30s",
         "1m",
