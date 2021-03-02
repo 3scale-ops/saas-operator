@@ -555,5 +555,5 @@
         ]
     },
     "timezone": "",
-    "title": "{{ .Namespace }} / 3scale APIcast Services"
+    "title": "3scale APIcast Services"
 }

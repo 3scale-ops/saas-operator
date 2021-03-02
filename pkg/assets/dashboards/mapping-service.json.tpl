@@ -2247,5 +2247,5 @@
         ]
     },
     "timezone": "",
-    "title": "{{ .Namespace }} / 3scale APIcast mapping-service"
+    "title": "3scale APIcast mapping-service"
 }

@@ -1912,5 +1912,5 @@
         ]
     },
     "timezone": "",
-    "title": "{{ .Namespace }} / 3scale System AutoSSL"
+    "title": "3scale System AutoSSL"
 }

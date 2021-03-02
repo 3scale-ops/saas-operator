@@ -2522,5 +2522,5 @@
         ]
     },
     "timezone": "",
-    "title": "{{ .Namespace }} / 3scale System CORS Proxy"
+    "title": "3scale System CORS Proxy"
 }

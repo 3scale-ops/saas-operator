@@ -2996,5 +2996,5 @@
       ]
     },
     "timezone": "",
-    "title": "{{ .Namespace }} / 3scale Backend"
+    "title": "3scale Backend"
 }
