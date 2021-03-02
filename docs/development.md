@@ -19,6 +19,13 @@ The operator bundle image lifecycle is managed with the `bundle-publish` target 
 
 ## Running the operator
 
+### Running the operator locally against a kubeconfig cluster
+
+```bash
+# run the operator watching specific namespace, otherwise will watch all namespaces
+make run WATCH_NAMESPACE=example
+```
+
 ### Running the operator locally against a kind cluster
 
 ```bash

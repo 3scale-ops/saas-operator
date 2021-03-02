@@ -644,7 +644,7 @@
             "tableColumn": "",
             "targets": [
                 {
-                    "expr": "count(count(container_memory_usage_bytes{namespace='$namespace',pod=~'autossl.*'}) by (node))",
+                    "expr": "count(count(container_memory_working_set_bytes{namespace='$namespace',pod=~'autossl.*'}) by (node))",
                     "format": "time_series",
                     "intervalFactor": 1,
                     "refId": "A"
@@ -814,7 +814,7 @@
                     "refId": "C"
                 },
                 {
-                    "expr": "count(count(container_memory_usage_bytes{namespace='$namespace',pod=~'autossl.*'}) by (node))",
+                    "expr": "count(count(container_memory_working_set_bytes{namespace='$namespace',pod=~'autossl.*'}) by (node))",
                     "format": "time_series",
                     "intervalFactor": 1,
                     "legendFormat": "used-hosts",
@@ -1351,7 +1351,7 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "sum(container_memory_usage_bytes{namespace=~'$namespace', pod=~'autossl.*', container!=''}) by (pod)",
+                    "expr": "sum(container_memory_working_set_bytes{namespace=~'$namespace', pod=~'autossl.*', container!=''}) by (pod)",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "{{`{{pod}}`}}",
@@ -1565,7 +1565,7 @@
             ],
             "targets": [
                 {
-                    "expr": "sum(container_memory_usage_bytes{namespace=~'$namespace', pod=~'autossl.*', container!=''}) by (pod)",
+                    "expr": "sum(container_memory_working_set_bytes{namespace=~'$namespace', pod=~'autossl.*', container!=''}) by (pod)",
                     "format": "table",
                     "instant": true,
                     "intervalFactor": 2,
@@ -1583,7 +1583,7 @@
                     "step": 10
                 },
                 {
-                    "expr": "sum(container_memory_usage_bytes{namespace=~'$namespace', pod=~'autossl.*', container!=''}) by (pod) / sum(kube_pod_container_resource_requests_memory_bytes{namespace=~'$namespace', pod=~'autossl.*'}) by (pod)",
+                    "expr": "sum(container_memory_working_set_bytes{namespace=~'$namespace', pod=~'autossl.*', container!=''}) by (pod) / sum(kube_pod_container_resource_requests_memory_bytes{namespace=~'$namespace', pod=~'autossl.*'}) by (pod)",
                     "format": "table",
                     "instant": true,
                     "intervalFactor": 2,
@@ -1601,7 +1601,7 @@
                     "step": 10
                 },
                 {
-                    "expr": "sum(container_memory_usage_bytes{namespace=~'$namespace', pod=~'autossl.*', container!=''}) by (pod) / sum(kube_pod_container_resource_limits_memory_bytes{namespace=~'$namespace', pod=~'autossl.*'}) by (pod)",
+                    "expr": "sum(container_memory_working_set_bytes{namespace=~'$namespace', pod=~'autossl.*', container!=''}) by (pod) / sum(kube_pod_container_resource_limits_memory_bytes{namespace=~'$namespace', pod=~'autossl.*'}) by (pod)",
                     "format": "table",
                     "instant": true,
                     "intervalFactor": 2,
@@ -1912,6 +1912,5 @@
         ]
     },
     "timezone": "",
-    "title": "{{ .Namespace }} / 3scale System AutoSSL",
-    "version": 1
+    "title": "3scale System AutoSSL"
 }
