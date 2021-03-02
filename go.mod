@@ -3,10 +3,8 @@ module github.com/3scale/saas-operator
 go 1.15
 
 require (
-	github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/davecgh/go-spew v1.1.1
-	github.com/exponent-io/jsonpath v0.0.0-20151013193312-d6023ce2651d
 	github.com/go-logr/logr v0.3.0
 	github.com/goombaio/namegenerator v0.0.0-20181006234301-989e774b106e
 	github.com/onsi/ginkgo v1.14.1
