@@ -1,6 +1,7 @@
 # 3scale SaaS Operator
 
 ![3scale-saas](docs/logos/3scale-saas-logo.svg)
+
 [![test](https://github.com/3scale/saas-operator/actions/workflows/test.yaml/badge.svg)](https://github.com/3scale/saas-operator/actions/workflows/test.yaml)
 [![release](https://badgen.net/github/release/3scale/saas-operator)](https://github.com/3scale/saas-operator/releases)
 [![license](https://badgen.net/github/license/3scale/saas-operator)](https://github.com/3scale/saas-operator/LICENSE)
