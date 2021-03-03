@@ -4,6 +4,7 @@ import (
 	"context"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
 	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -233,6 +234,15 @@ var _ = Describe("System controller", func() {
 					context.Background(),
 					types.NamespacedName{Name: "system-sidekiq", Namespace: namespace},
 					pdb,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+
+			gd := &grafanav1alpha1.GrafanaDashboard{}
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "system", Namespace: namespace},
+					gd,
 				)
 			}, timeout, poll).ShouldNot(HaveOccurred())
 

@@ -146,6 +146,9 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 			{Template: gen.App.PodMonitor(), Enabled: true},
 			{Template: gen.Sidekiq.PodMonitor(), Enabled: true},
 		},
+		GrafanaDashboards: []basereconciler.GrafanaDashboard{
+			{Template: gen.GrafanaDashboard(), Enabled: !instance.Spec.GrafanaDashboard.IsDeactivated()},
+		},
 	})
 
 	if err != nil {

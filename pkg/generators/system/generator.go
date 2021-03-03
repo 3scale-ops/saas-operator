@@ -6,6 +6,7 @@ import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/generators"
+	"github.com/3scale/saas-operator/pkg/generators/common_blocks/grafanadashboard"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/hpa"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pdb"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
@@ -35,11 +36,11 @@ type Generator struct {
 	Options              config.Options
 }
 
-// // Dashboard returns a basereconciler.GeneratorFunction
-// func (gen *Generator) Dashboard() basereconciler.GeneratorFunction {
-// 	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-// 	return grafanadashboard.New(key, gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/system.json.tpl")
-// }
+// GrafanaDashboard returns a basereconciler.GeneratorFunction
+func (gen *Generator) GrafanaDashboard() basereconciler.GeneratorFunction {
+	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
+	return grafanadashboard.New(key, gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/system.json.tpl")
+}
 
 // DatabaseSecretDefinition returns a basereconciler.GeneratorFunction
 func (gen *Generator) DatabaseSecretDefinition() basereconciler.GeneratorFunction {
