@@ -19,9 +19,11 @@ package test
 import (
 	"context"
 
+	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/basereconciler/test/api/v1alpha1"
+	"github.com/3scale/saas-operator/pkg/generators/common_blocks/marin3r"
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -61,7 +63,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 
 	err = r.ReconcileOwnedResources(ctx, instance, basereconciler.ControlledResources{
 		Deployments: []basereconciler.Deployment{{
-			Template:        deployment(req.Namespace),
+			Template:        deployment(req.Namespace, instance.Spec.Marin3r),
 			RolloutTriggers: triggers,
 			HasHPA:          false,
 		}},
@@ -109,9 +111,9 @@ func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func deployment(namespace string) basereconciler.GeneratorFunction {
+func deployment(namespace string, marin3rSpec *saasv1alpha1.Marin3rSidecarSpec) basereconciler.GeneratorFunction {
 	return func() client.Object {
-		return &appsv1.Deployment{
+		dep := &appsv1.Deployment{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Deployment",
 				APIVersion: appsv1.SchemeGroupVersion.String(),
@@ -141,6 +143,12 @@ func deployment(namespace string) basereconciler.GeneratorFunction {
 				},
 			},
 		}
+
+		if marin3rSpec != nil && !marin3rSpec.IsDeactivated() {
+			dep = marin3r.EnableSidecar(*dep, *marin3rSpec)
+		}
+
+		return dep
 	}
 }
 

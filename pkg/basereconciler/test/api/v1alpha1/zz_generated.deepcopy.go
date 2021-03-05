@@ -21,6 +21,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	apiv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -92,6 +93,11 @@ func (in *TestSpec) DeepCopyInto(out *TestSpec) {
 		for key, val := range *in {
 			(*out)[key] = val
 		}
+	}
+	if in.Marin3r != nil {
+		in, out := &in.Marin3r, &out.Marin3r
+		*out = new(apiv1alpha1.Marin3rSidecarSpec)
+		(*in).DeepCopyInto(*out)
 	}
 }
 
