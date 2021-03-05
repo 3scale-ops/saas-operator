@@ -1,6 +1,6 @@
 SHELL:=/bin/bash
 # Current Operator version
-VERSION ?= 0.9.2
+VERSION ?= 0.9.3
 # Default catalog image
 CATALOG_IMG ?= quay.io/3scaleops/saas-operator-bundle:catalog
 # Default bundle image tag
@@ -192,23 +192,28 @@ tmp:
 
 prepare-alpha-release: bump-release generate fmt vet manifests bundle
 
-prepare-release: bump-release generate fmt vet manifests
+prepare-release: bump-release generate fmt vet manifests bundle
 	$(MAKE) bundle CHANNELS=alpha,stable DEFAULT_CHANNEL=alpha
 
 bump-release:
 	sed -i 's/version string = "v\(.*\)"/version string = "v$(VERSION)"/g' pkg/version/version.go
 
-bundle-push: bundle bundle-build
+bundle-push:
 	docker push $(BUNDLE_IMG)
 
-bundle-publish: $(OPM) bundle-push
+catalog-build: $(OPM)
 	$(OPM) index add \
 		--build-tool docker \
 		--mode semver-skippatch \
 		--bundles $(BUNDLE_IMG) \
 		--from-index $(CATALOG_IMG) \
 		--tag $(CATALOG_IMG)
+
+catalog-push:
 	docker push $(CATALOG_IMG)
+
+bundle-publish: bundle-build bundle-push catalog-build catalog-push
+
 
 get-new-release:
 	@hack/new-release.sh v$(VERSION)
