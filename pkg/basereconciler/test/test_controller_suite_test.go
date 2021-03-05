@@ -3,6 +3,7 @@ package test
 import (
 	"context"
 
+	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/basereconciler/test/api/v1alpha1"
@@ -12,6 +13,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -251,6 +253,73 @@ var _ = Describe("Test controller", func() {
 				}
 				return false
 			}, timeout, poll).Should(BeTrue())
+		})
+	})
+
+	Context("Marin3r enabled Deployments", func() {
+
+		BeforeEach(func() {
+			By("creating a marin3r enabled Test resource")
+			instance = &v1alpha1.Test{
+				ObjectMeta: metav1.ObjectMeta{Name: "instance", Namespace: namespace},
+				Spec: v1alpha1.TestSpec{
+					Marin3r: &saasv1alpha1.Marin3rSidecarSpec{
+						Ports: []saasv1alpha1.SidecarPort{
+							{
+								Name: "test",
+								Port: 9999,
+							},
+						},
+						Resources: &saasv1alpha1.ResourceRequirementsSpec{
+							Limits: corev1.ResourceList{
+								corev1.ResourceCPU:    resource.MustParse("200m"),
+								corev1.ResourceMemory: resource.MustParse("200Mi"),
+							},
+							Requests: corev1.ResourceList{
+								corev1.ResourceCPU:    resource.MustParse("100m"),
+								corev1.ResourceMemory: resource.MustParse("100Mi"),
+							},
+						},
+						ExtraPodAnnotations: map[string]string{
+							"extra-key": "extra-value",
+						},
+					},
+				},
+			}
+			err := k8sClient.Create(context.Background(), instance)
+			Expect(err).ToNot(HaveOccurred())
+			Eventually(func() error {
+				return k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, instance)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+		})
+
+		It("creates the required deployment with proper labels and annotations", func() {
+
+			Eventually(func() bool {
+				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, instance)
+				Expect(err).ToNot(HaveOccurred())
+				if len(instance.GetFinalizers()) > 0 {
+					return true
+				}
+				return false
+			}, timeout, poll).Should(BeTrue())
+
+			dep := &appsv1.Deployment{}
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "deployment", Namespace: namespace},
+					dep,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+
+			Expect(dep.Spec.Template.ObjectMeta.Annotations["marin3r.3scale.net/resources.limits.cpu"]).To(Equal("200m"))
+			Expect(dep.Spec.Template.ObjectMeta.Annotations["marin3r.3scale.net/resources.limits.memory"]).To(Equal("200Mi"))
+			Expect(dep.Spec.Template.ObjectMeta.Annotations["marin3r.3scale.net/resources.requests.cpu"]).To(Equal("100m"))
+			Expect(dep.Spec.Template.ObjectMeta.Annotations["marin3r.3scale.net/resources.requests.memory"]).To(Equal("100Mi"))
+			Expect(dep.Spec.Template.ObjectMeta.Annotations["marin3r.3scale.net/ports"]).To(Equal("test:9999"))
+			Expect(dep.Spec.Template.ObjectMeta.Annotations["extra-key"]).To(Equal("extra-value"))
+			Expect(dep.Spec.Template.ObjectMeta.Labels["marin3r.3scale.net/status"]).To(Equal("enabled"))
 		})
 	})
 

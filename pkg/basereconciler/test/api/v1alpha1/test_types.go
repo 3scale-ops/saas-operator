@@ -20,6 +20,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -46,6 +47,8 @@ var (
 type TestSpec struct {
 	// +optional
 	ServiceAnnotations map[string]string `json:"serviceAnnotations,omitempty"`
+	// +optional
+	Marin3r *saasv1alpha1.Marin3rSidecarSpec `json:"marin3r,omitempty"`
 }
 
 // TestStatus defines the observed state of Test
