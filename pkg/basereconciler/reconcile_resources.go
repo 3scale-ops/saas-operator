@@ -276,7 +276,7 @@ func (r *Reconciler) DeploymentWithRolloutTriggers(deployment GeneratorFunction,
 
 	return func() client.Object {
 		dep := deployment().(*appsv1.Deployment)
-		if dep.GetAnnotations() == nil {
+		if dep.Spec.Template.ObjectMeta.Annotations == nil {
 			dep.Spec.Template.ObjectMeta.Annotations = map[string]string{}
 		}
 		for _, trigger := range triggers {
@@ -291,7 +291,7 @@ func (r *Reconciler) StatefulSetWithRolloutTriggers(statefulset GeneratorFunctio
 
 	return func() client.Object {
 		ss := statefulset().(*appsv1.StatefulSet)
-		if ss.GetAnnotations() == nil {
+		if ss.Spec.Template.ObjectMeta.Annotations == nil {
 			ss.Spec.Template.ObjectMeta.Annotations = map[string]string{}
 		}
 		for _, trigger := range triggers {
