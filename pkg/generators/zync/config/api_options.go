@@ -29,6 +29,7 @@ func NewAPIOptions(spec saasv1alpha1.ZyncSpec) APIOptions {
 		RailsMaxThreads:  &pod.ClearTextValue{Value: fmt.Sprintf("%d", *spec.Config.Rails.MaxThreads)},
 
 		DatabaseURL:             &pod.SecretValue{Value: spec.Config.DatabaseDSN},
+		SecretKeyBase:           &pod.SecretValue{Value: spec.Config.SecretKeyBase},
 		ZyncAuthenticationToken: &pod.SecretValue{Value: spec.Config.ZyncAuthToken},
 	}
 
