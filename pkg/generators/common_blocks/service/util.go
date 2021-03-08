@@ -34,6 +34,7 @@ func ELBServiceAnnotations(cfg saasv1alpha1.LoadBalancerSpec, hostnames []string
 // NLBServiceAnnotations returns annotations for services exposed through AWS Network LoadBalancers
 func NLBServiceAnnotations(cfg saasv1alpha1.NLBLoadBalancerSpec, hostnames []string) map[string]string {
 	annotations := map[string]string{
+		"service.beta.kubernetes.io/aws-load-balancer-type":                              "nlb",
 		"external-dns.alpha.kubernetes.io/hostname":                                      strings.Join(hostnames, ","),
 		"service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled": fmt.Sprintf("%t", *cfg.CrossZoneLoadBalancingEnabled),
 	}
