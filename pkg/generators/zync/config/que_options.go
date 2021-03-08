@@ -25,6 +25,7 @@ func NewQueOptions(spec saasv1alpha1.ZyncSpec) QueOptions {
 		RailsLogToStdOut: &pod.ClearTextValue{Value: "true"},
 
 		DatabaseURL:             &pod.SecretValue{Value: spec.Config.DatabaseDSN},
+		SecretKeyBase:           &pod.SecretValue{Value: spec.Config.SecretKeyBase},
 		ZyncAuthenticationToken: &pod.SecretValue{Value: spec.Config.ZyncAuthToken},
 	}
 
