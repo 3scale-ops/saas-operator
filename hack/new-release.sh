@@ -1,6 +1,6 @@
 #!/bin/bash
 
-REPO="3scale/saas-operator"
+REPO="3scale-ops/saas-operator"
 
 # Skip if alpha release
 [[ ${1} == *"-alpha"* ]] && echo "" && exit 0
