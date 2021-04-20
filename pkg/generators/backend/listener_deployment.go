@@ -56,19 +56,12 @@ func (gen *ListenerGenerator) Deployment() basereconciler.GeneratorFunction {
 								Name:  gen.GetComponent(),
 								Image: fmt.Sprintf("%s:%s", *gen.Image.Name, *gen.Image.Tag),
 								Args: func() (args []string) {
-									args = []string{
-										"bin/3scale_backend",
-										"start",
-										"-e",
-										"production",
-										"-p",
-										"3000",
-										"-x",
-										"/dev/stdout",
-									}
 									if *gen.ListenerSpec.Config.RedisAsync {
-										args = append(args, "-s falcon")
+										args = []string{"bin/3scale_backend", "-s", "falcon", "start"}
+									} else {
+										args = []string{"bin/3scale_backend", "start"}
 									}
+									args = append(args, "-e", "production", "-p", "3000", "-x", "/dev/stdout")
 									return
 								}(),
 								Ports: pod.ContainerPorts(

@@ -1,6 +1,6 @@
 SHELL:=/bin/bash
 # Current Operator version
-VERSION ?= 0.9.5
+VERSION ?= 0.9.6
 # Default catalog image
 CATALOG_IMG ?= quay.io/3scaleops/saas-operator-bundle:catalog
 # Default bundle image tag
@@ -50,7 +50,7 @@ $(OPERATOR_SDK):
 	chmod +x $(OPERATOR_SDK)
 
 # Download operator package manager if necessary
-OPM_RELEASE = v1.16.1
+OPM_RELEASE = v1.17.0
 OPM = $(shell pwd)/bin/opm-$(OPM_RELEASE)
 OPM_DL_URL = https://github.com/operator-framework/operator-registry/releases/download/$(OPM_RELEASE)/$(OS)-$(ARCH)-opm
 $(OPM):
@@ -204,7 +204,7 @@ bundle-push:
 catalog-build: $(OPM)
 	$(OPM) index add \
 		--build-tool docker \
-		--mode semver-skippatch \
+		--mode semver \
 		--bundles $(BUNDLE_IMG) \
 		--from-index $(CATALOG_IMG) \
 		--tag $(CATALOG_IMG)
