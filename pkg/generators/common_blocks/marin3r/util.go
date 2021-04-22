@@ -14,6 +14,12 @@ const (
 	sidecarEnabledLabelValue string = "enabled"
 )
 
+var (
+	defaultAnnotations map[string]string = map[string]string{
+		"marin3r.3scale.net/shutdown-manager.enabled": "true",
+	}
+)
+
 // EnableSidecar adds the apporopriates labels and annotations for marin3r sidecar
 // injection to work for this Deployment
 func EnableSidecar(dep appsv1.Deployment, spec saasv1alpha1.Marin3rSidecarSpec) *appsv1.Deployment {
@@ -29,6 +35,7 @@ func EnableSidecar(dep appsv1.Deployment, spec saasv1alpha1.Marin3rSidecarSpec) 
 		dep.Spec.Template.ObjectMeta.Annotations,
 		resourcesAnnotations(spec.Resources),
 		portsAnnotation(spec.Ports),
+		defaultAnnotations,
 		spec.ExtraPodAnnotations,
 	)
 

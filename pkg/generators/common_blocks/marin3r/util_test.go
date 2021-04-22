@@ -63,7 +63,8 @@ func TestEnableSidecar(t *testing.T) {
 								"marin3r.3scale.net/resources.requests.cpu":    "100m",
 								"marin3r.3scale.net/resources.requests.memory": "100Mi",
 								"marin3r.3scale.net/ports":                     "test:9999",
-								"extra-key":                                    "extra-value",
+								"marin3r.3scale.net/shutdown-manager.enabled":  "true",
+								"extra-key": "extra-value",
 							},
 							Labels: map[string]string{
 								"marin3r.3scale.net/status": "enabled",
