@@ -585,7 +585,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/3scale/saas-operator
     support: Red Hat
-  name: saas-operator.v0.9.7
+  name: saas-operator.v0.9.8
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -3038,7 +3038,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/3scale/saas-operator:0.9.7
+                image: quay.io/3scale/saas-operator:0.9.8
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -3054,11 +3054,11 @@ spec:
                   periodSeconds: 10
                 resources:
                   limits:
-                    cpu: 100m
-                    memory: 30Mi
+                    cpu: 50m
+                    memory: 700Mi
                   requests:
-                    cpu: 100m
-                    memory: 20Mi
+                    cpu: 25m
+                    memory: 200Mi
                 securityContext:
                   allowPrivilegeEscalation: false
               serviceAccountName: saas-operator-controller-manager
@@ -3425,4 +3425,4 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
-  version: 0.9.7
+  version: 0.9.8
