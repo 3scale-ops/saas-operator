@@ -40,6 +40,9 @@ endif
 ifeq ($(shell arch),aarch64)
 ARCH := arm64
 endif
+ifeq ($(shell uname -m),x86_64)
+ARCH := amd64
+endif
 
 # Download operator-sdk binary if necesasry
 OPERATOR_SDK_RELEASE = v1.3.2
