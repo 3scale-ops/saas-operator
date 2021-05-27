@@ -51,6 +51,19 @@ func (gen *AppGenerator) Deployment() basereconciler.GeneratorFunction {
 							}
 							return nil
 						}(),
+						InitContainers: []corev1.Container{
+							{
+								Name:  fmt.Sprintf("%s-k8s-deploy", gen.GetComponent()),
+								Image: fmt.Sprintf("%s:%s", *gen.ImageSpec.Name, *gen.ImageSpec.Tag),
+								Args: []string{
+									"bundle", "exec", "rake", "k8s:deploy",
+								},
+								Env:                      pod.BuildEnvironment(gen.Options),
+								ImagePullPolicy:          *gen.ImageSpec.PullPolicy,
+								TerminationMessagePath:   corev1.TerminationMessagePathDefault,
+								TerminationMessagePolicy: corev1.TerminationMessageReadFile,
+							},
+						},
 						Containers: []corev1.Container{
 							{
 								Name:  gen.GetComponent(),

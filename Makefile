@@ -1,6 +1,6 @@
 SHELL:=/bin/bash
 # Current Operator version
-VERSION ?= 0.9.8
+VERSION ?= 0.9.9
 # Default catalog image
 CATALOG_IMG ?= quay.io/3scaleops/saas-operator-bundle:catalog
 # Default bundle image tag
@@ -39,6 +39,9 @@ ARCH := amd64
 endif
 ifeq ($(shell arch),aarch64)
 ARCH := arm64
+endif
+ifeq ($(shell uname -m),x86_64)
+ARCH := amd64
 endif
 
 # Download operator-sdk binary if necesasry
