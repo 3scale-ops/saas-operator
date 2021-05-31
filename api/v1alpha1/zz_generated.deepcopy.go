@@ -1886,6 +1886,11 @@ func (in *SystemConfig) DeepCopyInto(out *SystemConfig) {
 		(*in).DeepCopyInto(*out)
 	}
 	in.Seed.DeepCopyInto(&out.Seed)
+	if in.SphinxPort != nil {
+		in, out := &in.SphinxPort, &out.SphinxPort
+		*out = new(int32)
+		**out = **in
+	}
 	in.DatabaseDSN.DeepCopyInto(&out.DatabaseDSN)
 	in.EventsSharedSecret.DeepCopyInto(&out.EventsSharedSecret)
 	in.Recaptcha.DeepCopyInto(&out.Recaptcha)

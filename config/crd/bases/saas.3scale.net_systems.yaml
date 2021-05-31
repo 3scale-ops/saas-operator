@@ -1067,6 +1067,12 @@ spec:
                     - starttlsAuto
                     - user
                     type: object
+                  sphinxPort:
+                    description: // Sphinx Address // +operator-sdk:csv:customresourcedefinitions:type=spec
+                      // +optional SphinxAddress *string `json:"sphinxAddress,omitempty"`
+                      Sphinx Port
+                    format: int32
+                    type: integer
                   sslCertsDir:
                     description: SSL certificates path
                     type: string

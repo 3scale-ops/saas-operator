@@ -21,8 +21,7 @@ type Options struct {
 	RailsLogLevel    pod.EnvVarValue `env:"RAILS_LOG_LEVEL"`
 	RailsLogToStdout pod.EnvVarValue `env:"RAILS_LOG_TO_STDOUT"`
 
-	SphinxBindAddress pod.EnvVarValue `env:"THINKING_SPHINX_ADDRESS"`
-	SphinxPort        pod.EnvVarValue `env:"THINKING_SPHINX_PORT"`
+	SphinxPort    pod.EnvVarValue `env:"THINKING_SPHINX_PORT"`
 
 	SeedMasterAccessToken pod.EnvVarValue `env:"MASTER_ACCESS_TOKEN" secret:"system-seed"`
 	SeedMasterDomain      pod.EnvVarValue `env:"MASTER_DOMAIN"`

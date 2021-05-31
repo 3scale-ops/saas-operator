@@ -256,6 +256,10 @@ type SystemConfig struct {
 	// System seed
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Seed SystemSeedSpec `json:"seed"`
+	// Sphinx Port
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	SphinxPort *int32 `json:"sphinxPort,omitempty"`
 	// DSN of system's main database
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	DatabaseDSN SecretReference `json:"databaseDSN"`
@@ -328,6 +332,8 @@ func (sc *SystemConfig) Default() {
 	if sc.Bugsnag == nil {
 		sc.Bugsnag = &systemDefaultBugsnagSpec
 	}
+
+	sc.SphinxPort = intOrDefault(sc.SphinxPort, pointer.Int32Ptr(systemDefaultSphinxPort))
 
 	sc.SandboxProxyOpensslVerifyMode = stringOrDefault(sc.SandboxProxyOpensslVerifyMode, pointer.StringPtr(systemDefaultSandboxProxyOpensslVerifyMode))
 	sc.ForceSSL = boolOrDefault(sc.ForceSSL, pointer.BoolPtr(systemDefaultForceSSL))
