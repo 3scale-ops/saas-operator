@@ -21,7 +21,7 @@ func (gen *SphinxGenerator) Service() basereconciler.GeneratorFunction {
 				APIVersion: corev1.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      gen.GetComponent(),
+				Name:      gen.DatabaseService,
 				Namespace: gen.GetNamespace(),
 				Labels:    gen.GetLabels(),
 			},

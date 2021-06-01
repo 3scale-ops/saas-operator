@@ -1067,10 +1067,11 @@ spec:
                     - starttlsAuto
                     - user
                     type: object
+                  sphinxAddress:
+                    description: Sphinx Address
+                    type: string
                   sphinxPort:
-                    description: // Sphinx Address // +operator-sdk:csv:customresourcedefinitions:type=spec
-                      // +optional SphinxAddress *string `json:"sphinxAddress,omitempty"`
-                      Sphinx Port
+                    description: Sphinx Port
                     format: int32
                     type: integer
                   sslCertsDir:

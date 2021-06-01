@@ -137,6 +137,7 @@ var (
 	// Sphinx
 	systemDefaultSphinxDeltaIndexInterval  int32                           = 5
 	systemDefaultSphinxFullReindexInterval int32                           = 60
+	systemDefaultSphinxAddress             string                          = "system-sphinx"
 	systemDefaultSphinxPort                int32                           = 9306
 	systemDefaultSphinxBindAddress         string                          = "0.0.0.0"
 	systemDefaultSphinxConfigFile          string                          = "/opt/system/db/sphinx/preview.conf"
@@ -256,6 +257,10 @@ type SystemConfig struct {
 	// System seed
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Seed SystemSeedSpec `json:"seed"`
+	// Sphinx Address
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	SphinxAddress *string `json:"sphinxAddress,omitempty"`
 	// Sphinx Port
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -333,6 +338,7 @@ func (sc *SystemConfig) Default() {
 		sc.Bugsnag = &systemDefaultBugsnagSpec
 	}
 
+	sc.SphinxAddress = stringOrDefault(sc.SphinxAddress, pointer.StringPtr(systemDefaultSphinxAddress))
 	sc.SphinxPort = intOrDefault(sc.SphinxPort, pointer.Int32Ptr(systemDefaultSphinxPort))
 
 	sc.SandboxProxyOpensslVerifyMode = stringOrDefault(sc.SandboxProxyOpensslVerifyMode, pointer.StringPtr(systemDefaultSandboxProxyOpensslVerifyMode))

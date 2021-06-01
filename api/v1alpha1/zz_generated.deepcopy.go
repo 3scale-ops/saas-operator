@@ -1886,6 +1886,11 @@ func (in *SystemConfig) DeepCopyInto(out *SystemConfig) {
 		(*in).DeepCopyInto(*out)
 	}
 	in.Seed.DeepCopyInto(&out.Seed)
+	if in.SphinxAddress != nil {
+		in, out := &in.SphinxAddress, &out.SphinxAddress
+		*out = new(string)
+		**out = **in
+	}
 	if in.SphinxPort != nil {
 		in, out := &in.SphinxPort, &out.SphinxPort
 		*out = new(int32)
