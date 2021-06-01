@@ -585,7 +585,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/3scale/saas-operator
     support: Red Hat
-  name: saas-operator.v0.9.9
+  name: saas-operator.v0.9.10
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -2489,6 +2489,12 @@ spec:
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.smtp.user.override
+      - description: Sphinx Address
+        displayName: Sphinx Address
+        path: config.sphinxAddress
+      - description: Sphinx Port
+        displayName: Sphinx Port
+        path: config.sphinxPort
       - description: SSL certificates path
         displayName: SSLCerts Dir
         path: config.sslCertsDir
@@ -3038,7 +3044,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/3scale/saas-operator:0.9.9
+                image: quay.io/3scale/saas-operator:0.9.10
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -3425,4 +3431,4 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
-  version: 0.9.9
+  version: 0.9.10

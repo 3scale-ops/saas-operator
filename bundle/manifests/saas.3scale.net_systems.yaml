@@ -964,6 +964,13 @@ spec:
                     - starttlsAuto
                     - user
                     type: object
+                  sphinxAddress:
+                    description: Sphinx Address
+                    type: string
+                  sphinxPort:
+                    description: Sphinx Port
+                    format: int32
+                    type: integer
                   sslCertsDir:
                     description: SSL certificates path
                     type: string
