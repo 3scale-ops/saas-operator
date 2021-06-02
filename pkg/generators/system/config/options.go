@@ -21,8 +21,8 @@ type Options struct {
 	RailsLogLevel    pod.EnvVarValue `env:"RAILS_LOG_LEVEL"`
 	RailsLogToStdout pod.EnvVarValue `env:"RAILS_LOG_TO_STDOUT"`
 
-	SphinxBindAddress pod.EnvVarValue `env:"THINKING_SPHINX_ADDRESS"`
-	SphinxPort        pod.EnvVarValue `env:"THINKING_SPHINX_PORT"`
+	SphinxAddress pod.EnvVarValue `env:"THINKING_SPHINX_ADDRESS"`
+	SphinxPort    pod.EnvVarValue `env:"THINKING_SPHINX_PORT"`
 
 	SeedMasterAccessToken pod.EnvVarValue `env:"MASTER_ACCESS_TOKEN" secret:"system-seed"`
 	SeedMasterDomain      pod.EnvVarValue `env:"MASTER_DOMAIN"`
@@ -108,8 +108,8 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 		RailsLogLevel:    &pod.ClearTextValue{Value: *spec.Config.Rails.LogLevel},
 		RailsLogToStdout: &pod.ClearTextValue{Value: "true"},
 
-		SphinxBindAddress: &pod.ClearTextValue{Value: *spec.Sphinx.Config.Thinking.BindAddress},
-		SphinxPort:        &pod.ClearTextValue{Value: fmt.Sprintf("%d", *spec.Sphinx.Config.Thinking.Port)},
+		SphinxAddress: &pod.ClearTextValue{Value: SystemSphinxServiceName},
+		SphinxPort:    &pod.ClearTextValue{Value: fmt.Sprintf("%d", *spec.Sphinx.Config.Thinking.Port)},
 
 		SeedMasterAccessToken: &pod.SecretValue{Value: spec.Config.Seed.MasterAccessToken},
 		SeedMasterDomain:      &pod.ClearTextValue{Value: spec.Config.Seed.MasterDomain},

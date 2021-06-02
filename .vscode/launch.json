@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "3scale SaaS Operator",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/main.go",
+      "env": {
+        "WATCH_NAMESPACE": "default",
+        "KUBECONFIG":"${workspaceFolder}/kubeconfig"
+      },
+      "args": []
+    }
+  ]
+}
