@@ -150,7 +150,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) Gene
 			Spec:                 *spec.Sphinx,
 			Options:              config.NewSphinxOptions(spec),
 			ImageSpec:            *spec.Image,
-			DatabaseService:      *spec.Config.SphinxAddress,
+			DatabaseService:      *spec.Sphinx.Config.Thinking.ServiceName,
 			DatabasePort:         *spec.Sphinx.Config.Thinking.Port,
 			DatabasePath:         *spec.Sphinx.Config.Thinking.DatabasePath,
 			DatabaseStorageSize:  *spec.Sphinx.Config.Thinking.DatabaseStorageSize,

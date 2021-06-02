@@ -137,7 +137,7 @@ var (
 	// Sphinx
 	systemDefaultSphinxDeltaIndexInterval  int32                           = 5
 	systemDefaultSphinxFullReindexInterval int32                           = 60
-	systemDefaultSphinxAddress             string                          = "system-sphinx"
+	systemDefaultSphinxServiceName         string                          = "system-sphinx"
 	systemDefaultSphinxPort                int32                           = 9306
 	systemDefaultSphinxBindAddress         string                          = "0.0.0.0"
 	systemDefaultSphinxConfigFile          string                          = "/opt/system/db/sphinx/preview.conf"
@@ -257,14 +257,6 @@ type SystemConfig struct {
 	// System seed
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Seed SystemSeedSpec `json:"seed"`
-	// Sphinx Address
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	SphinxAddress *string `json:"sphinxAddress,omitempty"`
-	// Sphinx Port
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	SphinxPort *int32 `json:"sphinxPort,omitempty"`
 	// DSN of system's main database
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	DatabaseDSN SecretReference `json:"databaseDSN"`
@@ -337,9 +329,6 @@ func (sc *SystemConfig) Default() {
 	if sc.Bugsnag == nil {
 		sc.Bugsnag = &systemDefaultBugsnagSpec
 	}
-
-	sc.SphinxAddress = stringOrDefault(sc.SphinxAddress, pointer.StringPtr(systemDefaultSphinxAddress))
-	sc.SphinxPort = intOrDefault(sc.SphinxPort, pointer.Int32Ptr(systemDefaultSphinxPort))
 
 	sc.SandboxProxyOpensslVerifyMode = stringOrDefault(sc.SandboxProxyOpensslVerifyMode, pointer.StringPtr(systemDefaultSandboxProxyOpensslVerifyMode))
 	sc.ForceSSL = boolOrDefault(sc.ForceSSL, pointer.BoolPtr(systemDefaultForceSSL))
@@ -707,6 +696,8 @@ func (sc *SphinxConfig) Default() {
 
 // ThinkingSpec configures the thinking library for sphinx
 type ThinkingSpec struct {
+	// Service name to expose the Sphinx stateful set
+	ServiceName *string `json:"serviceName,omitempty"`
 	// The TCP port Sphinx will run its daemon on
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -739,6 +730,7 @@ type ThinkingSpec struct {
 
 // Default implements defaulting for ThinkingSpec
 func (tc *ThinkingSpec) Default() {
+	tc.ServiceName = stringOrDefault(tc.ServiceName, pointer.StringPtr(systemDefaultSphinxServiceName))
 	tc.Port = intOrDefault(tc.Port, pointer.Int32Ptr(systemDefaultSphinxPort))
 	tc.BindAddress = stringOrDefault(tc.BindAddress, pointer.StringPtr(systemDefaultSphinxBindAddress))
 	tc.ConfigFile = stringOrDefault(tc.ConfigFile, pointer.StringPtr(systemDefaultSphinxConfigFile))

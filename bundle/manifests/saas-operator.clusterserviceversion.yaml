@@ -2489,12 +2489,6 @@ spec:
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.smtp.user.override
-      - description: Sphinx Address
-        displayName: Sphinx Address
-        path: config.sphinxAddress
-      - description: Sphinx Port
-        displayName: Sphinx Port
-        path: config.sphinxPort
       - description: SSL certificates path
         displayName: SSLCerts Dir
         path: config.sslCertsDir
