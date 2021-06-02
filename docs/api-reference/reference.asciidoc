@@ -1261,6 +1261,8 @@ SystemConfig holds configuration for SystemApp component
 | *`threescaleSuperdomain`* __string__ | 3scale superdomain
 | *`configFiles`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-configfilesspec[$$ConfigFilesSpec$$]__ | Extra configuration files to be mounted in the pods
 | *`seed`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemseedspec[$$SystemSeedSpec$$]__ | System seed
+| *`sphinxAddress`* __string__ | Sphinx Address
+| *`sphinxPort`* __integer__ | Sphinx Port
 | *`databaseDSN`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | DSN of system's main database
 | *`eventsSharedSecret`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | EventsSharedSecret
 | *`recaptcha`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemrecaptchaspec[$$SystemRecaptchaSpec$$]__ | Holds recaptcha configuration options
