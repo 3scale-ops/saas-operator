@@ -1337,10 +1337,6 @@ spec:
                             description: The TCP port Sphinx will run its daemon on
                             format: int32
                             type: integer
-                          serviceName:
-                            description: Service name to expose the Sphinx stateful
-                              set
-                            type: string
                         type: object
                     type: object
                   livenessProbe:

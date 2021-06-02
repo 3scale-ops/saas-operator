@@ -108,7 +108,7 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 		RailsLogLevel:    &pod.ClearTextValue{Value: *spec.Config.Rails.LogLevel},
 		RailsLogToStdout: &pod.ClearTextValue{Value: "true"},
 
-		SphinxAddress: &pod.ClearTextValue{Value: *spec.Sphinx.Config.Thinking.ServiceName},
+		SphinxAddress: &pod.ClearTextValue{Value: SystemSphinxServiceName},
 		SphinxPort:    &pod.ClearTextValue{Value: fmt.Sprintf("%d", *spec.Sphinx.Config.Thinking.Port)},
 
 		SeedMasterAccessToken: &pod.SecretValue{Value: spec.Config.Seed.MasterAccessToken},

@@ -137,7 +137,6 @@ var (
 	// Sphinx
 	systemDefaultSphinxDeltaIndexInterval  int32                           = 5
 	systemDefaultSphinxFullReindexInterval int32                           = 60
-	systemDefaultSphinxServiceName         string                          = "system-sphinx"
 	systemDefaultSphinxPort                int32                           = 9306
 	systemDefaultSphinxBindAddress         string                          = "0.0.0.0"
 	systemDefaultSphinxConfigFile          string                          = "/opt/system/db/sphinx/preview.conf"
@@ -696,8 +695,6 @@ func (sc *SphinxConfig) Default() {
 
 // ThinkingSpec configures the thinking library for sphinx
 type ThinkingSpec struct {
-	// Service name to expose the Sphinx stateful set
-	ServiceName *string `json:"serviceName,omitempty"`
 	// The TCP port Sphinx will run its daemon on
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -730,7 +727,6 @@ type ThinkingSpec struct {
 
 // Default implements defaulting for ThinkingSpec
 func (tc *ThinkingSpec) Default() {
-	tc.ServiceName = stringOrDefault(tc.ServiceName, pointer.StringPtr(systemDefaultSphinxServiceName))
 	tc.Port = intOrDefault(tc.Port, pointer.Int32Ptr(systemDefaultSphinxPort))
 	tc.BindAddress = stringOrDefault(tc.BindAddress, pointer.StringPtr(systemDefaultSphinxBindAddress))
 	tc.ConfigFile = stringOrDefault(tc.ConfigFile, pointer.StringPtr(systemDefaultSphinxConfigFile))

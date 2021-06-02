@@ -1440,7 +1440,6 @@ ThinkingSpec configures the thinking library for sphinx
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`serviceName`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-string[$$string$$]__ | Service name to expose the Sphinx stateful set
 | *`port`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-int32[$$int32$$]__ | The TCP port Sphinx will run its daemon on
 | *`bindAddress`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-string[$$string$$]__ | Allows setting the TCP host for Sphinx to a different address
 | *`configFile`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-string[$$string$$]__ | Sphinx configuration file path

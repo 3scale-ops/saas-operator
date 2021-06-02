@@ -3,6 +3,7 @@ package system
 import (
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/service"
+	"github.com/3scale/saas-operator/pkg/generators/system/config"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -21,7 +22,7 @@ func (gen *SphinxGenerator) Service() basereconciler.GeneratorFunction {
 				APIVersion: corev1.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      gen.DatabaseService,
+				Name:      config.SystemSphinxServiceName,
 				Namespace: gen.GetNamespace(),
 				Labels:    gen.GetLabels(),
 			},
