@@ -161,6 +161,29 @@ type GrafanaDashboard struct {
 	Enabled  bool
 }
 
+// GetDeploymentReplicas returns the number of replicas for a deployment,
+// current value if HPA is enabled.
+func (r *Reconciler) GetDeploymentReplicas(ctx context.Context, d Deployment) (*int32, error) {
+
+	dep := d.Template().(*appsv1.Deployment)
+	if !d.HasHPA {
+		return dep.Spec.Replicas, nil
+	}
+	key := types.NamespacedName{
+		Name:      dep.GetName(),
+		Namespace: dep.GetNamespace(),
+	}
+	instance := &appsv1.Deployment{}
+	err := r.GetClient().Get(ctx, key, instance)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return dep.Spec.Replicas, nil
+		}
+		return dep.Spec.Replicas, err
+	}
+	return instance.Spec.Replicas, nil
+}
+
 // ReconcileOwnedResources handles generalized resource reconcile logic for
 // all controllers
 func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.Object, crs ControlledResources) error {
@@ -169,9 +192,14 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 
 	for _, dep := range crs.Deployments {
 
+		currentReplicas, err := r.GetDeploymentReplicas(ctx, dep)
+		if err != nil {
+			return err
+		}
+
 		resources = append(resources,
 			LockedResource{
-				GeneratorFn: r.DeploymentWithRolloutTriggers(dep.Template, dep.RolloutTriggers),
+				GeneratorFn: r.DeploymentWithRolloutTriggers(dep.Template, dep.RolloutTriggers, currentReplicas),
 				ExcludePaths: func() []string {
 					if dep.HasHPA {
 						return append(DeploymentExcludedPaths, "/spec/replicas")
@@ -272,7 +300,7 @@ func ServiceExcludes(fn GeneratorFunction) []string {
 }
 
 // DeploymentWithRolloutTriggers returns the Deployment modified with the appropriate rollout triggers (annotations)
-func (r *Reconciler) DeploymentWithRolloutTriggers(deployment GeneratorFunction, triggers []RolloutTrigger) GeneratorFunction {
+func (r *Reconciler) DeploymentWithRolloutTriggers(deployment GeneratorFunction, triggers []RolloutTrigger, replicas *int32) GeneratorFunction {
 
 	return func() client.Object {
 		dep := deployment().(*appsv1.Deployment)
@@ -282,6 +310,9 @@ func (r *Reconciler) DeploymentWithRolloutTriggers(deployment GeneratorFunction,
 		for _, trigger := range triggers {
 			dep.Spec.Template.ObjectMeta.Annotations[trigger.GetAnnotationKey()] = trigger.GetHash()
 		}
+
+		dep.Spec.Replicas = replicas
+
 		return dep
 	}
 }
