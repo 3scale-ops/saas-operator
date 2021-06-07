@@ -195,7 +195,7 @@ tmp:
 
 prepare-alpha-release: bump-release generate fmt vet manifests bundle
 
-prepare-release: bump-release generate fmt vet manifests bundle
+prepare-stable-release: bump-release generate fmt vet manifests bundle
 	$(MAKE) bundle CHANNELS=alpha,stable DEFAULT_CHANNEL=alpha
 
 bump-release:
