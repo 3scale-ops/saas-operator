@@ -61,7 +61,7 @@ type Options struct {
 	SMTPOpensslVerifyMode pod.EnvVarValue `env:"SMTP_OPENSSL_VERIFY_MODE"`
 	SMTPSTARTTLSAuto      pod.EnvVarValue `env:"SMTP_STARTTLS_AUTO"`
 
-	ApicastAccessToken pod.EnvVarValue `env:"APICAST_ACCESS_TOKEN" secret:"system-master-apicast"`
+	MappingServiceAccessToken pod.EnvVarValue `env:"APICAST_ACCESS_TOKEN" secret:"system-master-apicast"`
 
 	ZyncAuthenticationToken pod.EnvVarValue `env:"ZYNC_AUTHENTICATION_TOKEN" secret:"system-zync"`
 
@@ -148,7 +148,7 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 		SMTPOpensslVerifyMode: &pod.ClearTextValue{Value: spec.Config.SMTP.OpenSSLVerifyMode},
 		SMTPSTARTTLSAuto:      &pod.ClearTextValue{Value: fmt.Sprintf("%t", spec.Config.SMTP.STARTTLSAuto)},
 
-		ApicastAccessToken: &pod.SecretValue{Value: spec.Config.ApicastAccessToken},
+		MappingServiceAccessToken: &pod.SecretValue{Value: spec.Config.MappingServiceAccessToken},
 
 		ZyncAuthenticationToken: &pod.SecretValue{Value: spec.Config.ZyncAuthToken},
 
