@@ -66,6 +66,8 @@ func (gen *SphinxGenerator) StatefulSet() basereconciler.GeneratorFunction {
 								}},
 							},
 						},
+						Affinity:    pod.Affinity(gen.Selector().MatchLabels, gen.Spec.NodeAffinity),
+						Tolerations: gen.Spec.Tolerations,
 					},
 				},
 				VolumeClaimTemplates: []corev1.PersistentVolumeClaim{{

@@ -214,6 +214,12 @@ type ListenerSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	LoadBalancer *NLBLoadBalancerSpec `json:"loadBalancer,omitempty"`
+	// Describes node affinity scheduling rules for the pod.
+	// +optional
+	NodeAffinity *corev1.NodeAffinity `json:"nodeAffinity,omitempty" protobuf:"bytes,1,opt,name=nodeAffinity"`
+	// If specified, the pod's tolerations.
+	// +optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
 }
 
 // Default implements defaulting for the each backend listener
@@ -269,6 +275,12 @@ type WorkerSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	ReadinessProbe *ProbeSpec `json:"readinessProbe,omitempty"`
+	// Describes node affinity scheduling rules for the pod.
+	// +optional
+	NodeAffinity *corev1.NodeAffinity `json:"nodeAffinity,omitempty" protobuf:"bytes,1,opt,name=nodeAffinity"`
+	// If specified, the pod's tolerations.
+	// +optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
 }
 
 // Default implements defaulting for the each backend worker
@@ -302,6 +314,12 @@ type CronSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Resources *ResourceRequirementsSpec `json:"resources,omitempty"`
+	// Describes node affinity scheduling rules for the pod.
+	// +optional
+	NodeAffinity *corev1.NodeAffinity `json:"nodeAffinity,omitempty" protobuf:"bytes,1,opt,name=nodeAffinity"`
+	// If specified, the pod's tolerations.
+	// +optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
 }
 
 // Default implements defaulting for the each backend cron

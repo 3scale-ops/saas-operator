@@ -61,8 +61,9 @@ func TCPProbe(port intstr.IntOrString, cfg saasv1alpha1.ProbeSpec) *corev1.Probe
 }
 
 // Affinity returns a corev1.Affinity struct
-func Affinity(selector map[string]string) *corev1.Affinity {
+func Affinity(podAntiAffinitySelector map[string]string, nodeAffinity *corev1.NodeAffinity) *corev1.Affinity {
 	return &corev1.Affinity{
+		NodeAffinity: nodeAffinity,
 		PodAntiAffinity: &corev1.PodAntiAffinity{
 			PreferredDuringSchedulingIgnoredDuringExecution: []corev1.WeightedPodAffinityTerm{
 				{
@@ -70,7 +71,7 @@ func Affinity(selector map[string]string) *corev1.Affinity {
 					PodAffinityTerm: corev1.PodAffinityTerm{
 						TopologyKey: corev1.LabelHostname,
 						LabelSelector: &metav1.LabelSelector{
-							MatchLabels: selector,
+							MatchLabels: podAntiAffinitySelector,
 						},
 					},
 				},
@@ -79,7 +80,7 @@ func Affinity(selector map[string]string) *corev1.Affinity {
 					PodAffinityTerm: corev1.PodAffinityTerm{
 						TopologyKey: corev1.LabelTopologyZone,
 						LabelSelector: &metav1.LabelSelector{
-							MatchLabels: selector,
+							MatchLabels: podAntiAffinitySelector,
 						},
 					},
 				},

@@ -123,6 +123,12 @@ type AutoSSLSpec struct {
 	// The external endpoint/s for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Endpoint Endpoint `json:"endpoint"`
+	// Describes node affinity scheduling rules for the pod.
+	// +optional
+	NodeAffinity *corev1.NodeAffinity `json:"nodeAffinity,omitempty" protobuf:"bytes,1,opt,name=nodeAffinity"`
+	// If specified, the pod's tolerations.
+	// +optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
 }
 
 // Default implements defaulting for the AutoSSL resource
