@@ -2023,7 +2023,7 @@ func (in *SystemConfig) DeepCopyInto(out *SystemConfig) {
 	in.DatabaseSecret.DeepCopyInto(&out.DatabaseSecret)
 	out.Redis = in.Redis
 	in.SMTP.DeepCopyInto(&out.SMTP)
-	in.ApicastAccessToken.DeepCopyInto(&out.ApicastAccessToken)
+	in.MappingServiceAccessToken.DeepCopyInto(&out.MappingServiceAccessToken)
 	in.ZyncAuthToken.DeepCopyInto(&out.ZyncAuthToken)
 	in.Backend.DeepCopyInto(&out.Backend)
 	in.Assets.DeepCopyInto(&out.Assets)

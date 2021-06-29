@@ -112,8 +112,8 @@ var _ = Describe("System controller", func() {
 							OpenSSLVerifyMode: "value",
 							STARTTLSAuto:      false,
 						},
-						ApicastAccessToken: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-						ZyncAuthToken:      saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
+						MappingServiceAccessToken: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
+						ZyncAuthToken:             saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 						Backend: saasv1alpha1.SystemBackendSpec{
 							ExternalEndpoint:    "value",
 							InternalEndpoint:    "value",
