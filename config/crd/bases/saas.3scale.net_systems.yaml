@@ -511,6 +511,28 @@ spec:
                   ampRelease:
                     description: AMP release number
                     type: string
+                  apicastAccessToken:
+                    description: Master access token for Apicast
+                    properties:
+                      fromVault:
+                        description: VaultSecretReference is a reference to a secret
+                          stored in a Hashicorp Vault
+                        properties:
+                          key:
+                            description: The Vault key of the secret
+                            type: string
+                          path:
+                            description: The Vault path where the secret is located
+                            type: string
+                        required:
+                        - key
+                        - path
+                        type: object
+                      override:
+                        description: Override allows to directly specify a string
+                          value.
+                        type: string
+                    type: object
                   assets:
                     description: Assets has configuration to access assets in AWS
                       s3
@@ -797,7 +819,7 @@ spec:
                     - clientSecret
                     type: object
                   mappingServiceAccessToken:
-                    description: Master access token for Apicast
+                    description: Mapping Service access token
                     properties:
                       fromVault:
                         description: VaultSecretReference is a reference to a secret
@@ -1351,7 +1373,6 @@ spec:
                 - databaseSecret
                 - eventsSharedSecret
                 - github
-                - mappingServiceAccessToken
                 - memcachedServers
                 - metrics
                 - recaptcha
