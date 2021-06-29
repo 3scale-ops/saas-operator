@@ -585,7 +585,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/3scale/saas-operator
     support: Red Hat
-  name: saas-operator.v0.10.1
+  name: saas-operator.v0.10.2
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -1970,6 +1970,21 @@ spec:
       - description: AMP release number
         displayName: AMPRelease
         path: config.ampRelease
+      - description: Master access token for Apicast
+        displayName: Apicast Access Token
+        path: config.apicastAccessToken
+      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
+        displayName: From Vault
+        path: config.apicastAccessToken.fromVault
+      - description: The Vault key of the secret
+        displayName: Key
+        path: config.apicastAccessToken.fromVault.key
+      - description: The Vault path where the secret is located
+        displayName: Path
+        path: config.apicastAccessToken.fromVault.path
+      - description: Override allows to directly specify a string value.
+        displayName: Override
+        path: config.apicastAccessToken.override
       - description: AWS access key
         displayName: Access Key
         path: config.assets.accessKey
@@ -2150,7 +2165,7 @@ spec:
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.github.clientSecret.override
-      - description: Master access token for Apicast
+      - description: Mapping Service access token
         displayName: Mapping Service Access Token
         path: config.mappingServiceAccessToken
       - description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
@@ -3038,7 +3053,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/3scale/saas-operator:0.10.1
+                image: quay.io/3scale/saas-operator:0.10.2
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -3425,4 +3440,4 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
-  version: 0.10.1
+  version: 0.10.2
