@@ -301,12 +301,7 @@ type SystemConfig struct {
 	SMTP SMTPSpec `json:"smtp"`
 	// Mapping Service access token
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
 	MappingServiceAccessToken SecretReference `json:"mappingServiceAccessToken"`
-	// Master access token for Apicast
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	ApicastAccessToken SecretReference `json:"apicastAccessToken"`
 	// Zync authentication token
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	ZyncAuthToken SecretReference `json:"zyncAuthToken"`
