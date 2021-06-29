@@ -1528,21 +1528,6 @@ spec:
       - description: AMP release number
         displayName: AMPRelease
         path: config.ampRelease
-      - description: Master access token for Apicast
-        displayName: Apicast Access Token
-        path: config.apicastAccessToken
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
-        displayName: From Vault
-        path: config.apicastAccessToken.fromVault
-      - description: The Vault key of the secret
-        displayName: Key
-        path: config.apicastAccessToken.fromVault.key
-      - description: The Vault path where the secret is located
-        displayName: Path
-        path: config.apicastAccessToken.fromVault.path
-      - description: Override allows to directly specify a string value.
-        displayName: Override
-        path: config.apicastAccessToken.override
       - description: AWS access key
         displayName: Access Key
         path: config.assets.accessKey
