@@ -954,11 +954,11 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "max(que_jobs_scheduled_total{namespace='$namespace',pod=~'zync-que.*',type='ready'}) by (exported_job)",
+          "expr": "max(que_jobs_scheduled_total{namespace='$namespace',pod=~'zync-que.*',type='ready'}) by (job_name)",
           "format": "time_series",
           "interval": "1m",
           "intervalFactor": 10,
-          "legendFormat": "{{ `{{exported_job}}` }}",
+          "legendFormat": "{{ `{{job_name}}` }}",
           "refId": "A"
         }
       ],
@@ -1043,11 +1043,11 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "max(que_jobs_scheduled_total{namespace='$namespace',pod=~'zync-que.*',type='scheduled'}) by (exported_job)",
+          "expr": "max(que_jobs_scheduled_total{namespace='$namespace',pod=~'zync-que.*',type='scheduled'}) by (job_name)",
           "format": "time_series",
           "interval": "1m",
           "intervalFactor": 10,
-          "legendFormat": "{{ `{{exported_job}}` }}",
+          "legendFormat": "{{ `{{job_name}}` }}",
           "refId": "A"
         }
       ],
@@ -1132,11 +1132,11 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "max(que_jobs_scheduled_total{namespace='$namespace',pod=~'zync-que.*',type='failed'}) by (exported_job)",
+          "expr": "max(que_jobs_scheduled_total{namespace='$namespace',pod=~'zync-que.*',type='failed'}) by (job_name)",
           "format": "time_series",
           "interval": "1m",
           "intervalFactor": 10,
-          "legendFormat": "{{ `{{exported_job}}` }}",
+          "legendFormat": "{{ `{{job_name}}` }}",
           "refId": "A"
         }
       ],
@@ -1221,11 +1221,11 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "max(que_jobs_scheduled_total{namespace='$namespace',pod=~'zync-que.*',type='finished'}) by (exported_job)",
+          "expr": "max(que_jobs_scheduled_total{namespace='$namespace',pod=~'zync-que.*',type='finished'}) by (job_name)",
           "format": "time_series",
           "interval": "1m",
           "intervalFactor": 10,
-          "legendFormat": "{{ `{{exported_job}}` }}",
+          "legendFormat": "{{ `{{job_name}}` }}",
           "refId": "A"
         }
       ],
@@ -1310,11 +1310,11 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "max(que_jobs_scheduled_total{namespace='$namespace',pod=~'zync-que.*',type='expired'}) by (exported_job)",
+          "expr": "max(que_jobs_scheduled_total{namespace='$namespace',pod=~'zync-que.*',type='expired'}) by (job_name)",
           "format": "time_series",
           "interval": "1m",
           "intervalFactor": 10,
-          "legendFormat": "{{ `{{exported_job}}` }}",
+          "legendFormat": "{{ `{{job_name}}` }}",
           "refId": "A"
         }
       ],
