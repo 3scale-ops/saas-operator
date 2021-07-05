@@ -585,7 +585,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/3scale/saas-operator
     support: Red Hat
-  name: saas-operator.v0.10.2
+  name: saas-operator.v0.10.3
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -2648,6 +2648,21 @@ spec:
       - description: The TCP port Sphinx will run its daemon on
         displayName: Port
         path: sphinx.config.thinking.port
+      - description: Image specification for the Sphinx component. Defaults to system image if not defined.
+        displayName: Image
+        path: sphinx.image
+      - description: Docker repository of the image
+        displayName: Name
+        path: sphinx.image.name
+      - description: Pull policy for the image
+        displayName: Pull Policy
+        path: sphinx.image.pullPolicy
+      - description: Name of the Secret that holds quay.io credentials to access the image repository
+        displayName: Pull Secret Name
+        path: sphinx.image.pullSecretName
+      - description: Image tag
+        displayName: Tag
+        path: sphinx.image.tag
       - description: Liveness probe for the component
         displayName: Liveness Probe
         path: sphinx.livenessProbe
@@ -3038,7 +3053,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/3scale/saas-operator:0.10.2
+                image: quay.io/3scale/saas-operator:0.10.3
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -3425,4 +3440,4 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
-  version: 0.10.2
+  version: 0.10.3
