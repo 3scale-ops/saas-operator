@@ -216,7 +216,7 @@ func (s *System) Default() {
 	if s.Spec.Sphinx == nil {
 		s.Spec.Sphinx = &SystemSphinxSpec{}
 	}
-	s.Spec.Sphinx.Default()
+	s.Spec.Sphinx.Default(s.Spec.Image)
 }
 
 // SystemConfig holds configuration for SystemApp component
@@ -641,6 +641,11 @@ func (spec *SystemSidekiqSpec) Default() {
 
 // SystemSphinxSpec configures the App component of System
 type SystemSphinxSpec struct {
+	// Image specification for the Sphinx component.
+	// Defaults to system image if not defined.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Image *ImageSpec `json:"image,omitempty"`
 	// Configuration options for System's sphinx
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -666,8 +671,9 @@ type SystemSphinxSpec struct {
 }
 
 // Default implements defaulting for the system sphinx component
-func (spec *SystemSphinxSpec) Default() {
+func (spec *SystemSphinxSpec) Default(systemDefaultImage *ImageSpec) {
 
+	spec.Image = InitializeImageSpec(spec.Image, defaultImageSpec(*systemDefaultImage))
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, systemDefaultSphinxResources)
 	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, systemDefaultSphinxLivenessProbe)
 	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, systemDefaultSphinxReadinessProbe)

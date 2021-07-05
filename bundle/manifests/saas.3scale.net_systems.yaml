@@ -1484,6 +1484,22 @@ spec:
                             type: integer
                         type: object
                     type: object
+                  image:
+                    description: Image specification for the Sphinx component. Defaults to system image if not defined.
+                    properties:
+                      name:
+                        description: Docker repository of the image
+                        type: string
+                      pullPolicy:
+                        description: Pull policy for the image
+                        type: string
+                      pullSecretName:
+                        description: Name of the Secret that holds quay.io credentials to access the image repository
+                        type: string
+                      tag:
+                        description: Image tag
+                        type: string
+                    type: object
                   livenessProbe:
                     description: Liveness probe for the component
                     properties:
