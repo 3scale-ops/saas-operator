@@ -96,13 +96,13 @@ func (r *BackendReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			},
 			{
 				Template: gen.Worker.Deployment(),
-				HasHPA:   !instance.Spec.Listener.HPA.IsDeactivated(),
+				HasHPA:   !instance.Spec.Worker.HPA.IsDeactivated(),
 				//Worker only depends on SystemEventsHookSecretDefinition and ErrorMonitoringSecretDefinition
 				RolloutTriggers: []basereconciler.RolloutTrigger{triggers[0], triggers[2]},
 			},
 			{
 				Template: gen.Cron.Deployment(),
-				HasHPA:   !instance.Spec.Listener.HPA.IsDeactivated(),
+				HasHPA:   false,
 				// Cron only depends on ErrorMonitoringSecretDefinition
 				RolloutTriggers: []basereconciler.RolloutTrigger{triggers[2]},
 			},
