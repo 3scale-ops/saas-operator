@@ -585,7 +585,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/3scale/saas-operator
     support: Red Hat
-  name: saas-operator.v0.10.4
+  name: saas-operator.v0.10.5-alpha.1
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -1988,6 +1988,9 @@ spec:
       - description: AWS S3 bucket name
         displayName: Bucket
         path: config.assets.bucket
+      - description: Assets host (CDN)
+        displayName: Host
+        path: config.assets.host
       - description: AWS S3 region
         displayName: Region
         path: config.assets.region
@@ -3053,7 +3056,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/3scale/saas-operator:0.10.4
+                image: quay.io/3scale/saas-operator:0.10.5-alpha.1
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -3440,4 +3443,4 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
-  version: 0.10.4
+  version: 0.10.5-alpha.1

@@ -1546,6 +1546,9 @@ spec:
       - description: AWS S3 bucket name
         displayName: Bucket
         path: config.assets.bucket
+      - description: Assets host (CDN)
+        displayName: Host
+        path: config.assets.host
       - description: AWS S3 region
         displayName: Region
         path: config.assets.region

@@ -390,6 +390,9 @@ spec:
                       bucket:
                         description: AWS S3 bucket name
                         type: string
+                      host:
+                        description: Assets host (CDN)
+                        type: string
                       region:
                         description: AWS S3 region
                         type: string
