@@ -78,6 +78,7 @@ type Options struct {
 	AssetsAWSSecretAccessKey pod.EnvVarValue `env:"AWS_SECRET_ACCESS_KEY" secret:"system-multitenant-assets-s3"`
 	AssetsAWSBucket          pod.EnvVarValue `env:"AWS_BUCKET"`
 	AssetsAWSRegion          pod.EnvVarValue `env:"AWS_REGION"`
+	AssetsHost               pod.EnvVarValue `env:"RAILS_ASSET_HOST"`
 
 	AppSecretKeyBase                 pod.EnvVarValue `env:"SECRET_KEY_BASE" secret:"system-app"`
 	AccessCode                       pod.EnvVarValue `env:"ACCESS_CODE" secret:"system-app"`
@@ -184,6 +185,12 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 		opts.BugsnagAPIKey = &pod.SecretValue{Value: spec.Config.Bugsnag.APIKey}
 	} else {
 		opts.BugsnagAPIKey = &pod.SecretValue{Value: saasv1alpha1.SecretReference{Override: pointer.StringPtr("")}}
+	}
+
+	if spec.Config.Assets.Host == nil {
+		opts.AssetsHost = &pod.ClearTextValue{Value: ""}
+	} else {
+		opts.AssetsHost = &pod.ClearTextValue{Value: *spec.Config.Assets.Host}
 	}
 
 	return opts

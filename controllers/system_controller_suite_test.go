@@ -122,6 +122,7 @@ var _ = Describe("System controller", func() {
 							RedisDSN:            "value",
 						},
 						Assets: saasv1alpha1.AssetsSpec{
+							Host:      pointer.StringPtr("test.cloudfront.net"),
 							Bucket:    "bucket",
 							Region:    "us-east-1",
 							AccessKey: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},

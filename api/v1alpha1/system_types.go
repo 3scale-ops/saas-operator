@@ -512,6 +512,10 @@ type AssetsSpec struct {
 	// AWS secret access key
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	SecretKey SecretReference `json:"secretKey"`
+	// Assets host (CDN)
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Host *string `json:"host,omitempty"`
 }
 
 // SystemRailsSpec configures rails for system components

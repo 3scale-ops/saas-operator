@@ -52,6 +52,8 @@ APISpec is the configuration for main Zync api component
 | *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
 | *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
 | *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
 |===
 
 
@@ -121,6 +123,8 @@ ApicastEnvironmentSpec is the configuration for an Apicast environment
 | *`endpoint`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-endpoint[$$Endpoint$$]__ | The external endpoint/s for the component
 | *`marin3r`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]__ | Marin3r configures the Marin3r sidecars for the component
 | *`loadBalancer`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-loadbalancerspec[$$LoadBalancerSpec$$]__ | Configures the AWS load balancer for the component
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 |===
 
 
@@ -180,6 +184,7 @@ AssetsSpec has configuration to access assets in AWS s3
 | *`region`* __string__ | AWS S3 region
 | *`accessKey`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | AWS access key
 | *`secretKey`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | AWS secret access key
+| *`host`* __string__ | Assets host (CDN)
 |===
 
 
@@ -272,6 +277,8 @@ AutoSSLSpec defines the desired state of AutoSSL
 | *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
 | *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslconfig[$$AutoSSLConfig$$]__ | Application specific configuration options for the component
 | *`endpoint`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-endpoint[$$Endpoint$$]__ | The external endpoint/s for the component
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
 |===
 
 
@@ -464,6 +471,8 @@ CORSProxySpec defines the desired state of CORSProxy
 | *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
 | *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
 | *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyconfig[$$CORSProxyConfig$$]__ | Application specific configuration options for the component
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
 |===
 
 
@@ -502,6 +511,8 @@ CronSpec is the configuration for Backend Cron
 | Field | Description
 | *`replicas`* __integer__ | Number of replicas for the component
 | *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
 |===
 
 
@@ -568,6 +579,8 @@ EchoAPISpec defines the desired state of echoapi
 | *`marin3r`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]__ | Marin3r configures the Marin3r sidecars for the component
 | *`loadBalancer`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-nlbloadbalancerspec[$$NLBLoadBalancerSpec$$]__ | Configures the AWS Network load balancer for the component
 | *`endpoint`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-endpoint[$$Endpoint$$]__ | The external endpoint/s for the component
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
 |===
 
 
@@ -679,6 +692,7 @@ ImageSpec defines the image for the component
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsphinxspec[$$SystemSphinxSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]
 ****
 
@@ -735,6 +749,8 @@ ListenerSpec is the configuration for Backend Listener
 | *`endpoint`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-endpoint[$$Endpoint$$]__ | The external endpoint/s for the component
 | *`marin3r`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]__ | Marin3r configures the Marin3r sidecars for the component
 | *`loadBalancer`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-nlbloadbalancerspec[$$NLBLoadBalancerSpec$$]__ | Configures the AWS Network load balancer for the component
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
 |===
 
 
@@ -845,6 +861,8 @@ MappingServiceSpec defines the desired state of MappingService
 | *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
 | *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
 | *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingserviceconfig[$$MappingServiceConfig$$]__ | Application specific configuration options for the component
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
 |===
 
 
@@ -991,6 +1009,8 @@ QueSpec is the configuration for Zync que
 | *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
 | *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
 | *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
 |===
 
 
@@ -1215,6 +1235,8 @@ SystemAppSpec configures the App component of System
 | *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
 | *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
 | *`marin3r`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]__ | Marin3r configures the Marin3r sidecars for the component
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
 |===
 
 
@@ -1275,7 +1297,7 @@ SystemConfig holds configuration for SystemApp component
 | *`memcachedServers`* __string__ | Memcached servers
 | *`redis`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisspec[$$RedisSpec$$]__ | Redis configuration options
 | *`smtp`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-smtpspec[$$SMTPSpec$$]__ | SMTP configuration options
-| *`apicastAccessToken`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Master access token for Apicast
+| *`mappingServiceAccessToken`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Mapping Service access token
 | *`zyncAuthToken`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Zync authentication token
 | *`backend`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systembackendspec[$$SystemBackendSpec$$]__ | Backend has configuration options for system to contact backend
 | *`assets`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-assetsspec[$$AssetsSpec$$]__ | Assets has configuration to access assets in AWS s3
@@ -1380,6 +1402,8 @@ SystemSidekiqSpec configures the App component of System
 | *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
 | *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
 | *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
 |===
 
 
@@ -1418,10 +1442,13 @@ SystemSphinxSpec configures the App component of System
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
+| *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the Sphinx component. Defaults to system image if not defined.
 | *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sphinxconfig[$$SphinxConfig$$]__ | Configuration options for System's sphinx
 | *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
 | *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
 | *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
 |===
 
 
@@ -1506,6 +1533,8 @@ WorkerSpec is the configuration for Backend Worker
 | *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
 | *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
 | *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
 |===
 
 
