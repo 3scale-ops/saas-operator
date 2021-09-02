@@ -1046,7 +1046,7 @@ RedisSpec holds redis configuration
 |===
 | Field | Description
 | *`queuesDSN`* __string__ | Data source name
-| *`messageBusDSN`* __string__ | Message bus data source name
+| *`messageBusDSN`* __string__ | Message bus data source name (will be deprecated on future releases)
 |===
 
 

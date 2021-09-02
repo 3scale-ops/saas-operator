@@ -999,13 +999,13 @@ spec:
                     description: Redis configuration options
                     properties:
                       messageBusDSN:
-                        description: Message bus data source name
+                        description: Message bus data source name (will be deprecated
+                          on future releases)
                         type: string
                       queuesDSN:
                         description: Data source name
                         type: string
                     required:
-                    - messageBusDSN
                     - queuesDSN
                     type: object
                   sandboxProxyOpensslVerifyMode:

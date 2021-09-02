@@ -101,7 +101,6 @@ var _ = Describe("System controller", func() {
 						MemcachedServers: "value",
 						Redis: saasv1alpha1.RedisSpec{
 							QueuesDSN:     "value",
-							MessageBusDSN: "value",
 						},
 						SMTP: saasv1alpha1.SMTPSpec{
 							Address:           "value",
