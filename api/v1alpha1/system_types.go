@@ -449,9 +449,10 @@ type RedisSpec struct {
 	// Data source name
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	QueuesDSN string `json:"queuesDSN"`
-	// Message bus data source name
+	// Message bus data source name (will be deprecated on future releases)
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	MessageBusDSN string `json:"messageBusDSN"`
+	// +optional
+	MessageBusDSN *string `json:"messageBusDSN,omitempty"`
 }
 
 // SMTPSpec has options to configure system's SMTP
