@@ -1840,7 +1840,7 @@ spec:
       - description: Redis configuration options
         displayName: Redis
         path: config.redis
-      - description: Message bus data source name
+      - description: Message bus data source name (will be deprecated on future releases)
         displayName: Message Bus DSN
         path: config.redis.messageBusDSN
       - description: Data source name
