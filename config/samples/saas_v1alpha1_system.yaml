@@ -139,7 +139,6 @@ spec:
     memcachedServers: ""
     redis:
       queuesDSN: redis://system-redis:6379/1
-      messageBusDSN: redis://system-redis:6379/2
     smtp:
       address: localhost
       user:

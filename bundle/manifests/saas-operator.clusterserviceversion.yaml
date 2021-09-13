@@ -426,7 +426,6 @@ metadata:
                 }
               },
               "redis": {
-                "messageBusDSN": "redis://system-redis:6379/2",
                 "queuesDSN": "redis://system-redis:6379/1"
               },
               "secretKeyBase": {
@@ -585,7 +584,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/3scale/saas-operator
     support: Red Hat
-  name: saas-operator.v0.10.5
+  name: saas-operator.v0.10.6-alpha.1
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -2282,9 +2281,6 @@ spec:
       - description: Redis configuration options
         displayName: Redis
         path: config.redis
-      - description: Message bus data source name (will be deprecated on future releases)
-        displayName: Message Bus DSN
-        path: config.redis.messageBusDSN
       - description: Data source name
         displayName: Queues DSN
         path: config.redis.queuesDSN
@@ -3056,7 +3052,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/3scale/saas-operator:0.10.5
+                image: quay.io/3scale/saas-operator:0.10.6-alpha.1
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -3443,4 +3439,4 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
-  version: 0.10.5
+  version: 0.10.6-alpha.1
