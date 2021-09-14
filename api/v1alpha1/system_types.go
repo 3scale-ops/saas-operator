@@ -407,13 +407,6 @@ type SegmentSpec struct {
 	WriteKey SecretReference `json:"writeKey"`
 }
 
-// NewRelicSpec has configuration for NewRelic integration
-type NewRelicSpec struct {
-	// License key
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	LicenseKey SecretReference `json:"licenseKey"`
-}
-
 // GithubSpec has configuration for Github integration
 type GithubSpec struct {
 	// Client ID

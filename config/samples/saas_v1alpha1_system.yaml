@@ -21,7 +21,6 @@ spec:
         - features.yml
         - internal_domains.yml
         - message_bus.yml
-        - newrelic.yml
         - oauth2.yml
         - paperclip.yml
         - plan_rules.yml
