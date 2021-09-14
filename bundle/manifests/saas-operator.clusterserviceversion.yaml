@@ -284,6 +284,7 @@ metadata:
                   }
                 },
                 "bucket": "my-bucket",
+                "host": "test.cloudfront.net",
                 "region": "us-east-1",
                 "secretKey": {
                   "fromVault": {

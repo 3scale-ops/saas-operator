@@ -163,6 +163,7 @@ spec:
           path: secret/data/path/backend-internal-api
           key: password
     assets:
+      host: test.cloudfront.net
       bucket: my-bucket
       region: us-east-1
       accessKey:
