@@ -508,9 +508,6 @@ spec:
                           value.
                         type: string
                     type: object
-                  ampRelease:
-                    description: AMP release number
-                    type: string
                   assets:
                     description: Assets has configuration to access assets in AWS
                       s3

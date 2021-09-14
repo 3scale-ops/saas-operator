@@ -30,7 +30,6 @@ import (
 
 var (
 	// Common
-	systemDefaultAMPRelease                    string           = "2.7.1"
 	systemDefaultSandboxProxyOpensslVerifyMode string           = "VERIFY_NONE"
 	systemDefaultForceSSL                      bool             = true
 	systemDefaultSSLCertsDir                   string           = "/etc/pki/tls/certs"
@@ -221,10 +220,6 @@ func (s *System) Default() {
 
 // SystemConfig holds configuration for SystemApp component
 type SystemConfig struct {
-	// AMP release number
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	AMPRelease *string `json:"ampRelease,omitempty"`
 	// Rails configuration options for system components
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -315,8 +310,6 @@ type SystemConfig struct {
 
 // Default applies default values to a SystemConfig struct
 func (sc *SystemConfig) Default() {
-	sc.AMPRelease = stringOrDefault(sc.AMPRelease, pointer.StringPtr(systemDefaultAMPRelease))
-
 	if sc.Rails == nil {
 		sc.Rails = &SystemRailsSpec{}
 	}

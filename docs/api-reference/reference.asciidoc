@@ -1270,7 +1270,6 @@ SystemConfig holds configuration for SystemApp component
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`ampRelease`* __string__ | AMP release number
 | *`rails`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemrailsspec[$$SystemRailsSpec$$]__ | Rails configuration options for system components
 | *`sandboxProxyOpensslVerifyMode`* __string__ | OpenSSL verification mode for sandbox proxy
 | *`forceSSL`* __boolean__ | Enable (true) or disable (false) enforcing SSL

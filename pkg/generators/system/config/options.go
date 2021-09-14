@@ -10,7 +10,6 @@ import (
 
 // Options holds configuration for system app and sidekiq pods
 type Options struct {
-	AMPRelease                    pod.EnvVarValue `env:"AMP_RELEASE"`
 	ForceSSL                      pod.EnvVarValue `env:"FORCE_SSL"`
 	ProviderPlan                  pod.EnvVarValue `env:"PROVIDER_PLAN"`
 	SSLCertDir                    pod.EnvVarValue `env:"SSL_CERT_DIR"`
@@ -92,7 +91,6 @@ type Options struct {
 // NewOptions returns an Options struct for the given saasv1alpha1.SystemSpec
 func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 	opts := Options{
-		AMPRelease:                    &pod.ClearTextValue{Value: *spec.Config.AMPRelease},
 		ForceSSL:                      &pod.ClearTextValue{Value: fmt.Sprintf("%t", *spec.Config.ForceSSL)},
 		ProviderPlan:                  &pod.ClearTextValue{Value: *spec.Config.ThreescaleProviderPlan},
 		SSLCertDir:                    &pod.ClearTextValue{Value: *spec.Config.SSLCertsDir},

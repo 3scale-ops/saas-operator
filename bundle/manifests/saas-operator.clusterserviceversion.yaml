@@ -1950,9 +1950,6 @@ spec:
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.accessCode.override
-      - description: AMP release number
-        displayName: AMPRelease
-        path: config.ampRelease
       - description: AWS access key
         displayName: Access Key
         path: config.assets.accessKey
