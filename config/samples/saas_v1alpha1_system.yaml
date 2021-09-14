@@ -25,7 +25,6 @@ spec:
         - oauth2.yml
         - paperclip.yml
         - plan_rules.yml
-        - prometheus.yml
         - redhat_customer_portal.yml
         - redis.yml
         - rolling_updates.yml
@@ -113,15 +112,6 @@ spec:
         fromVault:
           path: secret/data/path/system-app
           key: GITHUB_CLIENT_SECRET
-    metrics:
-      user:
-        fromVault:
-          path: secret/data/path/system-app
-          key: PROMETHEUS_USER
-      password:
-        fromVault:
-          path: secret/data/path/system-app
-          key: PROMETHEUS_PASSWORD
     redhatCustomerPortal:
       clientID:
         fromVault:

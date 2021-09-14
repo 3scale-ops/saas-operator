@@ -277,9 +277,10 @@ type SystemConfig struct {
 	// Options for Github integration
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Github GithubSpec `json:"github"`
-	// Options for configuring metrics publication
+	// Options for configuring metrics publication (will be deprecated on future releases)
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	Metrics MetricsSpec `json:"metrics"`
+	// +optional
+	Metrics MetricsSpec `json:"metrics,omitempty"`
 	// Options for configuring RH Customer Portal integration
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	RedHatCustomerPortal RedHatCustomerPortalSpec `json:"redhatCustomerPortal"`

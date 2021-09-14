@@ -1289,7 +1289,7 @@ SystemConfig holds configuration for SystemApp component
 | *`accessCode`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | AccessCode to protect admin urls
 | *`segment`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-segmentspec[$$SegmentSpec$$]__ | Options for Segment integration
 | *`github`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-githubspec[$$GithubSpec$$]__ | Options for Github integration
-| *`metrics`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-metricsspec[$$MetricsSpec$$]__ | Options for configuring metrics publication
+| *`metrics`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-metricsspec[$$MetricsSpec$$]__ | Options for configuring metrics publication (will be deprecated on future releases)
 | *`redhatCustomerPortal`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redhatcustomerportalspec[$$RedHatCustomerPortalSpec$$]__ | Options for configuring RH Customer Portal integration
 | *`bugsnag`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-bugsnagspec[$$BugsnagSpec$$]__ | Options for configuring Bugsnag integration
 | *`databaseSecret`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Database secret

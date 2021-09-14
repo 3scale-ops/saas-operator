@@ -86,10 +86,6 @@ var _ = Describe("System controller", func() {
 							ClientID:     saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 							ClientSecret: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 						},
-						Metrics: saasv1alpha1.MetricsSpec{
-							User:     saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-							Password: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-						},
 						RedHatCustomerPortal: saasv1alpha1.RedHatCustomerPortalSpec{
 							ClientID:     saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 							ClientSecret: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},

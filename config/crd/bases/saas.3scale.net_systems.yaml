@@ -825,7 +825,8 @@ spec:
                     description: Memcached servers
                     type: string
                   metrics:
-                    description: Options for configuring metrics publication
+                    description: Options for configuring metrics publication (will
+                      be deprecated on future releases)
                     properties:
                       password:
                         description: Password
@@ -1352,7 +1353,6 @@ spec:
                 - github
                 - mappingServiceAccessToken
                 - memcachedServers
-                - metrics
                 - recaptcha
                 - redhatCustomerPortal
                 - redis

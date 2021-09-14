@@ -335,7 +335,6 @@ metadata:
                   "oauth2.yml",
                   "paperclip.yml",
                   "plan_rules.yml",
-                  "prometheus.yml",
                   "redhat_customer_portal.yml",
                   "redis.yml",
                   "rolling_updates.yml",
@@ -383,20 +382,6 @@ metadata:
                 }
               },
               "memcachedServers": "",
-              "metrics": {
-                "password": {
-                  "fromVault": {
-                    "key": "PROMETHEUS_PASSWORD",
-                    "path": "secret/data/path/system-app"
-                  }
-                },
-                "user": {
-                  "fromVault": {
-                    "key": "PROMETHEUS_USER",
-                    "path": "secret/data/path/system-app"
-                  }
-                }
-              },
               "recaptcha": {
                 "privateKey": {
                   "fromVault": {
@@ -2170,7 +2155,7 @@ spec:
       - description: Memcached servers
         displayName: Memcached Servers
         path: config.memcachedServers
-      - description: Options for configuring metrics publication
+      - description: Options for configuring metrics publication (will be deprecated on future releases)
         displayName: Metrics
         path: config.metrics
       - description: Password

@@ -83,8 +83,6 @@ type Options struct {
 	SegmentWriteKey                  pod.EnvVarValue `env:"SEGMENT_WRITE_KEY" secret:"system-app"`
 	GithubClientID                   pod.EnvVarValue `env:"GITHUB_CLIENT_ID" secret:"system-app"`
 	GithubClientSecret               pod.EnvVarValue `env:"GITHUB_CLIENT_SECRET" secret:"system-app"`
-	PrometheusUser                   pod.EnvVarValue `env:"PROMETHEUS_USER" secret:"system-app"`
-	PrometheusPassword               pod.EnvVarValue `env:"PROMETHEUS_PASSWORD" secret:"system-app"`
 	RedHatCustomerPortalClientID     pod.EnvVarValue `env:"RH_CUSTOMER_PORTAL_CLIENT_ID" secret:"system-app"`
 	RedHatCustomerPortalClientSecret pod.EnvVarValue `env:"RH_CUSTOMER_PORTAL_CLIENT_SECRET" secret:"system-app"`
 	BugsnagAPIKey                    pod.EnvVarValue `env:"BUGSNAG_API_KEY" secret:"system-app"`
@@ -166,8 +164,6 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 		SegmentWriteKey:                  &pod.SecretValue{Value: spec.Config.Segment.WriteKey},
 		GithubClientID:                   &pod.SecretValue{Value: spec.Config.Github.ClientID},
 		GithubClientSecret:               &pod.SecretValue{Value: spec.Config.Github.ClientSecret},
-		PrometheusUser:                   &pod.SecretValue{Value: spec.Config.Metrics.User},
-		PrometheusPassword:               &pod.SecretValue{Value: spec.Config.Metrics.Password},
 		RedHatCustomerPortalClientID:     &pod.SecretValue{Value: spec.Config.RedHatCustomerPortal.ClientID},
 		RedHatCustomerPortalClientSecret: &pod.SecretValue{Value: spec.Config.RedHatCustomerPortal.ClientSecret},
 		DatabaseSecret:                   &pod.SecretValue{Value: spec.Config.DatabaseSecret},
