@@ -58,17 +58,6 @@ var _ = Describe("System controller", func() {
 							VaultPath: "some-path",
 							Files:     []string{"some-file"},
 						},
-						Seed: saasv1alpha1.SystemSeedSpec{
-							MasterAccessToken: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-							MasterDomain:      "value",
-							MasterUser:        saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-							MasterPassword:    saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-							AdminAccessToken:  saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-							AdminUser:         saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-							AdminPassword:     saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-							AdminEmail:        "value",
-							TenantName:        "value",
-						},
 						DatabaseDSN:        saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 						EventsSharedSecret: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 						Recaptcha: saasv1alpha1.SystemRecaptchaSpec{
@@ -246,7 +235,6 @@ var _ = Describe("System controller", func() {
 			for _, name := range []string{
 				"system-config",
 				"system-database",
-				"system-seed",
 				"system-recaptcha",
 				"system-events-hook",
 				"system-smtp",

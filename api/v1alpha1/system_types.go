@@ -250,7 +250,8 @@ type SystemConfig struct {
 	ConfigFiles *ConfigFilesSpec `json:"configFiles,omitempty"`
 	// System seed
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	Seed SystemSeedSpec `json:"seed"`
+	// +optional
+	Seed SystemSeedSpec `json:"seed,omitempty"`
 	// DSN of system's main database
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	DatabaseDSN SecretReference `json:"databaseDSN"`

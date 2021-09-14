@@ -47,11 +47,6 @@ func (gen *Generator) DatabaseSecretDefinition() basereconciler.GeneratorFunctio
 	return pod.GenerateSecretDefinitionFn("system-database", gen.GetNamespace(), gen.GetLabels(), gen.Options)
 }
 
-// SeedSecretDefinition returns a basereconciler.GeneratorFunction
-func (gen *Generator) SeedSecretDefinition() basereconciler.GeneratorFunction {
-	return pod.GenerateSecretDefinitionFn("system-seed", gen.GetNamespace(), gen.GetLabels(), gen.Options)
-}
-
 // RecaptchaSecretDefinition returns a basereconciler.GeneratorFunction
 func (gen *Generator) RecaptchaSecretDefinition() basereconciler.GeneratorFunction {
 	return pod.GenerateSecretDefinitionFn("system-recaptcha", gen.GetNamespace(), gen.GetLabels(), gen.Options)

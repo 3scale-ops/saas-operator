@@ -35,34 +35,6 @@ spec:
         - smtp.yml
         - web_hooks.yml
         - zync.yml
-    seed:
-      masterAccessToken:
-        fromVault:
-          path: secret/data/path/system-seed
-          key: MASTER_ACCESS_TOKEN
-      masterDomain: multitenant-admin
-      masterUser:
-        fromVault:
-          path: secret/data/path/system-seed
-          key: MASTER_USER
-      masterPassword:
-        fromVault:
-          path: secret/data/path/system-seed
-          key: MASTER_PASSWORD
-      adminAccessToken:
-        fromVault:
-          path: secret/data/path/system-seed
-          key: ADMIN_ACCESS_TOKEN
-      adminUser:
-        fromVault:
-          path: secret/data/path/system-seed
-          key: ADMIN_USER
-      adminPassword:
-        fromVault:
-          path: secret/data/path/system-seed
-          key: ADMIN_PASSWORD
-      adminEmail: admin@example.com
-      tenantName: example
     databaseDSN:
       fromVault:
         path: secret/data/path/system-database

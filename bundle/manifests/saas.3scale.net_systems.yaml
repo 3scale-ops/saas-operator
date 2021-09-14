@@ -1145,7 +1145,6 @@ spec:
                 - redhatCustomerPortal
                 - redis
                 - secretKeyBase
-                - seed
                 - segment
                 - smtp
                 - zyncAuthToken

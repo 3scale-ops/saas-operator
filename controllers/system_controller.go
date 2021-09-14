@@ -76,7 +76,6 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	// Calculate rollout triggers (app & sidekiq)
 	triggers, err := r.TriggersFromSecretDefs(ctx,
 		gen.ConfigFilesSecretDefinition(),
-		gen.SeedSecretDefinition(),
 		gen.DatabaseSecretDefinition(),
 		gen.RecaptchaSecretDefinition(),
 		gen.EventsHookSecretDefinition(),
@@ -119,7 +118,6 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		}},
 		SecretDefinitions: []basereconciler.SecretDefinition{
 			{Template: gen.ConfigFilesSecretDefinition(), Enabled: instance.Spec.Config.ConfigFiles.Enabled()},
-			{Template: gen.SeedSecretDefinition(), Enabled: true},
 			{Template: gen.DatabaseSecretDefinition(), Enabled: true},
 			{Template: gen.RecaptchaSecretDefinition(), Enabled: true},
 			{Template: gen.EventsHookSecretDefinition(), Enabled: true},

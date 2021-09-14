@@ -419,47 +419,6 @@ metadata:
                   "path": "secret/data/path/system-app"
                 }
               },
-              "seed": {
-                "adminAccessToken": {
-                  "fromVault": {
-                    "key": "ADMIN_ACCESS_TOKEN",
-                    "path": "secret/data/path/system-seed"
-                  }
-                },
-                "adminEmail": "admin@example.com",
-                "adminPassword": {
-                  "fromVault": {
-                    "key": "ADMIN_PASSWORD",
-                    "path": "secret/data/path/system-seed"
-                  }
-                },
-                "adminUser": {
-                  "fromVault": {
-                    "key": "ADMIN_USER",
-                    "path": "secret/data/path/system-seed"
-                  }
-                },
-                "masterAccessToken": {
-                  "fromVault": {
-                    "key": "MASTER_ACCESS_TOKEN",
-                    "path": "secret/data/path/system-seed"
-                  }
-                },
-                "masterDomain": "multitenant-admin",
-                "masterPassword": {
-                  "fromVault": {
-                    "key": "MASTER_PASSWORD",
-                    "path": "secret/data/path/system-seed"
-                  }
-                },
-                "masterUser": {
-                  "fromVault": {
-                    "key": "MASTER_USER",
-                    "path": "secret/data/path/system-seed"
-                  }
-                },
-                "tenantName": "example"
-              },
               "segment": {
                 "deletionToken": {
                   "fromVault": {

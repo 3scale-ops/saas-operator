@@ -23,16 +23,6 @@ type Options struct {
 	SphinxAddress pod.EnvVarValue `env:"THINKING_SPHINX_ADDRESS"`
 	SphinxPort    pod.EnvVarValue `env:"THINKING_SPHINX_PORT"`
 
-	SeedMasterAccessToken pod.EnvVarValue `env:"MASTER_ACCESS_TOKEN" secret:"system-seed"`
-	SeedMasterDomain      pod.EnvVarValue `env:"MASTER_DOMAIN"`
-	SeedMasterUser        pod.EnvVarValue `env:"MASTER_USER" secret:"system-seed"`
-	SeedMasterPassword    pod.EnvVarValue `env:"MASTER_PASSWORD" secret:"system-seed"`
-	SeedAdminAccessToken  pod.EnvVarValue `env:"ADMIN_ACCESS_TOKEN" secret:"system-seed"`
-	SeedAdminUser         pod.EnvVarValue `env:"USER_LOGIN" secret:"system-seed"`
-	SeedAdminPassword     pod.EnvVarValue `env:"USER_PASSWORD" secret:"system-seed"`
-	SeedAdminEmail        pod.EnvVarValue `env:"USER_EMAIL"`
-	SeedTenantName        pod.EnvVarValue `env:"TENANT_NAME"`
-
 	DatabaseURL pod.EnvVarValue `env:"DATABASE_URL" secret:"system-database"`
 
 	MemcachedServers pod.EnvVarValue `env:"MEMCACHE_SERVERS"`
@@ -103,16 +93,6 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 
 		SphinxAddress: &pod.ClearTextValue{Value: SystemSphinxServiceName},
 		SphinxPort:    &pod.ClearTextValue{Value: fmt.Sprintf("%d", *spec.Sphinx.Config.Thinking.Port)},
-
-		SeedMasterAccessToken: &pod.SecretValue{Value: spec.Config.Seed.MasterAccessToken},
-		SeedMasterDomain:      &pod.ClearTextValue{Value: spec.Config.Seed.MasterDomain},
-		SeedMasterUser:        &pod.SecretValue{Value: spec.Config.Seed.MasterUser},
-		SeedMasterPassword:    &pod.SecretValue{Value: spec.Config.Seed.MasterPassword},
-		SeedAdminAccessToken:  &pod.SecretValue{Value: spec.Config.Seed.AdminAccessToken},
-		SeedAdminUser:         &pod.SecretValue{Value: spec.Config.Seed.AdminUser},
-		SeedAdminPassword:     &pod.SecretValue{Value: spec.Config.Seed.AdminPassword},
-		SeedAdminEmail:        &pod.ClearTextValue{Value: spec.Config.Seed.AdminEmail},
-		SeedTenantName:        &pod.ClearTextValue{Value: spec.Config.Seed.TenantName},
 
 		DatabaseURL: &pod.SecretValue{Value: spec.Config.DatabaseDSN},
 
