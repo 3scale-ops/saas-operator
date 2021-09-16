@@ -30,7 +30,6 @@ import (
 
 var (
 	// Common
-	systemDefaultAMPRelease                    string           = "2.7.1"
 	systemDefaultSandboxProxyOpensslVerifyMode string           = "VERIFY_NONE"
 	systemDefaultForceSSL                      bool             = true
 	systemDefaultSSLCertsDir                   string           = "/etc/pki/tls/certs"
@@ -221,10 +220,6 @@ func (s *System) Default() {
 
 // SystemConfig holds configuration for SystemApp component
 type SystemConfig struct {
-	// AMP release number
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	AMPRelease *string `json:"ampRelease,omitempty"`
 	// Rails configuration options for system components
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -255,7 +250,8 @@ type SystemConfig struct {
 	ConfigFiles *ConfigFilesSpec `json:"configFiles,omitempty"`
 	// System seed
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	Seed SystemSeedSpec `json:"seed"`
+	// +optional
+	Seed SystemSeedSpec `json:"seed,omitempty"`
 	// DSN of system's main database
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	DatabaseDSN SecretReference `json:"databaseDSN"`
@@ -277,9 +273,10 @@ type SystemConfig struct {
 	// Options for Github integration
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Github GithubSpec `json:"github"`
-	// Options for configuring metrics publication
+	// Options for configuring metrics publication (will be deprecated on future releases)
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	Metrics MetricsSpec `json:"metrics"`
+	// +optional
+	Metrics MetricsSpec `json:"metrics,omitempty"`
 	// Options for configuring RH Customer Portal integration
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	RedHatCustomerPortal RedHatCustomerPortalSpec `json:"redhatCustomerPortal"`
@@ -314,8 +311,6 @@ type SystemConfig struct {
 
 // Default applies default values to a SystemConfig struct
 func (sc *SystemConfig) Default() {
-	sc.AMPRelease = stringOrDefault(sc.AMPRelease, pointer.StringPtr(systemDefaultAMPRelease))
-
 	if sc.Rails == nil {
 		sc.Rails = &SystemRailsSpec{}
 	}
@@ -406,13 +401,6 @@ type SegmentSpec struct {
 	WriteKey SecretReference `json:"writeKey"`
 }
 
-// NewRelicSpec has configuration for NewRelic integration
-type NewRelicSpec struct {
-	// License key
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	LicenseKey SecretReference `json:"licenseKey"`
-}
-
 // GithubSpec has configuration for Github integration
 type GithubSpec struct {
 	// Client ID
@@ -449,10 +437,6 @@ type RedisSpec struct {
 	// Data source name
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	QueuesDSN string `json:"queuesDSN"`
-	// Message bus data source name (will be deprecated on future releases)
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	MessageBusDSN *string `json:"messageBusDSN,omitempty"`
 }
 
 // SMTPSpec has options to configure system's SMTP

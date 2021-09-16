@@ -21,11 +21,9 @@ spec:
         - features.yml
         - internal_domains.yml
         - message_bus.yml
-        - newrelic.yml
         - oauth2.yml
         - paperclip.yml
         - plan_rules.yml
-        - prometheus.yml
         - redhat_customer_portal.yml
         - redis.yml
         - rolling_updates.yml
@@ -37,34 +35,6 @@ spec:
         - smtp.yml
         - web_hooks.yml
         - zync.yml
-    seed:
-      masterAccessToken:
-        fromVault:
-          path: secret/data/path/system-seed
-          key: MASTER_ACCESS_TOKEN
-      masterDomain: multitenant-admin
-      masterUser:
-        fromVault:
-          path: secret/data/path/system-seed
-          key: MASTER_USER
-      masterPassword:
-        fromVault:
-          path: secret/data/path/system-seed
-          key: MASTER_PASSWORD
-      adminAccessToken:
-        fromVault:
-          path: secret/data/path/system-seed
-          key: ADMIN_ACCESS_TOKEN
-      adminUser:
-        fromVault:
-          path: secret/data/path/system-seed
-          key: ADMIN_USER
-      adminPassword:
-        fromVault:
-          path: secret/data/path/system-seed
-          key: ADMIN_PASSWORD
-      adminEmail: admin@example.com
-      tenantName: example
     databaseDSN:
       fromVault:
         path: secret/data/path/system-database
@@ -113,15 +83,6 @@ spec:
         fromVault:
           path: secret/data/path/system-app
           key: GITHUB_CLIENT_SECRET
-    metrics:
-      user:
-        fromVault:
-          path: secret/data/path/system-app
-          key: PROMETHEUS_USER
-      password:
-        fromVault:
-          path: secret/data/path/system-app
-          key: PROMETHEUS_PASSWORD
     redhatCustomerPortal:
       clientID:
         fromVault:
@@ -139,7 +100,6 @@ spec:
     memcachedServers: ""
     redis:
       queuesDSN: redis://system-redis:6379/1
-      messageBusDSN: redis://system-redis:6379/2
     smtp:
       address: localhost
       user:
@@ -175,6 +135,7 @@ spec:
           path: secret/data/path/backend-internal-api
           key: password
     assets:
+      host: test.cloudfront.net
       bucket: my-bucket
       region: us-east-1
       accessKey:

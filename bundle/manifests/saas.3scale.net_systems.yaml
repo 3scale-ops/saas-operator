@@ -361,9 +361,6 @@ spec:
                         description: Override allows to directly specify a string value.
                         type: string
                     type: object
-                  ampRelease:
-                    description: AMP release number
-                    type: string
                   assets:
                     description: Assets has configuration to access assets in AWS s3
                     properties:
@@ -654,7 +651,7 @@ spec:
                     description: Memcached servers
                     type: string
                   metrics:
-                    description: Options for configuring metrics publication
+                    description: Options for configuring metrics publication (will be deprecated on future releases)
                     properties:
                       password:
                         description: Password
@@ -814,9 +811,6 @@ spec:
                   redis:
                     description: Redis configuration options
                     properties:
-                      messageBusDSN:
-                        description: Message bus data source name (will be deprecated on future releases)
-                        type: string
                       queuesDSN:
                         description: Data source name
                         type: string
@@ -1147,12 +1141,10 @@ spec:
                 - github
                 - mappingServiceAccessToken
                 - memcachedServers
-                - metrics
                 - recaptcha
                 - redhatCustomerPortal
                 - redis
                 - secretKeyBase
-                - seed
                 - segment
                 - smtp
                 - zyncAuthToken

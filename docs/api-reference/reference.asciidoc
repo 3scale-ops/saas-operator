@@ -928,8 +928,6 @@ NLBLoadBalancerSpec configures the AWS NLB load balancer for the component
 |===
 
 
-
-
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec"]
 ==== PodDisruptionBudgetSpec 
 
@@ -1046,7 +1044,6 @@ RedisSpec holds redis configuration
 |===
 | Field | Description
 | *`queuesDSN`* __string__ | Data source name
-| *`messageBusDSN`* __string__ | Message bus data source name (will be deprecated on future releases)
 |===
 
 
@@ -1118,7 +1115,6 @@ SecretReference is a reference to a secret stored in some secrets engine
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-githubspec[$$GithubSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingserviceconfig[$$MappingServiceConfig$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-metricsspec[$$MetricsSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-newrelicspec[$$NewRelicSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redhatcustomerportalspec[$$RedHatCustomerPortalSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-smtpspec[$$SMTPSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-segmentspec[$$SegmentSpec$$]
@@ -1274,7 +1270,6 @@ SystemConfig holds configuration for SystemApp component
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`ampRelease`* __string__ | AMP release number
 | *`rails`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemrailsspec[$$SystemRailsSpec$$]__ | Rails configuration options for system components
 | *`sandboxProxyOpensslVerifyMode`* __string__ | OpenSSL verification mode for sandbox proxy
 | *`forceSSL`* __boolean__ | Enable (true) or disable (false) enforcing SSL
@@ -1290,7 +1285,7 @@ SystemConfig holds configuration for SystemApp component
 | *`accessCode`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | AccessCode to protect admin urls
 | *`segment`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-segmentspec[$$SegmentSpec$$]__ | Options for Segment integration
 | *`github`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-githubspec[$$GithubSpec$$]__ | Options for Github integration
-| *`metrics`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-metricsspec[$$MetricsSpec$$]__ | Options for configuring metrics publication
+| *`metrics`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-metricsspec[$$MetricsSpec$$]__ | Options for configuring metrics publication (will be deprecated on future releases)
 | *`redhatCustomerPortal`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redhatcustomerportalspec[$$RedHatCustomerPortalSpec$$]__ | Options for configuring RH Customer Portal integration
 | *`bugsnag`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-bugsnagspec[$$BugsnagSpec$$]__ | Options for configuring Bugsnag integration
 | *`databaseSecret`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Database secret

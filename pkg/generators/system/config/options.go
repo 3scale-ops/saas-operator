@@ -10,7 +10,6 @@ import (
 
 // Options holds configuration for system app and sidekiq pods
 type Options struct {
-	AMPRelease                    pod.EnvVarValue `env:"AMP_RELEASE"`
 	ForceSSL                      pod.EnvVarValue `env:"FORCE_SSL"`
 	ProviderPlan                  pod.EnvVarValue `env:"PROVIDER_PLAN"`
 	SSLCertDir                    pod.EnvVarValue `env:"SSL_CERT_DIR"`
@@ -23,16 +22,6 @@ type Options struct {
 
 	SphinxAddress pod.EnvVarValue `env:"THINKING_SPHINX_ADDRESS"`
 	SphinxPort    pod.EnvVarValue `env:"THINKING_SPHINX_PORT"`
-
-	SeedMasterAccessToken pod.EnvVarValue `env:"MASTER_ACCESS_TOKEN" secret:"system-seed"`
-	SeedMasterDomain      pod.EnvVarValue `env:"MASTER_DOMAIN"`
-	SeedMasterUser        pod.EnvVarValue `env:"MASTER_USER" secret:"system-seed"`
-	SeedMasterPassword    pod.EnvVarValue `env:"MASTER_PASSWORD" secret:"system-seed"`
-	SeedAdminAccessToken  pod.EnvVarValue `env:"ADMIN_ACCESS_TOKEN" secret:"system-seed"`
-	SeedAdminUser         pod.EnvVarValue `env:"USER_LOGIN" secret:"system-seed"`
-	SeedAdminPassword     pod.EnvVarValue `env:"USER_PASSWORD" secret:"system-seed"`
-	SeedAdminEmail        pod.EnvVarValue `env:"USER_EMAIL"`
-	SeedTenantName        pod.EnvVarValue `env:"TENANT_NAME"`
 
 	DatabaseURL pod.EnvVarValue `env:"DATABASE_URL" secret:"system-database"`
 
@@ -83,8 +72,6 @@ type Options struct {
 	SegmentWriteKey                  pod.EnvVarValue `env:"SEGMENT_WRITE_KEY" secret:"system-app"`
 	GithubClientID                   pod.EnvVarValue `env:"GITHUB_CLIENT_ID" secret:"system-app"`
 	GithubClientSecret               pod.EnvVarValue `env:"GITHUB_CLIENT_SECRET" secret:"system-app"`
-	PrometheusUser                   pod.EnvVarValue `env:"PROMETHEUS_USER" secret:"system-app"`
-	PrometheusPassword               pod.EnvVarValue `env:"PROMETHEUS_PASSWORD" secret:"system-app"`
 	RedHatCustomerPortalClientID     pod.EnvVarValue `env:"RH_CUSTOMER_PORTAL_CLIENT_ID" secret:"system-app"`
 	RedHatCustomerPortalClientSecret pod.EnvVarValue `env:"RH_CUSTOMER_PORTAL_CLIENT_SECRET" secret:"system-app"`
 	BugsnagAPIKey                    pod.EnvVarValue `env:"BUGSNAG_API_KEY" secret:"system-app"`
@@ -94,7 +81,6 @@ type Options struct {
 // NewOptions returns an Options struct for the given saasv1alpha1.SystemSpec
 func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 	opts := Options{
-		AMPRelease:                    &pod.ClearTextValue{Value: *spec.Config.AMPRelease},
 		ForceSSL:                      &pod.ClearTextValue{Value: fmt.Sprintf("%t", *spec.Config.ForceSSL)},
 		ProviderPlan:                  &pod.ClearTextValue{Value: *spec.Config.ThreescaleProviderPlan},
 		SSLCertDir:                    &pod.ClearTextValue{Value: *spec.Config.SSLCertsDir},
@@ -107,16 +93,6 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 
 		SphinxAddress: &pod.ClearTextValue{Value: SystemSphinxServiceName},
 		SphinxPort:    &pod.ClearTextValue{Value: fmt.Sprintf("%d", *spec.Sphinx.Config.Thinking.Port)},
-
-		SeedMasterAccessToken: &pod.SecretValue{Value: spec.Config.Seed.MasterAccessToken},
-		SeedMasterDomain:      &pod.ClearTextValue{Value: spec.Config.Seed.MasterDomain},
-		SeedMasterUser:        &pod.SecretValue{Value: spec.Config.Seed.MasterUser},
-		SeedMasterPassword:    &pod.SecretValue{Value: spec.Config.Seed.MasterPassword},
-		SeedAdminAccessToken:  &pod.SecretValue{Value: spec.Config.Seed.AdminAccessToken},
-		SeedAdminUser:         &pod.SecretValue{Value: spec.Config.Seed.AdminUser},
-		SeedAdminPassword:     &pod.SecretValue{Value: spec.Config.Seed.AdminPassword},
-		SeedAdminEmail:        &pod.ClearTextValue{Value: spec.Config.Seed.AdminEmail},
-		SeedTenantName:        &pod.ClearTextValue{Value: spec.Config.Seed.TenantName},
 
 		DatabaseURL: &pod.SecretValue{Value: spec.Config.DatabaseDSN},
 
@@ -166,8 +142,6 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 		SegmentWriteKey:                  &pod.SecretValue{Value: spec.Config.Segment.WriteKey},
 		GithubClientID:                   &pod.SecretValue{Value: spec.Config.Github.ClientID},
 		GithubClientSecret:               &pod.SecretValue{Value: spec.Config.Github.ClientSecret},
-		PrometheusUser:                   &pod.SecretValue{Value: spec.Config.Metrics.User},
-		PrometheusPassword:               &pod.SecretValue{Value: spec.Config.Metrics.Password},
 		RedHatCustomerPortalClientID:     &pod.SecretValue{Value: spec.Config.RedHatCustomerPortal.ClientID},
 		RedHatCustomerPortalClientSecret: &pod.SecretValue{Value: spec.Config.RedHatCustomerPortal.ClientSecret},
 		DatabaseSecret:                   &pod.SecretValue{Value: spec.Config.DatabaseSecret},

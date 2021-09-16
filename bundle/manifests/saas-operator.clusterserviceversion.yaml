@@ -284,6 +284,7 @@ metadata:
                   }
                 },
                 "bucket": "my-bucket",
+                "host": "test.cloudfront.net",
                 "region": "us-east-1",
                 "secretKey": {
                   "fromVault": {
@@ -331,11 +332,9 @@ metadata:
                   "features.yml",
                   "internal_domains.yml",
                   "message_bus.yml",
-                  "newrelic.yml",
                   "oauth2.yml",
                   "paperclip.yml",
                   "plan_rules.yml",
-                  "prometheus.yml",
                   "redhat_customer_portal.yml",
                   "redis.yml",
                   "rolling_updates.yml",
@@ -383,20 +382,6 @@ metadata:
                 }
               },
               "memcachedServers": "",
-              "metrics": {
-                "password": {
-                  "fromVault": {
-                    "key": "PROMETHEUS_PASSWORD",
-                    "path": "secret/data/path/system-app"
-                  }
-                },
-                "user": {
-                  "fromVault": {
-                    "key": "PROMETHEUS_USER",
-                    "path": "secret/data/path/system-app"
-                  }
-                }
-              },
               "recaptcha": {
                 "privateKey": {
                   "fromVault": {
@@ -426,7 +411,6 @@ metadata:
                 }
               },
               "redis": {
-                "messageBusDSN": "redis://system-redis:6379/2",
                 "queuesDSN": "redis://system-redis:6379/1"
               },
               "secretKeyBase": {
@@ -434,47 +418,6 @@ metadata:
                   "key": "SECRET_KEY_BASE",
                   "path": "secret/data/path/system-app"
                 }
-              },
-              "seed": {
-                "adminAccessToken": {
-                  "fromVault": {
-                    "key": "ADMIN_ACCESS_TOKEN",
-                    "path": "secret/data/path/system-seed"
-                  }
-                },
-                "adminEmail": "admin@example.com",
-                "adminPassword": {
-                  "fromVault": {
-                    "key": "ADMIN_PASSWORD",
-                    "path": "secret/data/path/system-seed"
-                  }
-                },
-                "adminUser": {
-                  "fromVault": {
-                    "key": "ADMIN_USER",
-                    "path": "secret/data/path/system-seed"
-                  }
-                },
-                "masterAccessToken": {
-                  "fromVault": {
-                    "key": "MASTER_ACCESS_TOKEN",
-                    "path": "secret/data/path/system-seed"
-                  }
-                },
-                "masterDomain": "multitenant-admin",
-                "masterPassword": {
-                  "fromVault": {
-                    "key": "MASTER_PASSWORD",
-                    "path": "secret/data/path/system-seed"
-                  }
-                },
-                "masterUser": {
-                  "fromVault": {
-                    "key": "MASTER_USER",
-                    "path": "secret/data/path/system-seed"
-                  }
-                },
-                "tenantName": "example"
               },
               "segment": {
                 "deletionToken": {
@@ -585,7 +528,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/3scale/saas-operator
     support: Red Hat
-  name: saas-operator.v0.10.5
+  name: saas-operator.v0.10.6
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -1967,9 +1910,6 @@ spec:
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.accessCode.override
-      - description: AMP release number
-        displayName: AMPRelease
-        path: config.ampRelease
       - description: AWS access key
         displayName: Access Key
         path: config.assets.accessKey
@@ -2171,7 +2111,7 @@ spec:
       - description: Memcached servers
         displayName: Memcached Servers
         path: config.memcachedServers
-      - description: Options for configuring metrics publication
+      - description: Options for configuring metrics publication (will be deprecated on future releases)
         displayName: Metrics
         path: config.metrics
       - description: Password
@@ -2282,9 +2222,6 @@ spec:
       - description: Redis configuration options
         displayName: Redis
         path: config.redis
-      - description: Message bus data source name (will be deprecated on future releases)
-        displayName: Message Bus DSN
-        path: config.redis.messageBusDSN
       - description: Data source name
         displayName: Queues DSN
         path: config.redis.queuesDSN
@@ -3056,7 +2993,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/3scale/saas-operator:0.10.5
+                image: quay.io/3scale/saas-operator:0.10.6
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -3443,4 +3380,4 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
-  version: 0.10.5
+  version: 0.10.6

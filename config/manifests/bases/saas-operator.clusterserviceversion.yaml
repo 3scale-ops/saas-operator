@@ -1525,9 +1525,6 @@ spec:
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.accessCode.override
-      - description: AMP release number
-        displayName: AMPRelease
-        path: config.ampRelease
       - description: AWS access key
         displayName: Access Key
         path: config.assets.accessKey
@@ -1729,7 +1726,7 @@ spec:
       - description: Memcached servers
         displayName: Memcached Servers
         path: config.memcachedServers
-      - description: Options for configuring metrics publication
+      - description: Options for configuring metrics publication (will be deprecated on future releases)
         displayName: Metrics
         path: config.metrics
       - description: Password
@@ -1840,9 +1837,6 @@ spec:
       - description: Redis configuration options
         displayName: Redis
         path: config.redis
-      - description: Message bus data source name (will be deprecated on future releases)
-        displayName: Message Bus DSN
-        path: config.redis.messageBusDSN
       - description: Data source name
         displayName: Queues DSN
         path: config.redis.queuesDSN

@@ -58,17 +58,6 @@ var _ = Describe("System controller", func() {
 							VaultPath: "some-path",
 							Files:     []string{"some-file"},
 						},
-						Seed: saasv1alpha1.SystemSeedSpec{
-							MasterAccessToken: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-							MasterDomain:      "value",
-							MasterUser:        saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-							MasterPassword:    saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-							AdminAccessToken:  saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-							AdminUser:         saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-							AdminPassword:     saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-							AdminEmail:        "value",
-							TenantName:        "value",
-						},
 						DatabaseDSN:        saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 						EventsSharedSecret: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 						Recaptcha: saasv1alpha1.SystemRecaptchaSpec{
@@ -85,10 +74,6 @@ var _ = Describe("System controller", func() {
 						Github: saasv1alpha1.GithubSpec{
 							ClientID:     saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 							ClientSecret: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-						},
-						Metrics: saasv1alpha1.MetricsSpec{
-							User:     saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-							Password: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 						},
 						RedHatCustomerPortal: saasv1alpha1.RedHatCustomerPortalSpec{
 							ClientID:     saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
@@ -250,7 +235,6 @@ var _ = Describe("System controller", func() {
 			for _, name := range []string{
 				"system-config",
 				"system-database",
-				"system-seed",
 				"system-recaptcha",
 				"system-events-hook",
 				"system-smtp",
