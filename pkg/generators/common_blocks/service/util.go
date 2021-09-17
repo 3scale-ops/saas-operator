@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/basereconciler"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -64,15 +63,4 @@ func TCPPort(name string, port int32, targetPort intstr.IntOrString) corev1.Serv
 func Ports(ports ...corev1.ServicePort) []corev1.ServicePort {
 	list := []corev1.ServicePort{}
 	return append(list, ports...)
-}
-
-// Excludes generates the list of excluded paths for a Service resource
-func Excludes(fn basereconciler.GeneratorFunction) []string {
-	svc := fn().(*corev1.Service)
-	paths := []string{}
-	paths = append(paths, "/spec/clusterIP")
-	for idx := range svc.Spec.Ports {
-		paths = append(paths, fmt.Sprintf("/spec/ports/%d/nodePort", idx))
-	}
-	return paths
 }
