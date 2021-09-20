@@ -269,10 +269,6 @@ type SystemConfig struct {
 	// Options for Github integration
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Github GithubSpec `json:"github"`
-	// Options for configuring metrics publication (will be deprecated on future releases)
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	Metrics MetricsSpec `json:"metrics,omitempty"`
 	// Options for configuring RH Customer Portal integration
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	RedHatCustomerPortal RedHatCustomerPortalSpec `json:"redhatCustomerPortal"`
@@ -374,16 +370,6 @@ type GithubSpec struct {
 	// Client secret
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	ClientSecret SecretReference `json:"clientSecret"`
-}
-
-// MetricsSpec has options to configure prometheus metrics
-type MetricsSpec struct {
-	// User name
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	User SecretReference `json:"user"`
-	// Password
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	Password SecretReference `json:"password"`
 }
 
 // RedHatCustomerPortalSpec has configuration for integration with
