@@ -1,6 +1,6 @@
 SHELL:=/bin/bash
 # Current Operator version
-VERSION ?= 0.10.6
+VERSION ?= 0.10.7
 # Default catalog image
 CATALOG_IMG ?= quay.io/3scaleops/saas-operator-bundle:catalog
 # Default bundle image tag
@@ -96,7 +96,7 @@ go-bindata:
 # Download kind locally if necessary
 KIND = $(shell pwd)/bin/kind
 kind:
-	$(call go-get-tool,$(KIND),sigs.k8s.io/kind@v0.9.0)
+	$(call go-get-tool,$(KIND),sigs.k8s.io/kind@v0.11.1)
 
 # Download crd-ref-docs locally if necessary
 CRD_REFDOCS = $(shell pwd)/bin/crd-ref-docs
@@ -228,7 +228,7 @@ get-new-release:
 kind-create: ## runs a k8s kind cluster for testing
 kind-create: export KUBECONFIG = ${PWD}/kubeconfig
 kind-create: tmp $(KIND)
-	$(KIND) create cluster --wait 5m
+	$(KIND) create cluster --wait 5m --image kindest/node:v1.20.0
 
 kind-delete: ## deletes the kind cluster
 kind-delete: $(KIND)

@@ -292,7 +292,7 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 func ServiceExcludes(fn GeneratorFunction) []string {
 	svc := fn().(*corev1.Service)
 	paths := []string{}
-	paths = append(paths, "/spec/clusterIP", "/spec/clusterIPs")
+	paths = append(paths, "/spec/clusterIP", "/spec/clusterIPs", "/spec/ipFamilies", "/spec/ipFamilyPolicy")
 	for idx := range svc.Spec.Ports {
 		paths = append(paths, fmt.Sprintf("/spec/ports/%d/nodePort", idx))
 	}
