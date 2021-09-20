@@ -890,24 +890,6 @@ Marin3rSidecarSpec defines the marin3r sidecar for the component
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-metricsspec"]
-==== MetricsSpec 
-
-MetricsSpec has options to configure prometheus metrics
-
-.Appears In:
-****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
-****
-
-[cols="25a,75a", options="header"]
-|===
-| Field | Description
-| *`user`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | User name
-| *`password`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Password
-|===
-
-
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-nlbloadbalancerspec"]
 ==== NLBLoadBalancerSpec 
 
@@ -1114,14 +1096,12 @@ SecretReference is a reference to a secret stored in some secrets engine
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyconfig[$$CORSProxyConfig$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-githubspec[$$GithubSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingserviceconfig[$$MappingServiceConfig$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-metricsspec[$$MetricsSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redhatcustomerportalspec[$$RedHatCustomerPortalSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-smtpspec[$$SMTPSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-segmentspec[$$SegmentSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systembackendspec[$$SystemBackendSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemrecaptchaspec[$$SystemRecaptchaSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemseedspec[$$SystemSeedSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncconfig[$$ZyncConfig$$]
 ****
 
@@ -1277,7 +1257,6 @@ SystemConfig holds configuration for SystemApp component
 | *`threescaleProviderPlan`* __string__ | 3scale provider plan
 | *`threescaleSuperdomain`* __string__ | 3scale superdomain
 | *`configFiles`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-configfilesspec[$$ConfigFilesSpec$$]__ | Extra configuration files to be mounted in the pods
-| *`seed`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemseedspec[$$SystemSeedSpec$$]__ | System seed
 | *`databaseDSN`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | DSN of system's main database
 | *`eventsSharedSecret`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | EventsSharedSecret
 | *`recaptcha`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemrecaptchaspec[$$SystemRecaptchaSpec$$]__ | Holds recaptcha configuration options
@@ -1285,7 +1264,6 @@ SystemConfig holds configuration for SystemApp component
 | *`accessCode`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | AccessCode to protect admin urls
 | *`segment`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-segmentspec[$$SegmentSpec$$]__ | Options for Segment integration
 | *`github`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-githubspec[$$GithubSpec$$]__ | Options for Github integration
-| *`metrics`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-metricsspec[$$MetricsSpec$$]__ | Options for configuring metrics publication (will be deprecated on future releases)
 | *`redhatCustomerPortal`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redhatcustomerportalspec[$$RedHatCustomerPortalSpec$$]__ | Options for configuring RH Customer Portal integration
 | *`bugsnag`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-bugsnagspec[$$BugsnagSpec$$]__ | Options for configuring Bugsnag integration
 | *`databaseSecret`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Database secret
@@ -1350,31 +1328,6 @@ SystemRecaptchaSpec holds recaptcha configurations
 | Field | Description
 | *`publicKey`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Public key
 | *`privateKey`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Private key
-|===
-
-
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemseedspec"]
-==== SystemSeedSpec 
-
-SystemSeedSpec whatever this is
-
-.Appears In:
-****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
-****
-
-[cols="25a,75a", options="header"]
-|===
-| Field | Description
-| *`masterAccessToken`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Master access token
-| *`masterDomain`* __string__ | Master domain
-| *`masterUser`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Master user
-| *`masterPassword`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Master password
-| *`adminAccessToken`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Admin access token
-| *`adminUser`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Admin user
-| *`adminPassword`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Admin password
-| *`adminEmail`* __string__ | Admin email address
-| *`tenantName`* __string__ | Tenant name
 |===
 
 
