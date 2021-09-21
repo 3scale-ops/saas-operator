@@ -248,10 +248,6 @@ type SystemConfig struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	ConfigFiles *ConfigFilesSpec `json:"configFiles,omitempty"`
-	// System seed
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	Seed SystemSeedSpec `json:"seed,omitempty"`
 	// DSN of system's main database
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	DatabaseDSN SecretReference `json:"databaseDSN"`
@@ -273,10 +269,6 @@ type SystemConfig struct {
 	// Options for Github integration
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Github GithubSpec `json:"github"`
-	// Options for configuring metrics publication (will be deprecated on future releases)
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	Metrics MetricsSpec `json:"metrics,omitempty"`
 	// Options for configuring RH Customer Portal integration
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	RedHatCustomerPortal RedHatCustomerPortalSpec `json:"redhatCustomerPortal"`
@@ -347,37 +339,6 @@ func (cfs *ConfigFilesSpec) Enabled() bool {
 	return true
 }
 
-// SystemSeedSpec whatever this is
-type SystemSeedSpec struct {
-	// Master access token
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	MasterAccessToken SecretReference `json:"masterAccessToken"`
-	// Master domain
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	MasterDomain string `json:"masterDomain"`
-	// Master user
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	MasterUser SecretReference `json:"masterUser"`
-	// Master password
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	MasterPassword SecretReference `json:"masterPassword"`
-	// Admin access token
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	AdminAccessToken SecretReference `json:"adminAccessToken"`
-	// Admin user
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	AdminUser SecretReference `json:"adminUser"`
-	// Admin password
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	AdminPassword SecretReference `json:"adminPassword"`
-	// Admin email address
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	AdminEmail string `json:"adminEmail"`
-	// Tenant name
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	TenantName string `json:"tenantName"`
-}
-
 // SystemRecaptchaSpec holds recaptcha configurations
 type SystemRecaptchaSpec struct {
 	// Public key
@@ -409,16 +370,6 @@ type GithubSpec struct {
 	// Client secret
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	ClientSecret SecretReference `json:"clientSecret"`
-}
-
-// MetricsSpec has options to configure prometheus metrics
-type MetricsSpec struct {
-	// User name
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	User SecretReference `json:"user"`
-	// Password
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	Password SecretReference `json:"password"`
 }
 
 // RedHatCustomerPortalSpec has configuration for integration with

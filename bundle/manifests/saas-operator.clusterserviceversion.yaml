@@ -528,7 +528,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/3scale/saas-operator
     support: Red Hat
-  name: saas-operator.v0.10.7
+  name: saas-operator.v0.10.8
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -2111,39 +2111,6 @@ spec:
       - description: Memcached servers
         displayName: Memcached Servers
         path: config.memcachedServers
-      - description: Options for configuring metrics publication (will be deprecated on future releases)
-        displayName: Metrics
-        path: config.metrics
-      - description: Password
-        displayName: Password
-        path: config.metrics.password
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
-        displayName: From Vault
-        path: config.metrics.password.fromVault
-      - description: The Vault key of the secret
-        displayName: Key
-        path: config.metrics.password.fromVault.key
-      - description: The Vault path where the secret is located
-        displayName: Path
-        path: config.metrics.password.fromVault.path
-      - description: Override allows to directly specify a string value.
-        displayName: Override
-        path: config.metrics.password.override
-      - description: User name
-        displayName: User
-        path: config.metrics.user
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
-        displayName: From Vault
-        path: config.metrics.user.fromVault
-      - description: The Vault key of the secret
-        displayName: Key
-        path: config.metrics.user.fromVault.key
-      - description: The Vault path where the secret is located
-        displayName: Path
-        path: config.metrics.user.fromVault.path
-      - description: Override allows to directly specify a string value.
-        displayName: Override
-        path: config.metrics.user.override
       - description: Rails configuration options for system components
         displayName: Rails
         path: config.rails
@@ -2243,108 +2210,6 @@ spec:
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.secretKeyBase.override
-      - description: System seed
-        displayName: Seed
-        path: config.seed
-      - description: Admin access token
-        displayName: Admin Access Token
-        path: config.seed.adminAccessToken
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
-        displayName: From Vault
-        path: config.seed.adminAccessToken.fromVault
-      - description: The Vault key of the secret
-        displayName: Key
-        path: config.seed.adminAccessToken.fromVault.key
-      - description: The Vault path where the secret is located
-        displayName: Path
-        path: config.seed.adminAccessToken.fromVault.path
-      - description: Override allows to directly specify a string value.
-        displayName: Override
-        path: config.seed.adminAccessToken.override
-      - description: Admin email address
-        displayName: Admin Email
-        path: config.seed.adminEmail
-      - description: Admin password
-        displayName: Admin Password
-        path: config.seed.adminPassword
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
-        displayName: From Vault
-        path: config.seed.adminPassword.fromVault
-      - description: The Vault key of the secret
-        displayName: Key
-        path: config.seed.adminPassword.fromVault.key
-      - description: The Vault path where the secret is located
-        displayName: Path
-        path: config.seed.adminPassword.fromVault.path
-      - description: Override allows to directly specify a string value.
-        displayName: Override
-        path: config.seed.adminPassword.override
-      - description: Admin user
-        displayName: Admin User
-        path: config.seed.adminUser
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
-        displayName: From Vault
-        path: config.seed.adminUser.fromVault
-      - description: The Vault key of the secret
-        displayName: Key
-        path: config.seed.adminUser.fromVault.key
-      - description: The Vault path where the secret is located
-        displayName: Path
-        path: config.seed.adminUser.fromVault.path
-      - description: Override allows to directly specify a string value.
-        displayName: Override
-        path: config.seed.adminUser.override
-      - description: Master access token
-        displayName: Master Access Token
-        path: config.seed.masterAccessToken
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
-        displayName: From Vault
-        path: config.seed.masterAccessToken.fromVault
-      - description: The Vault key of the secret
-        displayName: Key
-        path: config.seed.masterAccessToken.fromVault.key
-      - description: The Vault path where the secret is located
-        displayName: Path
-        path: config.seed.masterAccessToken.fromVault.path
-      - description: Override allows to directly specify a string value.
-        displayName: Override
-        path: config.seed.masterAccessToken.override
-      - description: Master domain
-        displayName: Master Domain
-        path: config.seed.masterDomain
-      - description: Master password
-        displayName: Master Password
-        path: config.seed.masterPassword
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
-        displayName: From Vault
-        path: config.seed.masterPassword.fromVault
-      - description: The Vault key of the secret
-        displayName: Key
-        path: config.seed.masterPassword.fromVault.key
-      - description: The Vault path where the secret is located
-        displayName: Path
-        path: config.seed.masterPassword.fromVault.path
-      - description: Override allows to directly specify a string value.
-        displayName: Override
-        path: config.seed.masterPassword.override
-      - description: Master user
-        displayName: Master User
-        path: config.seed.masterUser
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
-        displayName: From Vault
-        path: config.seed.masterUser.fromVault
-      - description: The Vault key of the secret
-        displayName: Key
-        path: config.seed.masterUser.fromVault.key
-      - description: The Vault path where the secret is located
-        displayName: Path
-        path: config.seed.masterUser.fromVault.path
-      - description: Override allows to directly specify a string value.
-        displayName: Override
-        path: config.seed.masterUser.override
-      - description: Tenant name
-        displayName: Tenant Name
-        path: config.seed.tenantName
       - description: Options for Segment integration
         displayName: Segment
         path: config.segment
@@ -2993,7 +2858,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/3scale/saas-operator:0.10.7
+                image: quay.io/3scale/saas-operator:0.10.8
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -3380,4 +3245,4 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
-  version: 0.10.7
+  version: 0.10.8
