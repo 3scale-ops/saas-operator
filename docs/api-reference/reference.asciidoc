@@ -664,7 +664,9 @@ HorizontalPodAutoscalerSpec defines the HPA for the component
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-quespec[$$QueSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqbillingspec[$$SystemSidekiqBillingSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqdefaultspec[$$SystemSidekiqDefaultSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqlowspec[$$SystemSidekiqLowSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
 ****
 
@@ -926,7 +928,9 @@ PodDisruptionBudgetSpec defines the PDB for the component
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-quespec[$$QueSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqbillingspec[$$SystemSidekiqBillingSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqdefaultspec[$$SystemSidekiqDefaultSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqlowspec[$$SystemSidekiqLowSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
 ****
 
@@ -954,7 +958,9 @@ ProbeSpec specifies configuration for a probe
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-quespec[$$QueSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqbillingspec[$$SystemSidekiqBillingSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqdefaultspec[$$SystemSidekiqDefaultSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqlowspec[$$SystemSidekiqLowSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsphinxspec[$$SystemSphinxSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
 ****
@@ -1047,7 +1053,9 @@ ResourceRequirementsSpec defines the resource requirements for the component
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-quespec[$$QueSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqbillingspec[$$SystemSidekiqBillingSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqdefaultspec[$$SystemSidekiqDefaultSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqlowspec[$$SystemSidekiqLowSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsphinxspec[$$SystemSphinxSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
 ****
@@ -1147,6 +1155,60 @@ SidecarPort defines port for the Marin3r sidecar container
 | Field | Description
 | *`name`* __string__ | Port name
 | *`port`* __integer__ | Port value
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sidekiqbillingconfig"]
+==== SidekiqBillingConfig 
+
+SidekiqBillingConfig configures app behavior for System Sidekiq Billing
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqbillingspec[$$SystemSidekiqBillingSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`queuesArgs`* __string__ | Bundle exec sidekiq queues argument
+| *`maxThreads`* __integer__ | Number of rails max threads per sidekiq pod
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sidekiqdefaultconfig"]
+==== SidekiqDefaultConfig 
+
+SidekiqDefaultConfig configures app behavior for System Sidekiq Default
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqdefaultspec[$$SystemSidekiqDefaultSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`queuesArgs`* __string__ | Bundle exec sidekiq queues argument
+| *`maxThreads`* __integer__ | Number of rails max threads per sidekiq pod
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sidekiqlowconfig"]
+==== SidekiqLowConfig 
+
+SidekiqLowConfig configures app behavior for System Sidekiq Low
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqlowspec[$$SystemSidekiqLowSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`queuesArgs`* __string__ | Bundle exec sidekiq queues argument
+| *`maxThreads`* __integer__ | Number of rails max threads per sidekiq pod
 |===
 
 
@@ -1331,10 +1393,10 @@ SystemRecaptchaSpec holds recaptcha configurations
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec"]
-==== SystemSidekiqSpec 
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqbillingspec"]
+==== SystemSidekiqBillingSpec 
 
-SystemSidekiqSpec configures the App component of System
+SystemSidekiqBillingSpec configures the App component of System
 
 .Appears In:
 ****
@@ -1344,6 +1406,57 @@ SystemSidekiqSpec configures the App component of System
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
+| *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sidekiqbillingconfig[$$SidekiqBillingConfig$$]__ | Sidekiq Billing specific configuration options for the component element
+| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
+| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
+| *`replicas`* __integer__ | Number of replicas (ignored if hpa is enabled) for the component
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
+| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
+| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqdefaultspec"]
+==== SystemSidekiqDefaultSpec 
+
+SystemSidekiqDefaultSpec configures the App component of System
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sidekiqdefaultconfig[$$SidekiqDefaultConfig$$]__ | Sidekiq Default specific configuration options for the component element
+| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
+| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
+| *`replicas`* __integer__ | Number of replicas (ignored if hpa is enabled) for the component
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
+| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
+| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqlowspec"]
+==== SystemSidekiqLowSpec 
+
+SystemSidekiqLowSpec configures the App component of System
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sidekiqlowconfig[$$SidekiqLowConfig$$]__ | Sidekiq Low specific configuration options for the component element
 | *`pdb`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
 | *`hpa`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
 | *`replicas`* __integer__ | Number of replicas (ignored if hpa is enabled) for the component
@@ -1371,7 +1484,9 @@ SystemSpec defines the desired state of System
 | *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]__ | Application specific configuration options for System components
 | *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
 | *`app`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]__ | Application specific configuration options
-| *`sidekiq`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]__ | Sidekiq specific configuration options
+| *`sidekiqDefault`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqdefaultspec[$$SystemSidekiqDefaultSpec$$]__ | Sidekiq Default specific configuration options
+| *`sidekiqBilling`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqbillingspec[$$SystemSidekiqBillingSpec$$]__ | Sidekiq Billing specific configuration options
+| *`sidekiqLow`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqlowspec[$$SystemSidekiqLowSpec$$]__ | Sidekiq Low specific configuration options
 | *`sphinx`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsphinxspec[$$SystemSphinxSpec$$]__ | Sphinx specific configuration options
 | *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
 |===
