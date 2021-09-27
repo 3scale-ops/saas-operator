@@ -97,9 +97,11 @@ var (
 	}
 	systemDefaultAppMarin3rSpec defaultMarin3rSidecarSpec = defaultMarin3rSidecarSpec{}
 
-	// Sidekiq
-	systemDefaultSidekiqReplicas  int32                           = 2
-	systemDefaultSidekiqResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
+	// Sidekiq Default
+	systemDefaultSidekiqDefaultConfigMaxThreads int32                           = 15
+	systemDefaultSidekiqDefaultConfigQueuesArg  string                          = "-q critical -q backend_sync -q events -q zync,40 -q priority,25 -q default,15 -q web_hooks,10 -q deletion,5"
+	systemDefaultSidekiqDefaultReplicas         int32                           = 2
+	systemDefaultSidekiqDefaultResources        defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
 		Requests: corev1.ResourceList{
 			corev1.ResourceCPU:    resource.MustParse("500m"),
 			corev1.ResourceMemory: resource.MustParse("1Gi"),
@@ -109,27 +111,103 @@ var (
 			corev1.ResourceMemory: resource.MustParse("2Gi"),
 		},
 	}
-	systemDefaultSidekiqHPA defaultHorizontalPodAutoscalerSpec = defaultHorizontalPodAutoscalerSpec{
+	systemDefaultSidekiqDefaultHPA defaultHorizontalPodAutoscalerSpec = defaultHorizontalPodAutoscalerSpec{
 		MinReplicas:         pointer.Int32Ptr(2),
 		MaxReplicas:         pointer.Int32Ptr(4),
 		ResourceUtilization: pointer.Int32Ptr(90),
 		ResourceName:        pointer.StringPtr("cpu"),
 	}
-	systemDefaultSidekiqLivenessProbe defaultProbeSpec = defaultProbeSpec{
+	systemDefaultSidekiqDefaultLivenessProbe defaultProbeSpec = defaultProbeSpec{
 		InitialDelaySeconds: pointer.Int32Ptr(10),
 		TimeoutSeconds:      pointer.Int32Ptr(3),
 		PeriodSeconds:       pointer.Int32Ptr(15),
 		SuccessThreshold:    pointer.Int32Ptr(1),
 		FailureThreshold:    pointer.Int32Ptr(5),
 	}
-	systemDefaultSidekiqReadinessProbe defaultProbeSpec = defaultProbeSpec{
+	systemDefaultSidekiqDefaultReadinessProbe defaultProbeSpec = defaultProbeSpec{
 		InitialDelaySeconds: pointer.Int32Ptr(10),
 		TimeoutSeconds:      pointer.Int32Ptr(5),
 		PeriodSeconds:       pointer.Int32Ptr(30),
 		SuccessThreshold:    pointer.Int32Ptr(1),
 		FailureThreshold:    pointer.Int32Ptr(5),
 	}
-	systemDefaultSidekiqPDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
+	systemDefaultSidekiqDefaultPDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
+		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
+	}
+
+	// Sidekiq Billing
+	systemDefaultSidekiqBillingConfigMaxThreads int32                           = 15
+	systemDefaultSidekiqBillingConfigQueuesArg  string                          = "-q billing"
+	systemDefaultSidekiqBillingReplicas         int32                           = 2
+	systemDefaultSidekiqBillingResources        defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
+		Requests: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("500m"),
+			corev1.ResourceMemory: resource.MustParse("1Gi"),
+		},
+		Limits: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("1"),
+			corev1.ResourceMemory: resource.MustParse("2Gi"),
+		},
+	}
+	systemDefaultSidekiqBillingHPA defaultHorizontalPodAutoscalerSpec = defaultHorizontalPodAutoscalerSpec{
+		MinReplicas:         pointer.Int32Ptr(2),
+		MaxReplicas:         pointer.Int32Ptr(4),
+		ResourceUtilization: pointer.Int32Ptr(90),
+		ResourceName:        pointer.StringPtr("cpu"),
+	}
+	systemDefaultSidekiqBillingLivenessProbe defaultProbeSpec = defaultProbeSpec{
+		InitialDelaySeconds: pointer.Int32Ptr(10),
+		TimeoutSeconds:      pointer.Int32Ptr(3),
+		PeriodSeconds:       pointer.Int32Ptr(15),
+		SuccessThreshold:    pointer.Int32Ptr(1),
+		FailureThreshold:    pointer.Int32Ptr(5),
+	}
+	systemDefaultSidekiqBillingReadinessProbe defaultProbeSpec = defaultProbeSpec{
+		InitialDelaySeconds: pointer.Int32Ptr(10),
+		TimeoutSeconds:      pointer.Int32Ptr(5),
+		PeriodSeconds:       pointer.Int32Ptr(30),
+		SuccessThreshold:    pointer.Int32Ptr(1),
+		FailureThreshold:    pointer.Int32Ptr(5),
+	}
+	systemDefaultSidekiqBillingPDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
+		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
+	}
+
+	// Sidekiq Low
+	systemDefaultSidekiqLowConfigMaxThreads int32                           = 15
+	systemDefaultSidekiqLowConfigQueuesArg  string                          = "-q low"
+	systemDefaultSidekiqLowReplicas         int32                           = 2
+	systemDefaultSidekiqLowResources        defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
+		Requests: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("500m"),
+			corev1.ResourceMemory: resource.MustParse("1Gi"),
+		},
+		Limits: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("1"),
+			corev1.ResourceMemory: resource.MustParse("2Gi"),
+		},
+	}
+	systemDefaultSidekiqLowHPA defaultHorizontalPodAutoscalerSpec = defaultHorizontalPodAutoscalerSpec{
+		MinReplicas:         pointer.Int32Ptr(2),
+		MaxReplicas:         pointer.Int32Ptr(4),
+		ResourceUtilization: pointer.Int32Ptr(90),
+		ResourceName:        pointer.StringPtr("cpu"),
+	}
+	systemDefaultSidekiqLowLivenessProbe defaultProbeSpec = defaultProbeSpec{
+		InitialDelaySeconds: pointer.Int32Ptr(10),
+		TimeoutSeconds:      pointer.Int32Ptr(3),
+		PeriodSeconds:       pointer.Int32Ptr(15),
+		SuccessThreshold:    pointer.Int32Ptr(1),
+		FailureThreshold:    pointer.Int32Ptr(5),
+	}
+	systemDefaultSidekiqLowReadinessProbe defaultProbeSpec = defaultProbeSpec{
+		InitialDelaySeconds: pointer.Int32Ptr(10),
+		TimeoutSeconds:      pointer.Int32Ptr(5),
+		PeriodSeconds:       pointer.Int32Ptr(30),
+		SuccessThreshold:    pointer.Int32Ptr(1),
+		FailureThreshold:    pointer.Int32Ptr(5),
+	}
+	systemDefaultSidekiqLowPDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
 		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
 	}
 
@@ -182,10 +260,18 @@ type SystemSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	App *SystemAppSpec `json:"app,omitempty"`
-	// Sidekiq specific configuration options
+	// Sidekiq Default specific configuration options
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	Sidekiq *SystemSidekiqSpec `json:"sidekiq,omitempty"`
+	SidekiqDefault *SystemSidekiqDefaultSpec `json:"sidekiqDefault,omitempty"`
+	// Sidekiq Billing specific configuration options
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	SidekiqBilling *SystemSidekiqBillingSpec `json:"sidekiqBilling,omitempty"`
+	// Sidekiq Low specific configuration options
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	SidekiqLow *SystemSidekiqLowSpec `json:"sidekiqLow,omitempty"`
 	// Sphinx specific configuration options
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -207,10 +293,20 @@ func (s *System) Default() {
 	}
 	s.Spec.App.Default()
 
-	if s.Spec.Sidekiq == nil {
-		s.Spec.Sidekiq = &SystemSidekiqSpec{}
+	if s.Spec.SidekiqDefault == nil {
+		s.Spec.SidekiqDefault = &SystemSidekiqDefaultSpec{}
 	}
-	s.Spec.Sidekiq.Default()
+	s.Spec.SidekiqDefault.Default()
+
+	if s.Spec.SidekiqBilling == nil {
+		s.Spec.SidekiqBilling = &SystemSidekiqBillingSpec{}
+	}
+	s.Spec.SidekiqBilling.Default()
+
+	if s.Spec.SidekiqLow == nil {
+		s.Spec.SidekiqLow = &SystemSidekiqLowSpec{}
+	}
+	s.Spec.SidekiqLow.Default()
 
 	if s.Spec.Sphinx == nil {
 		s.Spec.Sphinx = &SystemSphinxSpec{}
@@ -529,8 +625,12 @@ func (spec *SystemAppSpec) Default() {
 	spec.Marin3r = InitializeMarin3rSidecarSpec(spec.Marin3r, systemDefaultAppMarin3rSpec)
 }
 
-// SystemSidekiqSpec configures the App component of System
-type SystemSidekiqSpec struct {
+// SystemSidekiqDefaultSpec configures the App component of System
+type SystemSidekiqDefaultSpec struct {
+	// Sidekiq Default specific configuration options for the component element
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Config *SidekiqDefaultConfig `json:"config,omitempty"`
 	// Pod Disruption Budget for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -563,20 +663,194 @@ type SystemSidekiqSpec struct {
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
 }
 
+// SidekiqDefaultConfig configures app behavior for System Sidekiq Default
+type SidekiqDefaultConfig struct {
+	// Bundle exec sidekiq queues argument
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	QueuesArg *string `json:"queuesArgs,omitempty"`
+	// Number of rails max threads per sidekiq pod
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	MaxThreads *int32 `json:"maxThreads,omitempty"`
+}
+
+// Default sets default values for any value not specifically set in the SidekiqDefaultConfig struct
+func (cfg *SidekiqDefaultConfig) Default() {
+	cfg.QueuesArg = stringOrDefault(cfg.QueuesArg, pointer.StringPtr(systemDefaultSidekiqDefaultConfigQueuesArg))
+	cfg.MaxThreads = intOrDefault(cfg.MaxThreads, pointer.Int32Ptr(systemDefaultSidekiqDefaultConfigMaxThreads))
+}
+
 // Default implements defaulting for the system App component
-func (spec *SystemSidekiqSpec) Default() {
-	spec.HPA = InitializeHorizontalPodAutoscalerSpec(spec.HPA, systemDefaultSidekiqHPA)
+func (spec *SystemSidekiqDefaultSpec) Default() {
+	spec.HPA = InitializeHorizontalPodAutoscalerSpec(spec.HPA, systemDefaultSidekiqDefaultHPA)
 
 	if spec.HPA.IsDeactivated() {
-		spec.Replicas = intOrDefault(spec.Replicas, &systemDefaultSidekiqReplicas)
+		spec.Replicas = intOrDefault(spec.Replicas, &systemDefaultSidekiqDefaultReplicas)
 	} else {
 		spec.Replicas = nil
 	}
 
-	spec.PDB = InitializePodDisruptionBudgetSpec(spec.PDB, systemDefaultSidekiqPDB)
-	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, systemDefaultSidekiqResources)
-	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, systemDefaultSidekiqLivenessProbe)
-	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, systemDefaultSidekiqReadinessProbe)
+	spec.PDB = InitializePodDisruptionBudgetSpec(spec.PDB, systemDefaultSidekiqDefaultPDB)
+	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, systemDefaultSidekiqDefaultResources)
+	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, systemDefaultSidekiqDefaultLivenessProbe)
+	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, systemDefaultSidekiqDefaultReadinessProbe)
+	if spec.Config == nil {
+		spec.Config = &SidekiqDefaultConfig{}
+	}
+	spec.Config.Default()
+}
+
+// SystemSidekiqBillingSpec configures the App component of System
+type SystemSidekiqBillingSpec struct {
+	// Sidekiq Billing specific configuration options for the component element
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Config *SidekiqBillingConfig `json:"config,omitempty"`
+	// Pod Disruption Budget for the component
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	PDB *PodDisruptionBudgetSpec `json:"pdb,omitempty"`
+	// Horizontal Pod Autoscaler for the component
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	HPA *HorizontalPodAutoscalerSpec `json:"hpa,omitempty"`
+	// Number of replicas (ignored if hpa is enabled) for the component
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Replicas *int32 `json:"replicas,omitempty"`
+	// Resource requirements for the component
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Resources *ResourceRequirementsSpec `json:"resources,omitempty"`
+	// Liveness probe for the component
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	LivenessProbe *ProbeSpec `json:"livenessProbe,omitempty"`
+	// Readiness probe for the component
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ReadinessProbe *ProbeSpec `json:"readinessProbe,omitempty"`
+	// Describes node affinity scheduling rules for the pod.
+	// +optional
+	NodeAffinity *corev1.NodeAffinity `json:"nodeAffinity,omitempty" protobuf:"bytes,1,opt,name=nodeAffinity"`
+	// If specified, the pod's tolerations.
+	// +optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
+}
+
+// SidekiqBillingConfig configures app behavior for System Sidekiq Billing
+type SidekiqBillingConfig struct {
+	// Bundle exec sidekiq queues argument
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	QueuesArg *string `json:"queuesArgs,omitempty"`
+	// Number of rails max threads per sidekiq pod
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	MaxThreads *int32 `json:"maxThreads,omitempty"`
+}
+
+// Default sets default values for any value not specifically set in the SidekiqBillingConfig struct
+func (cfg *SidekiqBillingConfig) Default() {
+	cfg.QueuesArg = stringOrDefault(cfg.QueuesArg, pointer.StringPtr(systemDefaultSidekiqBillingConfigQueuesArg))
+	cfg.MaxThreads = intOrDefault(cfg.MaxThreads, pointer.Int32Ptr(systemDefaultSidekiqBillingConfigMaxThreads))
+}
+
+// Default implements defaulting for the system App component
+func (spec *SystemSidekiqBillingSpec) Default() {
+	spec.HPA = InitializeHorizontalPodAutoscalerSpec(spec.HPA, systemDefaultSidekiqBillingHPA)
+
+	if spec.HPA.IsDeactivated() {
+		spec.Replicas = intOrDefault(spec.Replicas, &systemDefaultSidekiqBillingReplicas)
+	} else {
+		spec.Replicas = nil
+	}
+
+	spec.PDB = InitializePodDisruptionBudgetSpec(spec.PDB, systemDefaultSidekiqBillingPDB)
+	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, systemDefaultSidekiqBillingResources)
+	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, systemDefaultSidekiqBillingLivenessProbe)
+	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, systemDefaultSidekiqBillingReadinessProbe)
+	if spec.Config == nil {
+		spec.Config = &SidekiqBillingConfig{}
+	}
+	spec.Config.Default()
+}
+
+// SystemSidekiqLowSpec configures the App component of System
+type SystemSidekiqLowSpec struct {
+	// Sidekiq Low specific configuration options for the component element
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Config *SidekiqLowConfig `json:"config,omitempty"`
+	// Pod Disruption Budget for the component
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	PDB *PodDisruptionBudgetSpec `json:"pdb,omitempty"`
+	// Horizontal Pod Autoscaler for the component
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	HPA *HorizontalPodAutoscalerSpec `json:"hpa,omitempty"`
+	// Number of replicas (ignored if hpa is enabled) for the component
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Replicas *int32 `json:"replicas,omitempty"`
+	// Resource requirements for the component
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Resources *ResourceRequirementsSpec `json:"resources,omitempty"`
+	// Liveness probe for the component
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	LivenessProbe *ProbeSpec `json:"livenessProbe,omitempty"`
+	// Readiness probe for the component
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ReadinessProbe *ProbeSpec `json:"readinessProbe,omitempty"`
+	// Describes node affinity scheduling rules for the pod.
+	// +optional
+	NodeAffinity *corev1.NodeAffinity `json:"nodeAffinity,omitempty" protobuf:"bytes,1,opt,name=nodeAffinity"`
+	// If specified, the pod's tolerations.
+	// +optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
+}
+
+// SidekiqLowConfig configures app behavior for System Sidekiq Low
+type SidekiqLowConfig struct {
+	// Bundle exec sidekiq queues argument
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	QueuesArg *string `json:"queuesArgs,omitempty"`
+	// Number of rails max threads per sidekiq pod
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	MaxThreads *int32 `json:"maxThreads,omitempty"`
+}
+
+// Default sets default values for any value not specifically set in the SidekiqLowConfig struct
+func (cfg *SidekiqLowConfig) Default() {
+	cfg.QueuesArg = stringOrDefault(cfg.QueuesArg, pointer.StringPtr(systemDefaultSidekiqLowConfigQueuesArg))
+	cfg.MaxThreads = intOrDefault(cfg.MaxThreads, pointer.Int32Ptr(systemDefaultSidekiqLowConfigMaxThreads))
+}
+
+// Default implements defaulting for the system App component
+func (spec *SystemSidekiqLowSpec) Default() {
+	spec.HPA = InitializeHorizontalPodAutoscalerSpec(spec.HPA, systemDefaultSidekiqLowHPA)
+
+	if spec.HPA.IsDeactivated() {
+		spec.Replicas = intOrDefault(spec.Replicas, &systemDefaultSidekiqLowReplicas)
+	} else {
+		spec.Replicas = nil
+	}
+
+	spec.PDB = InitializePodDisruptionBudgetSpec(spec.PDB, systemDefaultSidekiqLowPDB)
+	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, systemDefaultSidekiqLowResources)
+	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, systemDefaultSidekiqLowLivenessProbe)
+	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, systemDefaultSidekiqLowReadinessProbe)
+	if spec.Config == nil {
+		spec.Config = &SidekiqLowConfig{}
+	}
+	spec.Config.Default()
 }
 
 // SystemSphinxSpec configures the App component of System

@@ -144,7 +144,21 @@ var _ = Describe("System controller", func() {
 			Eventually(func() error {
 				return k8sClient.Get(
 					context.Background(),
-					types.NamespacedName{Name: "system-sidekiq", Namespace: namespace},
+					types.NamespacedName{Name: "system-sidekiq-default", Namespace: namespace},
+					dep,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "system-sidekiq-billing", Namespace: namespace},
+					dep,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "system-sidekiq-low", Namespace: namespace},
 					dep,
 				)
 			}, timeout, poll).ShouldNot(HaveOccurred())
@@ -185,7 +199,21 @@ var _ = Describe("System controller", func() {
 			Eventually(func() error {
 				return k8sClient.Get(
 					context.Background(),
-					types.NamespacedName{Name: "system-sidekiq", Namespace: namespace},
+					types.NamespacedName{Name: "system-sidekiq-default", Namespace: namespace},
+					pm,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "system-sidekiq-billing", Namespace: namespace},
+					pm,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "system-sidekiq-low", Namespace: namespace},
 					pm,
 				)
 			}, timeout, poll).ShouldNot(HaveOccurred())
@@ -201,7 +229,21 @@ var _ = Describe("System controller", func() {
 			Eventually(func() error {
 				return k8sClient.Get(
 					context.Background(),
-					types.NamespacedName{Name: "system-sidekiq", Namespace: namespace},
+					types.NamespacedName{Name: "system-sidekiq-default", Namespace: namespace},
+					hpa,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "system-sidekiq-billing", Namespace: namespace},
+					hpa,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "system-sidekiq-low", Namespace: namespace},
 					hpa,
 				)
 			}, timeout, poll).ShouldNot(HaveOccurred())
@@ -217,7 +259,21 @@ var _ = Describe("System controller", func() {
 			Eventually(func() error {
 				return k8sClient.Get(
 					context.Background(),
-					types.NamespacedName{Name: "system-sidekiq", Namespace: namespace},
+					types.NamespacedName{Name: "system-sidekiq-default", Namespace: namespace},
+					pdb,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "system-sidekiq-billing", Namespace: namespace},
+					pdb,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "system-sidekiq-low", Namespace: namespace},
 					pdb,
 				)
 			}, timeout, poll).ShouldNot(HaveOccurred())

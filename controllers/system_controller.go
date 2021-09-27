@@ -73,7 +73,7 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		instance.Spec,
 	)
 
-	// Calculate rollout triggers (app & sidekiq)
+	// Calculate rollout triggers (app & sidekiqs)
 	triggers, err := r.TriggersFromSecretDefs(ctx,
 		gen.ConfigFilesSecretDefinition(),
 		gen.DatabaseSecretDefinition(),
@@ -106,9 +106,19 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 				HasHPA:          !instance.Spec.App.HPA.IsDeactivated(),
 			},
 			{
-				Template:        gen.Sidekiq.Deployment(),
+				Template:        gen.SidekiqDefault.Deployment(),
 				RolloutTriggers: triggers,
-				HasHPA:          !instance.Spec.Sidekiq.HPA.IsDeactivated(),
+				HasHPA:          !instance.Spec.SidekiqDefault.HPA.IsDeactivated(),
+			},
+			{
+				Template:        gen.SidekiqBilling.Deployment(),
+				RolloutTriggers: triggers,
+				HasHPA:          !instance.Spec.SidekiqBilling.HPA.IsDeactivated(),
+			},
+			{
+				Template:        gen.SidekiqLow.Deployment(),
+				RolloutTriggers: triggers,
+				HasHPA:          !instance.Spec.SidekiqLow.HPA.IsDeactivated(),
 			},
 		},
 		StatefulSets: []basereconciler.StatefulSet{{
@@ -134,15 +144,21 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		},
 		PodDisruptionBudgets: []basereconciler.PodDisruptionBudget{
 			{Template: gen.App.PDB(), Enabled: !instance.Spec.App.PDB.IsDeactivated()},
-			{Template: gen.Sidekiq.PDB(), Enabled: !instance.Spec.Sidekiq.PDB.IsDeactivated()},
+			{Template: gen.SidekiqDefault.PDB(), Enabled: !instance.Spec.SidekiqDefault.PDB.IsDeactivated()},
+			{Template: gen.SidekiqBilling.PDB(), Enabled: !instance.Spec.SidekiqBilling.PDB.IsDeactivated()},
+			{Template: gen.SidekiqLow.PDB(), Enabled: !instance.Spec.SidekiqLow.PDB.IsDeactivated()},
 		},
 		HorizontalPodAutoscalers: []basereconciler.HorizontalPodAutoscaler{
 			{Template: gen.App.HPA(), Enabled: !instance.Spec.App.HPA.IsDeactivated()},
-			{Template: gen.Sidekiq.HPA(), Enabled: !instance.Spec.Sidekiq.HPA.IsDeactivated()},
+			{Template: gen.SidekiqDefault.HPA(), Enabled: !instance.Spec.SidekiqDefault.HPA.IsDeactivated()},
+			{Template: gen.SidekiqBilling.HPA(), Enabled: !instance.Spec.SidekiqBilling.HPA.IsDeactivated()},
+			{Template: gen.SidekiqLow.HPA(), Enabled: !instance.Spec.SidekiqLow.HPA.IsDeactivated()},
 		},
 		PodMonitors: []basereconciler.PodMonitor{
 			{Template: gen.App.PodMonitor(), Enabled: true},
-			{Template: gen.Sidekiq.PodMonitor(), Enabled: true},
+			{Template: gen.SidekiqDefault.PodMonitor(), Enabled: true},
+			{Template: gen.SidekiqBilling.PodMonitor(), Enabled: true},
+			{Template: gen.SidekiqLow.PodMonitor(), Enabled: true},
 		},
 		GrafanaDashboards: []basereconciler.GrafanaDashboard{
 			{Template: gen.GrafanaDashboard(), Enabled: !instance.Spec.GrafanaDashboard.IsDeactivated()},
