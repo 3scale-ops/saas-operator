@@ -28,6 +28,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+type systemSidekiqType string
+
+const (
+	Default systemSidekiqType = "default"
+	Billing systemSidekiqType = "billing"
+	Low     systemSidekiqType = "low"
+)
+
 var (
 	// Common
 	systemDefaultSandboxProxyOpensslVerifyMode string           = "VERIFY_NONE"
@@ -98,9 +106,8 @@ var (
 	systemDefaultAppMarin3rSpec defaultMarin3rSidecarSpec = defaultMarin3rSidecarSpec{}
 
 	// Sidekiq
-	systemDefaultSidekiqConfigMaxThreads int32                           = 15
-	systemDefaultSidekiqReplicas         int32                           = 2
-	systemDefaultSidekiqResources        defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
+	systemDefaultSidekiqReplicas  int32                           = 2
+	systemDefaultSidekiqResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
 		Requests: corev1.ResourceList{
 			corev1.ResourceCPU:    resource.MustParse("500m"),
 			corev1.ResourceMemory: resource.MustParse("1Gi"),
@@ -134,10 +141,18 @@ var (
 		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
 	}
 
-	// Sidekiq Specific
-	systemDefaultSidekiqDefaultConfigQueuesArg string = "-q critical -q backend_sync -q events -q zync,40 -q priority,25 -q default,15 -q web_hooks,10 -q deletion,5"
-	systemDefaultSidekiqBillingConfigQueuesArg string = "-q billing"
-	systemDefaultSidekiqLowConfigQueuesArg     string = "-q low"
+	systemDefaultSidekiqConfigDefault defaultSidekiqConfig = defaultSidekiqConfig{
+		QueuesArg:  pointer.StringPtr("-q critical -q backend_sync -q events -q zync,40 -q priority,25 -q default,15 -q web_hooks,10 -q deletion,5"),
+		MaxThreads: pointer.Int32Ptr(15),
+	}
+	systemDefaultSidekiqConfigBilling defaultSidekiqConfig = defaultSidekiqConfig{
+		QueuesArg:  pointer.StringPtr("-q billing"),
+		MaxThreads: pointer.Int32Ptr(15),
+	}
+	systemDefaultSidekiqConfigLow defaultSidekiqConfig = defaultSidekiqConfig{
+		QueuesArg:  pointer.StringPtr("-q low"),
+		MaxThreads: pointer.Int32Ptr(15),
+	}
 
 	// Sphinx
 	systemDefaultSphinxDeltaIndexInterval  int32                           = 5
@@ -224,17 +239,17 @@ func (s *System) Default() {
 	if s.Spec.SidekiqDefault == nil {
 		s.Spec.SidekiqDefault = &SystemSidekiqSpec{}
 	}
-	s.Spec.SidekiqDefault.Default()
+	s.Spec.SidekiqDefault.Default(Default)
 
 	if s.Spec.SidekiqBilling == nil {
 		s.Spec.SidekiqBilling = &SystemSidekiqSpec{}
 	}
-	s.Spec.SidekiqBilling.Default()
+	s.Spec.SidekiqBilling.Default(Billing)
 
 	if s.Spec.SidekiqLow == nil {
 		s.Spec.SidekiqLow = &SystemSidekiqSpec{}
 	}
-	s.Spec.SidekiqLow.Default()
+	s.Spec.SidekiqLow.Default(Low)
 
 	if s.Spec.Sphinx == nil {
 		s.Spec.Sphinx = &SystemSphinxSpec{}
@@ -603,14 +618,19 @@ type SidekiqConfig struct {
 	MaxThreads *int32 `json:"maxThreads,omitempty"`
 }
 
+type defaultSidekiqConfig struct {
+	QueuesArg  *string
+	MaxThreads *int32
+}
+
 // Default sets default values for any value not specifically set in the SidekiqConfig struct
-func (cfg *SidekiqConfig) Default() {
-	cfg.QueuesArg = stringOrDefault(cfg.QueuesArg, pointer.StringPtr(systemDefaultSidekiqDefaultConfigQueuesArg))
-	cfg.MaxThreads = intOrDefault(cfg.MaxThreads, pointer.Int32Ptr(systemDefaultSidekiqConfigMaxThreads))
+func (cfg *SidekiqConfig) Default(def defaultSidekiqConfig) {
+	cfg.QueuesArg = stringOrDefault(cfg.QueuesArg, pointer.StringPtr(*def.QueuesArg))
+	cfg.MaxThreads = intOrDefault(cfg.MaxThreads, pointer.Int32Ptr(*def.MaxThreads))
 }
 
 // Default implements defaulting for the system Sidekiq component
-func (spec *SystemSidekiqSpec) Default() {
+func (spec *SystemSidekiqSpec) Default(sidekiqType systemSidekiqType) {
 	spec.HPA = InitializeHorizontalPodAutoscalerSpec(spec.HPA, systemDefaultSidekiqHPA)
 
 	if spec.HPA.IsDeactivated() {
@@ -626,7 +646,14 @@ func (spec *SystemSidekiqSpec) Default() {
 	if spec.Config == nil {
 		spec.Config = &SidekiqConfig{}
 	}
-	spec.Config.Default()
+
+	if sidekiqType == "billing" {
+		spec.Config.Default(systemDefaultSidekiqConfigBilling)
+	} else if sidekiqType == "low" {
+		spec.Config.Default(systemDefaultSidekiqConfigLow)
+	} else {
+		spec.Config.Default(systemDefaultSidekiqConfigDefault)
+	}
 }
 
 // SystemSphinxSpec configures the App component of System
