@@ -31,9 +31,9 @@ const (
 type Generator struct {
 	generators.BaseOptions
 	App                  AppGenerator
-	SidekiqDefault       SidekiqDefaultGenerator
-	SidekiqBilling       SidekiqBillingGenerator
-	SidekiqLow           SidekiqLowGenerator
+	SidekiqDefault       SidekiqGenerator
+	SidekiqBilling       SidekiqGenerator
+	SidekiqLow           SidekiqGenerator
 	Sphinx               SphinxGenerator
 	GrafanaDashboardSpec saasv1alpha1.GrafanaDashboardSpec
 	ConfigFilesSpec      saasv1alpha1.ConfigFilesSpec
@@ -119,7 +119,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) Gene
 			ImageSpec:          *spec.Image,
 			ConfigFilesEnabled: spec.Config.ConfigFiles.Enabled(),
 		},
-		SidekiqDefault: SidekiqDefaultGenerator{
+		SidekiqDefault: SidekiqGenerator{
 			BaseOptions: generators.BaseOptions{
 				Component:    strings.Join([]string{component, sidekiqDefault}, "-"),
 				InstanceName: instance,
@@ -135,7 +135,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) Gene
 			ImageSpec:          *spec.Image,
 			ConfigFilesEnabled: spec.Config.ConfigFiles.Enabled(),
 		},
-		SidekiqBilling: SidekiqBillingGenerator{
+		SidekiqBilling: SidekiqGenerator{
 			BaseOptions: generators.BaseOptions{
 				Component:    strings.Join([]string{component, sidekiqBilling}, "-"),
 				InstanceName: instance,
@@ -151,7 +151,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) Gene
 			ImageSpec:          *spec.Image,
 			ConfigFilesEnabled: spec.Config.ConfigFiles.Enabled(),
 		},
-		SidekiqLow: SidekiqLowGenerator{
+		SidekiqLow: SidekiqGenerator{
 			BaseOptions: generators.BaseOptions{
 				Component:    strings.Join([]string{component, sidekiqLow}, "-"),
 				InstanceName: instance,
@@ -219,87 +219,29 @@ func (gen *AppGenerator) PodMonitor() basereconciler.GeneratorFunction {
 	)
 }
 
-// SidekiqDefaultGenerator has methods to generate resources for system-sidekiq-default
-type SidekiqDefaultGenerator struct {
+// SidekiqGenerator has methods to generate resources for system-sidekiq
+type SidekiqGenerator struct {
 	generators.BaseOptions
-	Spec               saasv1alpha1.SystemSidekiqDefaultSpec
+	Spec               saasv1alpha1.SystemSidekiqSpec
 	Options            config.Options
 	ImageSpec          saasv1alpha1.ImageSpec
 	ConfigFilesEnabled bool
 }
 
 // HPA returns a basereconciler.GeneratorFunction
-func (gen *SidekiqDefaultGenerator) HPA() basereconciler.GeneratorFunction {
+func (gen *SidekiqGenerator) HPA() basereconciler.GeneratorFunction {
 	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
 	return hpa.New(key, gen.GetLabels(), *gen.Spec.HPA)
 }
 
 // PDB returns a basereconciler.GeneratorFunction
-func (gen *SidekiqDefaultGenerator) PDB() basereconciler.GeneratorFunction {
+func (gen *SidekiqGenerator) PDB() basereconciler.GeneratorFunction {
 	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
 	return pdb.New(key, gen.GetLabels(), gen.Selector().MatchLabels, *gen.Spec.PDB)
 }
 
 // PodMonitor returns a basereconciler.GeneratorFunction
-func (gen *SidekiqDefaultGenerator) PodMonitor() basereconciler.GeneratorFunction {
-	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return podmonitor.New(key, gen.GetLabels(), gen.Selector().MatchLabels,
-		podmonitor.PodMetricsEndpoint("/metrics", "metrics", 30),
-	)
-}
-
-// SidekiqBillingGenerator has methods to generate resources for system-sidekiq-billing
-type SidekiqBillingGenerator struct {
-	generators.BaseOptions
-	Spec               saasv1alpha1.SystemSidekiqBillingSpec
-	Options            config.Options
-	ImageSpec          saasv1alpha1.ImageSpec
-	ConfigFilesEnabled bool
-}
-
-// HPA returns a basereconciler.GeneratorFunction
-func (gen *SidekiqBillingGenerator) HPA() basereconciler.GeneratorFunction {
-	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return hpa.New(key, gen.GetLabels(), *gen.Spec.HPA)
-}
-
-// PDB returns a basereconciler.GeneratorFunction
-func (gen *SidekiqBillingGenerator) PDB() basereconciler.GeneratorFunction {
-	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return pdb.New(key, gen.GetLabels(), gen.Selector().MatchLabels, *gen.Spec.PDB)
-}
-
-// PodMonitor returns a basereconciler.GeneratorFunction
-func (gen *SidekiqBillingGenerator) PodMonitor() basereconciler.GeneratorFunction {
-	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return podmonitor.New(key, gen.GetLabels(), gen.Selector().MatchLabels,
-		podmonitor.PodMetricsEndpoint("/metrics", "metrics", 30),
-	)
-}
-
-// SidekiqLowGenerator has methods to generate resources for system-sidekiq-low
-type SidekiqLowGenerator struct {
-	generators.BaseOptions
-	Spec               saasv1alpha1.SystemSidekiqLowSpec
-	Options            config.Options
-	ImageSpec          saasv1alpha1.ImageSpec
-	ConfigFilesEnabled bool
-}
-
-// HPA returns a basereconciler.GeneratorFunction
-func (gen *SidekiqLowGenerator) HPA() basereconciler.GeneratorFunction {
-	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return hpa.New(key, gen.GetLabels(), *gen.Spec.HPA)
-}
-
-// PDB returns a basereconciler.GeneratorFunction
-func (gen *SidekiqLowGenerator) PDB() basereconciler.GeneratorFunction {
-	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return pdb.New(key, gen.GetLabels(), gen.Selector().MatchLabels, *gen.Spec.PDB)
-}
-
-// PodMonitor returns a basereconciler.GeneratorFunction
-func (gen *SidekiqLowGenerator) PodMonitor() basereconciler.GeneratorFunction {
+func (gen *SidekiqGenerator) PodMonitor() basereconciler.GeneratorFunction {
 	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
 	return podmonitor.New(key, gen.GetLabels(), gen.Selector().MatchLabels,
 		podmonitor.PodMetricsEndpoint("/metrics", "metrics", 30),

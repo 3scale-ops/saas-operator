@@ -15,7 +15,7 @@ import (
 
 // Deployment returns a basereconciler.GeneratorFunction function that will return a Deployment
 // resource when called
-func (gen *SidekiqLowGenerator) Deployment() basereconciler.GeneratorFunction {
+func (gen *SidekiqGenerator) Deployment() basereconciler.GeneratorFunction {
 
 	return func() client.Object {
 
