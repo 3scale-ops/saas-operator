@@ -43,6 +43,10 @@ spec:
       fromVault:
         path: secret/data/path/system-app
         key: DB_SECRET
+    mappingServiceAccessToken:
+      fromVault:
+        path: secret/data/path/system-master-apicast
+        key: ACCESS_TOKEN
     eventsSharedSecret:
       fromVault:
         path: secret/data/path/system-app
