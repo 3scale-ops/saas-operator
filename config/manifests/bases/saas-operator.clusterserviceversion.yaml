@@ -1960,7 +1960,7 @@ spec:
       - description: Sidekiq Billing specific configuration options
         displayName: Sidekiq Billing
         path: sidekiqBilling
-      - description: Sidekiq Billing specific configuration options for the component element
+      - description: Sidekiq specific configuration options for the component element
         displayName: Config
         path: sidekiqBilling.config
       - description: Number of rails max threads per sidekiq pod
@@ -2044,7 +2044,7 @@ spec:
       - description: Sidekiq Default specific configuration options
         displayName: Sidekiq Default
         path: sidekiqDefault
-      - description: Sidekiq Default specific configuration options for the component element
+      - description: Sidekiq specific configuration options for the component element
         displayName: Config
         path: sidekiqDefault.config
       - description: Number of rails max threads per sidekiq pod
@@ -2128,7 +2128,7 @@ spec:
       - description: Sidekiq Low specific configuration options
         displayName: Sidekiq Low
         path: sidekiqLow
-      - description: Sidekiq Low specific configuration options for the component element
+      - description: Sidekiq specific configuration options for the component element
         displayName: Config
         path: sidekiqLow.config
       - description: Number of rails max threads per sidekiq pod

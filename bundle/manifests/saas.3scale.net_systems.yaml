@@ -989,7 +989,7 @@ spec:
                 description: Sidekiq Billing specific configuration options
                 properties:
                   config:
-                    description: Sidekiq Billing specific configuration options for the component element
+                    description: Sidekiq specific configuration options for the component element
                     properties:
                       maxThreads:
                         description: Number of rails max threads per sidekiq pod
@@ -1258,7 +1258,7 @@ spec:
                 description: Sidekiq Default specific configuration options
                 properties:
                   config:
-                    description: Sidekiq Default specific configuration options for the component element
+                    description: Sidekiq specific configuration options for the component element
                     properties:
                       maxThreads:
                         description: Number of rails max threads per sidekiq pod
@@ -1527,7 +1527,7 @@ spec:
                 description: Sidekiq Low specific configuration options
                 properties:
                   config:
-                    description: Sidekiq Low specific configuration options for the component element
+                    description: Sidekiq specific configuration options for the component element
                     properties:
                       maxThreads:
                         description: Number of rails max threads per sidekiq pod

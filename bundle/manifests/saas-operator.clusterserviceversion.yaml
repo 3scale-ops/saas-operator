@@ -381,6 +381,12 @@ metadata:
                   }
                 }
               },
+              "mappingServiceAccessToken": {
+                "fromVault": {
+                  "key": "ACCESS_TOKEN",
+                  "path": "secret/data/path/system-master-apicast"
+                }
+              },
               "memcachedServers": "",
               "recaptcha": {
                 "privateKey": {
@@ -528,7 +534,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/3scale/saas-operator
     support: Red Hat
-  name: saas-operator.v0.10.9-alpha.1
+  name: saas-operator.v0.10.9
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -2345,7 +2351,7 @@ spec:
       - description: Sidekiq Billing specific configuration options
         displayName: Sidekiq Billing
         path: sidekiqBilling
-      - description: Sidekiq Billing specific configuration options for the component element
+      - description: Sidekiq specific configuration options for the component element
         displayName: Config
         path: sidekiqBilling.config
       - description: Number of rails max threads per sidekiq pod
@@ -2429,7 +2435,7 @@ spec:
       - description: Sidekiq Default specific configuration options
         displayName: Sidekiq Default
         path: sidekiqDefault
-      - description: Sidekiq Default specific configuration options for the component element
+      - description: Sidekiq specific configuration options for the component element
         displayName: Config
         path: sidekiqDefault.config
       - description: Number of rails max threads per sidekiq pod
@@ -2513,7 +2519,7 @@ spec:
       - description: Sidekiq Low specific configuration options
         displayName: Sidekiq Low
         path: sidekiqLow
-      - description: Sidekiq Low specific configuration options for the component element
+      - description: Sidekiq specific configuration options for the component element
         displayName: Config
         path: sidekiqLow.config
       - description: Number of rails max threads per sidekiq pod
@@ -3035,7 +3041,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/3scale/saas-operator:0.10.9-alpha.1
+                image: quay.io/3scale/saas-operator:0.10.9
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -3422,4 +3428,4 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
-  version: 0.10.9-alpha.1
+  version: 0.10.9
