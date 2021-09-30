@@ -227,7 +227,7 @@ get-new-release:
 
 kind-create: ## runs a k8s kind cluster for testing
 kind-create: export KUBECONFIG = ${PWD}/kubeconfig
-kind-create: tmp $(KIND)
+kind-create: tmp kind $(KIND)
 	$(KIND) create cluster --wait 5m --image kindest/node:v1.20.0
 
 kind-delete: ## deletes the kind cluster
