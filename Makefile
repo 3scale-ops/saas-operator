@@ -236,7 +236,7 @@ kind-delete: $(KIND)
 
 kind-deploy: ## Deploys the operator in the kind cluster for testing
 kind-deploy: export KUBECONFIG = ${PWD}/kubeconfig
-kind-deploy: manifests kustomize kind
+kind-deploy: manifests kustomize docker-build kind
 	$(KIND) load docker-image $(IMG)
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/test | kubectl apply -f -
