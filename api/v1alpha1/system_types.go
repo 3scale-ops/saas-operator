@@ -647,9 +647,9 @@ func (spec *SystemSidekiqSpec) Default(sidekiqType systemSidekiqType) {
 		spec.Config = &SidekiqConfig{}
 	}
 
-	if sidekiqType == "billing" {
+	if sidekiqType == Billing {
 		spec.Config.Default(systemDefaultSidekiqConfigBilling)
-	} else if sidekiqType == "low" {
+	} else if sidekiqType == Low {
 		spec.Config.Default(systemDefaultSidekiqConfigLow)
 	} else {
 		spec.Config.Default(systemDefaultSidekiqConfigDefault)
