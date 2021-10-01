@@ -1180,9 +1180,823 @@ spec:
                     description: Image tag
                     type: string
                 type: object
-              sidekiq:
-                description: Sidekiq specific configuration options
+              sidekiqBilling:
+                description: Sidekiq Billing specific configuration options
                 properties:
+                  config:
+                    description: Sidekiq specific configuration options for the component
+                      element
+                    properties:
+                      maxThreads:
+                        description: Number of rails max threads per sidekiq pod
+                        format: int32
+                        type: integer
+                      queuesArgs:
+                        description: Bundle exec sidekiq queues argument
+                        type: string
+                    type: object
+                  hpa:
+                    description: Horizontal Pod Autoscaler for the component
+                    properties:
+                      maxReplicas:
+                        description: Upper limit for the number of replicas to which
+                          the autoscaler can scale up. It cannot be less that minReplicas.
+                        format: int32
+                        type: integer
+                      minReplicas:
+                        description: Lower limit for the number of replicas to which
+                          the autoscaler can scale down.  It defaults to 1 pod.  minReplicas
+                          is allowed to be 0 if the alpha feature gate HPAScaleToZero
+                          is enabled and at least one Object or External metric is
+                          configured.  Scaling is active as long as at least one metric
+                          value is available.
+                        format: int32
+                        type: integer
+                      resourceName:
+                        description: Target resource used to autoscale (cpu/memory)
+                        enum:
+                        - cpu
+                        - memory
+                        type: string
+                      resourceUtilization:
+                        description: A percentage indicating the target resource consumption
+                          used to autoscale
+                        format: int32
+                        type: integer
+                    type: object
+                  livenessProbe:
+                    description: Liveness probe for the component
+                    properties:
+                      failureThreshold:
+                        description: Minimum consecutive failures for the probe to
+                          be considered failed after having succeeded
+                        format: int32
+                        type: integer
+                      initialDelaySeconds:
+                        description: Number of seconds after the container has started
+                          before liveness probes are initiated
+                        format: int32
+                        type: integer
+                      periodSeconds:
+                        description: How often (in seconds) to perform the probe
+                        format: int32
+                        type: integer
+                      successThreshold:
+                        description: Minimum consecutive successes for the probe to
+                          be considered successful after having failed
+                        format: int32
+                        type: integer
+                      timeoutSeconds:
+                        description: Number of seconds after which the probe times
+                          out
+                        format: int32
+                        type: integer
+                    type: object
+                  nodeAffinity:
+                    description: Describes node affinity scheduling rules for the
+                      pod.
+                    properties:
+                      preferredDuringSchedulingIgnoredDuringExecution:
+                        description: The scheduler will prefer to schedule pods to
+                          nodes that satisfy the affinity expressions specified by
+                          this field, but it may choose a node that violates one or
+                          more of the expressions. The node that is most preferred
+                          is the one with the greatest sum of weights, i.e. for each
+                          node that meets all of the scheduling requirements (resource
+                          request, requiredDuringScheduling affinity expressions,
+                          etc.), compute a sum by iterating through the elements of
+                          this field and adding "weight" to the sum if the node matches
+                          the corresponding matchExpressions; the node(s) with the
+                          highest sum are the most preferred.
+                        items:
+                          description: An empty preferred scheduling term matches
+                            all objects with implicit weight 0 (i.e. it's a no-op).
+                            A null preferred scheduling term matches no objects (i.e.
+                            is also a no-op).
+                          properties:
+                            preference:
+                              description: A node selector term, associated with the
+                                corresponding weight.
+                              properties:
+                                matchExpressions:
+                                  description: A list of node selector requirements
+                                    by node's labels.
+                                  items:
+                                    description: A node selector requirement is a
+                                      selector that contains values, a key, and an
+                                      operator that relates the key and values.
+                                    properties:
+                                      key:
+                                        description: The label key that the selector
+                                          applies to.
+                                        type: string
+                                      operator:
+                                        description: Represents a key's relationship
+                                          to a set of values. Valid operators are
+                                          In, NotIn, Exists, DoesNotExist. Gt, and
+                                          Lt.
+                                        type: string
+                                      values:
+                                        description: An array of string values. If
+                                          the operator is In or NotIn, the values
+                                          array must be non-empty. If the operator
+                                          is Exists or DoesNotExist, the values array
+                                          must be empty. If the operator is Gt or
+                                          Lt, the values array must have a single
+                                          element, which will be interpreted as an
+                                          integer. This array is replaced during a
+                                          strategic merge patch.
+                                        items:
+                                          type: string
+                                        type: array
+                                    required:
+                                    - key
+                                    - operator
+                                    type: object
+                                  type: array
+                                matchFields:
+                                  description: A list of node selector requirements
+                                    by node's fields.
+                                  items:
+                                    description: A node selector requirement is a
+                                      selector that contains values, a key, and an
+                                      operator that relates the key and values.
+                                    properties:
+                                      key:
+                                        description: The label key that the selector
+                                          applies to.
+                                        type: string
+                                      operator:
+                                        description: Represents a key's relationship
+                                          to a set of values. Valid operators are
+                                          In, NotIn, Exists, DoesNotExist. Gt, and
+                                          Lt.
+                                        type: string
+                                      values:
+                                        description: An array of string values. If
+                                          the operator is In or NotIn, the values
+                                          array must be non-empty. If the operator
+                                          is Exists or DoesNotExist, the values array
+                                          must be empty. If the operator is Gt or
+                                          Lt, the values array must have a single
+                                          element, which will be interpreted as an
+                                          integer. This array is replaced during a
+                                          strategic merge patch.
+                                        items:
+                                          type: string
+                                        type: array
+                                    required:
+                                    - key
+                                    - operator
+                                    type: object
+                                  type: array
+                              type: object
+                            weight:
+                              description: Weight associated with matching the corresponding
+                                nodeSelectorTerm, in the range 1-100.
+                              format: int32
+                              type: integer
+                          required:
+                          - preference
+                          - weight
+                          type: object
+                        type: array
+                      requiredDuringSchedulingIgnoredDuringExecution:
+                        description: If the affinity requirements specified by this
+                          field are not met at scheduling time, the pod will not be
+                          scheduled onto the node. If the affinity requirements specified
+                          by this field cease to be met at some point during pod execution
+                          (e.g. due to an update), the system may or may not try to
+                          eventually evict the pod from its node.
+                        properties:
+                          nodeSelectorTerms:
+                            description: Required. A list of node selector terms.
+                              The terms are ORed.
+                            items:
+                              description: A null or empty node selector term matches
+                                no objects. The requirements of them are ANDed. The
+                                TopologySelectorTerm type implements a subset of the
+                                NodeSelectorTerm.
+                              properties:
+                                matchExpressions:
+                                  description: A list of node selector requirements
+                                    by node's labels.
+                                  items:
+                                    description: A node selector requirement is a
+                                      selector that contains values, a key, and an
+                                      operator that relates the key and values.
+                                    properties:
+                                      key:
+                                        description: The label key that the selector
+                                          applies to.
+                                        type: string
+                                      operator:
+                                        description: Represents a key's relationship
+                                          to a set of values. Valid operators are
+                                          In, NotIn, Exists, DoesNotExist. Gt, and
+                                          Lt.
+                                        type: string
+                                      values:
+                                        description: An array of string values. If
+                                          the operator is In or NotIn, the values
+                                          array must be non-empty. If the operator
+                                          is Exists or DoesNotExist, the values array
+                                          must be empty. If the operator is Gt or
+                                          Lt, the values array must have a single
+                                          element, which will be interpreted as an
+                                          integer. This array is replaced during a
+                                          strategic merge patch.
+                                        items:
+                                          type: string
+                                        type: array
+                                    required:
+                                    - key
+                                    - operator
+                                    type: object
+                                  type: array
+                                matchFields:
+                                  description: A list of node selector requirements
+                                    by node's fields.
+                                  items:
+                                    description: A node selector requirement is a
+                                      selector that contains values, a key, and an
+                                      operator that relates the key and values.
+                                    properties:
+                                      key:
+                                        description: The label key that the selector
+                                          applies to.
+                                        type: string
+                                      operator:
+                                        description: Represents a key's relationship
+                                          to a set of values. Valid operators are
+                                          In, NotIn, Exists, DoesNotExist. Gt, and
+                                          Lt.
+                                        type: string
+                                      values:
+                                        description: An array of string values. If
+                                          the operator is In or NotIn, the values
+                                          array must be non-empty. If the operator
+                                          is Exists or DoesNotExist, the values array
+                                          must be empty. If the operator is Gt or
+                                          Lt, the values array must have a single
+                                          element, which will be interpreted as an
+                                          integer. This array is replaced during a
+                                          strategic merge patch.
+                                        items:
+                                          type: string
+                                        type: array
+                                    required:
+                                    - key
+                                    - operator
+                                    type: object
+                                  type: array
+                              type: object
+                            type: array
+                        required:
+                        - nodeSelectorTerms
+                        type: object
+                    type: object
+                  pdb:
+                    description: Pod Disruption Budget for the component
+                    properties:
+                      maxUnavailable:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        description: An eviction is allowed if at most "maxUnavailable"
+                          pods selected by "selector" are unavailable after the eviction,
+                          i.e. even in absence of the evicted pod. For example, one
+                          can prevent all voluntary evictions by specifying 0. This
+                          is a mutually exclusive setting with "minAvailable".
+                        x-kubernetes-int-or-string: true
+                      minAvailable:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        description: An eviction is allowed if at least "minAvailable"
+                          pods selected by "selector" will still be available after
+                          the eviction, i.e. even in the absence of the evicted pod.  So
+                          for example you can prevent all voluntary evictions by specifying
+                          "100%".
+                        x-kubernetes-int-or-string: true
+                    type: object
+                  readinessProbe:
+                    description: Readiness probe for the component
+                    properties:
+                      failureThreshold:
+                        description: Minimum consecutive failures for the probe to
+                          be considered failed after having succeeded
+                        format: int32
+                        type: integer
+                      initialDelaySeconds:
+                        description: Number of seconds after the container has started
+                          before liveness probes are initiated
+                        format: int32
+                        type: integer
+                      periodSeconds:
+                        description: How often (in seconds) to perform the probe
+                        format: int32
+                        type: integer
+                      successThreshold:
+                        description: Minimum consecutive successes for the probe to
+                          be considered successful after having failed
+                        format: int32
+                        type: integer
+                      timeoutSeconds:
+                        description: Number of seconds after which the probe times
+                          out
+                        format: int32
+                        type: integer
+                    type: object
+                  replicas:
+                    description: Number of replicas (ignored if hpa is enabled) for
+                      the component
+                    format: int32
+                    type: integer
+                  resources:
+                    description: Resource requirements for the component
+                    properties:
+                      limits:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Limits describes the maximum amount of compute
+                          resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        type: object
+                      requests:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Requests describes the minimum amount of compute
+                          resources required. If Requests is omitted for a container,
+                          it defaults to Limits if that is explicitly specified, otherwise
+                          to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        type: object
+                    type: object
+                  tolerations:
+                    description: If specified, the pod's tolerations.
+                    items:
+                      description: The pod this Toleration is attached to tolerates
+                        any taint that matches the triple <key,value,effect> using
+                        the matching operator <operator>.
+                      properties:
+                        effect:
+                          description: Effect indicates the taint effect to match.
+                            Empty means match all taint effects. When specified, allowed
+                            values are NoSchedule, PreferNoSchedule and NoExecute.
+                          type: string
+                        key:
+                          description: Key is the taint key that the toleration applies
+                            to. Empty means match all taint keys. If the key is empty,
+                            operator must be Exists; this combination means to match
+                            all values and all keys.
+                          type: string
+                        operator:
+                          description: Operator represents a key's relationship to
+                            the value. Valid operators are Exists and Equal. Defaults
+                            to Equal. Exists is equivalent to wildcard for value,
+                            so that a pod can tolerate all taints of a particular
+                            category.
+                          type: string
+                        tolerationSeconds:
+                          description: TolerationSeconds represents the period of
+                            time the toleration (which must be of effect NoExecute,
+                            otherwise this field is ignored) tolerates the taint.
+                            By default, it is not set, which means tolerate the taint
+                            forever (do not evict). Zero and negative values will
+                            be treated as 0 (evict immediately) by the system.
+                          format: int64
+                          type: integer
+                        value:
+                          description: Value is the taint value the toleration matches
+                            to. If the operator is Exists, the value should be empty,
+                            otherwise just a regular string.
+                          type: string
+                      type: object
+                    type: array
+                type: object
+              sidekiqDefault:
+                description: Sidekiq Default specific configuration options
+                properties:
+                  config:
+                    description: Sidekiq specific configuration options for the component
+                      element
+                    properties:
+                      maxThreads:
+                        description: Number of rails max threads per sidekiq pod
+                        format: int32
+                        type: integer
+                      queuesArgs:
+                        description: Bundle exec sidekiq queues argument
+                        type: string
+                    type: object
+                  hpa:
+                    description: Horizontal Pod Autoscaler for the component
+                    properties:
+                      maxReplicas:
+                        description: Upper limit for the number of replicas to which
+                          the autoscaler can scale up. It cannot be less that minReplicas.
+                        format: int32
+                        type: integer
+                      minReplicas:
+                        description: Lower limit for the number of replicas to which
+                          the autoscaler can scale down.  It defaults to 1 pod.  minReplicas
+                          is allowed to be 0 if the alpha feature gate HPAScaleToZero
+                          is enabled and at least one Object or External metric is
+                          configured.  Scaling is active as long as at least one metric
+                          value is available.
+                        format: int32
+                        type: integer
+                      resourceName:
+                        description: Target resource used to autoscale (cpu/memory)
+                        enum:
+                        - cpu
+                        - memory
+                        type: string
+                      resourceUtilization:
+                        description: A percentage indicating the target resource consumption
+                          used to autoscale
+                        format: int32
+                        type: integer
+                    type: object
+                  livenessProbe:
+                    description: Liveness probe for the component
+                    properties:
+                      failureThreshold:
+                        description: Minimum consecutive failures for the probe to
+                          be considered failed after having succeeded
+                        format: int32
+                        type: integer
+                      initialDelaySeconds:
+                        description: Number of seconds after the container has started
+                          before liveness probes are initiated
+                        format: int32
+                        type: integer
+                      periodSeconds:
+                        description: How often (in seconds) to perform the probe
+                        format: int32
+                        type: integer
+                      successThreshold:
+                        description: Minimum consecutive successes for the probe to
+                          be considered successful after having failed
+                        format: int32
+                        type: integer
+                      timeoutSeconds:
+                        description: Number of seconds after which the probe times
+                          out
+                        format: int32
+                        type: integer
+                    type: object
+                  nodeAffinity:
+                    description: Describes node affinity scheduling rules for the
+                      pod.
+                    properties:
+                      preferredDuringSchedulingIgnoredDuringExecution:
+                        description: The scheduler will prefer to schedule pods to
+                          nodes that satisfy the affinity expressions specified by
+                          this field, but it may choose a node that violates one or
+                          more of the expressions. The node that is most preferred
+                          is the one with the greatest sum of weights, i.e. for each
+                          node that meets all of the scheduling requirements (resource
+                          request, requiredDuringScheduling affinity expressions,
+                          etc.), compute a sum by iterating through the elements of
+                          this field and adding "weight" to the sum if the node matches
+                          the corresponding matchExpressions; the node(s) with the
+                          highest sum are the most preferred.
+                        items:
+                          description: An empty preferred scheduling term matches
+                            all objects with implicit weight 0 (i.e. it's a no-op).
+                            A null preferred scheduling term matches no objects (i.e.
+                            is also a no-op).
+                          properties:
+                            preference:
+                              description: A node selector term, associated with the
+                                corresponding weight.
+                              properties:
+                                matchExpressions:
+                                  description: A list of node selector requirements
+                                    by node's labels.
+                                  items:
+                                    description: A node selector requirement is a
+                                      selector that contains values, a key, and an
+                                      operator that relates the key and values.
+                                    properties:
+                                      key:
+                                        description: The label key that the selector
+                                          applies to.
+                                        type: string
+                                      operator:
+                                        description: Represents a key's relationship
+                                          to a set of values. Valid operators are
+                                          In, NotIn, Exists, DoesNotExist. Gt, and
+                                          Lt.
+                                        type: string
+                                      values:
+                                        description: An array of string values. If
+                                          the operator is In or NotIn, the values
+                                          array must be non-empty. If the operator
+                                          is Exists or DoesNotExist, the values array
+                                          must be empty. If the operator is Gt or
+                                          Lt, the values array must have a single
+                                          element, which will be interpreted as an
+                                          integer. This array is replaced during a
+                                          strategic merge patch.
+                                        items:
+                                          type: string
+                                        type: array
+                                    required:
+                                    - key
+                                    - operator
+                                    type: object
+                                  type: array
+                                matchFields:
+                                  description: A list of node selector requirements
+                                    by node's fields.
+                                  items:
+                                    description: A node selector requirement is a
+                                      selector that contains values, a key, and an
+                                      operator that relates the key and values.
+                                    properties:
+                                      key:
+                                        description: The label key that the selector
+                                          applies to.
+                                        type: string
+                                      operator:
+                                        description: Represents a key's relationship
+                                          to a set of values. Valid operators are
+                                          In, NotIn, Exists, DoesNotExist. Gt, and
+                                          Lt.
+                                        type: string
+                                      values:
+                                        description: An array of string values. If
+                                          the operator is In or NotIn, the values
+                                          array must be non-empty. If the operator
+                                          is Exists or DoesNotExist, the values array
+                                          must be empty. If the operator is Gt or
+                                          Lt, the values array must have a single
+                                          element, which will be interpreted as an
+                                          integer. This array is replaced during a
+                                          strategic merge patch.
+                                        items:
+                                          type: string
+                                        type: array
+                                    required:
+                                    - key
+                                    - operator
+                                    type: object
+                                  type: array
+                              type: object
+                            weight:
+                              description: Weight associated with matching the corresponding
+                                nodeSelectorTerm, in the range 1-100.
+                              format: int32
+                              type: integer
+                          required:
+                          - preference
+                          - weight
+                          type: object
+                        type: array
+                      requiredDuringSchedulingIgnoredDuringExecution:
+                        description: If the affinity requirements specified by this
+                          field are not met at scheduling time, the pod will not be
+                          scheduled onto the node. If the affinity requirements specified
+                          by this field cease to be met at some point during pod execution
+                          (e.g. due to an update), the system may or may not try to
+                          eventually evict the pod from its node.
+                        properties:
+                          nodeSelectorTerms:
+                            description: Required. A list of node selector terms.
+                              The terms are ORed.
+                            items:
+                              description: A null or empty node selector term matches
+                                no objects. The requirements of them are ANDed. The
+                                TopologySelectorTerm type implements a subset of the
+                                NodeSelectorTerm.
+                              properties:
+                                matchExpressions:
+                                  description: A list of node selector requirements
+                                    by node's labels.
+                                  items:
+                                    description: A node selector requirement is a
+                                      selector that contains values, a key, and an
+                                      operator that relates the key and values.
+                                    properties:
+                                      key:
+                                        description: The label key that the selector
+                                          applies to.
+                                        type: string
+                                      operator:
+                                        description: Represents a key's relationship
+                                          to a set of values. Valid operators are
+                                          In, NotIn, Exists, DoesNotExist. Gt, and
+                                          Lt.
+                                        type: string
+                                      values:
+                                        description: An array of string values. If
+                                          the operator is In or NotIn, the values
+                                          array must be non-empty. If the operator
+                                          is Exists or DoesNotExist, the values array
+                                          must be empty. If the operator is Gt or
+                                          Lt, the values array must have a single
+                                          element, which will be interpreted as an
+                                          integer. This array is replaced during a
+                                          strategic merge patch.
+                                        items:
+                                          type: string
+                                        type: array
+                                    required:
+                                    - key
+                                    - operator
+                                    type: object
+                                  type: array
+                                matchFields:
+                                  description: A list of node selector requirements
+                                    by node's fields.
+                                  items:
+                                    description: A node selector requirement is a
+                                      selector that contains values, a key, and an
+                                      operator that relates the key and values.
+                                    properties:
+                                      key:
+                                        description: The label key that the selector
+                                          applies to.
+                                        type: string
+                                      operator:
+                                        description: Represents a key's relationship
+                                          to a set of values. Valid operators are
+                                          In, NotIn, Exists, DoesNotExist. Gt, and
+                                          Lt.
+                                        type: string
+                                      values:
+                                        description: An array of string values. If
+                                          the operator is In or NotIn, the values
+                                          array must be non-empty. If the operator
+                                          is Exists or DoesNotExist, the values array
+                                          must be empty. If the operator is Gt or
+                                          Lt, the values array must have a single
+                                          element, which will be interpreted as an
+                                          integer. This array is replaced during a
+                                          strategic merge patch.
+                                        items:
+                                          type: string
+                                        type: array
+                                    required:
+                                    - key
+                                    - operator
+                                    type: object
+                                  type: array
+                              type: object
+                            type: array
+                        required:
+                        - nodeSelectorTerms
+                        type: object
+                    type: object
+                  pdb:
+                    description: Pod Disruption Budget for the component
+                    properties:
+                      maxUnavailable:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        description: An eviction is allowed if at most "maxUnavailable"
+                          pods selected by "selector" are unavailable after the eviction,
+                          i.e. even in absence of the evicted pod. For example, one
+                          can prevent all voluntary evictions by specifying 0. This
+                          is a mutually exclusive setting with "minAvailable".
+                        x-kubernetes-int-or-string: true
+                      minAvailable:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        description: An eviction is allowed if at least "minAvailable"
+                          pods selected by "selector" will still be available after
+                          the eviction, i.e. even in the absence of the evicted pod.  So
+                          for example you can prevent all voluntary evictions by specifying
+                          "100%".
+                        x-kubernetes-int-or-string: true
+                    type: object
+                  readinessProbe:
+                    description: Readiness probe for the component
+                    properties:
+                      failureThreshold:
+                        description: Minimum consecutive failures for the probe to
+                          be considered failed after having succeeded
+                        format: int32
+                        type: integer
+                      initialDelaySeconds:
+                        description: Number of seconds after the container has started
+                          before liveness probes are initiated
+                        format: int32
+                        type: integer
+                      periodSeconds:
+                        description: How often (in seconds) to perform the probe
+                        format: int32
+                        type: integer
+                      successThreshold:
+                        description: Minimum consecutive successes for the probe to
+                          be considered successful after having failed
+                        format: int32
+                        type: integer
+                      timeoutSeconds:
+                        description: Number of seconds after which the probe times
+                          out
+                        format: int32
+                        type: integer
+                    type: object
+                  replicas:
+                    description: Number of replicas (ignored if hpa is enabled) for
+                      the component
+                    format: int32
+                    type: integer
+                  resources:
+                    description: Resource requirements for the component
+                    properties:
+                      limits:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Limits describes the maximum amount of compute
+                          resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        type: object
+                      requests:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Requests describes the minimum amount of compute
+                          resources required. If Requests is omitted for a container,
+                          it defaults to Limits if that is explicitly specified, otherwise
+                          to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        type: object
+                    type: object
+                  tolerations:
+                    description: If specified, the pod's tolerations.
+                    items:
+                      description: The pod this Toleration is attached to tolerates
+                        any taint that matches the triple <key,value,effect> using
+                        the matching operator <operator>.
+                      properties:
+                        effect:
+                          description: Effect indicates the taint effect to match.
+                            Empty means match all taint effects. When specified, allowed
+                            values are NoSchedule, PreferNoSchedule and NoExecute.
+                          type: string
+                        key:
+                          description: Key is the taint key that the toleration applies
+                            to. Empty means match all taint keys. If the key is empty,
+                            operator must be Exists; this combination means to match
+                            all values and all keys.
+                          type: string
+                        operator:
+                          description: Operator represents a key's relationship to
+                            the value. Valid operators are Exists and Equal. Defaults
+                            to Equal. Exists is equivalent to wildcard for value,
+                            so that a pod can tolerate all taints of a particular
+                            category.
+                          type: string
+                        tolerationSeconds:
+                          description: TolerationSeconds represents the period of
+                            time the toleration (which must be of effect NoExecute,
+                            otherwise this field is ignored) tolerates the taint.
+                            By default, it is not set, which means tolerate the taint
+                            forever (do not evict). Zero and negative values will
+                            be treated as 0 (evict immediately) by the system.
+                          format: int64
+                          type: integer
+                        value:
+                          description: Value is the taint value the toleration matches
+                            to. If the operator is Exists, the value should be empty,
+                            otherwise just a regular string.
+                          type: string
+                      type: object
+                    type: array
+                type: object
+              sidekiqLow:
+                description: Sidekiq Low specific configuration options
+                properties:
+                  config:
+                    description: Sidekiq specific configuration options for the component
+                      element
+                    properties:
+                      maxThreads:
+                        description: Number of rails max threads per sidekiq pod
+                        format: int32
+                        type: integer
+                      queuesArgs:
+                        description: Bundle exec sidekiq queues argument
+                        type: string
+                    type: object
                   hpa:
                     description: Horizontal Pod Autoscaler for the component
                     properties:

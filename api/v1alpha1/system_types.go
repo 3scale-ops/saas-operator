@@ -28,6 +28,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+type systemSidekiqType string
+
+const (
+	Default systemSidekiqType = "default"
+	Billing systemSidekiqType = "billing"
+	Low     systemSidekiqType = "low"
+)
+
 var (
 	// Common
 	systemDefaultSandboxProxyOpensslVerifyMode string           = "VERIFY_NONE"
@@ -133,6 +141,19 @@ var (
 		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
 	}
 
+	systemDefaultSidekiqConfigDefault defaultSidekiqConfig = defaultSidekiqConfig{
+		QueuesArg:  pointer.StringPtr("-q critical -q backend_sync -q events -q zync,40 -q priority,25 -q default,15 -q web_hooks,10 -q deletion,5"),
+		MaxThreads: pointer.Int32Ptr(15),
+	}
+	systemDefaultSidekiqConfigBilling defaultSidekiqConfig = defaultSidekiqConfig{
+		QueuesArg:  pointer.StringPtr("-q billing"),
+		MaxThreads: pointer.Int32Ptr(15),
+	}
+	systemDefaultSidekiqConfigLow defaultSidekiqConfig = defaultSidekiqConfig{
+		QueuesArg:  pointer.StringPtr("-q low"),
+		MaxThreads: pointer.Int32Ptr(15),
+	}
+
 	// Sphinx
 	systemDefaultSphinxDeltaIndexInterval  int32                           = 5
 	systemDefaultSphinxFullReindexInterval int32                           = 60
@@ -182,10 +203,18 @@ type SystemSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	App *SystemAppSpec `json:"app,omitempty"`
-	// Sidekiq specific configuration options
+	// Sidekiq Default specific configuration options
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	Sidekiq *SystemSidekiqSpec `json:"sidekiq,omitempty"`
+	SidekiqDefault *SystemSidekiqSpec `json:"sidekiqDefault,omitempty"`
+	// Sidekiq Billing specific configuration options
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	SidekiqBilling *SystemSidekiqSpec `json:"sidekiqBilling,omitempty"`
+	// Sidekiq Low specific configuration options
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	SidekiqLow *SystemSidekiqSpec `json:"sidekiqLow,omitempty"`
 	// Sphinx specific configuration options
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -207,10 +236,20 @@ func (s *System) Default() {
 	}
 	s.Spec.App.Default()
 
-	if s.Spec.Sidekiq == nil {
-		s.Spec.Sidekiq = &SystemSidekiqSpec{}
+	if s.Spec.SidekiqDefault == nil {
+		s.Spec.SidekiqDefault = &SystemSidekiqSpec{}
 	}
-	s.Spec.Sidekiq.Default()
+	s.Spec.SidekiqDefault.Default(Default)
+
+	if s.Spec.SidekiqBilling == nil {
+		s.Spec.SidekiqBilling = &SystemSidekiqSpec{}
+	}
+	s.Spec.SidekiqBilling.Default(Billing)
+
+	if s.Spec.SidekiqLow == nil {
+		s.Spec.SidekiqLow = &SystemSidekiqSpec{}
+	}
+	s.Spec.SidekiqLow.Default(Low)
 
 	if s.Spec.Sphinx == nil {
 		s.Spec.Sphinx = &SystemSphinxSpec{}
@@ -529,8 +568,12 @@ func (spec *SystemAppSpec) Default() {
 	spec.Marin3r = InitializeMarin3rSidecarSpec(spec.Marin3r, systemDefaultAppMarin3rSpec)
 }
 
-// SystemSidekiqSpec configures the App component of System
+// SystemSidekiqSpec configures the Sidekiq component of System
 type SystemSidekiqSpec struct {
+	// Sidekiq specific configuration options for the component element
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Config *SidekiqConfig `json:"config,omitempty"`
 	// Pod Disruption Budget for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -563,8 +606,31 @@ type SystemSidekiqSpec struct {
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
 }
 
-// Default implements defaulting for the system App component
-func (spec *SystemSidekiqSpec) Default() {
+// SidekiqConfig configures app behavior for System Sidekiq
+type SidekiqConfig struct {
+	// Bundle exec sidekiq queues argument
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	QueuesArg *string `json:"queuesArgs,omitempty"`
+	// Number of rails max threads per sidekiq pod
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	MaxThreads *int32 `json:"maxThreads,omitempty"`
+}
+
+type defaultSidekiqConfig struct {
+	QueuesArg  *string
+	MaxThreads *int32
+}
+
+// Default sets default values for any value not specifically set in the SidekiqConfig struct
+func (cfg *SidekiqConfig) Default(def defaultSidekiqConfig) {
+	cfg.QueuesArg = stringOrDefault(cfg.QueuesArg, pointer.StringPtr(*def.QueuesArg))
+	cfg.MaxThreads = intOrDefault(cfg.MaxThreads, pointer.Int32Ptr(*def.MaxThreads))
+}
+
+// Default implements defaulting for the system Sidekiq component
+func (spec *SystemSidekiqSpec) Default(sidekiqType systemSidekiqType) {
 	spec.HPA = InitializeHorizontalPodAutoscalerSpec(spec.HPA, systemDefaultSidekiqHPA)
 
 	if spec.HPA.IsDeactivated() {
@@ -577,6 +643,17 @@ func (spec *SystemSidekiqSpec) Default() {
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, systemDefaultSidekiqResources)
 	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, systemDefaultSidekiqLivenessProbe)
 	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, systemDefaultSidekiqReadinessProbe)
+	if spec.Config == nil {
+		spec.Config = &SidekiqConfig{}
+	}
+
+	if sidekiqType == Billing {
+		spec.Config.Default(systemDefaultSidekiqConfigBilling)
+	} else if sidekiqType == Low {
+		spec.Config.Default(systemDefaultSidekiqConfigLow)
+	} else {
+		spec.Config.Default(systemDefaultSidekiqConfigDefault)
+	}
 }
 
 // SystemSphinxSpec configures the App component of System

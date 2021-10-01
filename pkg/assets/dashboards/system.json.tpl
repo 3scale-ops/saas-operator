@@ -3344,7 +3344,7 @@
         "options": [],
         "query": "label_values(kube_pod_info{namespace='$namespace',pod=~'system-.*'}, pod)",
         "refresh": 1,
-        "regex": "/^([a-z]+-[a-z]+)-([0-9]|[a-z0-9]+-[a-z0-9]+)$/",
+        "regex": "/^([a-z-]+)-([0-9]|[a-z0-9]+-[a-z0-9]+)$/",
         "skipUrlSync": false,
         "sort": 1,
         "tagValuesQuery": "",

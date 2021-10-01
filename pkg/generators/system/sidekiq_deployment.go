@@ -54,12 +54,21 @@ func (gen *SidekiqGenerator) Deployment() basereconciler.GeneratorFunction {
 							{
 								Name:  gen.GetComponent(),
 								Image: fmt.Sprintf("%s:%s", *gen.ImageSpec.Name, *gen.ImageSpec.Tag),
-								Args: []string{
-									"rake",
-									"sidekiq:worker",
-									"RAILS_MAX_THREADS=25",
-								},
-								Env: pod.BuildEnvironment(gen.Options),
+								Command: func() (command []string) {
+									command = []string{"/usr/bin/bash", "-c", "bundle", "exec", "sidekiq"}
+									command = append(command, *gen.Spec.Config.QueuesArg)
+									return
+								}(),
+								Env: func() []corev1.EnvVar {
+									envVars := pod.BuildEnvironment(gen.Options)
+									envVars = append(envVars,
+										corev1.EnvVar{
+											Name:  "RAILS_MAX_THREADS",
+											Value: fmt.Sprintf("%d", *gen.Spec.Config.MaxThreads),
+										},
+									)
+									return envVars
+								}(),
 								Ports: pod.ContainerPorts(
 									pod.ContainerPortTCP("metrics", 9394),
 								),

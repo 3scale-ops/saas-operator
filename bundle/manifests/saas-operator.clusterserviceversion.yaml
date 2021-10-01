@@ -381,6 +381,12 @@ metadata:
                   }
                 }
               },
+              "mappingServiceAccessToken": {
+                "fromVault": {
+                  "key": "ACCESS_TOKEN",
+                  "path": "secret/data/path/system-master-apicast"
+                }
+              },
               "memcachedServers": "",
               "recaptcha": {
                 "privateKey": {
@@ -528,7 +534,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/3scale/saas-operator
     support: Red Hat
-  name: saas-operator.v0.10.8
+  name: saas-operator.v0.10.9
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -2342,81 +2348,258 @@ spec:
       - description: Image tag
         displayName: Tag
         path: image.tag
-      - description: Sidekiq specific configuration options
-        displayName: Sidekiq
-        path: sidekiq
+      - description: Sidekiq Billing specific configuration options
+        displayName: Sidekiq Billing
+        path: sidekiqBilling
+      - description: Sidekiq specific configuration options for the component element
+        displayName: Config
+        path: sidekiqBilling.config
+      - description: Number of rails max threads per sidekiq pod
+        displayName: Max Threads
+        path: sidekiqBilling.config.maxThreads
+      - description: Bundle exec sidekiq queues argument
+        displayName: Queues Arg
+        path: sidekiqBilling.config.queuesArgs
       - description: Horizontal Pod Autoscaler for the component
         displayName: HPA
-        path: sidekiq.hpa
+        path: sidekiqBilling.hpa
       - description: Upper limit for the number of replicas to which the autoscaler can scale up. It cannot be less that minReplicas.
         displayName: Max Replicas
-        path: sidekiq.hpa.maxReplicas
+        path: sidekiqBilling.hpa.maxReplicas
       - description: Lower limit for the number of replicas to which the autoscaler can scale down.  It defaults to 1 pod.  minReplicas is allowed to be 0 if the alpha feature gate HPAScaleToZero is enabled and at least one Object or External metric is configured.  Scaling is active as long as at least one metric value is available.
         displayName: Min Replicas
-        path: sidekiq.hpa.minReplicas
+        path: sidekiqBilling.hpa.minReplicas
       - description: Target resource used to autoscale (cpu/memory)
         displayName: Resource Name
-        path: sidekiq.hpa.resourceName
+        path: sidekiqBilling.hpa.resourceName
       - description: A percentage indicating the target resource consumption used to autoscale
         displayName: Resource Utilization
-        path: sidekiq.hpa.resourceUtilization
+        path: sidekiqBilling.hpa.resourceUtilization
       - description: Liveness probe for the component
         displayName: Liveness Probe
-        path: sidekiq.livenessProbe
+        path: sidekiqBilling.livenessProbe
       - description: Minimum consecutive failures for the probe to be considered failed after having succeeded
         displayName: Failure Threshold
-        path: sidekiq.livenessProbe.failureThreshold
+        path: sidekiqBilling.livenessProbe.failureThreshold
       - description: Number of seconds after the container has started before liveness probes are initiated
         displayName: Initial Delay Seconds
-        path: sidekiq.livenessProbe.initialDelaySeconds
+        path: sidekiqBilling.livenessProbe.initialDelaySeconds
       - description: How often (in seconds) to perform the probe
         displayName: Period Seconds
-        path: sidekiq.livenessProbe.periodSeconds
+        path: sidekiqBilling.livenessProbe.periodSeconds
       - description: Minimum consecutive successes for the probe to be considered successful after having failed
         displayName: Success Threshold
-        path: sidekiq.livenessProbe.successThreshold
+        path: sidekiqBilling.livenessProbe.successThreshold
       - description: Number of seconds after which the probe times out
         displayName: Timeout Seconds
-        path: sidekiq.livenessProbe.timeoutSeconds
+        path: sidekiqBilling.livenessProbe.timeoutSeconds
       - description: Pod Disruption Budget for the component
         displayName: PDB
-        path: sidekiq.pdb
+        path: sidekiqBilling.pdb
       - description: An eviction is allowed if at most "maxUnavailable" pods selected by "selector" are unavailable after the eviction, i.e. even in absence of the evicted pod. For example, one can prevent all voluntary evictions by specifying 0. This is a mutually exclusive setting with "minAvailable".
         displayName: Max Unavailable
-        path: sidekiq.pdb.maxUnavailable
+        path: sidekiqBilling.pdb.maxUnavailable
       - description: An eviction is allowed if at least "minAvailable" pods selected by "selector" will still be available after the eviction, i.e. even in the absence of the evicted pod.  So for example you can prevent all voluntary evictions by specifying "100%".
         displayName: Min Available
-        path: sidekiq.pdb.minAvailable
+        path: sidekiqBilling.pdb.minAvailable
       - description: Readiness probe for the component
         displayName: Readiness Probe
-        path: sidekiq.readinessProbe
+        path: sidekiqBilling.readinessProbe
       - description: Minimum consecutive failures for the probe to be considered failed after having succeeded
         displayName: Failure Threshold
-        path: sidekiq.readinessProbe.failureThreshold
+        path: sidekiqBilling.readinessProbe.failureThreshold
       - description: Number of seconds after the container has started before liveness probes are initiated
         displayName: Initial Delay Seconds
-        path: sidekiq.readinessProbe.initialDelaySeconds
+        path: sidekiqBilling.readinessProbe.initialDelaySeconds
       - description: How often (in seconds) to perform the probe
         displayName: Period Seconds
-        path: sidekiq.readinessProbe.periodSeconds
+        path: sidekiqBilling.readinessProbe.periodSeconds
       - description: Minimum consecutive successes for the probe to be considered successful after having failed
         displayName: Success Threshold
-        path: sidekiq.readinessProbe.successThreshold
+        path: sidekiqBilling.readinessProbe.successThreshold
       - description: Number of seconds after which the probe times out
         displayName: Timeout Seconds
-        path: sidekiq.readinessProbe.timeoutSeconds
+        path: sidekiqBilling.readinessProbe.timeoutSeconds
       - description: Number of replicas (ignored if hpa is enabled) for the component
         displayName: Replicas
-        path: sidekiq.replicas
+        path: sidekiqBilling.replicas
       - description: Resource requirements for the component
         displayName: Resources
-        path: sidekiq.resources
+        path: sidekiqBilling.resources
       - description: 'Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
         displayName: Limits
-        path: sidekiq.resources.limits
+        path: sidekiqBilling.resources.limits
       - description: 'Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
         displayName: Requests
-        path: sidekiq.resources.requests
+        path: sidekiqBilling.resources.requests
+      - description: Sidekiq Default specific configuration options
+        displayName: Sidekiq Default
+        path: sidekiqDefault
+      - description: Sidekiq specific configuration options for the component element
+        displayName: Config
+        path: sidekiqDefault.config
+      - description: Number of rails max threads per sidekiq pod
+        displayName: Max Threads
+        path: sidekiqDefault.config.maxThreads
+      - description: Bundle exec sidekiq queues argument
+        displayName: Queues Arg
+        path: sidekiqDefault.config.queuesArgs
+      - description: Horizontal Pod Autoscaler for the component
+        displayName: HPA
+        path: sidekiqDefault.hpa
+      - description: Upper limit for the number of replicas to which the autoscaler can scale up. It cannot be less that minReplicas.
+        displayName: Max Replicas
+        path: sidekiqDefault.hpa.maxReplicas
+      - description: Lower limit for the number of replicas to which the autoscaler can scale down.  It defaults to 1 pod.  minReplicas is allowed to be 0 if the alpha feature gate HPAScaleToZero is enabled and at least one Object or External metric is configured.  Scaling is active as long as at least one metric value is available.
+        displayName: Min Replicas
+        path: sidekiqDefault.hpa.minReplicas
+      - description: Target resource used to autoscale (cpu/memory)
+        displayName: Resource Name
+        path: sidekiqDefault.hpa.resourceName
+      - description: A percentage indicating the target resource consumption used to autoscale
+        displayName: Resource Utilization
+        path: sidekiqDefault.hpa.resourceUtilization
+      - description: Liveness probe for the component
+        displayName: Liveness Probe
+        path: sidekiqDefault.livenessProbe
+      - description: Minimum consecutive failures for the probe to be considered failed after having succeeded
+        displayName: Failure Threshold
+        path: sidekiqDefault.livenessProbe.failureThreshold
+      - description: Number of seconds after the container has started before liveness probes are initiated
+        displayName: Initial Delay Seconds
+        path: sidekiqDefault.livenessProbe.initialDelaySeconds
+      - description: How often (in seconds) to perform the probe
+        displayName: Period Seconds
+        path: sidekiqDefault.livenessProbe.periodSeconds
+      - description: Minimum consecutive successes for the probe to be considered successful after having failed
+        displayName: Success Threshold
+        path: sidekiqDefault.livenessProbe.successThreshold
+      - description: Number of seconds after which the probe times out
+        displayName: Timeout Seconds
+        path: sidekiqDefault.livenessProbe.timeoutSeconds
+      - description: Pod Disruption Budget for the component
+        displayName: PDB
+        path: sidekiqDefault.pdb
+      - description: An eviction is allowed if at most "maxUnavailable" pods selected by "selector" are unavailable after the eviction, i.e. even in absence of the evicted pod. For example, one can prevent all voluntary evictions by specifying 0. This is a mutually exclusive setting with "minAvailable".
+        displayName: Max Unavailable
+        path: sidekiqDefault.pdb.maxUnavailable
+      - description: An eviction is allowed if at least "minAvailable" pods selected by "selector" will still be available after the eviction, i.e. even in the absence of the evicted pod.  So for example you can prevent all voluntary evictions by specifying "100%".
+        displayName: Min Available
+        path: sidekiqDefault.pdb.minAvailable
+      - description: Readiness probe for the component
+        displayName: Readiness Probe
+        path: sidekiqDefault.readinessProbe
+      - description: Minimum consecutive failures for the probe to be considered failed after having succeeded
+        displayName: Failure Threshold
+        path: sidekiqDefault.readinessProbe.failureThreshold
+      - description: Number of seconds after the container has started before liveness probes are initiated
+        displayName: Initial Delay Seconds
+        path: sidekiqDefault.readinessProbe.initialDelaySeconds
+      - description: How often (in seconds) to perform the probe
+        displayName: Period Seconds
+        path: sidekiqDefault.readinessProbe.periodSeconds
+      - description: Minimum consecutive successes for the probe to be considered successful after having failed
+        displayName: Success Threshold
+        path: sidekiqDefault.readinessProbe.successThreshold
+      - description: Number of seconds after which the probe times out
+        displayName: Timeout Seconds
+        path: sidekiqDefault.readinessProbe.timeoutSeconds
+      - description: Number of replicas (ignored if hpa is enabled) for the component
+        displayName: Replicas
+        path: sidekiqDefault.replicas
+      - description: Resource requirements for the component
+        displayName: Resources
+        path: sidekiqDefault.resources
+      - description: 'Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Limits
+        path: sidekiqDefault.resources.limits
+      - description: 'Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Requests
+        path: sidekiqDefault.resources.requests
+      - description: Sidekiq Low specific configuration options
+        displayName: Sidekiq Low
+        path: sidekiqLow
+      - description: Sidekiq specific configuration options for the component element
+        displayName: Config
+        path: sidekiqLow.config
+      - description: Number of rails max threads per sidekiq pod
+        displayName: Max Threads
+        path: sidekiqLow.config.maxThreads
+      - description: Bundle exec sidekiq queues argument
+        displayName: Queues Arg
+        path: sidekiqLow.config.queuesArgs
+      - description: Horizontal Pod Autoscaler for the component
+        displayName: HPA
+        path: sidekiqLow.hpa
+      - description: Upper limit for the number of replicas to which the autoscaler can scale up. It cannot be less that minReplicas.
+        displayName: Max Replicas
+        path: sidekiqLow.hpa.maxReplicas
+      - description: Lower limit for the number of replicas to which the autoscaler can scale down.  It defaults to 1 pod.  minReplicas is allowed to be 0 if the alpha feature gate HPAScaleToZero is enabled and at least one Object or External metric is configured.  Scaling is active as long as at least one metric value is available.
+        displayName: Min Replicas
+        path: sidekiqLow.hpa.minReplicas
+      - description: Target resource used to autoscale (cpu/memory)
+        displayName: Resource Name
+        path: sidekiqLow.hpa.resourceName
+      - description: A percentage indicating the target resource consumption used to autoscale
+        displayName: Resource Utilization
+        path: sidekiqLow.hpa.resourceUtilization
+      - description: Liveness probe for the component
+        displayName: Liveness Probe
+        path: sidekiqLow.livenessProbe
+      - description: Minimum consecutive failures for the probe to be considered failed after having succeeded
+        displayName: Failure Threshold
+        path: sidekiqLow.livenessProbe.failureThreshold
+      - description: Number of seconds after the container has started before liveness probes are initiated
+        displayName: Initial Delay Seconds
+        path: sidekiqLow.livenessProbe.initialDelaySeconds
+      - description: How often (in seconds) to perform the probe
+        displayName: Period Seconds
+        path: sidekiqLow.livenessProbe.periodSeconds
+      - description: Minimum consecutive successes for the probe to be considered successful after having failed
+        displayName: Success Threshold
+        path: sidekiqLow.livenessProbe.successThreshold
+      - description: Number of seconds after which the probe times out
+        displayName: Timeout Seconds
+        path: sidekiqLow.livenessProbe.timeoutSeconds
+      - description: Pod Disruption Budget for the component
+        displayName: PDB
+        path: sidekiqLow.pdb
+      - description: An eviction is allowed if at most "maxUnavailable" pods selected by "selector" are unavailable after the eviction, i.e. even in absence of the evicted pod. For example, one can prevent all voluntary evictions by specifying 0. This is a mutually exclusive setting with "minAvailable".
+        displayName: Max Unavailable
+        path: sidekiqLow.pdb.maxUnavailable
+      - description: An eviction is allowed if at least "minAvailable" pods selected by "selector" will still be available after the eviction, i.e. even in the absence of the evicted pod.  So for example you can prevent all voluntary evictions by specifying "100%".
+        displayName: Min Available
+        path: sidekiqLow.pdb.minAvailable
+      - description: Readiness probe for the component
+        displayName: Readiness Probe
+        path: sidekiqLow.readinessProbe
+      - description: Minimum consecutive failures for the probe to be considered failed after having succeeded
+        displayName: Failure Threshold
+        path: sidekiqLow.readinessProbe.failureThreshold
+      - description: Number of seconds after the container has started before liveness probes are initiated
+        displayName: Initial Delay Seconds
+        path: sidekiqLow.readinessProbe.initialDelaySeconds
+      - description: How often (in seconds) to perform the probe
+        displayName: Period Seconds
+        path: sidekiqLow.readinessProbe.periodSeconds
+      - description: Minimum consecutive successes for the probe to be considered successful after having failed
+        displayName: Success Threshold
+        path: sidekiqLow.readinessProbe.successThreshold
+      - description: Number of seconds after which the probe times out
+        displayName: Timeout Seconds
+        path: sidekiqLow.readinessProbe.timeoutSeconds
+      - description: Number of replicas (ignored if hpa is enabled) for the component
+        displayName: Replicas
+        path: sidekiqLow.replicas
+      - description: Resource requirements for the component
+        displayName: Resources
+        path: sidekiqLow.resources
+      - description: 'Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Limits
+        path: sidekiqLow.resources.limits
+      - description: 'Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Requests
+        path: sidekiqLow.resources.requests
       - description: Sphinx specific configuration options
         displayName: Sphinx
         path: sphinx
@@ -2858,7 +3041,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/3scale/saas-operator:0.10.8
+                image: quay.io/3scale/saas-operator:0.10.9
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -3245,4 +3428,4 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
-  version: 0.10.8
+  version: 0.10.9

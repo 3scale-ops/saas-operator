@@ -17,10 +17,12 @@ import (
 )
 
 const (
-	component string = "system"
-	app       string = "app"
-	sidekiq   string = "sidekiq"
-	sphinx    string = "sphinx"
+	component      string = "system"
+	app            string = "app"
+	sidekiqDefault string = "sidekiq-default"
+	sidekiqBilling string = "sidekiq-billing"
+	sidekiqLow     string = "sidekiq-low"
+	sphinx         string = "sphinx"
 
 	systemConfigSecret = "system-config"
 )
@@ -29,7 +31,9 @@ const (
 type Generator struct {
 	generators.BaseOptions
 	App                  AppGenerator
-	Sidekiq              SidekiqGenerator
+	SidekiqDefault       SidekiqGenerator
+	SidekiqBilling       SidekiqGenerator
+	SidekiqLow           SidekiqGenerator
 	Sphinx               SphinxGenerator
 	GrafanaDashboardSpec saasv1alpha1.GrafanaDashboardSpec
 	ConfigFilesSpec      saasv1alpha1.ConfigFilesSpec
@@ -115,18 +119,50 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) Gene
 			ImageSpec:          *spec.Image,
 			ConfigFilesEnabled: spec.Config.ConfigFiles.Enabled(),
 		},
-		Sidekiq: SidekiqGenerator{
+		SidekiqDefault: SidekiqGenerator{
 			BaseOptions: generators.BaseOptions{
-				Component:    strings.Join([]string{component, sidekiq}, "-"),
+				Component:    strings.Join([]string{component, sidekiqDefault}, "-"),
 				InstanceName: instance,
 				Namespace:    namespace,
 				Labels: map[string]string{
 					"app":                          "3scale-api-management",
 					"threescale_component":         component,
-					"threescale_component_element": sidekiq,
+					"threescale_component_element": sidekiqDefault,
 				},
 			},
-			Spec:               *spec.Sidekiq,
+			Spec:               *spec.SidekiqDefault,
+			Options:            config.NewOptions(spec),
+			ImageSpec:          *spec.Image,
+			ConfigFilesEnabled: spec.Config.ConfigFiles.Enabled(),
+		},
+		SidekiqBilling: SidekiqGenerator{
+			BaseOptions: generators.BaseOptions{
+				Component:    strings.Join([]string{component, sidekiqBilling}, "-"),
+				InstanceName: instance,
+				Namespace:    namespace,
+				Labels: map[string]string{
+					"app":                          "3scale-api-management",
+					"threescale_component":         component,
+					"threescale_component_element": sidekiqBilling,
+				},
+			},
+			Spec:               *spec.SidekiqBilling,
+			Options:            config.NewOptions(spec),
+			ImageSpec:          *spec.Image,
+			ConfigFilesEnabled: spec.Config.ConfigFiles.Enabled(),
+		},
+		SidekiqLow: SidekiqGenerator{
+			BaseOptions: generators.BaseOptions{
+				Component:    strings.Join([]string{component, sidekiqLow}, "-"),
+				InstanceName: instance,
+				Namespace:    namespace,
+				Labels: map[string]string{
+					"app":                          "3scale-api-management",
+					"threescale_component":         component,
+					"threescale_component_element": sidekiqLow,
+				},
+			},
+			Spec:               *spec.SidekiqLow,
 			Options:            config.NewOptions(spec),
 			ImageSpec:          *spec.Image,
 			ConfigFilesEnabled: spec.Config.ConfigFiles.Enabled(),

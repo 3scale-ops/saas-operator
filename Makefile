@@ -1,6 +1,6 @@
 SHELL:=/bin/bash
 # Current Operator version
-VERSION ?= 0.10.8
+VERSION ?= 0.10.9
 # Default catalog image
 CATALOG_IMG ?= quay.io/3scaleops/saas-operator-bundle:catalog
 # Default bundle image tag
@@ -227,7 +227,7 @@ get-new-release:
 
 kind-create: ## runs a k8s kind cluster for testing
 kind-create: export KUBECONFIG = ${PWD}/kubeconfig
-kind-create: tmp $(KIND)
+kind-create: tmp kind
 	$(KIND) create cluster --wait 5m --image kindest/node:v1.20.0
 
 kind-delete: ## deletes the kind cluster
@@ -236,7 +236,7 @@ kind-delete: $(KIND)
 
 kind-deploy: ## Deploys the operator in the kind cluster for testing
 kind-deploy: export KUBECONFIG = ${PWD}/kubeconfig
-kind-deploy: manifests kustomize kind
+kind-deploy: manifests kustomize docker-build kind
 	$(KIND) load docker-image $(IMG)
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/test | kubectl apply -f -

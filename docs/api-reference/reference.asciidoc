@@ -1150,6 +1150,24 @@ SidecarPort defines port for the Marin3r sidecar container
 |===
 
 
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sidekiqconfig"]
+==== SidekiqConfig 
+
+SidekiqConfig configures app behavior for System Sidekiq
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`queuesArgs`* __string__ | Bundle exec sidekiq queues argument
+| *`maxThreads`* __integer__ | Number of rails max threads per sidekiq pod
+|===
+
+
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sphinxconfig"]
 ==== SphinxConfig 
 
@@ -1334,7 +1352,7 @@ SystemRecaptchaSpec holds recaptcha configurations
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec"]
 ==== SystemSidekiqSpec 
 
-SystemSidekiqSpec configures the App component of System
+SystemSidekiqSpec configures the Sidekiq component of System
 
 .Appears In:
 ****
@@ -1344,6 +1362,7 @@ SystemSidekiqSpec configures the App component of System
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
+| *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sidekiqconfig[$$SidekiqConfig$$]__ | Sidekiq specific configuration options for the component element
 | *`pdb`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
 | *`hpa`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
 | *`replicas`* __integer__ | Number of replicas (ignored if hpa is enabled) for the component
@@ -1371,7 +1390,9 @@ SystemSpec defines the desired state of System
 | *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]__ | Application specific configuration options for System components
 | *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
 | *`app`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]__ | Application specific configuration options
-| *`sidekiq`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]__ | Sidekiq specific configuration options
+| *`sidekiqDefault`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]__ | Sidekiq Default specific configuration options
+| *`sidekiqBilling`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]__ | Sidekiq Billing specific configuration options
+| *`sidekiqLow`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]__ | Sidekiq Low specific configuration options
 | *`sphinx`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsphinxspec[$$SystemSphinxSpec$$]__ | Sphinx specific configuration options
 | *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
 |===
