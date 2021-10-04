@@ -52,13 +52,21 @@ $(OPERATOR_SDK):
 	curl -sL -o $(OPERATOR_SDK) $(OPERATOR_SDK_DL_URL)
 	chmod +x $(OPERATOR_SDK)
 
-# Download operator package manager if necessary
-OPM_RELEASE = v1.17.0
-OPM = $(shell pwd)/bin/opm-$(OPM_RELEASE)
-OPM_DL_URL = https://github.com/operator-framework/operator-registry/releases/download/$(OPM_RELEASE)/$(OS)-$(ARCH)-opm
-$(OPM):
-	curl -sL -o $(OPM) $(OPM_DL_URL)
-	chmod +x $(OPM)
+.PHONY: opm
+OPM = ./bin/opm
+opm:
+ifeq (,$(wildcard $(OPM)))
+ifeq (,$(shell which opm 2>/dev/null))
+	@{ \
+	set -e ;\
+	mkdir -p $(dir $(OPM)) ;\
+	curl -sSLo $(OPM) https://github.com/operator-framework/operator-registry/releases/download/v1.15.1/$(OS)-$(ARCH)-opm ;\
+	chmod +x $(OPM) ;\
+	}
+else
+OPM = $(shell which opm)
+endif
+endif
 
 # go-get-tool will 'go get' any package $2 and install it to $1.
 PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
@@ -207,7 +215,7 @@ bundle-push:
 
 catalog-build: $(OPM)
 	$(OPM) index add \
-		--build-tool docker \
+		--container-tool docker \
 		--mode semver \
 		--bundles $(BUNDLE_IMG) \
 		--from-index $(CATALOG_IMG) \
