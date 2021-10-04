@@ -45,7 +45,7 @@ ARCH := amd64
 endif
 
 # Download operator-sdk binary if necesasry
-OPERATOR_SDK_RELEASE = v1.3.2
+OPERATOR_SDK_RELEASE = v1.5.0
 OPERATOR_SDK = $(shell pwd)/bin/operator-sdk-$(OPERATOR_SDK_RELEASE)
 OPERATOR_SDK_DL_URL = https://github.com/operator-framework/operator-sdk/releases/download/$(OPERATOR_SDK_RELEASE)/operator-sdk_$(OS)_$(ARCH)
 $(OPERATOR_SDK):
