@@ -1,4 +1,3 @@
-SHELL:=/bin/bash
 # Current Operator version
 VERSION ?= 0.10.12
 # Default catalog image
@@ -28,6 +27,12 @@ else
 GOBIN=$(shell go env GOBIN)
 endif
 
+# Setting SHELL to bash allows bash commands to be executed by recipes.
+# This is a requirement for 'setup-envtest.sh' in the test target.
+# Options are set to exit when a recipe line exits non-zero or a piped command fails.
+SHELL = /usr/bin/env bash -o pipefail
+.SHELLFLAGS = -ec
+
 #############################
 ### Makefile requirements ###
 #############################
@@ -45,7 +50,7 @@ ARCH := amd64
 endif
 
 # Download operator-sdk binary if necesasry
-OPERATOR_SDK_RELEASE = v1.5.0
+OPERATOR_SDK_RELEASE = v1.7.1
 OPERATOR_SDK = $(shell pwd)/bin/operator-sdk-$(OPERATOR_SDK_RELEASE)
 OPERATOR_SDK_DL_URL = https://github.com/operator-framework/operator-sdk/releases/download/$(OPERATOR_SDK_RELEASE)/operator-sdk_$(OS)_$(ARCH)
 $(OPERATOR_SDK):
