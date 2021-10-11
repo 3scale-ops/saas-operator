@@ -148,9 +148,13 @@ var _ = Describe("System controller", func() {
 					dep,
 				)
 			}, timeout, poll).ShouldNot(HaveOccurred())
-			Expect(dep.Spec.Template.Spec.Containers[0].Args[1]).To(Equal(
-				"-q critical -q backend_sync -q events -q zync,40 -q priority,25 -q default,15 -q web_hooks,10 -q deletion,5",
-			))
+			Expect(dep.Spec.Template.Spec.Containers[0].Args).To(Equal(
+				[]string{"sidekiq",
+					"-q", "critical", "-q", "backend_sync",
+					"-q", "events", "-q", "zync,40",
+					"-q", "priority,25", "-q", "default,15",
+					"-q", "web_hooks,10", "-q", "deletion,5",
+				}))
 			Eventually(func() error {
 				return k8sClient.Get(
 					context.Background(),
@@ -158,8 +162,8 @@ var _ = Describe("System controller", func() {
 					dep,
 				)
 			}, timeout, poll).ShouldNot(HaveOccurred())
-			Expect(dep.Spec.Template.Spec.Containers[0].Args[1]).To(Equal(
-				"-q billing",
+			Expect(dep.Spec.Template.Spec.Containers[0].Args).To(Equal(
+				[]string{"sidekiq", "-q", "billing"},
 			))
 			Eventually(func() error {
 				return k8sClient.Get(
@@ -168,8 +172,8 @@ var _ = Describe("System controller", func() {
 					dep,
 				)
 			}, timeout, poll).ShouldNot(HaveOccurred())
-			Expect(dep.Spec.Template.Spec.Containers[0].Args[1]).To(Equal(
-				"-q low",
+			Expect(dep.Spec.Template.Spec.Containers[0].Args).To(Equal(
+				[]string{"sidekiq", "-q", "low"},
 			))
 
 			ss := &appsv1.StatefulSet{}

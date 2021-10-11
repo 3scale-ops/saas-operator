@@ -1193,7 +1193,9 @@ spec:
                         type: integer
                       queuesArgs:
                         description: Bundle exec sidekiq queues argument
-                        type: string
+                        items:
+                          type: string
+                        type: array
                     type: object
                   hpa:
                     description: Horizontal Pod Autoscaler for the component
@@ -1594,7 +1596,9 @@ spec:
                         type: integer
                       queuesArgs:
                         description: Bundle exec sidekiq queues argument
-                        type: string
+                        items:
+                          type: string
+                        type: array
                     type: object
                   hpa:
                     description: Horizontal Pod Autoscaler for the component
@@ -1995,7 +1999,9 @@ spec:
                         type: integer
                       queuesArgs:
                         description: Bundle exec sidekiq queues argument
-                        type: string
+                        items:
+                          type: string
+                        type: array
                     type: object
                   hpa:
                     description: Horizontal Pod Autoscaler for the component

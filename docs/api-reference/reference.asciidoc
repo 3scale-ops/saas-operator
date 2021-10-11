@@ -1163,7 +1163,7 @@ SidekiqConfig configures app behavior for System Sidekiq
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`queuesArgs`* __string__ | Bundle exec sidekiq queues argument
+| *`queuesArgs`* __string array__ | Bundle exec sidekiq queues argument
 | *`maxThreads`* __integer__ | Number of rails max threads per sidekiq pod
 |===
 

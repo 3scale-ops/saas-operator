@@ -142,15 +142,20 @@ var (
 	}
 
 	systemDefaultSidekiqConfigDefault defaultSidekiqConfig = defaultSidekiqConfig{
-		QueuesArg:  pointer.StringPtr("-q critical -q backend_sync -q events -q zync,40 -q priority,25 -q default,15 -q web_hooks,10 -q deletion,5"),
+		QueuesArg: []string{
+			"-q", "critical", "-q", "backend_sync",
+			"-q", "events", "-q", "zync,40",
+			"-q", "priority,25", "-q", "default,15",
+			"-q", "web_hooks,10", "-q", "deletion,5",
+		},
 		MaxThreads: pointer.Int32Ptr(15),
 	}
 	systemDefaultSidekiqConfigBilling defaultSidekiqConfig = defaultSidekiqConfig{
-		QueuesArg:  pointer.StringPtr("-q billing"),
+		QueuesArg:  []string{"-q", "billing"},
 		MaxThreads: pointer.Int32Ptr(15),
 	}
 	systemDefaultSidekiqConfigLow defaultSidekiqConfig = defaultSidekiqConfig{
-		QueuesArg:  pointer.StringPtr("-q low"),
+		QueuesArg:  []string{"-q", "low"},
 		MaxThreads: pointer.Int32Ptr(15),
 	}
 
@@ -611,7 +616,7 @@ type SidekiqConfig struct {
 	// Bundle exec sidekiq queues argument
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	QueuesArg *string `json:"queuesArgs,omitempty"`
+	QueuesArg []string `json:"queuesArgs,omitempty"`
 	// Number of rails max threads per sidekiq pod
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -619,13 +624,15 @@ type SidekiqConfig struct {
 }
 
 type defaultSidekiqConfig struct {
-	QueuesArg  *string
+	QueuesArg  []string
 	MaxThreads *int32
 }
 
 // Default sets default values for any value not specifically set in the SidekiqConfig struct
 func (cfg *SidekiqConfig) Default(def defaultSidekiqConfig) {
-	cfg.QueuesArg = stringOrDefault(cfg.QueuesArg, pointer.StringPtr(*def.QueuesArg))
+	if cfg.QueuesArg == nil {
+		cfg.QueuesArg = def.QueuesArg
+	}
 	cfg.MaxThreads = intOrDefault(cfg.MaxThreads, pointer.Int32Ptr(*def.MaxThreads))
 }
 
