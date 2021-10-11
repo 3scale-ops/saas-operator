@@ -150,10 +150,10 @@ var _ = Describe("System controller", func() {
 			}, timeout, poll).ShouldNot(HaveOccurred())
 			Expect(dep.Spec.Template.Spec.Containers[0].Args).To(Equal(
 				[]string{"sidekiq",
-					"-q", "critical", "-q", "backend_sync",
-					"-q", "events", "-q", "zync,40",
-					"-q", "priority,25", "-q", "default,15",
-					"-q", "web_hooks,10", "-q", "deletion,5",
+					"--queue", "critical", "--queue", "backend_sync",
+					"--queue", "events", "--queue", "zync,40",
+					"--queue", "priority,25", "--queue", "default,15",
+					"--queue", "web_hooks,10", "--queue", "deletion,5",
 				}))
 			Eventually(func() error {
 				return k8sClient.Get(
@@ -163,7 +163,7 @@ var _ = Describe("System controller", func() {
 				)
 			}, timeout, poll).ShouldNot(HaveOccurred())
 			Expect(dep.Spec.Template.Spec.Containers[0].Args).To(Equal(
-				[]string{"sidekiq", "-q", "billing"},
+				[]string{"sidekiq", "--queue", "billing"},
 			))
 			Eventually(func() error {
 				return k8sClient.Get(
@@ -173,7 +173,7 @@ var _ = Describe("System controller", func() {
 				)
 			}, timeout, poll).ShouldNot(HaveOccurred())
 			Expect(dep.Spec.Template.Spec.Containers[0].Args).To(Equal(
-				[]string{"sidekiq", "-q", "low"},
+				[]string{"sidekiq", "--queue", "low"},
 			))
 
 			ss := &appsv1.StatefulSet{}

@@ -1,6 +1,6 @@
 SHELL:=/bin/bash
 # Current Operator version
-VERSION ?= 0.10.11-alpha.1
+VERSION ?= 0.10.11
 # Default catalog image
 CATALOG_IMG ?= quay.io/3scaleops/saas-operator-bundle:catalog
 # Default bundle image tag
