@@ -27,7 +27,7 @@ const (
 	systemConfigSecret = "system-config"
 )
 
-// Generator configures the generators for Apicast
+// Generator configures the generators for System
 type Generator struct {
 	generators.BaseOptions
 	App                  AppGenerator
