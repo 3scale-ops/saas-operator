@@ -74,8 +74,7 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	)
 
 	// Calculate rollout triggers (app & sidekiqs)
-	triggers, err := r.TriggersFromSecretDefs(ctx,
-		gen.ConfigFilesSecretDefinition(),
+	secretDefinitionTriggers, err := r.TriggersFromSecretDefs(ctx,
 		gen.DatabaseSecretDefinition(),
 		gen.RecaptchaSecretDefinition(),
 		gen.EventsHookSecretDefinition(),
@@ -85,6 +84,14 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		gen.BackendSecretDefinition(),
 		gen.MultitenantAssetsSecretDefinition(),
 		gen.AppSecretDefinition(),
+	)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	// Calculate rollout triggers (app & sidekiqs)
+	secretTriggers, err := r.TriggersFromSecret(ctx, gen.GetNamespace(),
+		gen.ConfigFilesSecret,
 	)
 	if err != nil {
 		return ctrl.Result{}, err
@@ -102,22 +109,22 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		Deployments: []basereconciler.Deployment{
 			{
 				Template:        gen.App.Deployment(),
-				RolloutTriggers: triggers,
+				RolloutTriggers: append(secretDefinitionTriggers, secretTriggers...),
 				HasHPA:          !instance.Spec.App.HPA.IsDeactivated(),
 			},
 			{
 				Template:        gen.SidekiqDefault.Deployment(),
-				RolloutTriggers: triggers,
+				RolloutTriggers: append(secretDefinitionTriggers, secretTriggers...),
 				HasHPA:          !instance.Spec.SidekiqDefault.HPA.IsDeactivated(),
 			},
 			{
 				Template:        gen.SidekiqBilling.Deployment(),
-				RolloutTriggers: triggers,
+				RolloutTriggers: append(secretDefinitionTriggers, secretTriggers...),
 				HasHPA:          !instance.Spec.SidekiqBilling.HPA.IsDeactivated(),
 			},
 			{
 				Template:        gen.SidekiqLow.Deployment(),
-				RolloutTriggers: triggers,
+				RolloutTriggers: append(secretDefinitionTriggers, secretTriggers...),
 				HasHPA:          !instance.Spec.SidekiqLow.HPA.IsDeactivated(),
 			},
 		},
@@ -127,7 +134,6 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 			Enabled:         true,
 		}},
 		SecretDefinitions: []basereconciler.SecretDefinition{
-			{Template: gen.ConfigFilesSecretDefinition(), Enabled: instance.Spec.Config.ConfigFiles.Enabled()},
 			{Template: gen.DatabaseSecretDefinition(), Enabled: true},
 			{Template: gen.RecaptchaSecretDefinition(), Enabled: true},
 			{Template: gen.EventsHookSecretDefinition(), Enabled: true},

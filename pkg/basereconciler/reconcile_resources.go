@@ -90,25 +90,42 @@ func (r *Reconciler) TriggersFromSecretDefs(ctx context.Context, sd ...Generator
 
 	for _, secretDef := range sd {
 		sd := secretDef().(*secretsmanagerv1alpha1.SecretDefinition)
+		strgs, err := r.TriggersFromSecret(ctx, sd.GetNamespace(), sd.GetName())
+		if err != nil {
+			return nil, err
+		}
+		triggers = append(triggers, strgs...)
+	}
+
+	return triggers, nil
+}
+
+// TriggersFromSecret generates a list of RolloutTriggers from the given Secrets name list
+func (r *Reconciler) TriggersFromSecret(ctx context.Context, namespace string, secrets ...string) ([]RolloutTrigger, error) {
+
+	strgs := []RolloutTrigger{}
+
+	for _, secretName := range secrets {
+
 		key := types.NamespacedName{
-			Name:      sd.GetName(),
-			Namespace: sd.GetNamespace(),
+			Name:      secretName,
+			Namespace: namespace,
 		}
 		secret := &corev1.Secret{}
 		err := r.GetClient().Get(ctx, key, secret)
+
 		if err != nil {
 			if errors.IsNotFound(err) {
-				triggers = append(triggers, NewRolloutTrigger(sd.GetName(), &corev1.Secret{}))
+				strgs = append(strgs, NewRolloutTrigger(key.Name, &corev1.Secret{}))
 				continue
 			}
 			return nil, err
 		}
 
-		triggers = append(triggers, NewRolloutTrigger(sd.GetName(), secret))
-
+		strgs = append(strgs, NewRolloutTrigger(key.Name, secret))
 	}
 
-	return triggers, nil
+	return strgs, nil
 }
 
 // Deployment specifies a Deployment resource and its rollout triggers

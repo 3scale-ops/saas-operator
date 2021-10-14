@@ -54,10 +54,6 @@ var _ = Describe("System controller", func() {
 				},
 				Spec: saasv1alpha1.SystemSpec{
 					Config: saasv1alpha1.SystemConfig{
-						ConfigFiles: &saasv1alpha1.ConfigFilesSpec{
-							VaultPath: "some-path",
-							Files:     []string{"some-file"},
-						},
 						DatabaseDSN:        saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 						EventsSharedSecret: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 						Recaptcha: saasv1alpha1.SystemRecaptchaSpec{
@@ -302,7 +298,6 @@ var _ = Describe("System controller", func() {
 
 			sd := &secretsmanagerv1alpha1.SecretDefinition{}
 			for _, name := range []string{
-				"system-config",
 				"system-database",
 				"system-recaptcha",
 				"system-events-hook",

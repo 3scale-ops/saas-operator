@@ -663,19 +663,10 @@ spec:
                     required:
                     - apiKey
                     type: object
-                  configFiles:
-                    description: Extra configuration files to be mounted in the pods
-                    properties:
-                      files:
-                        items:
-                          type: string
-                        type: array
-                      vaultPath:
-                        type: string
-                    required:
-                    - files
-                    - vaultPath
-                    type: object
+                  configFilesSecret:
+                    description: Secret containging system configuration files to
+                      be mounted in the pods
+                    type: string
                   databaseDSN:
                     description: DSN of system's main database
                     properties:

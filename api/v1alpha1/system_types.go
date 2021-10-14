@@ -17,8 +17,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"reflect"
-
 	"github.com/3scale/saas-operator/pkg/util"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -46,7 +44,7 @@ var (
 	systemDefaultRailsEnvironment              string           = "preview"
 	systemDefaultRailsLogLevel                 string           = "info"
 	systemDefaultLogToStdout                   bool             = true
-	systemDefaultConfigFiles                   ConfigFilesSpec  = ConfigFilesSpec{}
+	systemDefaultConfigFilesSecret             string           = "system-config"
 	systemDefaultBugsnagSpec                   BugsnagSpec      = BugsnagSpec{}
 	systemDefaultImage                         defaultImageSpec = defaultImageSpec{
 		Name:       pointer.StringPtr("quay.io/3scale/porta"),
@@ -286,10 +284,10 @@ type SystemConfig struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	ThreescaleSuperdomain *string `json:"threescaleSuperdomain,omitempty"`
-	// Extra configuration files to be mounted in the pods
+	// Secret containging system configuration files to be mounted in the pods
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	ConfigFiles *ConfigFilesSpec `json:"configFiles,omitempty"`
+	ConfigFilesSecret *string `json:"configFilesSecret,omitempty"`
 	// DSN of system's main database
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	DatabaseDSN SecretReference `json:"databaseDSN"`
@@ -350,9 +348,7 @@ func (sc *SystemConfig) Default() {
 	}
 	sc.Rails.Default()
 
-	if sc.ConfigFiles == nil {
-		sc.ConfigFiles = &systemDefaultConfigFiles
-	}
+	sc.ConfigFilesSecret = stringOrDefault(sc.ConfigFilesSecret, pointer.StringPtr(systemDefaultConfigFilesSecret))
 
 	if sc.Bugsnag == nil {
 		sc.Bugsnag = &systemDefaultBugsnagSpec
@@ -363,22 +359,6 @@ func (sc *SystemConfig) Default() {
 	sc.SSLCertsDir = stringOrDefault(sc.SSLCertsDir, pointer.StringPtr(systemDefaultSSLCertsDir))
 	sc.ThreescaleProviderPlan = stringOrDefault(sc.ThreescaleProviderPlan, pointer.StringPtr(systemDefaultThreescaleProviderPlan))
 	sc.ThreescaleSuperdomain = stringOrDefault(sc.ThreescaleSuperdomain, pointer.StringPtr(systemDefaultThreescaleSuperdomain))
-}
-
-// ConfigFilesSpec defines a vault location to
-// get system config files from
-type ConfigFilesSpec struct {
-	VaultPath string   `json:"vaultPath"`
-	Files     []string `json:"files"`
-}
-
-// Enabled returns a boolean indication whether the
-// ConfigFiles config options is enabled or not
-func (cfs *ConfigFilesSpec) Enabled() bool {
-	if reflect.DeepEqual(cfs, &ConfigFilesSpec{}) {
-		return false
-	}
-	return true
 }
 
 // SystemRecaptchaSpec holds recaptcha configurations

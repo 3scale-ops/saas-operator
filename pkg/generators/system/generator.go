@@ -23,8 +23,6 @@ const (
 	sidekiqBilling string = "sidekiq-billing"
 	sidekiqLow     string = "sidekiq-low"
 	sphinx         string = "sphinx"
-
-	systemConfigSecret = "system-config"
 )
 
 // Generator configures the generators for System
@@ -36,7 +34,7 @@ type Generator struct {
 	SidekiqLow           SidekiqGenerator
 	Sphinx               SphinxGenerator
 	GrafanaDashboardSpec saasv1alpha1.GrafanaDashboardSpec
-	ConfigFilesSpec      saasv1alpha1.ConfigFilesSpec
+	ConfigFilesSecret    string
 	Options              config.Options
 }
 
@@ -114,10 +112,10 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) Gene
 					"threescale_component_element": app,
 				},
 			},
-			Spec:               *spec.App,
-			Options:            config.NewOptions(spec),
-			ImageSpec:          *spec.Image,
-			ConfigFilesEnabled: spec.Config.ConfigFiles.Enabled(),
+			Spec:              *spec.App,
+			Options:           config.NewOptions(spec),
+			ImageSpec:         *spec.Image,
+			ConfigFilesSecret: *spec.Config.ConfigFilesSecret,
 		},
 		SidekiqDefault: SidekiqGenerator{
 			BaseOptions: generators.BaseOptions{
@@ -130,10 +128,10 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) Gene
 					"threescale_component_element": sidekiqDefault,
 				},
 			},
-			Spec:               *spec.SidekiqDefault,
-			Options:            config.NewOptions(spec),
-			ImageSpec:          *spec.Image,
-			ConfigFilesEnabled: spec.Config.ConfigFiles.Enabled(),
+			Spec:              *spec.SidekiqDefault,
+			Options:           config.NewOptions(spec),
+			ImageSpec:         *spec.Image,
+			ConfigFilesSecret: *spec.Config.ConfigFilesSecret,
 		},
 		SidekiqBilling: SidekiqGenerator{
 			BaseOptions: generators.BaseOptions{
@@ -146,10 +144,10 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) Gene
 					"threescale_component_element": sidekiqBilling,
 				},
 			},
-			Spec:               *spec.SidekiqBilling,
-			Options:            config.NewOptions(spec),
-			ImageSpec:          *spec.Image,
-			ConfigFilesEnabled: spec.Config.ConfigFiles.Enabled(),
+			Spec:              *spec.SidekiqBilling,
+			Options:           config.NewOptions(spec),
+			ImageSpec:         *spec.Image,
+			ConfigFilesSecret: *spec.Config.ConfigFilesSecret,
 		},
 		SidekiqLow: SidekiqGenerator{
 			BaseOptions: generators.BaseOptions{
@@ -162,10 +160,10 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) Gene
 					"threescale_component_element": sidekiqLow,
 				},
 			},
-			Spec:               *spec.SidekiqLow,
-			Options:            config.NewOptions(spec),
-			ImageSpec:          *spec.Image,
-			ConfigFilesEnabled: spec.Config.ConfigFiles.Enabled(),
+			Spec:              *spec.SidekiqLow,
+			Options:           config.NewOptions(spec),
+			ImageSpec:         *spec.Image,
+			ConfigFilesSecret: *spec.Config.ConfigFilesSecret,
 		},
 		Sphinx: SphinxGenerator{
 			BaseOptions: generators.BaseOptions{
@@ -187,7 +185,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) Gene
 			DatabaseStorageClass: spec.Sphinx.Config.Thinking.DatabaseStorageClass,
 		},
 		GrafanaDashboardSpec: *spec.GrafanaDashboard,
-		ConfigFilesSpec:      *spec.Config.ConfigFiles,
+		ConfigFilesSecret:    *spec.Config.ConfigFilesSecret,
 		Options:              config.NewOptions(spec),
 	}
 }
@@ -195,10 +193,10 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) Gene
 // AppGenerator has methods to generate resources for system-app
 type AppGenerator struct {
 	generators.BaseOptions
-	Spec               saasv1alpha1.SystemAppSpec
-	Options            config.Options
-	ImageSpec          saasv1alpha1.ImageSpec
-	ConfigFilesEnabled bool
+	Spec              saasv1alpha1.SystemAppSpec
+	Options           config.Options
+	ImageSpec         saasv1alpha1.ImageSpec
+	ConfigFilesSecret string
 }
 
 // HPA returns a basereconciler.GeneratorFunction
@@ -222,10 +220,10 @@ func (gen *AppGenerator) PodMonitor() basereconciler.GeneratorFunction {
 // SidekiqGenerator has methods to generate resources for system-sidekiq
 type SidekiqGenerator struct {
 	generators.BaseOptions
-	Spec               saasv1alpha1.SystemSidekiqSpec
-	Options            config.Options
-	ImageSpec          saasv1alpha1.ImageSpec
-	ConfigFilesEnabled bool
+	Spec              saasv1alpha1.SystemSidekiqSpec
+	Options           config.Options
+	ImageSpec         saasv1alpha1.ImageSpec
+	ConfigFilesSecret string
 }
 
 // HPA returns a basereconciler.GeneratorFunction
