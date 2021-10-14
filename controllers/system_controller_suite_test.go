@@ -123,10 +123,7 @@ var _ = Describe("System controller", func() {
 			Eventually(func() bool {
 				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, system)
 				Expect(err).ToNot(HaveOccurred())
-				if len(system.GetFinalizers()) > 0 {
-					return true
-				}
-				return false
+				return len(system.GetFinalizers()) > 0
 			}, timeout, poll).Should(BeTrue())
 
 			dep := &appsv1.Deployment{}
