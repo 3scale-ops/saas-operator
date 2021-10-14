@@ -1966,9 +1966,9 @@ spec:
       - description: Number of rails max threads per sidekiq pod
         displayName: Max Threads
         path: sidekiqBilling.config.maxThreads
-      - description: Bundle exec sidekiq queues argument
-        displayName: Queues Arg
-        path: sidekiqBilling.config.queuesArgs
+      - description: 'List of queues to be consumed by sidekiq. Format: queue[,Priority]'
+        displayName: Queues
+        path: sidekiqBilling.config.queues
       - description: Horizontal Pod Autoscaler for the component
         displayName: HPA
         path: sidekiqBilling.hpa
@@ -2050,9 +2050,9 @@ spec:
       - description: Number of rails max threads per sidekiq pod
         displayName: Max Threads
         path: sidekiqDefault.config.maxThreads
-      - description: Bundle exec sidekiq queues argument
-        displayName: Queues Arg
-        path: sidekiqDefault.config.queuesArgs
+      - description: 'List of queues to be consumed by sidekiq. Format: queue[,Priority]'
+        displayName: Queues
+        path: sidekiqDefault.config.queues
       - description: Horizontal Pod Autoscaler for the component
         displayName: HPA
         path: sidekiqDefault.hpa
@@ -2134,9 +2134,9 @@ spec:
       - description: Number of rails max threads per sidekiq pod
         displayName: Max Threads
         path: sidekiqLow.config.maxThreads
-      - description: Bundle exec sidekiq queues argument
-        displayName: Queues Arg
-        path: sidekiqLow.config.queuesArgs
+      - description: 'List of queues to be consumed by sidekiq. Format: queue[,Priority]'
+        displayName: Queues
+        path: sidekiqLow.config.queues
       - description: Horizontal Pod Autoscaler for the component
         displayName: HPA
         path: sidekiqLow.hpa

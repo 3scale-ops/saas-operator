@@ -995,9 +995,11 @@ spec:
                         description: Number of rails max threads per sidekiq pod
                         format: int32
                         type: integer
-                      queuesArgs:
-                        description: Bundle exec sidekiq queues argument
-                        type: string
+                      queues:
+                        description: 'List of queues to be consumed by sidekiq. Format: queue[,Priority]'
+                        items:
+                          type: string
+                        type: array
                     type: object
                   hpa:
                     description: Horizontal Pod Autoscaler for the component
@@ -1264,9 +1266,11 @@ spec:
                         description: Number of rails max threads per sidekiq pod
                         format: int32
                         type: integer
-                      queuesArgs:
-                        description: Bundle exec sidekiq queues argument
-                        type: string
+                      queues:
+                        description: 'List of queues to be consumed by sidekiq. Format: queue[,Priority]'
+                        items:
+                          type: string
+                        type: array
                     type: object
                   hpa:
                     description: Horizontal Pod Autoscaler for the component
@@ -1533,9 +1537,11 @@ spec:
                         description: Number of rails max threads per sidekiq pod
                         format: int32
                         type: integer
-                      queuesArgs:
-                        description: Bundle exec sidekiq queues argument
-                        type: string
+                      queues:
+                        description: 'List of queues to be consumed by sidekiq. Format: queue[,Priority]'
+                        items:
+                          type: string
+                        type: array
                     type: object
                   hpa:
                     description: Horizontal Pod Autoscaler for the component

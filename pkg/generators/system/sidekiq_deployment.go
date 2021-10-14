@@ -54,7 +54,13 @@ func (gen *SidekiqGenerator) Deployment() basereconciler.GeneratorFunction {
 							{
 								Name:  gen.GetComponent(),
 								Image: fmt.Sprintf("%s:%s", *gen.ImageSpec.Name, *gen.ImageSpec.Tag),
-								Args:  []string{"sidekiq", *gen.Spec.Config.QueuesArg},
+								Args: func(queues []string) []string {
+									var args = []string{"sidekiq"}
+									for _, queue := range queues {
+										args = append(args, "--queue", queue)
+									}
+									return args
+								}(gen.Spec.Config.Queues),
 								Env: func() []corev1.EnvVar {
 									envVars := pod.BuildEnvironment(gen.Options)
 									envVars = append(envVars,
