@@ -54,10 +54,6 @@ var _ = Describe("System controller", func() {
 				},
 				Spec: saasv1alpha1.SystemSpec{
 					Config: saasv1alpha1.SystemConfig{
-						ConfigFiles: &saasv1alpha1.ConfigFilesSpec{
-							VaultPath: "some-path",
-							Files:     []string{"some-file"},
-						},
 						DatabaseDSN:        saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 						EventsSharedSecret: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 						Recaptcha: saasv1alpha1.SystemRecaptchaSpec{
@@ -127,10 +123,7 @@ var _ = Describe("System controller", func() {
 			Eventually(func() bool {
 				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, system)
 				Expect(err).ToNot(HaveOccurred())
-				if len(system.GetFinalizers()) > 0 {
-					return true
-				}
-				return false
+				return len(system.GetFinalizers()) > 0
 			}, timeout, poll).Should(BeTrue())
 
 			dep := &appsv1.Deployment{}
@@ -141,6 +134,7 @@ var _ = Describe("System controller", func() {
 					dep,
 				)
 			}, timeout, poll).ShouldNot(HaveOccurred())
+			Expect(dep.Spec.Template.Spec.Volumes[0].Secret.SecretName).To(Equal("system-config"))
 			Eventually(func() error {
 				return k8sClient.Get(
 					context.Background(),
@@ -155,6 +149,8 @@ var _ = Describe("System controller", func() {
 					"--queue", "priority,25", "--queue", "default,15",
 					"--queue", "web_hooks,10", "--queue", "deletion,5",
 				}))
+			Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
+			Expect(dep.Spec.Template.Spec.Volumes[1].Secret.SecretName).To(Equal("system-config"))
 			Eventually(func() error {
 				return k8sClient.Get(
 					context.Background(),
@@ -165,6 +161,8 @@ var _ = Describe("System controller", func() {
 			Expect(dep.Spec.Template.Spec.Containers[0].Args).To(Equal(
 				[]string{"sidekiq", "--queue", "billing"},
 			))
+			Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
+			Expect(dep.Spec.Template.Spec.Volumes[1].Secret.SecretName).To(Equal("system-config"))
 			Eventually(func() error {
 				return k8sClient.Get(
 					context.Background(),
@@ -175,6 +173,8 @@ var _ = Describe("System controller", func() {
 			Expect(dep.Spec.Template.Spec.Containers[0].Args).To(Equal(
 				[]string{"sidekiq", "--queue", "low"},
 			))
+			Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
+			Expect(dep.Spec.Template.Spec.Volumes[1].Secret.SecretName).To(Equal("system-config"))
 
 			ss := &appsv1.StatefulSet{}
 			Eventually(func() error {
@@ -302,7 +302,6 @@ var _ = Describe("System controller", func() {
 
 			sd := &secretsmanagerv1alpha1.SecretDefinition{}
 			for _, name := range []string{
-				"system-config",
 				"system-database",
 				"system-recaptcha",
 				"system-events-hook",

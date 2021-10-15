@@ -1624,9 +1624,9 @@ spec:
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.bugsnag.apiKey.override
-      - description: Extra configuration files to be mounted in the pods
-        displayName: Config Files
-        path: config.configFiles
+      - description: Secret containging system configuration files to be mounted in the pods
+        displayName: Config Files Secret
+        path: config.configFilesSecret
       - description: DSN of system's main database
         displayName: Database DSN
         path: config.databaseDSN

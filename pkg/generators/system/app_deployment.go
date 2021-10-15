@@ -99,23 +99,21 @@ func (gen *AppGenerator) Deployment() basereconciler.GeneratorFunction {
 			},
 		}
 
-		if gen.ConfigFilesEnabled {
-			dep.Spec.Template.Spec.Volumes = append(dep.Spec.Template.Spec.Volumes,
-				corev1.Volume{
-					Name: "system-config",
-					VolumeSource: corev1.VolumeSource{
-						Secret: &corev1.SecretVolumeSource{
-							SecretName: systemConfigSecret,
-						},
+		dep.Spec.Template.Spec.Volumes = append(dep.Spec.Template.Spec.Volumes,
+			corev1.Volume{
+				Name: "system-config",
+				VolumeSource: corev1.VolumeSource{
+					Secret: &corev1.SecretVolumeSource{
+						SecretName: gen.ConfigFilesSecret,
 					},
-				})
-			dep.Spec.Template.Spec.Containers[0].VolumeMounts = append(dep.Spec.Template.Spec.Containers[0].VolumeMounts,
-				corev1.VolumeMount{
-					Name:      "system-config",
-					ReadOnly:  true,
-					MountPath: "/opt/system-extra-configs",
-				})
-		}
+				},
+			})
+		dep.Spec.Template.Spec.Containers[0].VolumeMounts = append(dep.Spec.Template.Spec.Containers[0].VolumeMounts,
+			corev1.VolumeMount{
+				Name:      "system-config",
+				ReadOnly:  true,
+				MountPath: "/opt/system-extra-configs",
+			})
 
 		if !gen.Spec.Marin3r.IsDeactivated() {
 			dep = marin3r.EnableSidecar(*dep, *gen.Spec.Marin3r)
