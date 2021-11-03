@@ -200,6 +200,9 @@ BUNDLE_IMGS ?= $(BUNDLE_IMG)
 # The image tag given to the resulting catalog image (e.g. make catalog-build CATALOG_IMG=example.com/operator-catalog:v0.2.0).
 CATALOG_IMG ?= $(IMAGE_TAG_BASE)-catalog:v$(VERSION)
 
+# Default catalog base image to append bundles to
+CATALOG_BASE_IMG ?= $(IMAGE_TAG_BASE)-catalog:latest
+
 # Set CATALOG_BASE_IMG to an existing catalog image tag to add $BUNDLE_IMGS to that image.
 ifneq ($(origin CATALOG_BASE_IMG), undefined)
 FROM_INDEX_OPT := --from-index $(CATALOG_BASE_IMG)
@@ -227,10 +230,14 @@ prepare-stable-release: bump-release generate fmt vet manifests assets bundle re
 bump-release: ## Write release name to "pkg/version" package
 	sed -i 's/version string = "v\(.*\)"/version string = "v$(VERSION)"/g' pkg/version/version.go
 
-bundle-publish: bundle-build bundle-push catalog-build catalog-push
+bundle-publish: bundle-build bundle-push catalog-build catalog-push catalog-retag-latest ## Generates and pushes all required images for a release
 
 get-new-release:
 	@hack/new-release.sh v$(VERSION)
+
+catalog-retag-latest:
+	docker tag $(CATALOG_IMG) $(IMAGE_TAG_BASE)-catalog:latest
+	$(MAKE) docker-push IMG=$(IMAGE_TAG_BASE)-catalog:latest
 
 ##@ Kind Deployment
 
