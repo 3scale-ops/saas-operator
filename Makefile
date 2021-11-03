@@ -89,7 +89,7 @@ fmt: ## Run go fmt against code.
 vet: ## Run go vet against code.
 	go vet ./...
 
-test: manifests generate fmt vet envtest assets ## Run tests.
+test: manifests generate fmt vet envtest assets ginkgo ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" $(GINKGO) -p -r ./... -coverprofile cover.out
 
 assets: go-bindata ## assets: Generate embedded assets
