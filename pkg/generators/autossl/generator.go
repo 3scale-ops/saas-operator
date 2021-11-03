@@ -62,5 +62,5 @@ func (gen *Generator) PodMonitor() basereconciler.GeneratorFunction {
 // GrafanaDashboard returns a basereconciler.GeneratorFunction
 func (gen *Generator) GrafanaDashboard() basereconciler.GeneratorFunction {
 	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return grafanadashboard.New(key, gen.GetLabels(), *gen.Spec.GrafanaDashboard, "dashboards/autossl.json.tpl")
+	return grafanadashboard.New(key, gen.GetLabels(), *gen.Spec.GrafanaDashboard, "dashboards/autossl.json.gtpl")
 }
