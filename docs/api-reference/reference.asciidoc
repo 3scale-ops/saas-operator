@@ -478,24 +478,6 @@ CORSProxySpec defines the desired state of CORSProxy
 
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-configfilesspec"]
-==== ConfigFilesSpec 
-
-ConfigFilesSpec defines a vault location to get system config files from
-
-.Appears In:
-****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
-****
-
-[cols="25a,75a", options="header"]
-|===
-| Field | Description
-| *`vaultPath`* __string__ | 
-| *`files`* __string array__ | 
-|===
-
-
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-cronspec"]
 ==== CronSpec 
 
@@ -1163,7 +1145,7 @@ SidekiqConfig configures app behavior for System Sidekiq
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`Queues`* __string array__ | Bundle exec sidekiq queues argument
+| *`queues`* __string array__ | List of queues to be consumed by sidekiq. Format: queue[,Priority]
 | *`maxThreads`* __integer__ | Number of rails max threads per sidekiq pod
 |===
 
@@ -1274,7 +1256,7 @@ SystemConfig holds configuration for SystemApp component
 | *`sslCertsDir`* __string__ | SSL certificates path
 | *`threescaleProviderPlan`* __string__ | 3scale provider plan
 | *`threescaleSuperdomain`* __string__ | 3scale superdomain
-| *`configFiles`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-configfilesspec[$$ConfigFilesSpec$$]__ | Extra configuration files to be mounted in the pods
+| *`configFilesSecret`* __string__ | Secret containging system configuration files to be mounted in the pods
 | *`databaseDSN`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | DSN of system's main database
 | *`eventsSharedSecret`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | EventsSharedSecret
 | *`recaptcha`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemrecaptchaspec[$$SystemRecaptchaSpec$$]__ | Holds recaptcha configuration options

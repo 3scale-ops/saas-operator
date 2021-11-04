@@ -3,39 +3,79 @@ layout: go.kubebuilder.io/v3
 projectName: saas-operator
 repo: github.com/3scale/saas-operator
 resources:
-- crdVersion: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: 3scale.net
   group: saas
   kind: AutoSSL
+  path: github.com/3scale/saas-operator/api/v1alpha1
   version: v1alpha1
-- crdVersion: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: 3scale.net
   group: saas
   kind: Apicast
+  path: github.com/3scale/saas-operator/api/v1alpha1
   version: v1alpha1
-- crdVersion: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: 3scale.net
   group: saas
   kind: EchoAPI
+  path: github.com/3scale/saas-operator/api/v1alpha1
   version: v1alpha1
-- crdVersion: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: 3scale.net
   group: saas
   kind: MappingService
+  path: github.com/3scale/saas-operator/api/v1alpha1
   version: v1alpha1
-- crdVersion: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: 3scale.net
   group: saas
   kind: CORSProxy
+  path: github.com/3scale/saas-operator/api/v1alpha1
   version: v1alpha1
-- crdVersion: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: 3scale.net
   group: saas
   kind: Backend
+  path: github.com/3scale/saas-operator/api/v1alpha1
   version: v1alpha1
-- crdVersion: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: 3scale.net
   group: saas
   kind: System
+  path: github.com/3scale/saas-operator/api/v1alpha1
   version: v1alpha1
-- crdVersion: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: 3scale.net
   group: saas
   kind: Zync
+  path: github.com/3scale/saas-operator/api/v1alpha1
   version: v1alpha1
-version: 3-alpha
+version: "3"
 plugins:
   manifests.sdk.operatorframework.io/v2: {}
   scorecard.sdk.operatorframework.io/v2: {}
