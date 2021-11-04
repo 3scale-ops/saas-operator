@@ -3,18 +3,10 @@ kind: Kustomization
 namePrefix: saas-operator
 namespace: default
 resources:
+- ../default
 - external-apis/grafanadashboards.integreatly.org.yaml
 - external-apis/podmonitors.monitoring.coreos.com.yaml
 - external-apis/secretdefinitions.secrets-manager.tuenti.io.yaml
-- ../crd
-- ../rbac
-- ../manager
-
-# images:
-# - name: quay.io/3scale/saas-operator
-#   newName: quay.io/3scale/saas-operator
-#   newTag: test
-
 patches:
   - target:
       group: apps
@@ -22,8 +14,6 @@ patches:
       kind: Deployment
       name: controller-manager
     patch: |-
-      - op: remove
-        path: /spec/template/spec/runAsNonRoot
       - op: replace
         path: /spec/template/spec/containers/0/env/0
         value: { "name": "WATCH_NAMESPACE", "value": default }

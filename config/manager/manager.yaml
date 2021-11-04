@@ -22,18 +22,13 @@ spec:
       labels:
         control-plane: controller-manager
     spec:
-      serviceAccountName: controller-manager
-      runAsNonRoot: true
+      securityContext:
+        runAsNonRoot: true
       containers:
       - command:
         - /manager
         args:
         - --leader-elect
-        env:
-          - name: WATCH_NAMESPACE
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.annotations['olm.targetNamespaces']
         image: controller:latest
         name: manager
         securityContext:
@@ -52,9 +47,10 @@ spec:
           periodSeconds: 10
         resources:
           limits:
-            cpu: 50m
-            memory: 700Mi
+            cpu: 200m
+            memory: 100Mi
           requests:
-            cpu: 25m
-            memory: 200Mi
+            cpu: 100m
+            memory: 20Mi
+      serviceAccountName: controller-manager
       terminationGracePeriodSeconds: 10
