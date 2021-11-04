@@ -151,7 +151,9 @@ var (
 		MaxThreads: pointer.Int32Ptr(15),
 	}
 	systemDefaultSidekiqConfigLow defaultSidekiqConfig = defaultSidekiqConfig{
-		Queues:     []string{"low"},
+		Queues: []string{
+			"mailers", "low",
+		},
 		MaxThreads: pointer.Int32Ptr(15),
 	}
 
