@@ -171,7 +171,7 @@ var _ = Describe("System controller", func() {
 				)
 			}, timeout, poll).ShouldNot(HaveOccurred())
 			Expect(dep.Spec.Template.Spec.Containers[0].Args).To(Equal(
-				[]string{"sidekiq", "--queue", "low"},
+				[]string{"sidekiq", "--queue", "mailers", "--queue", "low"},
 			))
 			Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
 			Expect(dep.Spec.Template.Spec.Volumes[1].Secret.SecretName).To(Equal("system-config"))
