@@ -51,14 +51,6 @@ jobs:
         if: ${{ env.NEW_RELEASE != '' }}
         run: make docker-push
 
-      - name: Login to quay.io/3scaleops
-        if: ${{ env.NEW_RELEASE != '' }}
-        uses: docker/login-action@v1
-        with:
-          registry: quay.io
-          username: ${{ secrets.CATALOG_REGISTRY_USER }}
-          password: ${{ secrets.CATALOG_REGISTRY_PASSWORD }}
-
       - name: Publish new bundle image in saas-operator catalog
         if: ${{ env.NEW_RELEASE != '' }}
         run: make bundle-publish
