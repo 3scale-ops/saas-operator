@@ -485,13 +485,35 @@ type SidecarPort struct {
 
 // Marin3rSidecarSpec defines the marin3r sidecar for the component
 type Marin3rSidecarSpec struct {
+	// The NodeID that identifies the Envoy sidecar to the DiscoveryService
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	NodeID *string `json:"nodeID,omitempty"`
+	// The Envoy API version to use
+	// +kubebuilder:validation:Enum=v3
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	EnvoyAPIVersion *string `json:"envoyAPIVersion,omitempty"`
+	// The Envoy iamge to use
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	EnvoyImage *string `json:"envoyImage,omitempty"`
 	// The ports that the sidecar exposes
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	Ports []SidecarPort `json:"ports"`
+	// +optional
+	Ports []SidecarPort `json:"ports,omitempty"`
 	// Compute Resources required by this container.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Resources *ResourceRequirementsSpec `json:"resources,omitempty"`
+	// The port where Marin3r's shutdown manager listens
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ShutdownManagerPort *uint32 `json:"shtdnmgrPort,omitempty"`
+	// Extra containers to sync with the shutdown manager upon pod termination
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ShutdownManagerExtraLifecycleHooks *string `json:"shtdnmgrExtraLifecycleHooks"`
 	// Extra annotations to pass the Pod to further configure the sidecar container.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional

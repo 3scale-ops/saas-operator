@@ -43,7 +43,6 @@ var (
 	systemDefaultThreescaleSuperdomain         string           = "localhost"
 	systemDefaultRailsEnvironment              string           = "preview"
 	systemDefaultRailsLogLevel                 string           = "info"
-	systemDefaultLogToStdout                   bool             = true
 	systemDefaultConfigFilesSecret             string           = "system-config"
 	systemDefaultBugsnagSpec                   BugsnagSpec      = BugsnagSpec{}
 	systemDefaultImage                         defaultImageSpec = defaultImageSpec{
@@ -166,7 +165,6 @@ var (
 	systemDefaultSphinxDBPath              string                          = "/opt/system/db/sphinx"
 	systemDefaultSphinxDatabaseStorageSize string                          = "30Gi"
 	systemDefaultSphinxPIDFile             string                          = "/opt/system/tmp/pids/searchd.pid"
-	systemDefaultSphinxStorage             string                          = "30Gi"
 	systemDefaultSphinxResources           defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
 		Requests: corev1.ResourceList{
 			corev1.ResourceCPU:    resource.MustParse("250m"),
