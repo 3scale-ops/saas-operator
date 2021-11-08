@@ -1494,8 +1494,8 @@ func (in *Marin3rSidecarSpec) DeepCopyInto(out *Marin3rSidecarSpec) {
 	}
 	if in.ShutdownManagerExtraLifecycleHooks != nil {
 		in, out := &in.ShutdownManagerExtraLifecycleHooks, &out.ShutdownManagerExtraLifecycleHooks
-		*out = new(string)
-		**out = **in
+		*out = make([]string, len(*in))
+		copy(*out, *in)
 	}
 	if in.ExtraPodAnnotations != nil {
 		in, out := &in.ExtraPodAnnotations, &out.ExtraPodAnnotations

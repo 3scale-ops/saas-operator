@@ -513,7 +513,7 @@ type Marin3rSidecarSpec struct {
 	// Extra containers to sync with the shutdown manager upon pod termination
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	ShutdownManagerExtraLifecycleHooks *string `json:"shtdnmgrExtraLifecycleHooks"`
+	ShutdownManagerExtraLifecycleHooks []string `json:"shtdnmgrExtraLifecycleHooks"`
 	// Extra annotations to pass the Pod to further configure the sidecar container.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional

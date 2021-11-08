@@ -687,7 +687,9 @@ spec:
                       shtdnmgrExtraLifecycleHooks:
                         description: Extra containers to sync with the shutdown manager
                           upon pod termination
-                        type: string
+                        items:
+                          type: string
+                        type: array
                       shtdnmgrPort:
                         description: The port where Marin3r's shutdown manager listens
                         format: int32
