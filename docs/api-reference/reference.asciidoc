@@ -861,13 +861,19 @@ Marin3rSidecarSpec defines the marin3r sidecar for the component
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
+| *`nodeID`* __string__ | The NodeID that identifies the Envoy sidecar to the DiscoveryService
+| *`envoyAPIVersion`* __string__ | The Envoy API version to use
+| *`envoyImage`* __string__ | The Envoy iamge to use
 | *`ports`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sidecarport[$$SidecarPort$$] array__ | The ports that the sidecar exposes
 | *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Compute Resources required by this container.
+| *`shtdnmgrPort`* __integer__ | The port where Marin3r's shutdown manager listens
+| *`shtdnmgrExtraLifecycleHooks`* __string array__ | Extra containers to sync with the shutdown manager upon pod termination
 | *`extraPodAnnotations`* __object (keys:string, values:string)__ | Extra annotations to pass the Pod to further configure the sidecar container.
 |===
 
@@ -1351,6 +1357,7 @@ SystemSidekiqSpec configures the Sidekiq component of System
 | *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
 | *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
 | *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+| *`marin3r`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]__ | Marin3r configures the Marin3r sidecars for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
 |===
