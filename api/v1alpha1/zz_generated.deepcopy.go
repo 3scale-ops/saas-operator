@@ -2146,6 +2146,11 @@ func (in *SystemSidekiqSpec) DeepCopyInto(out *SystemSidekiqSpec) {
 		*out = new(ProbeSpec)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.Marin3r != nil {
+		in, out := &in.Marin3r, &out.Marin3r
+		*out = new(Marin3rSidecarSpec)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.NodeAffinity != nil {
 		in, out := &in.NodeAffinity, &out.NodeAffinity
 		*out = new(v1.NodeAffinity)
