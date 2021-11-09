@@ -21,7 +21,7 @@ var (
 	}
 )
 
-// EnableSidecar adds the apporopriates labels and annotations for marin3r sidecar
+// EnableSidecar adds the appropriate labels and annotations for marin3r sidecar
 // injection to work for this Deployment
 func EnableSidecar(dep appsv1.Deployment, spec saasv1alpha1.Marin3rSidecarSpec) *appsv1.Deployment {
 
