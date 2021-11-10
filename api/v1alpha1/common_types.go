@@ -125,10 +125,7 @@ func (spec *ProbeSpec) Default(def defaultProbeSpec) {
 
 // IsDeactivated true if the field is set with the deactivated value (empty struct)
 func (spec *ProbeSpec) IsDeactivated() bool {
-	if reflect.DeepEqual(spec, &ProbeSpec{}) {
-		return true
-	}
-	return false
+	return reflect.DeepEqual(spec, &ProbeSpec{})
 }
 
 // InitializeProbeSpec initializes a ProbeSpec struct
@@ -287,10 +284,7 @@ func (spec *GrafanaDashboardSpec) Default(def defaultGrafanaDashboardSpec) {
 
 // IsDeactivated true if the field is set with the deactivated value (empty struct)
 func (spec *GrafanaDashboardSpec) IsDeactivated() bool {
-	if reflect.DeepEqual(spec, &GrafanaDashboardSpec{}) {
-		return true
-	}
-	return false
+	return reflect.DeepEqual(spec, &GrafanaDashboardSpec{})
 }
 
 // InitializeGrafanaDashboardSpec initializes a GrafanaDashboardSpec struct
@@ -352,10 +346,7 @@ func (spec *PodDisruptionBudgetSpec) Default(def defaultPodDisruptionBudgetSpec)
 
 // IsDeactivated true if the field is set with the deactivated value (empty struct)
 func (spec *PodDisruptionBudgetSpec) IsDeactivated() bool {
-	if reflect.DeepEqual(spec, &PodDisruptionBudgetSpec{}) {
-		return true
-	}
-	return false
+	return reflect.DeepEqual(spec, &PodDisruptionBudgetSpec{})
 }
 
 // InitializePodDisruptionBudgetSpec initializes a PodDisruptionBudgetSpec struct
@@ -414,10 +405,7 @@ func (spec *HorizontalPodAutoscalerSpec) Default(def defaultHorizontalPodAutosca
 
 // IsDeactivated true if the field is set with the deactivated value (empty struct)
 func (spec *HorizontalPodAutoscalerSpec) IsDeactivated() bool {
-	if reflect.DeepEqual(spec, &HorizontalPodAutoscalerSpec{}) {
-		return true
-	}
-	return false
+	return reflect.DeepEqual(spec, &HorizontalPodAutoscalerSpec{})
 }
 
 // InitializeHorizontalPodAutoscalerSpec initializes a HorizontalPodAutoscalerSpec struct
@@ -467,10 +455,7 @@ func (spec *ResourceRequirementsSpec) Default(def defaultResourceRequirementsSpe
 
 // IsDeactivated true if the field is set with the deactivated value (empty struct)
 func (spec *ResourceRequirementsSpec) IsDeactivated() bool {
-	if reflect.DeepEqual(spec, &ResourceRequirementsSpec{}) {
-		return true
-	}
-	return false
+	return reflect.DeepEqual(spec, &ResourceRequirementsSpec{})
 }
 
 // InitializeResourceRequirementsSpec initializes a ResourceRequirementsSpec struct
@@ -500,13 +485,35 @@ type SidecarPort struct {
 
 // Marin3rSidecarSpec defines the marin3r sidecar for the component
 type Marin3rSidecarSpec struct {
+	// The NodeID that identifies the Envoy sidecar to the DiscoveryService
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	NodeID *string `json:"nodeID,omitempty"`
+	// The Envoy API version to use
+	// +kubebuilder:validation:Enum=v3
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	EnvoyAPIVersion *string `json:"envoyAPIVersion,omitempty"`
+	// The Envoy iamge to use
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	EnvoyImage *string `json:"envoyImage,omitempty"`
 	// The ports that the sidecar exposes
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	Ports []SidecarPort `json:"ports"`
+	// +optional
+	Ports []SidecarPort `json:"ports,omitempty"`
 	// Compute Resources required by this container.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Resources *ResourceRequirementsSpec `json:"resources,omitempty"`
+	// The port where Marin3r's shutdown manager listens
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ShutdownManagerPort *uint32 `json:"shtdnmgrPort,omitempty"`
+	// Extra containers to sync with the shutdown manager upon pod termination
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ShutdownManagerExtraLifecycleHooks []string `json:"shtdnmgrExtraLifecycleHooks"`
 	// Extra annotations to pass the Pod to further configure the sidecar container.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -542,10 +549,7 @@ func (spec *Marin3rSidecarSpec) Default(def defaultMarin3rSidecarSpec) {
 
 // IsDeactivated true if the field is set with the deactivated value (empty struct)
 func (spec *Marin3rSidecarSpec) IsDeactivated() bool {
-	if reflect.DeepEqual(spec, &Marin3rSidecarSpec{}) {
-		return true
-	}
-	return false
+	return reflect.DeepEqual(spec, &Marin3rSidecarSpec{})
 }
 
 // InitializeMarin3rSidecarSpec initializes a ResourceRequirementsSpec struct
@@ -596,10 +600,7 @@ type BugsnagSpec struct {
 // Enabled returns a boolean indication whether the
 // Bugsnag integration is enabled or not
 func (bs *BugsnagSpec) Enabled() bool {
-	if reflect.DeepEqual(bs, &BugsnagSpec{}) {
-		return false
-	}
-	return true
+	return !reflect.DeepEqual(bs, &BugsnagSpec{})
 }
 
 func stringOrDefault(value *string, defValue *string) *string {

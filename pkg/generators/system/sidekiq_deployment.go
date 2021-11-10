@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/3scale/saas-operator/pkg/basereconciler"
+	"github.com/3scale/saas-operator/pkg/generators/common_blocks/marin3r"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
 	"github.com/3scale/saas-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
@@ -116,6 +117,10 @@ func (gen *SidekiqGenerator) Deployment() basereconciler.GeneratorFunction {
 				ReadOnly:  true,
 				MountPath: "/opt/system-extra-configs",
 			})
+
+		if !gen.Spec.Marin3r.IsDeactivated() {
+			dep = marin3r.EnableSidecar(*dep, *gen.Spec.Marin3r)
+		}
 
 		return dep
 	}

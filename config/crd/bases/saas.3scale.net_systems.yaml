@@ -99,12 +99,24 @@ spec:
                   marin3r:
                     description: Marin3r configures the Marin3r sidecars for the component
                     properties:
+                      envoyAPIVersion:
+                        description: The Envoy API version to use
+                        enum:
+                        - v3
+                        type: string
+                      envoyImage:
+                        description: The Envoy iamge to use
+                        type: string
                       extraPodAnnotations:
                         additionalProperties:
                           type: string
                         description: Extra annotations to pass the Pod to further
                           configure the sidecar container.
                         type: object
+                      nodeID:
+                        description: The NodeID that identifies the Envoy sidecar
+                          to the DiscoveryService
+                        type: string
                       ports:
                         description: The ports that the sidecar exposes
                         items:
@@ -150,8 +162,16 @@ spec:
                               More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                             type: object
                         type: object
-                    required:
-                    - ports
+                      shtdnmgrExtraLifecycleHooks:
+                        description: Extra containers to sync with the shutdown manager
+                          upon pod termination
+                        items:
+                          type: string
+                        type: array
+                      shtdnmgrPort:
+                        description: The port where Marin3r's shutdown manager listens
+                        format: int32
+                        type: integer
                     type: object
                   nodeAffinity:
                     description: Describes node affinity scheduling rules for the
@@ -1246,6 +1266,83 @@ spec:
                         format: int32
                         type: integer
                     type: object
+                  marin3r:
+                    description: Marin3r configures the Marin3r sidecars for the component
+                    properties:
+                      envoyAPIVersion:
+                        description: The Envoy API version to use
+                        enum:
+                        - v3
+                        type: string
+                      envoyImage:
+                        description: The Envoy iamge to use
+                        type: string
+                      extraPodAnnotations:
+                        additionalProperties:
+                          type: string
+                        description: Extra annotations to pass the Pod to further
+                          configure the sidecar container.
+                        type: object
+                      nodeID:
+                        description: The NodeID that identifies the Envoy sidecar
+                          to the DiscoveryService
+                        type: string
+                      ports:
+                        description: The ports that the sidecar exposes
+                        items:
+                          description: SidecarPort defines port for the Marin3r sidecar
+                            container
+                          properties:
+                            name:
+                              description: Port name
+                              type: string
+                            port:
+                              description: Port value
+                              format: int32
+                              type: integer
+                          required:
+                          - name
+                          - port
+                          type: object
+                        type: array
+                      resources:
+                        description: Compute Resources required by this container.
+                        properties:
+                          limits:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: 'Limits describes the maximum amount of compute
+                              resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                            type: object
+                          requests:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: 'Requests describes the minimum amount of
+                              compute resources required. If Requests is omitted for
+                              a container, it defaults to Limits if that is explicitly
+                              specified, otherwise to an implementation-defined value.
+                              More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                            type: object
+                        type: object
+                      shtdnmgrExtraLifecycleHooks:
+                        description: Extra containers to sync with the shutdown manager
+                          upon pod termination
+                        items:
+                          type: string
+                        type: array
+                      shtdnmgrPort:
+                        description: The port where Marin3r's shutdown manager listens
+                        format: int32
+                        type: integer
+                    type: object
                   nodeAffinity:
                     description: Describes node affinity scheduling rules for the
                       pod.
@@ -1650,6 +1747,83 @@ spec:
                         format: int32
                         type: integer
                     type: object
+                  marin3r:
+                    description: Marin3r configures the Marin3r sidecars for the component
+                    properties:
+                      envoyAPIVersion:
+                        description: The Envoy API version to use
+                        enum:
+                        - v3
+                        type: string
+                      envoyImage:
+                        description: The Envoy iamge to use
+                        type: string
+                      extraPodAnnotations:
+                        additionalProperties:
+                          type: string
+                        description: Extra annotations to pass the Pod to further
+                          configure the sidecar container.
+                        type: object
+                      nodeID:
+                        description: The NodeID that identifies the Envoy sidecar
+                          to the DiscoveryService
+                        type: string
+                      ports:
+                        description: The ports that the sidecar exposes
+                        items:
+                          description: SidecarPort defines port for the Marin3r sidecar
+                            container
+                          properties:
+                            name:
+                              description: Port name
+                              type: string
+                            port:
+                              description: Port value
+                              format: int32
+                              type: integer
+                          required:
+                          - name
+                          - port
+                          type: object
+                        type: array
+                      resources:
+                        description: Compute Resources required by this container.
+                        properties:
+                          limits:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: 'Limits describes the maximum amount of compute
+                              resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                            type: object
+                          requests:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: 'Requests describes the minimum amount of
+                              compute resources required. If Requests is omitted for
+                              a container, it defaults to Limits if that is explicitly
+                              specified, otherwise to an implementation-defined value.
+                              More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                            type: object
+                        type: object
+                      shtdnmgrExtraLifecycleHooks:
+                        description: Extra containers to sync with the shutdown manager
+                          upon pod termination
+                        items:
+                          type: string
+                        type: array
+                      shtdnmgrPort:
+                        description: The port where Marin3r's shutdown manager listens
+                        format: int32
+                        type: integer
+                    type: object
                   nodeAffinity:
                     description: Describes node affinity scheduling rules for the
                       pod.
@@ -2051,6 +2225,83 @@ spec:
                       timeoutSeconds:
                         description: Number of seconds after which the probe times
                           out
+                        format: int32
+                        type: integer
+                    type: object
+                  marin3r:
+                    description: Marin3r configures the Marin3r sidecars for the component
+                    properties:
+                      envoyAPIVersion:
+                        description: The Envoy API version to use
+                        enum:
+                        - v3
+                        type: string
+                      envoyImage:
+                        description: The Envoy iamge to use
+                        type: string
+                      extraPodAnnotations:
+                        additionalProperties:
+                          type: string
+                        description: Extra annotations to pass the Pod to further
+                          configure the sidecar container.
+                        type: object
+                      nodeID:
+                        description: The NodeID that identifies the Envoy sidecar
+                          to the DiscoveryService
+                        type: string
+                      ports:
+                        description: The ports that the sidecar exposes
+                        items:
+                          description: SidecarPort defines port for the Marin3r sidecar
+                            container
+                          properties:
+                            name:
+                              description: Port name
+                              type: string
+                            port:
+                              description: Port value
+                              format: int32
+                              type: integer
+                          required:
+                          - name
+                          - port
+                          type: object
+                        type: array
+                      resources:
+                        description: Compute Resources required by this container.
+                        properties:
+                          limits:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: 'Limits describes the maximum amount of compute
+                              resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                            type: object
+                          requests:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: 'Requests describes the minimum amount of
+                              compute resources required. If Requests is omitted for
+                              a container, it defaults to Limits if that is explicitly
+                              specified, otherwise to an implementation-defined value.
+                              More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                            type: object
+                        type: object
+                      shtdnmgrExtraLifecycleHooks:
+                        description: Extra containers to sync with the shutdown manager
+                          upon pod termination
+                        items:
+                          type: string
+                        type: array
+                      shtdnmgrPort:
+                        description: The port where Marin3r's shutdown manager listens
                         format: int32
                         type: integer
                     type: object

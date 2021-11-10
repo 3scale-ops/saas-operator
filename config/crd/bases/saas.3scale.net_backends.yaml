@@ -621,12 +621,24 @@ spec:
                   marin3r:
                     description: Marin3r configures the Marin3r sidecars for the component
                     properties:
+                      envoyAPIVersion:
+                        description: The Envoy API version to use
+                        enum:
+                        - v3
+                        type: string
+                      envoyImage:
+                        description: The Envoy iamge to use
+                        type: string
                       extraPodAnnotations:
                         additionalProperties:
                           type: string
                         description: Extra annotations to pass the Pod to further
                           configure the sidecar container.
                         type: object
+                      nodeID:
+                        description: The NodeID that identifies the Envoy sidecar
+                          to the DiscoveryService
+                        type: string
                       ports:
                         description: The ports that the sidecar exposes
                         items:
@@ -672,8 +684,16 @@ spec:
                               More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                             type: object
                         type: object
-                    required:
-                    - ports
+                      shtdnmgrExtraLifecycleHooks:
+                        description: Extra containers to sync with the shutdown manager
+                          upon pod termination
+                        items:
+                          type: string
+                        type: array
+                      shtdnmgrPort:
+                        description: The port where Marin3r's shutdown manager listens
+                        format: int32
+                        type: integer
                     type: object
                   nodeAffinity:
                     description: Describes node affinity scheduling rules for the
