@@ -180,6 +180,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err = (&controllers.RedisShardReconciler{
+		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("RedisShard"), false),
+		Log:        ctrl.Log.WithName("controllers").WithName("RedisShard"),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "RedisShard")
+		os.Exit(1)
+	}
 	// +kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("health", healthz.Ping); err != nil {
