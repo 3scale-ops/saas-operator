@@ -1,0 +1,24 @@
+# permissions for end users to edit sentinels.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: sentinel-editor-role
+rules:
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - sentinels
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - sentinels/status
+  verbs:
+  - get

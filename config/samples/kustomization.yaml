@@ -8,5 +8,6 @@ resources:
 - saas_v1alpha1_mappingservice.yaml
 - saas_v1alpha1_system.yaml
 - saas_v1alpha1_zync.yaml
+- saas_v1alpha1_sentinel.yaml
 - saas_v1alpha1_redisshard.yaml
 # +kubebuilder:scaffold:manifestskustomizesamples

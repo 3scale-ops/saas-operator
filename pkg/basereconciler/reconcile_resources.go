@@ -33,6 +33,7 @@ type ControlledResources struct {
 	HorizontalPodAutoscalers []HorizontalPodAutoscaler
 	PodMonitors              []PodMonitor
 	GrafanaDashboards        []GrafanaDashboard
+	ConfigMaps               []ConfigMaps
 }
 
 // RolloutTrigger defines a configuration source that should trigger a
@@ -178,6 +179,12 @@ type GrafanaDashboard struct {
 	Enabled  bool
 }
 
+// GrafanaDashboard specifies a GrafanaDashboard resource
+type ConfigMaps struct {
+	Template GeneratorFunction
+	Enabled  bool
+}
+
 // GetDeploymentReplicas returns the number of replicas for a deployment,
 // current value if HPA is enabled.
 func (r *Reconciler) GetDeploymentReplicas(ctx context.Context, d Deployment) (*int32, error) {
@@ -296,7 +303,20 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 		}
 	}
 
+	for _, cm := range crs.ConfigMaps {
+		if cm.Enabled {
+			resources = append(resources,
+				LockedResource{
+					GeneratorFn:  cm.Template,
+					ExcludePaths: DefaultExcludedPaths,
+				})
+		}
+	}
+
 	lockedResources, err := r.NewLockedResources(resources, owner)
+	if err != nil {
+		return err
+	}
 	err = r.UpdateLockedResources(ctx, owner, lockedResources, []lockedpatch.LockedPatch{})
 	if err != nil {
 		return err
