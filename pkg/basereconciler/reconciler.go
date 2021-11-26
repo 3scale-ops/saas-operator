@@ -72,9 +72,9 @@ type LockedResource struct {
 }
 
 // GetInstance tries to retrieve the custom resource instance and perform some standard
-// tasks like initizalization and cleanup when required.
+// tasks like initialization and cleanup when required.
 func (r *Reconciler) GetInstance(ctx context.Context, key types.NamespacedName,
-	instance client.Object, finalizer string, log logr.Logger) (*ctrl.Result, error) {
+	instance client.Object, finalizer string, cleanupFns []func(), log logr.Logger) (*ctrl.Result, error) {
 	err := r.GetClient().Get(ctx, key, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -88,7 +88,7 @@ func (r *Reconciler) GetInstance(ctx context.Context, key types.NamespacedName,
 		if !util.HasFinalizer(instance, finalizer) {
 			return &ctrl.Result{}, nil
 		}
-		err := r.ManageCleanUpLogic(instance, log)
+		err := r.ManageCleanUpLogic(instance, cleanupFns, log)
 		if err != nil {
 			log.Error(err, "unable to delete instance")
 			result, err := r.ManageError(ctx, instance, err)
@@ -128,7 +128,14 @@ func (r *Reconciler) IsInitialized(instance client.Object, finalizer string) boo
 }
 
 // ManageCleanUpLogic contains finalization logic for the LockedResourcesReconciler
-func (r *Reconciler) ManageCleanUpLogic(instance client.Object, log logr.Logger) error {
+// Functionality can be extended by passing extra cleanup functions
+func (r *Reconciler) ManageCleanUpLogic(instance client.Object, fns []func(), log logr.Logger) error {
+
+	// Call any extra cleanup functions passed
+	for _, fn := range fns {
+		fn()
+	}
+
 	err := r.Terminate(instance, true)
 	if err != nil {
 		log.Error(err, "unable to terminate locked resources reconciler")

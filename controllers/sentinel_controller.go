@@ -19,11 +19,16 @@ package controllers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"strings"
+	"sync"
+	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/generators/sentinel"
 	"github.com/3scale/saas-operator/pkg/redis"
+	redismetrics "github.com/3scale/saas-operator/pkg/redis/metrics"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -31,10 +36,38 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
+type SentinelMetrics struct {
+	mu        sync.Mutex
+	exporters map[string]*redismetrics.SentinelMetricsGatherer
+}
+
+func (sm *SentinelMetrics) RunExporter(ctx context.Context, key string, sentinelURL string, log logr.Logger) {
+
+	// run the exporter for this instance if it is not running, do nothing otherwise
+	if _, ok := sm.exporters[key]; !ok {
+		sm.mu.Lock()
+		sm.exporters[key] = &redismetrics.SentinelMetricsGatherer{
+			RefreshInterval: 10 * time.Second,
+			SentinelURL:     sentinelURL,
+			Log:             log,
+		}
+		sm.exporters[key].Start(ctx)
+		sm.mu.Unlock()
+	}
+}
+
+func (sm *SentinelMetrics) StopExporter(key string) {
+	sm.mu.Lock()
+	sm.exporters[key].Stop()
+	delete(sm.exporters, key)
+	sm.mu.Unlock()
+}
+
 // SentinelReconciler reconciles a Sentinel object
 type SentinelReconciler struct {
 	basereconciler.Reconciler
-	Log logr.Logger
+	Log     logr.Logger
+	metrics SentinelMetrics
 }
 
 // +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=sentinels,verbs=get;list;watch;create;update;patch;delete
@@ -53,7 +86,7 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	instance := &saasv1alpha1.Sentinel{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx, key, instance, saasv1alpha1.Finalizer, log)
+	result, err := r.GetInstance(ctx, key, instance, saasv1alpha1.Finalizer, []func(){r.CleanupExporters(req.NamespacedName)}, log)
 	if result != nil || err != nil {
 		return *result, err
 	}
@@ -80,7 +113,7 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			Enabled:  true,
 		}},
 		Services: func() []basereconciler.Service {
-			fns := append(gen.PodServices(int(*instance.Spec.Replicas)), gen.StatefulSetService())
+			fns := append(gen.PodServices(), gen.StatefulSetService())
 			var svcs = []basereconciler.Service{}
 			for _, fn := range fns {
 				svcs = append(svcs, basereconciler.Service{Template: fn, Enabled: true})
@@ -113,7 +146,50 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return r.ManageError(ctx, instance, err)
 	}
 
+	r.ReconcileExporters(ctx, gen, log.WithName("exporter"))
+
 	return r.ManageSuccess(ctx, instance)
+}
+
+func (r *SentinelReconciler) ReconcileExporters(ctx context.Context, gen sentinel.Generator, log logr.Logger) {
+
+	if r.metrics.exporters == nil {
+		r.metrics.exporters = map[string]*redismetrics.SentinelMetricsGatherer{}
+	}
+
+	// Gather metrics for each sentinel replica
+	shouldRun := map[string]int{}
+	for i, fn := range gen.PodServices() {
+		svc := fn()
+		key := fmt.Sprintf("%s/%s/%d", gen.Namespace, gen.InstanceName, i)
+		sentinelURL := fmt.Sprintf("redis://%s.%s.svc.cluster.local:%d", svc.GetName(), svc.GetNamespace(), saasv1alpha1.SentinelPort)
+		shouldRun[key] = 1
+		r.metrics.RunExporter(ctx, key, sentinelURL, log)
+	}
+
+	// Stop gathering metrics for any sentinel replica that does not exist anymore
+	for key := range r.metrics.exporters {
+
+		if strings.Contains(key, fmt.Sprintf("%s/%s/", gen.Namespace, gen.InstanceName)) {
+			if _, ok := shouldRun[key]; !ok {
+				r.metrics.StopExporter(key)
+			}
+		}
+	}
+
+	// spew.Config.MaxDepth = 2
+	// spew.Dump(r.metrics.exporters)
+}
+
+func (r *SentinelReconciler) CleanupExporters(instance types.NamespacedName) func() {
+	return func() {
+		prefix := fmt.Sprintf("%s/%s/", instance.Namespace, instance.Name)
+		for key := range r.metrics.exporters {
+			if strings.Contains(key, prefix) {
+				r.metrics.StopExporter(key)
+			}
+		}
+	}
 }
 
 // SetupWithManager sets up the controller with the Manager.

@@ -57,7 +57,7 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 
 	instance := &saasv1alpha1.System{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx, key, instance, saasv1alpha1.Finalizer, log)
+	result, err := r.GetInstance(ctx, key, instance, saasv1alpha1.Finalizer, nil, log)
 	if result != nil || err != nil {
 		return *result, err
 	}

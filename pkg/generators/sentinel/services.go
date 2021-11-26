@@ -44,7 +44,7 @@ func (gen *Generator) StatefulSetService() basereconciler.GeneratorFunction {
 
 // Service returns a basereconciler.GeneratorFunction function that will return a Service
 // resource when called
-func (gen *Generator) PodServices(replicas int) []basereconciler.GeneratorFunction {
+func (gen *Generator) PodServices() []basereconciler.GeneratorFunction {
 
 	fn := func(i int) func() client.Object {
 
@@ -76,9 +76,8 @@ func (gen *Generator) PodServices(replicas int) []basereconciler.GeneratorFuncti
 		}
 	}
 
-	svcFns := make([]basereconciler.GeneratorFunction, replicas)
-	for idx := 0; idx < replicas; idx++ {
-		// log.Printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ %d", idx)
+	svcFns := make([]basereconciler.GeneratorFunction, *gen.Spec.Replicas)
+	for idx := 0; idx < int(*gen.Spec.Replicas); idx++ {
 		svcFns[idx] = fn(idx)
 	}
 
