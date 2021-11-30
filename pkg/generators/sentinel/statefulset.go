@@ -115,13 +115,29 @@ func (gen *Generator) StatefulSet() basereconciler.GeneratorFunction {
 										DefaultMode:          pointer.Int32(484),
 										LocalObjectReference: corev1.LocalObjectReference{Name: gen.GetComponent() + "-gen-config"}},
 								}},
-							{
-								Name: gen.GetComponent() + "-config-rw",
-								VolumeSource: corev1.VolumeSource{
-									EmptyDir: &corev1.EmptyDirVolumeSource{},
-								}},
+							// {
+							// 	Name: gen.GetComponent() + "-config-rw",
+							// 	VolumeSource: corev1.VolumeSource{
+							// 		EmptyDir: &corev1.EmptyDirVolumeSource{},
+							// 	}},
 						}},
 				},
+				VolumeClaimTemplates: []corev1.PersistentVolumeClaim{{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "PersistentVolumeClaim",
+						APIVersion: corev1.SchemeGroupVersion.String(),
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name: gen.GetComponent() + "-config-rw",
+					},
+					Spec: corev1.PersistentVolumeClaimSpec{
+						AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
+						Resources:        corev1.ResourceRequirements{Requests: corev1.ResourceList{corev1.ResourceStorage: *gen.Spec.Config.StorageSize}},
+						StorageClassName: gen.Spec.Config.StorageClass,
+						VolumeMode:       (*corev1.PersistentVolumeMode)(pointer.StringPtr(string(corev1.PersistentVolumeFilesystem))),
+						DataSource:       &corev1.TypedLocalObjectReference{},
+					},
+				}},
 			},
 		}
 	}

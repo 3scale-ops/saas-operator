@@ -26,14 +26,18 @@ func (gen *Generator) ConfigMap() basereconciler.GeneratorFunction {
 			},
 			Data: map[string]string{
 				"generate-config.sh": heredoc.Doc(`
-					echo "dir /redis" >> $1
-					echo "port 26379" >> $1
-					echo "daemonize no" >> $1
-					echo "logfile /dev/stdout" >> $1
-					echo "sentinel deny-scripts-reconfig yes" >> $1
-					echo "protected-mode no" >> $1
-					echo "sentinel announce-ip ${POD_IP}" >> $1
-					echo "sentinel announce-port 26379" >> $1
+					if [ ! -f $1 ]; then
+						echo "dir /redis" >> $1
+						echo "port 26379" >> $1
+						echo "daemonize no" >> $1
+						echo "logfile /dev/stdout" >> $1
+						echo "sentinel deny-scripts-reconfig yes" >> $1
+						echo "protected-mode no" >> $1
+						echo "sentinel announce-ip ${POD_IP}" >> $1
+						echo "sentinel announce-port 26379" >> $1
+					else
+						sed -i "s/^sentinel announce-ip.*/sentinel announce-ip ${POD_IP}/g" $1
+					fi
 				`),
 			},
 		}

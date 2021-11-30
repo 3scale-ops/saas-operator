@@ -63,16 +63,35 @@ var (
 		SelectorKey:   pointer.StringPtr("monitoring-key"),
 		SelectorValue: pointer.StringPtr("middleware"),
 	}
+	sentinelDefaultStorageSize string = "10Mi"
 )
 
 // SentinelConfig defines configuration options for the component
 type SentinelConfig struct {
+	// Monitored shards indicates the redis servers that form
+	// part of each shard monitored by sentinel
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	MonitoredShards map[string][]string `json:"monitoredShards"`
+	// StorageClass is the storage class to be used for
+	// the persistent sentinel config file where the shards
+	// state is stored
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	StorageClass *string `json:"storageClass"`
+	// StorageSize is the storage size to  provision for
+	// the persistent sentinel config file where the shards
+	// state is stored
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	StorageSize *resource.Quantity `json:"storageSize"`
 }
 
 // Default sets default values for any value not specifically set in the AutoSSLConfig struct
 func (cfg *SentinelConfig) Default() {
+	if cfg.StorageSize == nil {
+		size := resource.MustParse(sentinelDefaultStorageSize)
+		cfg.StorageSize = &size
+	}
 }
 
 // SentinelSpec defines the desired state of Sentinel
