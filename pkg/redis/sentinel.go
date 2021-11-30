@@ -19,6 +19,32 @@ const (
 
 type SentinelServer string
 
+func (ss *SentinelServer) IsMonitoringShards(ctx context.Context, shards []string) (bool, error) {
+
+	monitoredShards, err := ss.Masters(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	if len(monitoredShards) == 0 {
+		return false, nil
+	}
+
+	for _, name := range shards {
+		found := false
+		for _, monitored := range monitoredShards {
+			if monitored.Name == name {
+				found = true
+			}
+		}
+		if !found {
+			return false, nil
+		}
+	}
+
+	return true, nil
+}
+
 func (ss *SentinelServer) Monitor(ctx context.Context, shards ShardedCluster) error {
 
 	opt, err := redis.ParseURL(string(*ss))
@@ -28,7 +54,7 @@ func (ss *SentinelServer) Monitor(ctx context.Context, shards ShardedCluster) er
 
 	sentinel := redis.NewSentinelClient(opt)
 
-	// Check that all shards are being monitored, initialize if not
+	// Initialize unmonitored shards
 	for name, shard := range shards {
 
 		result := &redistypes.SentinelMasterCmdResult{}
@@ -138,6 +164,22 @@ func NewSentinelPool(ctx context.Context, cl client.Client, key types.Namespaced
 		spool = append(spool, fmt.Sprintf("redis://%s:%d", pod.Status.PodIP, saasv1alpha1.SentinelPort))
 	}
 	return spool, nil
+}
+
+func (sp SentinelPool) IsMonitoringShards(ctx context.Context, shards []string) (bool, error) {
+
+	for _, connString := range sp {
+		sentinel := SentinelServer(connString)
+		ok, err := sentinel.IsMonitoringShards(ctx, shards)
+		if err != nil {
+			return false, err
+		}
+		if !ok {
+			return false, nil
+		}
+	}
+
+	return true, nil
 }
 
 func (sp SentinelPool) Monitor(ctx context.Context, shards ShardedCluster) error {

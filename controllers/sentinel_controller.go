@@ -137,13 +137,28 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return r.ManageError(ctx, instance, err)
 	}
 
-	shardedCluster, err := redis.NewShardedCluster(ctx, instance.Spec.Config.MonitoredShards, log)
+	allMonitored, err := sentinelPool.IsMonitoringShards(ctx,
+		func() []string {
+			keys := make([]string, 0, len(instance.Spec.Config.MonitoredShards))
+			for k := range instance.Spec.Config.MonitoredShards {
+				keys = append(keys, k)
+			}
+			return keys
+		}(),
+	)
 	if err != nil {
 		return r.ManageError(ctx, instance, err)
 	}
 
-	if err := sentinelPool.Monitor(ctx, shardedCluster); err != nil {
-		return r.ManageError(ctx, instance, err)
+	if !allMonitored {
+		shardedCluster, err := redis.NewShardedCluster(ctx, instance.Spec.Config.MonitoredShards, log)
+		if err != nil {
+			return r.ManageError(ctx, instance, err)
+		}
+
+		if err := sentinelPool.Monitor(ctx, shardedCluster); err != nil {
+			return r.ManageError(ctx, instance, err)
+		}
 	}
 
 	r.ReconcileExporters(ctx, gen, log.WithName("exporter"))
