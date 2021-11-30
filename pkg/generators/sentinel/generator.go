@@ -42,9 +42,3 @@ func (gen *Generator) PDB() basereconciler.GeneratorFunction {
 	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
 	return pdb.New(key, gen.GetLabels(), gen.Selector().MatchLabels, *gen.Spec.PDB)
 }
-
-// // PodMonitor returns a basereconciler.GeneratorFunction
-// func (gen *Generator) PodMonitor() basereconciler.GeneratorFunction {
-// 	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-// 	return podmonitor.New(key, gen.GetLabels(), gen.Selector().MatchLabels, podmonitor.PodMetricsEndpoint("/metrics", "metrics", 30))
-// }

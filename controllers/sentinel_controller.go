@@ -120,10 +120,10 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			}
 			return svcs
 		}(),
-		// PodDisruptionBudgets: []basereconciler.PodDisruptionBudget{{
-		// 	Template: gen.PDB(),
-		// 	Enabled:  !instance.Spec.PDB.IsDeactivated(),
-		// }},
+		PodDisruptionBudgets: []basereconciler.PodDisruptionBudget{{
+			Template: gen.PDB(),
+			Enabled:  !instance.Spec.PDB.IsDeactivated(),
+		}},
 	})
 
 	if err != nil {
