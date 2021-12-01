@@ -44,13 +44,14 @@ type SentinelMetrics struct {
 }
 
 // RunExporter runs a SentinelMetricsGatherer for the given key. The key should uniquely identify a Pod's exporter.
-func (sm *SentinelMetrics) RunExporter(ctx context.Context, key string, sentinelURL string, log logr.Logger) {
+func (sm *SentinelMetrics) RunExporter(ctx context.Context, key string, sentinelURL string,
+	refreshInterval time.Duration, log logr.Logger) {
 
 	// run the exporter for this instance if it is not running, do nothing otherwise
 	if _, ok := sm.exporters[key]; !ok {
 		sm.mu.Lock()
 		sm.exporters[key] = &redismetrics.SentinelMetricsGatherer{
-			RefreshInterval: 10 * time.Second,
+			RefreshInterval: refreshInterval,
 			SentinelURL:     sentinelURL,
 			Log:             log,
 		}
@@ -183,7 +184,7 @@ func (r *SentinelReconciler) ReconcileExporters(ctx context.Context, gen sentine
 		key := fmt.Sprintf("%s/%s/%d", gen.Namespace, gen.InstanceName, i)
 		sentinelURL := fmt.Sprintf("redis://%s.%s.svc.cluster.local:%d", svc.GetName(), svc.GetNamespace(), saasv1alpha1.SentinelPort)
 		shouldRun[key] = 1
-		r.metrics.RunExporter(ctx, key, sentinelURL, log)
+		r.metrics.RunExporter(ctx, key, sentinelURL, *gen.Spec.Config.MetricsRefreshInterval, log)
 	}
 
 	// Stop gathering metrics for any sentinel replica that does not exist anymore

@@ -17,6 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"time"
+
 	"github.com/3scale/saas-operator/pkg/util"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -63,7 +65,8 @@ var (
 		SelectorKey:   pointer.StringPtr("monitoring-key"),
 		SelectorValue: pointer.StringPtr("middleware"),
 	}
-	sentinelDefaultStorageSize string = "10Mi"
+	sentinelDefaultStorageSize            string        = "10Mi"
+	sentinelDefaultMetricsRefreshInterval time.Duration = 30 * time.Second
 )
 
 // SentinelConfig defines configuration options for the component
@@ -84,6 +87,11 @@ type SentinelConfig struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	StorageSize *resource.Quantity `json:"storageSize"`
+	// MetricsRefreshInterval determines the refresh interval for gahtering
+	// metrics from sentinel
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	MetricsRefreshInterval *time.Duration `json:"metricsRefreshInterval"`
 }
 
 // Default sets default values for any value not specifically set in the AutoSSLConfig struct
@@ -91,6 +99,10 @@ func (cfg *SentinelConfig) Default() {
 	if cfg.StorageSize == nil {
 		size := resource.MustParse(sentinelDefaultStorageSize)
 		cfg.StorageSize = &size
+	}
+
+	if cfg.MetricsRefreshInterval == nil {
+		cfg.MetricsRefreshInterval = &sentinelDefaultMetricsRefreshInterval
 	}
 }
 

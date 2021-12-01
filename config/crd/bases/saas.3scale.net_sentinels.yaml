@@ -39,6 +39,11 @@ spec:
               config:
                 description: Config configures the sentinel process
                 properties:
+                  metricsRefreshInterval:
+                    description: MetricsRefreshInterval determines the refresh interval
+                      for gahtering metrics from sentinel
+                    format: int64
+                    type: integer
                   monitoredShards:
                     additionalProperties:
                       items:

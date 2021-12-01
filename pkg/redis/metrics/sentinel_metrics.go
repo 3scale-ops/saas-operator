@@ -93,13 +93,6 @@ var (
 	)
 )
 
-// COMMANDS  to look at:
-//
-// sentinel masters
-// sentinel slaves <shard name>
-// sentinel info-cache (returns the info command from all monitored servers each 10s)
-// sentinel ckquorum <shard name>
-
 func init() {
 	// Register custom metrics with the global prometheus registry
 	metrics.Registry.MustRegister(
