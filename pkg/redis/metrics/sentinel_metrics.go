@@ -109,6 +109,8 @@ func init() {
 	)
 }
 
+// SentinelMetricsGatherer is used to export sentinel metrics, obtained
+// thrugh several admin commands, as prometheus metrics
 type SentinelMetricsGatherer struct {
 	RefreshInterval time.Duration
 	SentinelURL     string
@@ -117,6 +119,7 @@ type SentinelMetricsGatherer struct {
 	cancel          context.CancelFunc
 }
 
+// IsStarted returns whether the metrics gatherer is running or not
 func (smg *SentinelMetricsGatherer) IsStarted() bool {
 	return smg.started
 }
@@ -146,10 +149,10 @@ func (smg *SentinelMetricsGatherer) Start(parentCtx context.Context) {
 
 			case msg := <-ch:
 				log.V(1).Info("received event from sentinel", "event", msg.String())
-				smg.ParseEvent(msg)
+				smg.parseEvent(msg)
 
 			case <-ticker.C:
-				if err := smg.GatherMetrics(ctx); err != nil {
+				if err := smg.gatherMetrics(ctx); err != nil {
 					log.Error(err, "error gathering sentinel metrics")
 				}
 
@@ -163,7 +166,7 @@ func (smg *SentinelMetricsGatherer) Start(parentCtx context.Context) {
 	smg.started = true
 }
 
-//Start starts metrics gatherer for sentinel
+// Stop stops metrics gatherering for sentinel
 func (smg *SentinelMetricsGatherer) Stop() {
 	// stop gathering metrics
 	smg.cancel()
@@ -178,7 +181,7 @@ func (smg *SentinelMetricsGatherer) Stop() {
 	slaveReplOffset.Reset()
 }
 
-func (smg *SentinelMetricsGatherer) ParseEvent(msg *redisgo.Message) {
+func (smg *SentinelMetricsGatherer) parseEvent(msg *redisgo.Message) {
 
 	switch msg.Channel {
 	case "+switch-master":
@@ -190,7 +193,7 @@ func (smg *SentinelMetricsGatherer) ParseEvent(msg *redisgo.Message) {
 	}
 }
 
-func (smg *SentinelMetricsGatherer) GatherMetrics(ctx context.Context) error {
+func (smg *SentinelMetricsGatherer) gatherMetrics(ctx context.Context) error {
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 

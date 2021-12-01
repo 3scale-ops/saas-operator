@@ -1,5 +1,6 @@
 package types
 
+// SentinelMasterCmdResult represents the output of the "sentinel master" command
 type SentinelMasterCmdResult struct {
 	Name                  string `redis:"name"`
 	IP                    string `redis:"ip"`
@@ -23,6 +24,7 @@ type SentinelMasterCmdResult struct {
 	ParallelSyncs         int    `redis:"parallel-syncs"`
 }
 
+// SentinelSlaveCmdResult represents the output of the "sentinel slave" command
 type SentinelSlaveCmdResult struct {
 	Name                  string `redis:"name"`
 	IP                    string `redis:"ip"`

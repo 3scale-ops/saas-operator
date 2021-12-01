@@ -115,11 +115,6 @@ func (gen *Generator) StatefulSet() basereconciler.GeneratorFunction {
 										DefaultMode:          pointer.Int32(484),
 										LocalObjectReference: corev1.LocalObjectReference{Name: gen.GetComponent() + "-gen-config"}},
 								}},
-							// {
-							// 	Name: gen.GetComponent() + "-config-rw",
-							// 	VolumeSource: corev1.VolumeSource{
-							// 		EmptyDir: &corev1.EmptyDirVolumeSource{},
-							// 	}},
 						}},
 				},
 				VolumeClaimTemplates: []corev1.PersistentVolumeClaim{{

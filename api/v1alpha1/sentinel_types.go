@@ -145,7 +145,6 @@ func (s *Sentinel) Default() {
 	s.Spec.ReadinessProbe = InitializeProbeSpec(s.Spec.ReadinessProbe, sentinelDefaultProbe)
 	s.Spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(s.Spec.GrafanaDashboard, sentinelDefaultGrafanaDashboard)
 	s.Spec.Config.Default()
-	// a.Spec.Config.Default()
 }
 
 // SentinelStatus defines the observed state of Sentinel

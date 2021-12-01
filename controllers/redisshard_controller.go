@@ -72,29 +72,18 @@ func (r *RedisShardReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		instance.Spec,
 	)
 
-	err = r.ReconcileOwnedResources(ctx, instance, basereconciler.ControlledResources{
-		StatefulSets: []basereconciler.StatefulSet{{
-			Template:        gen.StatefulSet(),
-			RolloutTriggers: nil,
-			Enabled:         true,
-		}},
-		Services: []basereconciler.Service{{
-			Template: gen.Service(),
-			Enabled:  true,
-		}},
-		ConfigMaps: []basereconciler.ConfigMaps{
-			{
-				Template: gen.RedisConfigConfigMap(),
-				Enabled:  true,
-			},
-			{
-				Template: gen.RedisReadinessScriptConfigMap(),
-				Enabled:  true,
-			},
+	if err := r.ReconcileOwnedResources(ctx, instance, basereconciler.ControlledResources{
+		StatefulSets: []basereconciler.StatefulSet{
+			{Template: gen.StatefulSet(), RolloutTriggers: nil, Enabled: true},
 		},
-	})
-
-	if err != nil {
+		Services: []basereconciler.Service{
+			{Template: gen.Service(), Enabled: true},
+		},
+		ConfigMaps: []basereconciler.ConfigMaps{
+			{Template: gen.RedisConfigConfigMap(), Enabled: true},
+			{Template: gen.RedisReadinessScriptConfigMap(), Enabled: true},
+		},
+	}); err != nil {
 		log.Error(err, "unable to update owned resources")
 		return r.ManageError(ctx, instance, err)
 	}

@@ -36,11 +36,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
+// SentinelMetrics holds a map of SentinelMetricsGatherer to keep track
+// of which sentinel pods already have a running exporter
 type SentinelMetrics struct {
 	mu        sync.Mutex
 	exporters map[string]*redismetrics.SentinelMetricsGatherer
 }
 
+// RunExporter runs a SentinelMetricsGatherer for the given key. The key should uniquely identify a Pod's exporter.
 func (sm *SentinelMetrics) RunExporter(ctx context.Context, key string, sentinelURL string, log logr.Logger) {
 
 	// run the exporter for this instance if it is not running, do nothing otherwise
@@ -56,6 +59,7 @@ func (sm *SentinelMetrics) RunExporter(ctx context.Context, key string, sentinel
 	}
 }
 
+// StopExporter stops the exporter for the given key
 func (sm *SentinelMetrics) StopExporter(key string) {
 	sm.mu.Lock()
 	sm.exporters[key].Stop()
@@ -102,7 +106,7 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		instance.Spec,
 	)
 
-	err = r.ReconcileOwnedResources(ctx, instance, basereconciler.ControlledResources{
+	if err := r.ReconcileOwnedResources(ctx, instance, basereconciler.ControlledResources{
 		StatefulSets: []basereconciler.StatefulSet{{
 			Template:        gen.StatefulSet(),
 			RolloutTriggers: nil,
@@ -114,7 +118,7 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}},
 		Services: func() []basereconciler.Service {
 			fns := append(gen.PodServices(), gen.StatefulSetService())
-			var svcs = []basereconciler.Service{}
+			svcs := make([]basereconciler.Service, 0, len(fns))
 			for _, fn := range fns {
 				svcs = append(svcs, basereconciler.Service{Template: fn, Enabled: true})
 			}
@@ -124,9 +128,7 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			Template: gen.PDB(),
 			Enabled:  !instance.Spec.PDB.IsDeactivated(),
 		}},
-	})
-
-	if err != nil {
+	}); err != nil {
 		log.Error(err, "unable to update owned resources")
 		return r.ManageError(ctx, instance, err)
 	}
@@ -166,6 +168,8 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	return r.ManageSuccess(ctx, instance)
 }
 
+// ReconcileExporters ensures that all Pods within the statefulset have a running exporter. It also stops
+// exporters for no longer running replicas (in the case the statefulset number of replicas is reduced)
 func (r *SentinelReconciler) ReconcileExporters(ctx context.Context, gen sentinel.Generator, log logr.Logger) {
 
 	if r.metrics.exporters == nil {
@@ -191,11 +195,10 @@ func (r *SentinelReconciler) ReconcileExporters(ctx context.Context, gen sentine
 			}
 		}
 	}
-
-	// spew.Config.MaxDepth = 2
-	// spew.Dump(r.metrics.exporters)
 }
 
+// CleanupExporters stops all the exporters for this instance of the Sentinel custom resource
+// This is used as a cleanup function in the finalize phase of the controller loop.
 func (r *SentinelReconciler) CleanupExporters(instance types.NamespacedName) func() {
 	return func() {
 		prefix := fmt.Sprintf("%s/%s/", instance.Namespace, instance.Name)
