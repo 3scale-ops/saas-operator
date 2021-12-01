@@ -16,7 +16,7 @@ type Role string
 const (
 	// Master is the master role in a shard. Under normal circumstances, only
 	// a server in the shard can be master at a given time
-	Master Role = "mastr"
+	Master Role = "master"
 	// Slave are servers within the shard that replicate data from the master
 	// for data high availabilty purposes
 	Slave Role = "slave"
@@ -31,10 +31,27 @@ type Server struct {
 	ClientConfig *redis.Options
 }
 
+// GetIP returns the IP of the redis server
+func (srv *Server) GetIP() string {
+	parts := strings.Split(srv.ClientConfig.Addr, ":")
+	return parts[0]
+}
+
+// GetPort returns the port of the redis server
+func (srv *Server) GetPort() string {
+	parts := strings.Split(srv.ClientConfig.Addr, ":")
+	return parts[1]
+}
+
+// GetClient returns a redis client, ready to talk to this
+// redis server
+func (srv *Server) GetClient() *redis.Client {
+	return redis.NewClient(srv.ClientConfig)
+}
+
 // getRole retrieves the current role of a redis Server within the shard
 func (srv *Server) getRole(ctx context.Context) (Role, error) {
-	rdb := redis.NewClient(srv.ClientConfig)
-	val, err := rdb.Do(ctx, "role").Result()
+	val, err := srv.GetClient().Do(ctx, "role").Result()
 	if err != nil {
 		return Unknown, err
 	}
@@ -43,8 +60,7 @@ func (srv *Server) getRole(ctx context.Context) (Role, error) {
 
 // isReadOnly checks whether the redis Server has ReadOnly flag or not
 func (srv *Server) isReadOnly(ctx context.Context) (bool, error) {
-	rdb := redis.NewClient(srv.ClientConfig)
-	val, err := rdb.ConfigGet(ctx, "slave-read-only").Result()
+	val, err := srv.GetClient().ConfigGet(ctx, "slave-read-only").Result()
 	if err != nil {
 		return false, err
 	}
@@ -123,6 +139,49 @@ func (s Shard) GetMasterAddr() (string, string, error) {
 		}
 	}
 	return "", "", fmt.Errorf("[redis-autodiscovery/Shard.GetMasterAddr] master not found")
+}
+
+// Init initializes this shard if not already initialized
+func (s Shard) Init(ctx context.Context, masterIndex int32, log logr.Logger) error {
+
+	for idx, srv := range s {
+		val, err := srv.GetClient().Do(ctx, "role").Result()
+		if err != nil {
+			return err
+		}
+
+		role := val.([]interface{})[0].(string)
+		if role == string(Slave) {
+
+			slaveof := val.([]interface{})[1].(string)
+			if slaveof == "127.0.0.1" {
+
+				if idx == int(masterIndex) {
+					_, err := srv.GetClient().SlaveOf(ctx, "NO", "ONE").Result()
+					if err != nil {
+						return err
+					}
+					log.Info(fmt.Sprintf("[@redis-setup] Configured %s as master", srv.GetIP()))
+				} else {
+					_, err := srv.GetClient().SlaveOf(ctx, s[masterIndex].GetIP(), s[masterIndex].GetPort()).Result()
+					if err != nil {
+						return err
+					}
+					log.Info(fmt.Sprintf("[@redis-setup] Configured %s as slave", srv.GetIP()))
+				}
+
+			} else {
+				s[idx].Role = Slave
+			}
+
+		} else if role == string(Master) {
+			s[idx].Role = Master
+		} else {
+			return fmt.Errorf("[@redis-setup] unable to get role for server %s:%s", srv.GetIP(), srv.GetPort())
+		}
+	}
+
+	return nil
 }
 
 // ShardedCluster represents a sharded redis cluster, composed by several Shards
