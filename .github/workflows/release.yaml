@@ -32,6 +32,9 @@ jobs:
           path: ./bin
           key: ${{ runner.os }}-bin
 
+      - name: Run tests
+        run: make test
+
       - name: Build image
         run: make docker-build
 
