@@ -178,8 +178,8 @@ func NewSentinelPool(ctx context.Context, cl client.Client, key types.Namespaced
 func (sp SentinelPool) IsMonitoringShards(ctx context.Context, shards []string) (bool, error) {
 
 	for _, connString := range sp {
-		sentinel := SentinelServer(connString)
-		ok, err := sentinel.IsMonitoringShards(ctx, shards)
+		ss := SentinelServer(connString)
+		ok, err := ss.IsMonitoringShards(ctx, shards)
 		if err != nil {
 			return false, err
 		}
@@ -196,8 +196,8 @@ func (sp SentinelPool) IsMonitoringShards(ctx context.Context, shards []string) 
 func (sp SentinelPool) Monitor(ctx context.Context, shards ShardedCluster) error {
 
 	for _, connString := range sp {
-		sentinel := SentinelServer(connString)
-		err := sentinel.Monitor(ctx, shards)
+		ss := SentinelServer(connString)
+		err := ss.Monitor(ctx, shards)
 		if err != nil {
 			return err
 		}

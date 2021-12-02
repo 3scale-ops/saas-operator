@@ -5,28 +5,15 @@ import (
 	"fmt"
 	"strings"
 
+	redistypes "github.com/3scale/saas-operator/pkg/redis/types"
 	"github.com/3scale/saas-operator/pkg/util"
 	"github.com/go-logr/logr"
 	"github.com/go-redis/redis/v8"
 )
 
-// Role represents the role of a redis server within a shard
-type Role string
-
-const (
-	// Master is the master role in a shard. Under normal circumstances, only
-	// a server in the shard can be master at a given time
-	Master Role = "master"
-	// Slave are servers within the shard that replicate data from the master
-	// for data high availabilty purposes
-	Slave Role = "slave"
-	// Unknown represents a state in which the role of the server is still unknown
-	Unknown Role = "unknown"
-)
-
 // Server represent a redis server and its characteristics
 type Server struct {
-	Role         Role
+	Role         redistypes.Role
 	ReadOnly     bool
 	ClientConfig *redis.Options
 }
@@ -50,12 +37,12 @@ func (srv *Server) GetClient() *redis.Client {
 }
 
 // getRole retrieves the current role of a redis Server within the shard
-func (srv *Server) getRole(ctx context.Context) (Role, error) {
+func (srv *Server) getRole(ctx context.Context) (redistypes.Role, error) {
 	val, err := srv.GetClient().Do(ctx, "role").Result()
 	if err != nil {
-		return Unknown, err
+		return redistypes.Unknown, err
 	}
-	return Role(val.([]interface{})[0].(string)), nil
+	return redistypes.Role(val.([]interface{})[0].(string)), nil
 }
 
 // isReadOnly checks whether the redis Server has ReadOnly flag or not
@@ -78,7 +65,7 @@ func (srv *Server) Discover(ctx context.Context) error {
 	}
 	srv.Role = role
 
-	if srv.Role == Slave {
+	if srv.Role == redistypes.Slave {
 		ro, err := srv.isReadOnly(ctx)
 		if err != nil {
 			return util.WrapError("[redis-autodiscovery/Server.IsReadOnly]", err)
@@ -99,7 +86,7 @@ func NewShard(connectionStrings []string) (Shard, error) {
 		if err != nil {
 			return nil, util.WrapError("[redis-autodiscovery/NewShard]", err)
 		}
-		shard = append(shard, Server{ClientConfig: opt, Role: Unknown, ReadOnly: false})
+		shard = append(shard, Server{ClientConfig: opt, Role: redistypes.Unknown, ReadOnly: false})
 	}
 	return shard, nil
 }
@@ -115,7 +102,7 @@ func (s Shard) Discover(ctx context.Context, log logr.Logger) error {
 
 	masters := 0
 	for _, server := range s {
-		if server.Role == Master {
+		if server.Role == redistypes.Master {
 			masters++
 		}
 	}
@@ -133,7 +120,7 @@ func (s Shard) Discover(ctx context.Context, log logr.Logger) error {
 // or more than one master is found
 func (s Shard) GetMasterAddr() (string, string, error) {
 	for _, server := range s {
-		if server.Role == Master {
+		if server.Role == redistypes.Master {
 			parts := strings.Split(server.ClientConfig.Addr, ":")
 			return parts[0], parts[1], nil
 		}
@@ -151,7 +138,7 @@ func (s Shard) Init(ctx context.Context, masterIndex int32, log logr.Logger) err
 		}
 
 		role := val.([]interface{})[0].(string)
-		if role == string(Slave) {
+		if role == string(redistypes.Slave) {
 
 			slaveof := val.([]interface{})[1].(string)
 			if slaveof == "127.0.0.1" {
@@ -171,11 +158,11 @@ func (s Shard) Init(ctx context.Context, masterIndex int32, log logr.Logger) err
 				}
 
 			} else {
-				s[idx].Role = Slave
+				s[idx].Role = redistypes.Slave
 			}
 
-		} else if role == string(Master) {
-			s[idx].Role = Master
+		} else if role == string(redistypes.Master) {
+			s[idx].Role = redistypes.Master
 		} else {
 			return fmt.Errorf("[@redis-setup] unable to get role for server %s:%s", srv.GetIP(), srv.GetPort())
 		}
