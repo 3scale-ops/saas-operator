@@ -74,24 +74,24 @@ type SentinelConfig struct {
 	// Monitored shards indicates the redis servers that form
 	// part of each shard monitored by sentinel
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	MonitoredShards map[string][]string `json:"monitoredShards"`
+	MonitoredShards map[string][]string `json:"monitoredShards,"`
 	// StorageClass is the storage class to be used for
 	// the persistent sentinel config file where the shards
 	// state is stored
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	StorageClass *string `json:"storageClass"`
+	StorageClass *string `json:"storageClass,omitempty"`
 	// StorageSize is the storage size to  provision for
 	// the persistent sentinel config file where the shards
 	// state is stored
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	StorageSize *resource.Quantity `json:"storageSize"`
+	StorageSize *resource.Quantity `json:"storageSize,omitempty"`
 	// MetricsRefreshInterval determines the refresh interval for gahtering
 	// metrics from sentinel
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	MetricsRefreshInterval *time.Duration `json:"metricsRefreshInterval"`
+	MetricsRefreshInterval *time.Duration `json:"metricsRefreshInterval,omitempty"`
 }
 
 // Default sets default values for any value not specifically set in the AutoSSLConfig struct
