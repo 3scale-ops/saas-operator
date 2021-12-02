@@ -26,7 +26,7 @@ import (
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/generators/redisshard"
 	"github.com/3scale/saas-operator/pkg/redis"
-	redistypes "github.com/3scale/saas-operator/pkg/redis/types"
+	"github.com/3scale/saas-operator/pkg/redis/crud/client"
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -144,10 +144,10 @@ func (r *RedisShardReconciler) updateStatus(ctx context.Context, shard redis.Sha
 	}
 
 	for _, server := range shard {
-		if server.Role == redistypes.Master {
-			status.ShardNodes.Master = pointer.StringPtr(fmt.Sprintf("redis://%s:%s", server.GetIP(), server.GetPort()))
-		} else if server.Role == redistypes.Slave {
-			status.ShardNodes.Slaves = append(status.ShardNodes.Slaves, fmt.Sprintf("redis://%s:%s", server.GetIP(), server.GetPort()))
+		if server.Role == client.Master {
+			status.ShardNodes.Master = pointer.StringPtr(server.Name)
+		} else if server.Role == client.Slave {
+			status.ShardNodes.Slaves = append(status.ShardNodes.Slaves, server.Name)
 		}
 	}
 	if !equality.Semantic.DeepEqual(status, instance.Status) {
