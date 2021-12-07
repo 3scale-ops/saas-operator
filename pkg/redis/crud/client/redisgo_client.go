@@ -12,9 +12,6 @@ type RedisGoClient struct {
 	sentinel *redis.SentinelClient
 }
 
-// check that SimpleClient implements Client interface
-// var _ Client = &SimpleClient{}
-
 func NewFromConnectionString(connectionString string) (*RedisGoClient, error) {
 	var err error
 	c := &RedisGoClient{}

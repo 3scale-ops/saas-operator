@@ -30,6 +30,9 @@ type Client interface {
 // check that RedisGoCLient implements Client interface
 var _ Client = &client.RedisGoClient{}
 
+// check that FakeClient implements Client interface
+var _ Client = &client.FakeClient{}
+
 func NewRedisCRUD(connectionString string) (*CRUD, error) {
 
 	opt, err := redis.ParseURL(connectionString)
