@@ -8,6 +8,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/go-logr/logr v0.4.0
 	github.com/go-redis/redis/v8 v8.11.4
+	github.com/go-test/deep v1.0.8
 	github.com/goombaio/namegenerator v0.0.0-20181006234301-989e774b106e
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.16.0

@@ -23,7 +23,7 @@ type SentinelMasterCmdResult struct {
 	Flags                 string `redis:"flags"`
 	LinkPendingCommands   int    `redis:"link-pending-commands"`
 	LinkRefcount          int    `redis:"link-refcount"`
-	LastPingSet           int    `redis:"last-ping-sent"`
+	LastPingSent          int    `redis:"last-ping-sent"`
 	LastOkPingReply       int    `redis:"last-ok-ping-reply"`
 	LastPingReply         int    `redis:"last-ping-reply"`
 	DownAfterMilliseconds int    `redis:"down-after-milliseconds"`
@@ -47,7 +47,7 @@ type SentinelSlaveCmdResult struct {
 	Flags                 string `redis:"flags"`
 	LinkPendingCommands   int    `redis:"link-pending-commands"`
 	LinkRefcount          int    `redis:"link-refcount"`
-	LastPingSet           int    `redis:"last-ping-sent"`
+	LastPingSent          int    `redis:"last-ping-sent"`
 	LastOkPingReply       int    `redis:"last-ok-ping-reply"`
 	LastPingReply         int    `redis:"last-ping-reply"`
 	DownAfterMilliseconds int    `redis:"down-after-milliseconds"`
@@ -57,7 +57,7 @@ type SentinelSlaveCmdResult struct {
 	MasterLinkDownTime    int    `redis:"master-link-down-time"`
 	MasterLinkStatus      string `redis:"master-link-status"`
 	MasterHost            string `redis:"master-host"`
-	MasterPort            string `redis:"master-port"`
-	SlavePriority         string `redis:"slave-priority"`
+	MasterPort            int    `redis:"master-port"`
+	SlavePriority         int    `redis:"slave-priority"`
 	SlaveReplOffset       int    `redis:"slave-repl-offset"`
 }

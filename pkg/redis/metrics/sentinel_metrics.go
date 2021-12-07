@@ -133,7 +133,7 @@ func (smg *SentinelMetricsGatherer) Start(parentCtx context.Context) {
 
 		ticker := time.NewTicker(smg.RefreshInterval)
 
-		smg.sentinel, err = redis.NewSentinelServer(smg.SentinelURL, smg.SentinelURL)
+		smg.sentinel, err = redis.NewSentinelServerFromConnectionString(smg.SentinelURL, smg.SentinelURL)
 		if err != nil {
 			log.Error(err, "cannot create SentinelServer")
 		}

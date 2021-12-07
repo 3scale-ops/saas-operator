@@ -10,9 +10,9 @@ import (
 )
 
 type CRUD struct {
-	client Client
-	ip     string
-	port   string
+	Client Client
+	IP     string
+	Port   string
 }
 
 type Client interface {
@@ -33,7 +33,7 @@ var _ Client = &client.RedisGoClient{}
 // check that FakeClient implements Client interface
 var _ Client = &client.FakeClient{}
 
-func NewRedisCRUD(connectionString string) (*CRUD, error) {
+func NewRedisCRUDFromConnectionString(connectionString string) (*CRUD, error) {
 
 	opt, err := redis.ParseURL(connectionString)
 	if err != nil {
@@ -46,24 +46,32 @@ func NewRedisCRUD(connectionString string) (*CRUD, error) {
 	}
 
 	return &CRUD{
-		ip:     parts[0],
-		port:   parts[1],
-		client: client.NewFromOptions(opt),
+		IP:     parts[0],
+		Port:   parts[1],
+		Client: client.NewFromOptions(opt),
 	}, nil
+}
 
+func NewFakeCRUD(responses ...client.FakeResponse) *CRUD {
+
+	return &CRUD{
+		IP:     "fake-ip",
+		Port:   "fake-port",
+		Client: &client.FakeClient{Responses: responses},
+	}
 }
 
 func (crud *CRUD) GetIP() string {
-	return crud.ip
+	return crud.IP
 }
 
 func (sc *CRUD) GetPort() string {
-	return sc.port
+	return sc.Port
 }
 
 func (crud *CRUD) SentinelMaster(ctx context.Context, shard string) (*client.SentinelMasterCmdResult, error) {
 
-	result, err := crud.client.SentinelMaster(ctx, shard)
+	result, err := crud.Client.SentinelMaster(ctx, shard)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +80,7 @@ func (crud *CRUD) SentinelMaster(ctx context.Context, shard string) (*client.Sen
 
 func (crud *CRUD) SentinelMasters(ctx context.Context) ([]client.SentinelMasterCmdResult, error) {
 
-	values, err := crud.client.SentinelMasters(ctx)
+	values, err := crud.Client.SentinelMasters(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +100,7 @@ func (crud *CRUD) SentinelMasters(ctx context.Context) ([]client.SentinelMasterC
 
 func (crud *CRUD) SentinelSlaves(ctx context.Context, shard string) ([]client.SentinelSlaveCmdResult, error) {
 
-	values, err := crud.client.SentinelSlaves(ctx, shard)
+	values, err := crud.Client.SentinelSlaves(ctx, shard)
 	if err != nil {
 		return nil, err
 	}
@@ -111,19 +119,19 @@ func (crud *CRUD) SentinelSlaves(ctx context.Context, shard string) ([]client.Se
 }
 
 func (crud *CRUD) SentinelMonitor(ctx context.Context, name, host string, port string, quorum int) error {
-	return crud.client.SentinelMonitor(ctx, name, host, port, quorum)
+	return crud.Client.SentinelMonitor(ctx, name, host, port, quorum)
 }
 
 func (crud *CRUD) SentinelSet(ctx context.Context, shard, parameter, value string) error {
-	return crud.client.SentinelSet(ctx, shard, parameter, value)
+	return crud.Client.SentinelSet(ctx, shard, parameter, value)
 }
 
 func (crud *CRUD) SentinelPSubscribe(ctx context.Context, events ...string) (<-chan *redis.Message, func() error) {
-	return crud.client.SentinelPSubscribe(ctx, events...)
+	return crud.Client.SentinelPSubscribe(ctx, events...)
 }
 
 func (crud *CRUD) RedisRole(ctx context.Context) (client.Role, string, error) {
-	val, err := crud.client.RedisRole(ctx)
+	val, err := crud.Client.RedisRole(ctx)
 	if err != nil {
 		return client.Unknown, "", err
 	}
@@ -136,7 +144,7 @@ func (crud *CRUD) RedisRole(ctx context.Context) (client.Role, string, error) {
 }
 
 func (crud *CRUD) RedisConfigGet(ctx context.Context, parameter string) (string, error) {
-	val, err := crud.client.RedisConfigGet(ctx, parameter)
+	val, err := crud.Client.RedisConfigGet(ctx, parameter)
 	if err != nil {
 		return "", err
 	}
@@ -144,7 +152,7 @@ func (crud *CRUD) RedisConfigGet(ctx context.Context, parameter string) (string,
 }
 
 func (sc *CRUD) RedisSlaveOf(ctx context.Context, host, port string) error {
-	return sc.client.RedisSlaveOf(ctx, host, port)
+	return sc.Client.RedisSlaveOf(ctx, host, port)
 }
 
 // This is a horrible function to parse the horrible structs that the redis-go
