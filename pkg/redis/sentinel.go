@@ -72,20 +72,24 @@ func (ss *SentinelServer) Monitor(ctx context.Context, shards ShardedCluster) ([
 		_, err := ss.CRUD.SentinelMaster(ctx, name)
 		if err != nil {
 			if err.Error() == shardNotInitializedError {
+
 				shard := shards.GetShardByName(name)
 				host, port, err := shard.GetMasterAddr()
 				if err != nil {
 					return changed, err
 				}
+
 				err = ss.CRUD.SentinelMonitor(ctx, name, host, port, 2)
 				if err != nil {
 					return changed, util.WrapError("redis-sentinel/SentinelServer.Monitor", err)
 				}
+				// even if the next call fails, there has already been a write operation to sentinel
+				changed = append(changed, name)
+
 				err = ss.CRUD.SentinelSet(ctx, name, "down-after-milliseconds", "5000")
 				if err != nil {
 					return changed, util.WrapError("redis-sentinel/SentinelServer.Monitor", err)
 				}
-				changed = append(changed, name)
 				// TODO: change the default failover timeout.
 				// TODO: maybe add a generic mechanism to set/modify parameters
 

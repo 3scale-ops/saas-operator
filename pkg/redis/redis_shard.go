@@ -28,7 +28,7 @@ func NewRedisServerFromConnectionString(name, connectionString string) (*RedisSe
 		return nil, err
 	}
 
-	return &RedisServer{Name: connectionString, IP: crud.GetIP(), Port: crud.GetPort(), CRUD: crud, ReadOnly: false, Role: client.Unknown}, nil
+	return &RedisServer{Name: name, IP: crud.GetIP(), Port: crud.GetPort(), CRUD: crud, ReadOnly: false, Role: client.Unknown}, nil
 }
 
 // Discover returns the Role and the IsReadOnly flag for a given
@@ -37,14 +37,15 @@ func (srv *RedisServer) Discover(ctx context.Context) error {
 
 	role, _, err := srv.CRUD.RedisRole(ctx)
 	if err != nil {
-		return util.WrapError("[redis-autodiscovery]", err)
+		srv.Role = client.Unknown
+		return util.WrapError("redis-autodiscovery", err)
 	}
 	srv.Role = role
 
 	if srv.Role == client.Slave {
 		ro, err := srv.CRUD.RedisConfigGet(ctx, "slave-read-only")
 		if err != nil {
-			return util.WrapError("[redis-autodiscovery]", err)
+			return util.WrapError("redis-autodiscovery", err)
 		}
 		if ro == "yes" {
 			srv.ReadOnly = true
@@ -75,7 +76,7 @@ func NewShard(name string, connectionStrings []string) (*Shard, error) {
 	return shard, nil
 }
 
-// Discover retrieves the role and read-only flag for all the server in the shard
+// Discover retrieves the role and read-only flag for all the servers in the shard
 func (s *Shard) Discover(ctx context.Context, log logr.Logger) error {
 
 	for idx := range s.Servers {
@@ -112,12 +113,13 @@ func (s *Shard) GetMasterAddr() (string, string, error) {
 }
 
 // Init initializes this shard if not already initialized
-func (s *Shard) Init(ctx context.Context, masterIndex int32, log logr.Logger) error {
+func (s *Shard) Init(ctx context.Context, masterIndex int32, log logr.Logger) ([]string, error) {
+	changed := []string{}
 
 	for idx, srv := range s.Servers {
 		role, slaveof, err := srv.CRUD.RedisRole(ctx)
 		if err != nil {
-			return err
+			return changed, err
 		}
 
 		if role == client.Slave {
@@ -126,14 +128,16 @@ func (s *Shard) Init(ctx context.Context, masterIndex int32, log logr.Logger) er
 
 				if idx == int(masterIndex) {
 					if err := srv.CRUD.RedisSlaveOf(ctx, "NO", "ONE"); err != nil {
-						return err
+						return changed, err
 					}
 					log.Info(fmt.Sprintf("[@redis-setup] Configured %s as master", srv.Name))
+					changed = append(changed, srv.Name)
 				} else {
 					if err := srv.CRUD.RedisSlaveOf(ctx, s.Servers[masterIndex].IP, s.Servers[masterIndex].Port); err != nil {
-						return err
+						return changed, err
 					}
 					log.Info(fmt.Sprintf("[@redis-setup] Configured %s as slave", srv.Name))
+					changed = append(changed, srv.Name)
 				}
 
 			} else {
@@ -143,11 +147,11 @@ func (s *Shard) Init(ctx context.Context, masterIndex int32, log logr.Logger) er
 		} else if role == client.Master {
 			s.Servers[idx].Role = client.Master
 		} else {
-			return fmt.Errorf("[@redis-setup] unable to get role for server %s", srv.Name)
+			return changed, fmt.Errorf("[@redis-setup] unable to get role for server %s", srv.Name)
 		}
 	}
 
-	return nil
+	return changed, nil
 }
 
 // ShardedCluster represents a sharded redis cluster, composed by several Shards

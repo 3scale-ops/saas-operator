@@ -511,6 +511,116 @@ func TestSentinelServer_Monitor(t *testing.T) {
 			want:    []string{},
 			wantErr: true,
 		},
+		{
+			name: "'sentinel monitor' fails for shard00, returns no shards changed",
+			fields: fields{
+				Name: "test-server",
+				CRUD: crud.NewFakeCRUD(
+					// SentinelMaster response for shard00 (returns error as it is unmonitored)
+					redis.FakeResponse{
+						InjectResponse: func() interface{} { return &redis.SentinelMasterCmdResult{} },
+						InjectError:    func() error { return errors.New(shardNotInitializedError) },
+					},
+					// SentinelMonitor response for shard00
+					redis.FakeResponse{
+						InjectResponse: nil,
+						InjectError:    func() error { return errors.New("error") },
+					},
+				),
+			},
+			args: args{
+				ctx:    context.TODO(),
+				shards: testShardedCluster,
+			},
+			want:    []string{},
+			wantErr: true,
+		},
+		{
+			name: "Error writing config param, returns shard00 changed",
+			fields: fields{
+				Name: "test-server",
+				CRUD: crud.NewFakeCRUD(
+					// SentinelMaster response for shard00 (returns error as it is unmonitored)
+					redis.FakeResponse{
+						InjectResponse: func() interface{} { return &redis.SentinelMasterCmdResult{} },
+						InjectError:    func() error { return errors.New(shardNotInitializedError) },
+					},
+					// SentinelMonitor response for shard00
+					redis.FakeResponse{
+						InjectResponse: nil,
+						InjectError:    func() error { return nil },
+					},
+					// SentinelSet response for shard01
+					redis.FakeResponse{
+						InjectResponse: nil,
+						InjectError:    func() error { return errors.New("error") },
+					},
+				),
+			},
+			args: args{
+				ctx:    context.TODO(),
+				shards: testShardedCluster,
+			},
+			want:    []string{"shard00"},
+			wantErr: true,
+		},
+		{
+			name: "No master found, returns error, no shards changed",
+			fields: fields{
+				Name: "test-server",
+				CRUD: crud.NewFakeCRUD(
+					// SentinelMaster response for shard00 (returns error as it is unmonitored)
+					redis.FakeResponse{
+						InjectResponse: func() interface{} { return &redis.SentinelMasterCmdResult{} },
+						InjectError:    func() error { return errors.New(shardNotInitializedError) },
+					},
+					// SentinelMonitor response for shard00
+					redis.FakeResponse{
+						InjectResponse: nil,
+						InjectError:    func() error { return nil },
+					},
+					// SentinelSet response for shard01
+					redis.FakeResponse{
+						InjectResponse: nil,
+						InjectError:    func() error { return errors.New("error") },
+					},
+				),
+			},
+			args: args{
+				ctx: context.TODO(),
+				shards: ShardedCluster{{
+					Name: "shard00",
+					Servers: []RedisServer{
+						{
+							Name:     "shard00-0",
+							IP:       "127.0.0.1",
+							Port:     "2000",
+							Role:     redis.Slave,
+							ReadOnly: true,
+							CRUD:     nil,
+						},
+						{
+							Name:     "shard00-1",
+							IP:       "127.0.0.1",
+							Port:     "2001",
+							Role:     redis.Slave,
+							ReadOnly: true,
+							CRUD:     nil,
+						},
+						{
+							Name:     "shard00-2",
+							IP:       "127.0.0.1",
+							Port:     "2002",
+							Role:     redis.Slave,
+							ReadOnly: true,
+							CRUD:     nil,
+						},
+					},
+				}},
+			},
+			want:    []string{},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
