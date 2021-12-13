@@ -46,6 +46,14 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
   - secrets
   verbs:
   - get
@@ -251,6 +259,58 @@ rules:
   - saas.3scale.net
   resources:
   - mappingservices/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - redisshards
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - redisshards/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - redisshards/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - sentinels
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - sentinels/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - sentinels/status
   verbs:
   - get
   - patch

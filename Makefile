@@ -40,7 +40,6 @@ IMG ?= $(IMAGE_TAG_BASE):v$(VERSION)
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-# WARNING!!!: controller-runtime does not support k8s v1.20+
 ENVTEST_K8S_VERSION = 1.20
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -113,7 +112,7 @@ build: generate fmt vet assets ## Build manager binary.
 run: manifests generate fmt vet assets ## Run a controller from your host.
 	go run ./main.go
 
-docker-build: test ## Build docker image with the manager.
+docker-build: ## Build docker image with the manager.
 	docker build -t ${IMG} .
 
 docker-push: ## Push docker image with the manager.
@@ -242,8 +241,8 @@ catalog-retag-latest:
 ##@ Kind Deployment
 
 kind-create: export KUBECONFIG = $(PWD)/kubeconfig
-kind-create: tmp docker-build kind ## Runs a k8s kind cluster with a local registry in "localhost:5000" and ports 1080 and 1443 exposed to the host
-	$(KIND) create cluster --wait 5m --image kindest/node:v1.21.0
+kind-create: docker-build kind ## Runs a k8s kind cluster with a local registry in "localhost:5000" and ports 1080 and 1443 exposed to the host
+	$(KIND) create cluster --wait 5m --image kindest/node:v1.20.7
 
 kind-delete: ## Deletes the kind cluster and the registry
 kind-delete: kind
@@ -256,7 +255,7 @@ kind-deploy: manifests kustomize ## Deploy operator to the Kind K8s cluster
 	$(KUSTOMIZE) build config/test | kubectl apply -f -
 
 kind-refresh-operator: export KUBECONFIG = ${PWD}/kubeconfig
-kind-refresh-operator: manifests kind ## Reloads the operator image into the K8s cluster and deletes the old Pod
+kind-refresh-operator: manifests kind docker-build ## Reloads the operator image into the K8s cluster and deletes the old Pod
 	$(KIND) load docker-image $(IMG)
 	kubectl delete pod -l control-plane=controller-manager
 

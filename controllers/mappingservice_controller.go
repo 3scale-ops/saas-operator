@@ -59,7 +59,7 @@ func (r *MappingServiceReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 
 	instance := &saasv1alpha1.MappingService{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx, key, instance, saasv1alpha1.Finalizer, log)
+	result, err := r.GetInstance(ctx, key, instance, saasv1alpha1.Finalizer, nil, log)
 	if result != nil || err != nil {
 		return *result, err
 	}

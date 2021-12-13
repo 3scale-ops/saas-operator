@@ -1,5 +1,9 @@
 domain: 3scale.net
-layout: go.kubebuilder.io/v3
+layout:
+- go.kubebuilder.io/v3
+plugins:
+  manifests.sdk.operatorframework.io/v2: {}
+  scorecard.sdk.operatorframework.io/v2: {}
 projectName: saas-operator
 repo: github.com/3scale/saas-operator
 resources:
@@ -75,7 +79,22 @@ resources:
   kind: Zync
   path: github.com/3scale/saas-operator/api/v1alpha1
   version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: 3scale.net
+  group: saas
+  kind: Sentinel
+  path: github.com/3scale/saas-operator/api/v1alpha1
+  version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: 3scale.net
+  group: saas
+  kind: RedisShard
+  path: github.com/3scale/saas-operator/api/v1alpha1
+  version: v1alpha1
 version: "3"
-plugins:
-  manifests.sdk.operatorframework.io/v2: {}
-  scorecard.sdk.operatorframework.io/v2: {}

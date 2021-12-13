@@ -1,0 +1,11 @@
+apiVersion: saas.3scale.net/v1alpha1
+kind: Sentinel
+metadata:
+  name: sentinel-sample
+spec:
+  config:
+    monitoredShards:
+      shard01:
+        - redis://10.244.0.39:6379
+        - redis://10.244.0.40:6379
+        - redis://10.244.0.41:6379
