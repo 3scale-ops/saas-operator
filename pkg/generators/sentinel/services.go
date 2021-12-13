@@ -15,7 +15,7 @@ const (
 	statefulsetPodSelectorLabelKey string = "statefulset.kubernetes.io/pod-name"
 )
 
-// Service returns a basereconciler.GeneratorFunction function that will return a Service
+// StatefulSetService returns a basereconciler.GeneratorFunction function that will return a Service
 // resource when called
 func (gen *Generator) StatefulSetService() basereconciler.GeneratorFunction {
 
@@ -42,7 +42,7 @@ func (gen *Generator) StatefulSetService() basereconciler.GeneratorFunction {
 	}
 }
 
-// Service returns a basereconciler.GeneratorFunction function that will return a Service
+// PodServices returns a basereconciler.GeneratorFunction a slice of functions that will return Services
 // resource when called
 func (gen *Generator) PodServices() []basereconciler.GeneratorFunction {
 

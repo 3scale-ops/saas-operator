@@ -8,7 +8,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// ConfigMap returns a basereconciler.GeneratorFunction function that will return a ConfigMap
+// RedisConfigConfigMap returns a basereconciler.GeneratorFunction function that will return a ConfigMap
 // resource when called
 func (gen *Generator) RedisConfigConfigMap() basereconciler.GeneratorFunction {
 	return func() client.Object {
@@ -34,7 +34,7 @@ func (gen *Generator) RedisConfigConfigMap() basereconciler.GeneratorFunction {
 	}
 }
 
-// ConfigMap returns a basereconciler.GeneratorFunction function that will return a ConfigMap
+// RedisReadinessScriptConfigMap returns a basereconciler.GeneratorFunction function that will return a ConfigMap
 // resource when called
 func (gen *Generator) RedisReadinessScriptConfigMap() basereconciler.GeneratorFunction {
 	return func() client.Object {

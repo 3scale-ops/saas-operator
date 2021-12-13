@@ -83,7 +83,7 @@ var (
 		[]string{"sentinel", "shard"},
 	)
 
-	failoberAbortNoGoodSlaveCount = prometheus.NewCounterVec(
+	failoverAbortNoGoodSlaveCount = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name:      "failover_abort_no_good_slave_count",
 			Namespace: "saas_redis_sentinel",
@@ -98,7 +98,7 @@ func init() {
 	metrics.Registry.MustRegister(
 		linkPendingCommands, lastOkPingReply, roleReportedTime,
 		numSlaves, numOtherSentinels, masterLinkDownTime, slaveReplOffset,
-		switchMasterCount, failoberAbortNoGoodSlaveCount,
+		switchMasterCount, failoverAbortNoGoodSlaveCount,
 	)
 }
 
@@ -182,7 +182,7 @@ func (smg *SentinelMetricsGatherer) parseEvent(msg *redisgo.Message) {
 		switchMasterCount.With(prometheus.Labels{"sentinel": smg.SentinelURL, "shard": shard}).Add(1)
 	case "-failover-abort-no-good-slave":
 		shard := strings.Split(msg.Payload, " ")[1]
-		failoberAbortNoGoodSlaveCount.With(prometheus.Labels{"sentinel": smg.SentinelURL, "shard": shard}).Add(1)
+		failoverAbortNoGoodSlaveCount.With(prometheus.Labels{"sentinel": smg.SentinelURL, "shard": shard}).Add(1)
 	}
 }
 

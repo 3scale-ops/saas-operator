@@ -179,7 +179,7 @@ type GrafanaDashboard struct {
 	Enabled  bool
 }
 
-// GrafanaDashboard specifies a GrafanaDashboard resource
+// ConfigMaps specifies a ConfigMap resource
 type ConfigMaps struct {
 	Template GeneratorFunction
 	Enabled  bool
