@@ -7,14 +7,14 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-type RedisGoClient struct {
+type GoRedisClient struct {
 	redis    *redis.Client
 	sentinel *redis.SentinelClient
 }
 
-func NewFromConnectionString(connectionString string) (*RedisGoClient, error) {
+func NewFromConnectionString(connectionString string) (*GoRedisClient, error) {
 	var err error
-	c := &RedisGoClient{}
+	c := &GoRedisClient{}
 
 	opt, err := redis.ParseURL(connectionString)
 	if err != nil {
@@ -27,63 +27,63 @@ func NewFromConnectionString(connectionString string) (*RedisGoClient, error) {
 	return c, nil
 }
 
-func NewFromOptions(opt *redis.Options) *RedisGoClient {
-	return &RedisGoClient{
+func NewFromOptions(opt *redis.Options) *GoRedisClient {
+	return &GoRedisClient{
 		redis:    redis.NewClient(opt),
 		sentinel: redis.NewSentinelClient(opt),
 	}
 }
 
-func (c *RedisGoClient) SentinelMaster(ctx context.Context, shard string) (*SentinelMasterCmdResult, error) {
+func (c *GoRedisClient) SentinelMaster(ctx context.Context, shard string) (*SentinelMasterCmdResult, error) {
 
 	result := &SentinelMasterCmdResult{}
 	err := c.sentinel.Master(ctx, shard).Scan(result)
 	return result, err
 }
 
-func (c *RedisGoClient) SentinelMasters(ctx context.Context) ([]interface{}, error) {
+func (c *GoRedisClient) SentinelMasters(ctx context.Context) ([]interface{}, error) {
 
 	values, err := c.sentinel.Masters(ctx).Result()
 	return values, err
 }
 
-func (c *RedisGoClient) SentinelSlaves(ctx context.Context, shard string) ([]interface{}, error) {
+func (c *GoRedisClient) SentinelSlaves(ctx context.Context, shard string) ([]interface{}, error) {
 
 	values, err := c.sentinel.Slaves(ctx, shard).Result()
 	return values, err
 }
 
-func (c *RedisGoClient) SentinelMonitor(ctx context.Context, name, host string, port string, quorum int) error {
+func (c *GoRedisClient) SentinelMonitor(ctx context.Context, name, host string, port string, quorum int) error {
 
 	_, err := c.sentinel.Monitor(ctx, name, host, port, strconv.Itoa(quorum)).Result()
 	return err
 }
 
-func (c *RedisGoClient) SentinelSet(ctx context.Context, shard, parameter, value string) error {
+func (c *GoRedisClient) SentinelSet(ctx context.Context, shard, parameter, value string) error {
 
 	_, err := c.sentinel.Set(ctx, shard, parameter, value).Result()
 	return err
 }
 
-func (c *RedisGoClient) SentinelPSubscribe(ctx context.Context, events ...string) (<-chan *redis.Message, func() error) {
+func (c *GoRedisClient) SentinelPSubscribe(ctx context.Context, events ...string) (<-chan *redis.Message, func() error) {
 
 	pubsub := c.sentinel.PSubscribe(ctx, events...)
 	return pubsub.Channel(), pubsub.Close
 }
 
-func (c *RedisGoClient) RedisRole(ctx context.Context) (interface{}, error) {
+func (c *GoRedisClient) RedisRole(ctx context.Context) (interface{}, error) {
 
 	val, err := c.redis.Do(ctx, "role").Result()
 	return val, err
 }
 
-func (c *RedisGoClient) RedisConfigGet(ctx context.Context, parameter string) ([]interface{}, error) {
+func (c *GoRedisClient) RedisConfigGet(ctx context.Context, parameter string) ([]interface{}, error) {
 
 	val, err := c.redis.ConfigGet(ctx, parameter).Result()
 	return val, err
 }
 
-func (c *RedisGoClient) RedisSlaveOf(ctx context.Context, host, port string) error {
+func (c *GoRedisClient) RedisSlaveOf(ctx context.Context, host, port string) error {
 
 	_, err := c.redis.SlaveOf(ctx, host, port).Result()
 	return err

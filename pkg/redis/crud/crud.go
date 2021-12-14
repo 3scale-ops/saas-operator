@@ -27,8 +27,8 @@ type Client interface {
 	RedisSlaveOf(context.Context, string, string) error
 }
 
-// check that RedisGoCLient implements Client interface
-var _ Client = &client.RedisGoClient{}
+// check that GoRedisClient implements Client interface
+var _ Client = &client.GoRedisClient{}
 
 // check that FakeClient implements Client interface
 var _ Client = &client.FakeClient{}

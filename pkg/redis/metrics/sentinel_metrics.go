@@ -9,7 +9,7 @@ import (
 
 	"github.com/3scale/saas-operator/pkg/redis"
 	"github.com/go-logr/logr"
-	redisgo "github.com/go-redis/redis/v8"
+	goredis "github.com/go-redis/redis/v8"
 	"github.com/prometheus/client_golang/prometheus"
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
 )
@@ -180,7 +180,7 @@ func (smg *SentinelMetricsGatherer) Stop() {
 	slaveReplOffset.Reset()
 }
 
-func (smg *SentinelMetricsGatherer) parseEvent(msg *redisgo.Message) {
+func (smg *SentinelMetricsGatherer) parseEvent(msg *goredis.Message) {
 
 	switch msg.Channel {
 	case "+switch-master":
