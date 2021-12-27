@@ -23,6 +23,7 @@ import (
 	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/basereconciler/test/api/v1alpha1"
+	basereconciler_types "github.com/3scale/saas-operator/pkg/basereconciler/types"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/marin3r"
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
@@ -111,7 +112,7 @@ func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func deployment(namespace string, marin3rSpec *saasv1alpha1.Marin3rSidecarSpec) basereconciler.GeneratorFunction {
+func deployment(namespace string, marin3rSpec *saasv1alpha1.Marin3rSidecarSpec) basereconciler_types.GeneratorFunction {
 	return func() client.Object {
 		dep := &appsv1.Deployment{
 			TypeMeta: metav1.TypeMeta{
@@ -152,7 +153,7 @@ func deployment(namespace string, marin3rSpec *saasv1alpha1.Marin3rSidecarSpec) 
 	}
 }
 
-func service(namespace string, annotations map[string]string) basereconciler.GeneratorFunction {
+func service(namespace string, annotations map[string]string) basereconciler_types.GeneratorFunction {
 	return func() client.Object {
 		return &corev1.Service{
 			TypeMeta: metav1.TypeMeta{
@@ -176,7 +177,7 @@ func service(namespace string, annotations map[string]string) basereconciler.Gen
 	}
 }
 
-func secretDefinition(namespace string) basereconciler.GeneratorFunction {
+func secretDefinition(namespace string) basereconciler_types.GeneratorFunction {
 
 	return func() client.Object {
 		return &secretsmanagerv1alpha1.SecretDefinition{

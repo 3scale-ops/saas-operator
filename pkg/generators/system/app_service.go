@@ -1,7 +1,7 @@
 package system
 
 import (
-	"github.com/3scale/saas-operator/pkg/basereconciler"
+	basereconciler_types "github.com/3scale/saas-operator/pkg/basereconciler/types"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/service"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -9,9 +9,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// Service returns a basereconciler.GeneratorFunction function that will return the
+// Service returns a basereconciler_types.GeneratorFunction function that will return the
 // Service resource when called
-func (gen *AppGenerator) Service() basereconciler.GeneratorFunction {
+func (gen *AppGenerator) Service() basereconciler_types.GeneratorFunction {
 
 	return func() client.Object {
 

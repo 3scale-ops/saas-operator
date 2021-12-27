@@ -12,6 +12,7 @@ import (
 	// autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
+	basereconciler_types "github.com/3scale/saas-operator/pkg/basereconciler/types"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/redhat-cop/operator-utils/pkg/util/lockedresourcecontroller/lockedpatch"
 	appsv1 "k8s.io/api/apps/v1"
@@ -19,7 +20,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/rand"
-	"sigs.k8s.io/controller-runtime/pkg/client" // policyv1beta1 "k8s.io/api/policy/v1beta1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // ControlledResources defines the resources that each of the
@@ -34,6 +35,19 @@ type ControlledResources struct {
 	PodMonitors              []PodMonitor
 	GrafanaDashboards        []GrafanaDashboard
 	ConfigMaps               []ConfigMaps
+}
+
+func (cm *ControlledResources) Add(resources *ControlledResources) *ControlledResources {
+	cm.Deployments = append(cm.Deployments, resources.Deployments...)
+	cm.StatefulSets = append(cm.StatefulSets, resources.StatefulSets...)
+	cm.SecretDefinitions = append(cm.SecretDefinitions, resources.SecretDefinitions...)
+	cm.Services = append(cm.Services, resources.Services...)
+	cm.PodDisruptionBudgets = append(cm.PodDisruptionBudgets, resources.PodDisruptionBudgets...)
+	cm.HorizontalPodAutoscalers = append(cm.HorizontalPodAutoscalers, resources.HorizontalPodAutoscalers...)
+	cm.PodMonitors = append(cm.PodMonitors, resources.PodMonitors...)
+	cm.GrafanaDashboards = append(cm.GrafanaDashboards, resources.GrafanaDashboards...)
+	cm.ConfigMaps = append(cm.ConfigMaps, resources.ConfigMaps...)
+	return cm
 }
 
 // RolloutTrigger defines a configuration source that should trigger a
@@ -85,7 +99,7 @@ func NewRolloutTrigger(name string, o client.Object) RolloutTrigger {
 }
 
 // TriggersFromSecretDefs generates a list of RolloutTrigger from the given SecretDefinition generator functions
-func (r *Reconciler) TriggersFromSecretDefs(ctx context.Context, sd ...GeneratorFunction) ([]RolloutTrigger, error) {
+func (r *Reconciler) TriggersFromSecretDefs(ctx context.Context, sd ...basereconciler_types.GeneratorFunction) ([]RolloutTrigger, error) {
 
 	triggers := []RolloutTrigger{}
 
@@ -131,57 +145,57 @@ func (r *Reconciler) TriggersFromSecret(ctx context.Context, namespace string, s
 
 // Deployment specifies a Deployment resource and its rollout triggers
 type Deployment struct {
-	Template        GeneratorFunction
+	Template        basereconciler_types.GeneratorFunction
 	RolloutTriggers []RolloutTrigger
 	HasHPA          bool
 }
 
 // StatefulSet specifies a StatefulSet resource and its rollout triggers
 type StatefulSet struct {
-	Template        GeneratorFunction
+	Template        basereconciler_types.GeneratorFunction
 	RolloutTriggers []RolloutTrigger
 	Enabled         bool
 }
 
 // SecretDefinition specifies a SecretDefinition resource
 type SecretDefinition struct {
-	Template GeneratorFunction
+	Template basereconciler_types.GeneratorFunction
 	Enabled  bool
 }
 
 // Service specifies a Service resource
 type Service struct {
-	Template GeneratorFunction
+	Template basereconciler_types.GeneratorFunction
 	Enabled  bool
 }
 
 // PodDisruptionBudget specifies a PodDisruptionBudget resource
 type PodDisruptionBudget struct {
-	Template GeneratorFunction
+	Template basereconciler_types.GeneratorFunction
 	Enabled  bool
 }
 
 // HorizontalPodAutoscaler specifies a HorizontalPodAutoscaler resource
 type HorizontalPodAutoscaler struct {
-	Template GeneratorFunction
+	Template basereconciler_types.GeneratorFunction
 	Enabled  bool
 }
 
 // PodMonitor specifies a PodMonitor resource
 type PodMonitor struct {
-	Template GeneratorFunction
+	Template basereconciler_types.GeneratorFunction
 	Enabled  bool
 }
 
 // GrafanaDashboard specifies a GrafanaDashboard resource
 type GrafanaDashboard struct {
-	Template GeneratorFunction
+	Template basereconciler_types.GeneratorFunction
 	Enabled  bool
 }
 
 // ConfigMaps specifies a ConfigMap resource
 type ConfigMaps struct {
-	Template GeneratorFunction
+	Template basereconciler_types.GeneratorFunction
 	Enabled  bool
 }
 
@@ -212,7 +226,7 @@ func (r *Reconciler) GetDeploymentReplicas(ctx context.Context, d Deployment) (*
 // all controllers
 func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.Object, crs ControlledResources) error {
 	// Calculate resources to enforce
-	resources := []LockedResource{}
+	resources := []basereconciler_types.LockedResource{}
 
 	for _, dep := range crs.Deployments {
 
@@ -222,7 +236,7 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 		}
 
 		resources = append(resources,
-			LockedResource{
+			basereconciler_types.LockedResource{
 				GeneratorFn: r.DeploymentWithRolloutTriggers(dep.Template, dep.RolloutTriggers, currentReplicas),
 				ExcludePaths: func() []string {
 					if dep.HasHPA {
@@ -236,7 +250,7 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 	for _, ss := range crs.StatefulSets {
 		if ss.Enabled {
 			resources = append(resources,
-				LockedResource{
+				basereconciler_types.LockedResource{
 					GeneratorFn:  r.StatefulSetWithRolloutTriggers(ss.Template, ss.RolloutTriggers),
 					ExcludePaths: DefaultExcludedPaths,
 				})
@@ -246,7 +260,7 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 	for _, sd := range crs.SecretDefinitions {
 		if sd.Enabled {
 			resources = append(resources,
-				LockedResource{
+				basereconciler_types.LockedResource{
 					GeneratorFn:  sd.Template,
 					ExcludePaths: DefaultExcludedPaths,
 				})
@@ -256,7 +270,7 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 	for _, svc := range crs.Services {
 		if svc.Enabled {
 			resources = append(resources,
-				LockedResource{
+				basereconciler_types.LockedResource{
 					GeneratorFn:  svc.Template,
 					ExcludePaths: append(DefaultExcludedPaths, ServiceExcludes(svc.Template)...),
 				})
@@ -266,7 +280,7 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 	for _, pm := range crs.PodMonitors {
 		if pm.Enabled {
 			resources = append(resources,
-				LockedResource{
+				basereconciler_types.LockedResource{
 					GeneratorFn:  pm.Template,
 					ExcludePaths: DefaultExcludedPaths,
 				})
@@ -276,7 +290,7 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 	for _, hpa := range crs.HorizontalPodAutoscalers {
 		if hpa.Enabled {
 			resources = append(resources,
-				LockedResource{
+				basereconciler_types.LockedResource{
 					GeneratorFn:  hpa.Template,
 					ExcludePaths: DefaultExcludedPaths,
 				})
@@ -286,7 +300,7 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 	for _, pdb := range crs.PodDisruptionBudgets {
 		if pdb.Enabled {
 			resources = append(resources,
-				LockedResource{
+				basereconciler_types.LockedResource{
 					GeneratorFn:  pdb.Template,
 					ExcludePaths: DefaultExcludedPaths,
 				})
@@ -296,7 +310,7 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 	for _, gd := range crs.GrafanaDashboards {
 		if gd.Enabled {
 			resources = append(resources,
-				LockedResource{
+				basereconciler_types.LockedResource{
 					GeneratorFn:  gd.Template,
 					ExcludePaths: DefaultExcludedPaths,
 				})
@@ -306,7 +320,7 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 	for _, cm := range crs.ConfigMaps {
 		if cm.Enabled {
 			resources = append(resources,
-				LockedResource{
+				basereconciler_types.LockedResource{
 					GeneratorFn:  cm.Template,
 					ExcludePaths: DefaultExcludedPaths,
 				})
@@ -326,7 +340,7 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 }
 
 // ServiceExcludes generates the list of excluded paths for a Service resource
-func ServiceExcludes(fn GeneratorFunction) []string {
+func ServiceExcludes(fn basereconciler_types.GeneratorFunction) []string {
 	svc := fn().(*corev1.Service)
 	paths := []string{}
 	paths = append(paths, "/spec/clusterIP", "/spec/clusterIPs", "/spec/ipFamilies", "/spec/ipFamilyPolicy")
@@ -337,7 +351,8 @@ func ServiceExcludes(fn GeneratorFunction) []string {
 }
 
 // DeploymentWithRolloutTriggers returns the Deployment modified with the appropriate rollout triggers (annotations)
-func (r *Reconciler) DeploymentWithRolloutTriggers(deployment GeneratorFunction, triggers []RolloutTrigger, replicas *int32) GeneratorFunction {
+func (r *Reconciler) DeploymentWithRolloutTriggers(deployment basereconciler_types.GeneratorFunction,
+	triggers []RolloutTrigger, replicas *int32) basereconciler_types.GeneratorFunction {
 
 	return func() client.Object {
 		dep := deployment().(*appsv1.Deployment)
@@ -355,7 +370,8 @@ func (r *Reconciler) DeploymentWithRolloutTriggers(deployment GeneratorFunction,
 }
 
 // StatefulSetWithRolloutTriggers returns the StatefulSet modified with the appropriate rollout triggers (annotations)
-func (r *Reconciler) StatefulSetWithRolloutTriggers(statefulset GeneratorFunction, triggers []RolloutTrigger) GeneratorFunction {
+func (r *Reconciler) StatefulSetWithRolloutTriggers(statefulset basereconciler_types.GeneratorFunction,
+	triggers []RolloutTrigger) basereconciler_types.GeneratorFunction {
 
 	return func() client.Object {
 		ss := statefulset().(*appsv1.StatefulSet)

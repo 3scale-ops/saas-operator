@@ -3,6 +3,7 @@ package basereconciler
 import (
 	"context"
 
+	basereconciler_types "github.com/3scale/saas-operator/pkg/basereconciler/types"
 	"github.com/go-logr/logr"
 	"github.com/redhat-cop/operator-utils/pkg/util"
 	"github.com/redhat-cop/operator-utils/pkg/util/lockedresourcecontroller"
@@ -15,7 +16,9 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
 var (
@@ -59,16 +62,6 @@ func NewFromManager(mgr manager.Manager, recorder record.EventRecorder, clusterW
 	return Reconciler{
 		EnforcingReconciler: lockedresourcecontroller.NewFromManager(mgr, recorder, clusterWatchers, false),
 	}
-}
-
-// GeneratorFunction is a function that returns a client.Object
-type GeneratorFunction func() client.Object
-
-// LockedResource is a struct that instructs the reconciler how to
-// generate and reconcile a resource
-type LockedResource struct {
-	GeneratorFn  GeneratorFunction
-	ExcludePaths []string
 }
 
 // GetInstance tries to retrieve the custom resource instance and perform some standard
@@ -145,7 +138,7 @@ func (r *Reconciler) ManageCleanUpLogic(instance client.Object, fns []func(), lo
 }
 
 // NewLockedResources returns the list of lockedresource.LockedResource that the reconciler needs to enforce
-func (r *Reconciler) NewLockedResources(list []LockedResource, owner client.Object) ([]lockedresource.LockedResource, error) {
+func (r *Reconciler) NewLockedResources(list []basereconciler_types.LockedResource, owner client.Object) ([]lockedresource.LockedResource, error) {
 	resources := []lockedresource.LockedResource{}
 	var err error
 
@@ -158,7 +151,7 @@ func (r *Reconciler) NewLockedResources(list []LockedResource, owner client.Obje
 	return resources, nil
 }
 
-func add(resources []lockedresource.LockedResource, fn GeneratorFunction, excludedPaths []string,
+func add(resources []lockedresource.LockedResource, fn basereconciler_types.GeneratorFunction, excludedPaths []string,
 	owner client.Object, scheme *runtime.Scheme) ([]lockedresource.LockedResource, error) {
 
 	u, err := newUnstructured(fn, owner, scheme)
@@ -174,7 +167,7 @@ func add(resources []lockedresource.LockedResource, fn GeneratorFunction, exclud
 	return append(resources, res), nil
 }
 
-func newUnstructured(fn GeneratorFunction, owner client.Object, scheme *runtime.Scheme) (unstructured.Unstructured, error) {
+func newUnstructured(fn basereconciler_types.GeneratorFunction, owner client.Object, scheme *runtime.Scheme) (unstructured.Unstructured, error) {
 	o := fn()
 	if err := controllerutil.SetControllerReference(owner, o, scheme); err != nil {
 		return unstructured.Unstructured{}, err
@@ -184,4 +177,26 @@ func newUnstructured(fn GeneratorFunction, owner client.Object, scheme *runtime.
 		return unstructured.Unstructured{}, err
 	}
 	return unstructured.Unstructured{Object: u}, nil
+}
+
+// SecretEventHandler returns an EventHandler for the specific ExtendedObjectList
+// list object passed as parameter
+func (r *Reconciler) SecretEventHandler(ol basereconciler_types.ExtendedObjectList, logger logr.Logger) handler.EventHandler {
+	return handler.EnqueueRequestsFromMapFunc(
+		func(o client.Object) []reconcile.Request {
+			if err := r.GetClient().List(context.TODO(), ol); err != nil {
+				logger.Error(err, "unable to retrieve the list of resources")
+				return []reconcile.Request{}
+			}
+			if ol.CountItems() == 0 {
+				return []reconcile.Request{}
+			}
+
+			key := types.NamespacedName{
+				Name:      ol.GetItem(0).GetName(),
+				Namespace: ol.GetItem(0).GetNamespace(),
+			}
+			return []reconcile.Request{{NamespacedName: key}}
+		},
+	)
 }

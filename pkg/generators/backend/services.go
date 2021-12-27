@@ -1,7 +1,7 @@
 package backend
 
 import (
-	"github.com/3scale/saas-operator/pkg/basereconciler"
+	basereconciler_types "github.com/3scale/saas-operator/pkg/basereconciler/types"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/service"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -9,9 +9,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// Service returns a basereconciler.GeneratorFunction function that will return the
+// Service returns a basereconciler_types.GeneratorFunction function that will return the
 // gateway Service resource when called
-func (gen *ListenerGenerator) Service() basereconciler.GeneratorFunction {
+func (gen *ListenerGenerator) Service() basereconciler_types.GeneratorFunction {
 
 	return func() client.Object {
 
@@ -47,9 +47,9 @@ func (gen *ListenerGenerator) Service() basereconciler.GeneratorFunction {
 	}
 }
 
-// InternalService returns a basereconciler.GeneratorFunction function that will return the
+// InternalService returns a basereconciler_types.GeneratorFunction function that will return the
 // management Service resource when called
-func (gen *ListenerGenerator) InternalService() basereconciler.GeneratorFunction {
+func (gen *ListenerGenerator) InternalService() basereconciler_types.GeneratorFunction {
 
 	return func() client.Object {
 

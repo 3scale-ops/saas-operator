@@ -2,7 +2,7 @@ package sentinel
 
 import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/basereconciler"
+	basereconciler_types "github.com/3scale/saas-operator/pkg/basereconciler/types"
 	"github.com/3scale/saas-operator/pkg/generators"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pdb"
 	"github.com/3scale/saas-operator/pkg/generators/sentinel/config"
@@ -37,8 +37,8 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SentinelSpec) Ge
 	}
 }
 
-// PDB returns a basereconciler.GeneratorFunction
-func (gen *Generator) PDB() basereconciler.GeneratorFunction {
+// PDB returns a basereconciler_types.GeneratorFunction
+func (gen *Generator) PDB() basereconciler_types.GeneratorFunction {
 	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
 	return pdb.New(key, gen.GetLabels(), gen.Selector().MatchLabels, *gen.Spec.PDB)
 }

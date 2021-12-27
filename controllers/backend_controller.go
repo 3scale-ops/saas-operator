@@ -70,103 +70,37 @@ func (r *BackendReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	json, _ := json.Marshal(instance.Spec)
 	log.V(1).Info("Apply defaults before resolving templates", "JSON", string(json))
 
-	gen := backend.NewGenerator(
-		instance.GetName(),
-		instance.GetNamespace(),
-		instance.Spec,
-	)
+	gen := backend.NewGenerator(instance.GetName(), instance.GetNamespace(), instance.Spec)
 
-	// Calculate rollout triggers
-	triggers, err := r.TriggersFromSecretDefs(ctx,
-		gen.SystemEventsHookSecretDefinition(),
-		gen.InternalAPISecretDefinition(),
-		gen.ErrorMonitoringSecretDefinition(),
-	)
+	resources := &basereconciler.ControlledResources{
+		SecretDefinitions: []basereconciler.SecretDefinition{
+			{Template: gen.SystemEventsHookSecretDefinition(), Enabled: true},
+			{Template: gen.InternalAPISecretDefinition(), Enabled: true},
+			{Template: gen.ErrorMonitoringSecretDefinition(),
+				Enabled: (instance.Spec.Config.ErrorMonitoringService != nil && instance.Spec.Config.ErrorMonitoringKey != nil)},
+		},
+		GrafanaDashboards: []basereconciler.GrafanaDashboard{{
+			Template: gen.GrafanaDashboard(),
+			Enabled:  !instance.Spec.GrafanaDashboard.IsDeactivated(),
+		}},
+	}
+
+	listener, err := r.NewControlledResourcesFromDeploymentGenerator(ctx, &gen.Listener)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
-	err = r.ReconcileOwnedResources(ctx, instance, basereconciler.ControlledResources{
-		Deployments: []basereconciler.Deployment{
-			{
-				Template: gen.Listener.Deployment(),
-				HasHPA:   !instance.Spec.Listener.HPA.IsDeactivated(),
-				// Listener only depends on InternalAPISecretDefinition and ErrorMonitoringSecretDefinition
-				RolloutTriggers: []basereconciler.RolloutTrigger{triggers[1], triggers[2]},
-			},
-			{
-				Template: gen.Worker.Deployment(),
-				HasHPA:   !instance.Spec.Worker.HPA.IsDeactivated(),
-				//Worker only depends on SystemEventsHookSecretDefinition and ErrorMonitoringSecretDefinition
-				RolloutTriggers: []basereconciler.RolloutTrigger{triggers[0], triggers[2]},
-			},
-			{
-				Template: gen.Cron.Deployment(),
-				HasHPA:   false,
-				// Cron only depends on ErrorMonitoringSecretDefinition
-				RolloutTriggers: []basereconciler.RolloutTrigger{triggers[2]},
-			},
-		},
-		SecretDefinitions: []basereconciler.SecretDefinition{
-			{
-				Template: gen.SystemEventsHookSecretDefinition(),
-				Enabled:  true,
-			},
-			{
-				Template: gen.InternalAPISecretDefinition(),
-				Enabled:  true,
-			},
-			{
-				Template: gen.ErrorMonitoringSecretDefinition(),
-				Enabled:  (instance.Spec.Config.ErrorMonitoringService != nil && instance.Spec.Config.ErrorMonitoringKey != nil),
-			},
-		},
-		Services: []basereconciler.Service{
-			{
-				Template: gen.Listener.Service(),
-				Enabled:  true,
-			},
-			{
-				Template: gen.Listener.InternalService(),
-				Enabled:  true,
-			}},
-		PodDisruptionBudgets: []basereconciler.PodDisruptionBudget{
-			{
-				Template: gen.Listener.PDB(), // Calculate rollout triggers
-				Enabled:  !instance.Spec.Listener.PDB.IsDeactivated(),
-			},
-			{
-				Template: gen.Worker.PDB(), // Calculate rollout triggers
-				Enabled:  !instance.Spec.Worker.PDB.IsDeactivated(),
-			},
-		},
-		HorizontalPodAutoscalers: []basereconciler.HorizontalPodAutoscaler{
-			{
-				Template: gen.Listener.HPA(),
-				Enabled:  !instance.Spec.Listener.HPA.IsDeactivated(),
-			},
-			{
-				Template: gen.Worker.HPA(),
-				Enabled:  !instance.Spec.Worker.HPA.IsDeactivated(),
-			},
-		},
-		PodMonitors: []basereconciler.PodMonitor{
-			{
-				Template: gen.Listener.PodMonitor(),
-				Enabled:  true,
-			},
-			{
-				Template: gen.Worker.PodMonitor(),
-				Enabled:  true,
-			},
-		},
-		GrafanaDashboards: []basereconciler.GrafanaDashboard{
-			{
-				Template: gen.GrafanaDashboard(),
-				Enabled:  !instance.Spec.GrafanaDashboard.IsDeactivated(),
-			},
-		},
-	})
+	worker, err := r.NewControlledResourcesFromDeploymentGenerator(ctx, &gen.Worker)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	cron, err := r.NewControlledResourcesFromDeploymentGenerator(ctx, &gen.Cron)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	err = r.ReconcileOwnedResources(ctx, instance, *resources.Add(listener).Add(worker).Add(cron))
 
 	if err != nil {
 		log.Error(err, "unable to reconcile owned resources")

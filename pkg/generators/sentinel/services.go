@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/basereconciler"
+	basereconciler_types "github.com/3scale/saas-operator/pkg/basereconciler/types"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -15,9 +15,9 @@ const (
 	statefulsetPodSelectorLabelKey string = "statefulset.kubernetes.io/pod-name"
 )
 
-// StatefulSetService returns a basereconciler.GeneratorFunction function that will return a Service
+// StatefulSetService returns a basereconciler_types.GeneratorFunction function that will return a Service
 // resource when called
-func (gen *Generator) StatefulSetService() basereconciler.GeneratorFunction {
+func (gen *Generator) StatefulSetService() basereconciler_types.GeneratorFunction {
 
 	return func() client.Object {
 
@@ -42,9 +42,9 @@ func (gen *Generator) StatefulSetService() basereconciler.GeneratorFunction {
 	}
 }
 
-// PodServices returns a basereconciler.GeneratorFunction a slice of functions that will return Services
+// PodServices returns a basereconciler_types.GeneratorFunction a slice of functions that will return Services
 // resource when called
-func (gen *Generator) PodServices() []basereconciler.GeneratorFunction {
+func (gen *Generator) PodServices() []basereconciler_types.GeneratorFunction {
 
 	fn := func(i int) func() client.Object {
 
@@ -76,7 +76,7 @@ func (gen *Generator) PodServices() []basereconciler.GeneratorFunction {
 		}
 	}
 
-	svcFns := make([]basereconciler.GeneratorFunction, *gen.Spec.Replicas)
+	svcFns := make([]basereconciler_types.GeneratorFunction, *gen.Spec.Replicas)
 	for idx := 0; idx < int(*gen.Spec.Replicas); idx++ {
 		svcFns[idx] = fn(idx)
 	}

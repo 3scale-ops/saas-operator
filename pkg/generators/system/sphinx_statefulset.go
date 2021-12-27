@@ -3,7 +3,7 @@ package system
 import (
 	"fmt"
 
-	"github.com/3scale/saas-operator/pkg/basereconciler"
+	basereconciler_types "github.com/3scale/saas-operator/pkg/basereconciler/types"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -13,9 +13,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// StatefulSet returns a basereconciler.GeneratorFunction function that will return
+// StatefulSet returns a basereconciler_types.GeneratorFunction function that will return
 // a StatefulSet resource when called
-func (gen *SphinxGenerator) StatefulSet() basereconciler.GeneratorFunction {
+func (gen *SphinxGenerator) StatefulSet() basereconciler_types.GeneratorFunction {
 
 	return func() client.Object {
 		return &appsv1.StatefulSet{

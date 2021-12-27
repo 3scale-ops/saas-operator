@@ -2,7 +2,7 @@ package apicast
 
 import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/basereconciler"
+	basereconciler_types "github.com/3scale/saas-operator/pkg/basereconciler/types"
 	"github.com/3scale/saas-operator/pkg/generators"
 	"github.com/3scale/saas-operator/pkg/generators/apicast/config"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/grafanadashboard"
@@ -27,14 +27,14 @@ type Generator struct {
 	GrafanaDashboardSpec saasv1alpha1.GrafanaDashboardSpec
 }
 
-// ApicastDashboard returns a basereconciler.GeneratorFunction
-func (gen *Generator) ApicastDashboard() basereconciler.GeneratorFunction {
+// ApicastDashboard returns a basereconciler_types.GeneratorFunction
+func (gen *Generator) ApicastDashboard() basereconciler_types.GeneratorFunction {
 	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
 	return grafanadashboard.New(key, gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/apicast.json.gtpl")
 }
 
-// ApicastServicesDashboard returns a basereconciler.GeneratorFunction
-func (gen *Generator) ApicastServicesDashboard() basereconciler.GeneratorFunction {
+// ApicastServicesDashboard returns a basereconciler_types.GeneratorFunction
+func (gen *Generator) ApicastServicesDashboard() basereconciler_types.GeneratorFunction {
 	key := types.NamespacedName{Name: gen.Component + "-services", Namespace: gen.Namespace}
 	return grafanadashboard.New(key, gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/apicast-services.json.gtpl")
 }
@@ -91,20 +91,20 @@ type EnvGenerator struct {
 	Options config.EnvOptions
 }
 
-// HPA returns a basereconciler.GeneratorFunction
-func (gen *EnvGenerator) HPA() basereconciler.GeneratorFunction {
+// HPA returns a basereconciler_types.GeneratorFunction
+func (gen *EnvGenerator) HPA() basereconciler_types.GeneratorFunction {
 	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
 	return hpa.New(key, gen.GetLabels(), *gen.Spec.HPA)
 }
 
-// PDB returns a basereconciler.GeneratorFunction
-func (gen *EnvGenerator) PDB() basereconciler.GeneratorFunction {
+// PDB returns a basereconciler_types.GeneratorFunction
+func (gen *EnvGenerator) PDB() basereconciler_types.GeneratorFunction {
 	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
 	return pdb.New(key, gen.GetLabels(), gen.Selector().MatchLabels, *gen.Spec.PDB)
 }
 
-// PodMonitor returns a basereconciler.GeneratorFunction
-func (gen *EnvGenerator) PodMonitor() basereconciler.GeneratorFunction {
+// PodMonitor returns a basereconciler_types.GeneratorFunction
+func (gen *EnvGenerator) PodMonitor() basereconciler_types.GeneratorFunction {
 	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
 	return podmonitor.New(key, gen.GetLabels(), gen.Selector().MatchLabels,
 		podmonitor.PodMetricsEndpoint("/metrics", "metrics", 30),

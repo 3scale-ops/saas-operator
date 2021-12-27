@@ -2,7 +2,7 @@ package hpa
 
 import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/basereconciler"
+	basereconciler_types "github.com/3scale/saas-operator/pkg/basereconciler/types"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
@@ -11,9 +11,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// New returns a basereconciler.GeneratorFunction function that will return an HorizontalPodAutoscaler
+// New returns a basereconciler_types.GeneratorFunction function that will return an HorizontalPodAutoscaler
 // resource when called
-func New(key types.NamespacedName, labels map[string]string, cfg saasv1alpha1.HorizontalPodAutoscalerSpec) basereconciler.GeneratorFunction {
+func New(key types.NamespacedName, labels map[string]string, cfg saasv1alpha1.HorizontalPodAutoscalerSpec) basereconciler_types.GeneratorFunction {
 
 	return func() client.Object {
 

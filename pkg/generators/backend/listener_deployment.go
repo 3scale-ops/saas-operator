@@ -3,7 +3,7 @@ package backend
 import (
 	"fmt"
 
-	"github.com/3scale/saas-operator/pkg/basereconciler"
+	basereconciler_types "github.com/3scale/saas-operator/pkg/basereconciler/types"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/marin3r"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
 	"github.com/3scale/saas-operator/pkg/util"
@@ -14,9 +14,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// Deployment returns a basereconciler.GeneratorFunction funtion that will return a Deployment
+// Deployment returns a basereconciler_types.GeneratorFunction funtion that will return a Deployment
 // resource when called
-func (gen *ListenerGenerator) Deployment() basereconciler.GeneratorFunction {
+func (gen *ListenerGenerator) Deployment() basereconciler_types.GeneratorFunction {
 
 	return func() client.Object {
 
