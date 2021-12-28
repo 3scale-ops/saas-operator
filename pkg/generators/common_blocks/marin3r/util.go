@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	"github.com/3scale/saas-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -32,7 +33,7 @@ func EnableSidecar(dep appsv1.Deployment, spec saasv1alpha1.Marin3rSidecarSpec) 
 		dep.Spec.Template.ObjectMeta.Annotations = map[string]string{}
 	}
 	dep.Spec.Template.ObjectMeta.Labels[sidecarEnabledLabelKey] = sidecarEnabledLabelValue
-	dep.Spec.Template.ObjectMeta.Annotations = mergeMaps(
+	dep.Spec.Template.ObjectMeta.Annotations = util.MergeMaps(
 		dep.Spec.Template.ObjectMeta.Annotations,
 		nodeIDAnnotation(spec.NodeID),
 		imageAnnotation(spec.EnvoyImage),
@@ -127,14 +128,4 @@ func portsAnnotation(ports []saasv1alpha1.SidecarPort) map[string]string {
 	}
 
 	return nil
-}
-
-// mergeMaps merges two maps. B overrides A if keys collide.
-func mergeMaps(base map[string]string, merges ...map[string]string) map[string]string {
-	for _, m := range merges {
-		for key, value := range m {
-			base[key] = value
-		}
-	}
-	return base
 }

@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"github.com/3scale/saas-operator/pkg/util"
+	"github.com/go-test/deep"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -1440,6 +1441,69 @@ func Test_boolOrDefault(t *testing.T) {
 			got := boolOrDefault(tt.args.value, tt.args.defValue)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("boolOrDefault() = %v, want %v", *got, *tt.want)
+			}
+		})
+	}
+}
+
+func TestCanary_CanarySpec(t *testing.T) {
+	type fields struct {
+		ImageName *string
+		ImageTag  *string
+		Replicas  *int32
+		Patches   []string
+	}
+	type args struct {
+		spec       interface{}
+		canarySpec interface{}
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    interface{}
+		wantErr bool
+	}{
+		{
+			name: "Returns a canary spec",
+			fields: fields{
+				Patches: []string{
+					`[{"op": "replace", "path": "/image/name", "value": "new"}]`,
+				},
+			},
+			args: args{
+				spec: &BackendSpec{
+					Image: &ImageSpec{
+						Name: pointer.StringPtr("old"),
+						Tag:  pointer.StringPtr("tag"),
+					},
+				},
+				canarySpec: &BackendSpec{},
+			},
+			want: &BackendSpec{
+				Image: &ImageSpec{
+					Name: pointer.StringPtr("new"),
+					Tag:  pointer.StringPtr("tag"),
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &Canary{
+				ImageName: tt.fields.ImageName,
+				ImageTag:  tt.fields.ImageTag,
+				Replicas:  tt.fields.Replicas,
+				Patches:   tt.fields.Patches,
+			}
+			err := c.PatchSpec(tt.args.spec, tt.args.canarySpec)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Canary.CanarySpec() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if diff := deep.Equal(tt.args.canarySpec, tt.want); len(diff) > 0 {
+				t.Errorf("Canary.CanarySpec() = diff %v", diff)
 			}
 		})
 	}

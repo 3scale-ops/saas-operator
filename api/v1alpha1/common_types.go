@@ -17,8 +17,10 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"encoding/json"
 	"reflect"
 
+	jsonpatch "github.com/evanphx/json-patch"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -601,6 +603,52 @@ type BugsnagSpec struct {
 // Bugsnag integration is enabled or not
 func (bs *BugsnagSpec) Enabled() bool {
 	return !reflect.DeepEqual(bs, &BugsnagSpec{})
+}
+
+// Canary allows the definition of a canary Deployment
+type Canary struct {
+	// SendTraffic controls if traffic is sent to the canary
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	SendTraffic bool `json:"sendTraffic"`
+	// ImageName to use for the canary Deployment
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ImageName *string `json:"imageName,omitempty"`
+	// ImageTag to use for the canary Deployment
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ImageTag *string `json:"imageTag,omitempty"`
+	// Number of replicas for the canary Deployment
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Replicas *int32 `json:"replicas,omitempty"`
+	// Patches to apply for the canary Deployment. Patches are expected
+	// to be JSON documents as an RFC 6902 patches.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// + optional
+	Patches []string `json:"patches,omitempty"`
+}
+
+// PatchSpec returns a modified spec given the canary configuration
+func (c *Canary) PatchSpec(spec, canarySpec interface{}) error {
+	doc, _ := json.Marshal(spec)
+	for _, p := range c.Patches {
+		patch, err := jsonpatch.DecodePatch([]byte(p))
+		if err != nil {
+			return err
+		}
+
+		doc, err = patch.Apply([]byte(doc))
+		if err != nil {
+			return err
+		}
+	}
+
+	if err := json.Unmarshal(doc, canarySpec); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func stringOrDefault(value *string, defValue *string) *string {

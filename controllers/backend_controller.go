@@ -70,8 +70,12 @@ func (r *BackendReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	json, _ := json.Marshal(instance.Spec)
 	log.V(1).Info("Apply defaults before resolving templates", "JSON", string(json))
 
-	gen := backend.NewGenerator(instance.GetName(), instance.GetNamespace(), instance.Spec)
+	gen, err := backend.NewGenerator(instance.GetName(), instance.GetNamespace(), instance.Spec)
+	if err != nil {
+		return r.ManageError(ctx, instance, err)
+	}
 
+	// Shared resources
 	resources := &basereconciler.ControlledResources{
 		SecretDefinitions: []basereconciler.SecretDefinition{
 			{Template: gen.SystemEventsHookSecretDefinition(), Enabled: true},
@@ -85,23 +89,36 @@ func (r *BackendReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		}},
 	}
 
-	listener, err := r.NewControlledResourcesFromDeploymentGenerator(ctx, &gen.Listener)
+	// Listener workload resources
+	var listener *basereconciler.ControlledResources
+	if instance.Spec.Listener.Canary != nil {
+		listener, err = r.NewControlledResourcesFromDeploymentGenerator(ctx, &gen.Listener, &gen.Listener, gen.CanaryListener)
+	} else {
+		listener, err = r.NewControlledResourcesFromDeploymentGenerator(ctx, &gen.Listener, &gen.Listener)
+	}
 	if err != nil {
-		return ctrl.Result{}, err
+		return r.ManageError(ctx, instance, err)
 	}
 
-	worker, err := r.NewControlledResourcesFromDeploymentGenerator(ctx, &gen.Worker)
+	// Worker workload resources
+	var worker *basereconciler.ControlledResources
+	if instance.Spec.Worker.Canary != nil {
+		worker, err = r.NewControlledResourcesFromDeploymentGenerator(ctx, nil, &gen.Worker, gen.CanaryWorker)
+	} else {
+		worker, err = r.NewControlledResourcesFromDeploymentGenerator(ctx, nil, &gen.Worker)
+	}
 	if err != nil {
-		return ctrl.Result{}, err
+		return r.ManageError(ctx, instance, err)
 	}
 
-	cron, err := r.NewControlledResourcesFromDeploymentGenerator(ctx, &gen.Cron)
+	// Cron workload resources
+	cron, err := r.NewControlledResourcesFromDeploymentGenerator(ctx, nil, &gen.Cron)
 	if err != nil {
-		return ctrl.Result{}, err
+		return r.ManageError(ctx, instance, err)
 	}
 
+	// Reconcile all resources
 	err = r.ReconcileOwnedResources(ctx, instance, *resources.Add(listener).Add(worker).Add(cron))
-
 	if err != nil {
 		log.Error(err, "unable to reconcile owned resources")
 		return r.ManageError(ctx, instance, err)

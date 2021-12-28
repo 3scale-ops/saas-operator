@@ -12,7 +12,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -29,7 +28,7 @@ var _ = Describe("Backend controller", func() {
 		namespace = "test-ns-" + nameGenerator.Generate()
 
 		// Add any setup steps that needs to be executed before each test
-		testNamespace := &v1.Namespace{
+		testNamespace := &corev1.Namespace{
 			TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "Namespace"},
 			ObjectMeta: metav1.ObjectMeta{Name: namespace},
 		}
@@ -37,7 +36,7 @@ var _ = Describe("Backend controller", func() {
 		err := k8sClient.Create(context.Background(), testNamespace)
 		Expect(err).ToNot(HaveOccurred())
 
-		n := &v1.Namespace{}
+		n := &corev1.Namespace{}
 		Eventually(func() error {
 			return k8sClient.Get(context.Background(), types.NamespacedName{Name: namespace}, n)
 		}, timeout, poll).ShouldNot(HaveOccurred())
@@ -101,10 +100,7 @@ var _ = Describe("Backend controller", func() {
 			Eventually(func() bool {
 				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, backend)
 				Expect(err).ToNot(HaveOccurred())
-				if len(backend.GetFinalizers()) > 0 {
-					return true
-				}
-				return false
+				return len(backend.GetFinalizers()) > 0
 			}, timeout, poll).Should(BeTrue())
 
 			dep := &appsv1.Deployment{}
@@ -251,11 +247,267 @@ var _ = Describe("Backend controller", func() {
 					svc,
 				)
 				Expect(err).ToNot(HaveOccurred())
-				if svc.GetAnnotations()["service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled"] == "false" {
-					return true
-				}
-				return false
+				return svc.GetAnnotations()["service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled"] == "false"
 			}, timeout, poll).Should(BeTrue())
+		})
+	})
+
+	Context("Backend resource with canary Deployment", func() {
+
+		BeforeEach(func() {
+			By("creating an Backend resource with canary configs")
+			backend = &saasv1alpha1.Backend{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "instance",
+					Namespace: namespace,
+				},
+				Spec: saasv1alpha1.BackendSpec{
+					Listener: saasv1alpha1.ListenerSpec{
+						Endpoint: saasv1alpha1.Endpoint{
+							DNS: []string{"backend-listener.example.com"},
+						},
+						Canary: &saasv1alpha1.Canary{
+							ImageName: pointer.StringPtr("newImage"),
+							ImageTag:  pointer.StringPtr("newTag"),
+						},
+					},
+					Worker: &saasv1alpha1.WorkerSpec{
+						Canary: &saasv1alpha1.Canary{
+							Patches: []string{
+								`[{"op": "add", "path": "/config/rackEnv", "value": "test"}]`,
+								`[{"op": "replace", "path": "/config/redisStorageDSN", "value": "testDSN"}]`,
+							},
+						},
+					},
+					Config: saasv1alpha1.BackendConfig{
+						RedisStorageDSN: "storageDSN",
+						RedisQueuesDSN:  "queuesDSN",
+						SystemEventsHookURL: saasv1alpha1.SecretReference{
+							FromVault: &saasv1alpha1.VaultSecretReference{
+								Path: "some-path",
+								Key:  "some-key",
+							},
+						},
+						SystemEventsHookPassword: saasv1alpha1.SecretReference{
+							FromVault: &saasv1alpha1.VaultSecretReference{
+								Path: "some-path",
+								Key:  "some-key",
+							},
+						},
+						InternalAPIUser: saasv1alpha1.SecretReference{
+							FromVault: &saasv1alpha1.VaultSecretReference{
+								Path: "some-path",
+								Key:  "some-key",
+							},
+						},
+						InternalAPIPassword: saasv1alpha1.SecretReference{
+							FromVault: &saasv1alpha1.VaultSecretReference{
+								Path: "some-path",
+								Key:  "some-key",
+							},
+						},
+					},
+				},
+			}
+			err := k8sClient.Create(context.Background(), backend)
+			Expect(err).ToNot(HaveOccurred())
+			Eventually(func() error {
+				return k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, backend)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+		})
+
+		It("creates the required resources", func() {
+
+			Eventually(func() bool {
+				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, backend)
+				Expect(err).ToNot(HaveOccurred())
+				return len(backend.GetFinalizers()) > 0
+			}, timeout, poll).Should(BeTrue())
+
+			// Deployments
+			dep := &appsv1.Deployment{}
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "backend-listener", Namespace: namespace},
+					dep,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "backend-canary-listener", Namespace: namespace},
+					dep,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+			Expect(dep.Spec.Template.Spec.Containers[0].Image).To(Equal("newImage:newTag"))
+
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "backend-worker", Namespace: namespace},
+					dep,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "backend-canary-worker", Namespace: namespace},
+					dep,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+			Expect(dep.Spec.Template.Spec.Containers[0].Env[0].Name).To(Equal("RACK_ENV"))
+			Expect(dep.Spec.Template.Spec.Containers[0].Env[0].Value).To(Equal("test"))
+			Expect(dep.Spec.Template.Spec.Containers[0].Env[1].Name).To(Equal("CONFIG_REDIS_PROXY"))
+			Expect(dep.Spec.Template.Spec.Containers[0].Env[1].Value).To(Equal("testDSN"))
+
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "backend-cron", Namespace: namespace},
+					dep,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+
+			// Services
+			svc := &corev1.Service{}
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "backend-listener", Namespace: namespace},
+					svc,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "backend-listener-internal", Namespace: namespace},
+					svc,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+
+			// PodMonitors
+			pm := &monitoringv1.PodMonitor{}
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "backend-listener", Namespace: namespace},
+					pm,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "backend-worker", Namespace: namespace},
+					pm,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "backend-canary-listener", Namespace: namespace},
+					pm,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "backend-canary-worker", Namespace: namespace},
+					pm,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+
+			// HPAs
+			hpa := &autoscalingv2beta2.HorizontalPodAutoscaler{}
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "backend-listener", Namespace: namespace},
+					hpa,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "backend-worker", Namespace: namespace},
+					hpa,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "backend-canary-listener", Namespace: namespace},
+					hpa,
+				)
+			}, timeout, poll).Should(HaveOccurred())
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "backend-canary-worker", Namespace: namespace},
+					hpa,
+				)
+			}, timeout, poll).Should(HaveOccurred())
+
+			// PDBs
+			pdb := &policyv1beta1.PodDisruptionBudget{}
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "backend-listener", Namespace: namespace},
+					pdb,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "backend-worker", Namespace: namespace},
+					pdb,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "backend-canary-listener", Namespace: namespace},
+					pdb,
+				)
+			}, timeout, poll).Should(HaveOccurred())
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "backend-canary-worker", Namespace: namespace},
+					pdb,
+				)
+			}, timeout, poll).Should(HaveOccurred())
+
+			// SecretDefinitions
+			sd := &secretsmanagerv1alpha1.SecretDefinition{}
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "backend-internal-api", Namespace: namespace},
+					sd,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "backend-system-events-hook", Namespace: namespace},
+					sd,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+
+			// GrafanaDashboard
+			gd := &grafanav1alpha1.GrafanaDashboard{}
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "backend", Namespace: namespace},
+					gd,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+
 		})
 	})
 })

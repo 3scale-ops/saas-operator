@@ -202,7 +202,6 @@ type ConfigMaps struct {
 // GetDeploymentReplicas returns the number of replicas for a deployment,
 // current value if HPA is enabled.
 func (r *Reconciler) GetDeploymentReplicas(ctx context.Context, d Deployment) (*int32, error) {
-
 	dep := d.Template().(*appsv1.Deployment)
 	if !d.HasHPA {
 		return dep.Spec.Replicas, nil
@@ -230,21 +229,25 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 
 	for _, dep := range crs.Deployments {
 
-		currentReplicas, err := r.GetDeploymentReplicas(ctx, dep)
-		if err != nil {
-			return err
+		if dep.HasHPA {
+			currentReplicas, err := r.GetDeploymentReplicas(ctx, dep)
+			if err != nil {
+				return err
+			}
+			resources = append(resources,
+				basereconciler_types.LockedResource{
+					GeneratorFn:  r.DeploymentWithRolloutTriggers(dep.Template, dep.RolloutTriggers, currentReplicas),
+					ExcludePaths: append(DeploymentExcludedPaths, "/spec/replicas"),
+				})
+
+		} else {
+			resources = append(resources,
+				basereconciler_types.LockedResource{
+					GeneratorFn:  r.DeploymentWithRolloutTriggers(dep.Template, dep.RolloutTriggers, nil),
+					ExcludePaths: DeploymentExcludedPaths,
+				})
 		}
 
-		resources = append(resources,
-			basereconciler_types.LockedResource{
-				GeneratorFn: r.DeploymentWithRolloutTriggers(dep.Template, dep.RolloutTriggers, currentReplicas),
-				ExcludePaths: func() []string {
-					if dep.HasHPA {
-						return append(DeploymentExcludedPaths, "/spec/replicas")
-					}
-					return DeploymentExcludedPaths
-				}(),
-			})
 	}
 
 	for _, ss := range crs.StatefulSets {
@@ -363,7 +366,9 @@ func (r *Reconciler) DeploymentWithRolloutTriggers(deployment basereconciler_typ
 			dep.Spec.Template.ObjectMeta.Annotations[trigger.GetAnnotationKey()] = trigger.GetHash()
 		}
 
-		dep.Spec.Replicas = replicas
+		if replicas != nil {
+			dep.Spec.Replicas = replicas
+		}
 
 		return dep
 	}

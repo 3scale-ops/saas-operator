@@ -173,6 +173,22 @@ func (b *Backend) Default() {
 	b.Spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(b.Spec.GrafanaDashboard, backendDefaultGrafanaDashboard)
 }
 
+// Default implements defaulting for the Backend resource
+func (spec *BackendSpec) ResolveCanarySpec(canary *Canary) (*BackendSpec, error) {
+	canarySpec := &BackendSpec{}
+	canary.PatchSpec(spec, canarySpec)
+	if canary.ImageName != nil {
+		canarySpec.Image.Name = canary.ImageName
+	}
+	if canary.ImageTag != nil {
+		canarySpec.Image.Tag = canary.ImageTag
+	}
+	canarySpec.Listener.Replicas = canary.Replicas
+	canarySpec.Worker.Replicas = canary.Replicas
+	canarySpec.Cron.Replicas = canary.Replicas
+	return canarySpec, nil
+}
+
 // ListenerSpec is the configuration for Backend Listener
 type ListenerSpec struct {
 	// Listener specific configuration options for the component element
@@ -215,11 +231,18 @@ type ListenerSpec struct {
 	// +optional
 	LoadBalancer *NLBLoadBalancerSpec `json:"loadBalancer,omitempty"`
 	// Describes node affinity scheduling rules for the pod.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	NodeAffinity *corev1.NodeAffinity `json:"nodeAffinity,omitempty" protobuf:"bytes,1,opt,name=nodeAffinity"`
 	// If specified, the pod's tolerations.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
+	// Canary defines spec changes for the canary Deployment. If
+	// left unset the canary Deployment wil not be created.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Canary *Canary `json:"canary,omitempty"`
 }
 
 // Default implements defaulting for the each backend listener
@@ -276,11 +299,18 @@ type WorkerSpec struct {
 	// +optional
 	ReadinessProbe *ProbeSpec `json:"readinessProbe,omitempty"`
 	// Describes node affinity scheduling rules for the pod.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	NodeAffinity *corev1.NodeAffinity `json:"nodeAffinity,omitempty" protobuf:"bytes,1,opt,name=nodeAffinity"`
 	// If specified, the pod's tolerations.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
+	// Canary defines spec changes for the canary Deployment. If
+	// left unset the canary Deployment wil not be created.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Canary *Canary `json:"canary,omitempty"`
 }
 
 // Default implements defaulting for the each backend worker
@@ -315,9 +345,11 @@ type CronSpec struct {
 	// +optional
 	Resources *ResourceRequirementsSpec `json:"resources,omitempty"`
 	// Describes node affinity scheduling rules for the pod.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	NodeAffinity *corev1.NodeAffinity `json:"nodeAffinity,omitempty" protobuf:"bytes,1,opt,name=nodeAffinity"`
 	// If specified, the pod's tolerations.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
 }

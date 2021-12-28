@@ -32,9 +32,14 @@ type DeploymentWorkloadGenerator interface {
 	MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint
 	Key() types.NamespacedName
 	GetLabels() map[string]string
-	LabelsWithSelector() map[string]string
 	Selector() *metav1.LabelSelector
 	HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec
 	PDBSpec() *saasv1alpha1.PodDisruptionBudgetSpec
+	SendTraffic() bool
+}
+
+type DeploymentIngressGenerator interface {
+	GetLabels() map[string]string
+	TrafficSelector() map[string]string
 	Services() []GeneratorFunction
 }
