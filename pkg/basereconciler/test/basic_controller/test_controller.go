@@ -22,7 +22,7 @@ import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/basereconciler"
-	"github.com/3scale/saas-operator/pkg/basereconciler/test/api/v1alpha1"
+	"github.com/3scale/saas-operator/pkg/basereconciler/test/basic_controller/api/v1alpha1"
 	basereconciler_types "github.com/3scale/saas-operator/pkg/basereconciler/types"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/marin3r"
 	"github.com/go-logr/logr"

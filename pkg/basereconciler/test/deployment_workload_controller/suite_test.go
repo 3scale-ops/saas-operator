@@ -22,12 +22,11 @@ import (
 	"time"
 
 	"github.com/3scale/saas-operator/pkg/basereconciler"
-	"github.com/3scale/saas-operator/pkg/basereconciler/test/api/v1alpha1"
+	"github.com/3scale/saas-operator/pkg/basereconciler/test/deployment_workload_controller/api/v1alpha1"
 	"github.com/goombaio/namegenerator"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
@@ -44,7 +43,6 @@ import (
 // http://onsi.github.io/ginkgo/ to learn more about Ginkgo.
 
 var (
-	cfg           *rest.Config
 	k8sClient     client.Client
 	testEnv       *envtest.Environment
 	nameGenerator namegenerator.Generator
@@ -67,7 +65,7 @@ var _ = BeforeSuite(func() {
 	testEnv = &envtest.Environment{
 		CRDDirectoryPaths: []string{
 			filepath.Join("api", "v1alpha1"),
-			filepath.Join("..", "..", "..", "config", "test", "external-apis"),
+			filepath.Join("..", "..", "..", "..", "config", "test", "external-apis"),
 		},
 	}
 

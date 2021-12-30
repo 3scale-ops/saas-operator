@@ -20,7 +20,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -40,15 +39,21 @@ var (
 
 // NOTE: execute the following commands whenever you modify this file
 //
-// $ bin/controller-gen object:headerFile=hack/boilerplate.go.txt paths=./pkg/basereconciler/test/api/v1alpha1
-// $ bin/controller-gen crd:trivialVersions=true,preserveUnknownFields=false paths=./pkg/basereconciler/test/api/v1alpha1 output:crd:artifacts:config=./pkg/basereconciler/test/api/v1alpha1
+// $ bin/controller-gen object:headerFile=hack/boilerplate.go.txt paths=./pkg/basereconciler/test/deployment_workload_controller/api/v1alpha1
+// $ bin/controller-gen crd:trivialVersions=true,preserveUnknownFields=false paths=./pkg/basereconciler/test/deployment_workload_controller/api/v1alpha1 output:crd:artifacts:config=./pkg/basereconciler/test/deployment_workload_controller/api/v1alpha1
 
 // TestSpec defines the desired state of Test
 type TestSpec struct {
-	// +optional
-	ServiceAnnotations map[string]string `json:"serviceAnnotations,omitempty"`
-	// +optional
-	Marin3r *saasv1alpha1.Marin3rSidecarSpec `json:"marin3r,omitempty"`
+	Alice           Workload          `json:"alice"`
+	Bob             Workload          `json:"bob"`
+	TrafficSelector map[string]string `json:"trafficSelector"`
+}
+
+type Workload struct {
+	Name     string            `json:"name"`
+	Traffic  bool              `json:"traffic"`
+	Selector map[string]string `json:"selector"`
+	Labels   map[string]string `json:"labels"`
 }
 
 // TestStatus defines the observed state of Test
