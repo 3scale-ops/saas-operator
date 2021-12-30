@@ -18,7 +18,6 @@ package controllers
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/go-logr/logr"
 	"github.com/redhat-cop/operator-utils/pkg/util"
@@ -63,8 +62,8 @@ func (r *ApicastReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	// Apply defaults for reconcile but do not store them in the API
 	instance.Default()
-	json, _ := json.Marshal(instance.Spec)
-	log.V(1).Info("Apply defaults before resolving templates", "JSON", string(json))
+	// json, _ := json.Marshal(instance.Spec)
+	// log.V(1).Info("Apply defaults before resolving templates", "JSON", string(json))
 
 	gen := apicast.NewGenerator(
 		instance.GetName(),

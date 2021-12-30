@@ -18,7 +18,6 @@ package controllers
 
 import (
 	"context"
-	"encoding/json"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/basereconciler"
@@ -66,8 +65,8 @@ func (r *MappingServiceReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 
 	// Apply defaults for reconcile but do not store them in the API
 	instance.Default()
-	json, _ := json.Marshal(instance.Spec)
-	log.V(1).Info("Apply defaults before resolving templates", "JSON", string(json))
+	// json, _ := json.Marshal(instance.Spec)
+	// log.V(1).Info("Apply defaults before resolving templates", "JSON", string(json))
 
 	gen := mappingservice.NewGenerator(
 		instance.GetName(),

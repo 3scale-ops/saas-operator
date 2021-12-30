@@ -60,7 +60,7 @@ type Reconciler struct {
 // NewFromManager constructs a new Reconciler from the given manager
 func NewFromManager(mgr manager.Manager, recorder record.EventRecorder, clusterWatchers bool) Reconciler {
 	return Reconciler{
-		EnforcingReconciler: lockedresourcecontroller.NewFromManager(mgr, recorder, clusterWatchers, false),
+		EnforcingReconciler: lockedresourcecontroller.NewFromManager(mgr, recorder, clusterWatchers),
 	}
 }
 
