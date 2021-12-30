@@ -1038,7 +1038,7 @@ func Test_sliceCmdToStruct(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "holy crap",
+			name: "Parses a redis-go administrative command response",
 			args: args{
 				in: []interface{}{
 					"name",
