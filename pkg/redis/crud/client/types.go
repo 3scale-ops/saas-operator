@@ -1,4 +1,18 @@
-package types
+package client
+
+// Role represents the role of a redis server within a shard
+type Role string
+
+const (
+	// Master is the master role in a shard. Under normal circumstances, only
+	// a server in the shard can be master at a given time
+	Master Role = "master"
+	// Slave are servers within the shard that replicate data from the master
+	// for data high availabilty purposes
+	Slave Role = "slave"
+	// Unknown represents a state in which the role of the server is still unknown
+	Unknown Role = "unknown"
+)
 
 // SentinelMasterCmdResult represents the output of the "sentinel master" command
 type SentinelMasterCmdResult struct {
@@ -9,7 +23,7 @@ type SentinelMasterCmdResult struct {
 	Flags                 string `redis:"flags"`
 	LinkPendingCommands   int    `redis:"link-pending-commands"`
 	LinkRefcount          int    `redis:"link-refcount"`
-	LastPingSet           int    `redis:"last-ping-sent"`
+	LastPingSent          int    `redis:"last-ping-sent"`
 	LastOkPingReply       int    `redis:"last-ok-ping-reply"`
 	LastPingReply         int    `redis:"last-ping-reply"`
 	DownAfterMilliseconds int    `redis:"down-after-milliseconds"`
@@ -33,7 +47,7 @@ type SentinelSlaveCmdResult struct {
 	Flags                 string `redis:"flags"`
 	LinkPendingCommands   int    `redis:"link-pending-commands"`
 	LinkRefcount          int    `redis:"link-refcount"`
-	LastPingSet           int    `redis:"last-ping-sent"`
+	LastPingSent          int    `redis:"last-ping-sent"`
 	LastOkPingReply       int    `redis:"last-ok-ping-reply"`
 	LastPingReply         int    `redis:"last-ping-reply"`
 	DownAfterMilliseconds int    `redis:"down-after-milliseconds"`
@@ -43,7 +57,7 @@ type SentinelSlaveCmdResult struct {
 	MasterLinkDownTime    int    `redis:"master-link-down-time"`
 	MasterLinkStatus      string `redis:"master-link-status"`
 	MasterHost            string `redis:"master-host"`
-	MasterPort            string `redis:"master-port"`
-	SlavePriority         string `redis:"slave-priority"`
+	MasterPort            int    `redis:"master-port"`
+	SlavePriority         int    `redis:"slave-priority"`
 	SlaveReplOffset       int    `redis:"slave-repl-offset"`
 }

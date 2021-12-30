@@ -26,6 +26,7 @@ import (
 	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/generators/redisshard"
 	"github.com/3scale/saas-operator/pkg/redis"
+	"github.com/3scale/saas-operator/pkg/redis/crud/client"
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -88,7 +89,8 @@ func (r *RedisShardReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return r.ManageError(ctx, instance, err)
 	}
 
-	shard, result, err := r.setRedisRoles(ctx, *instance.Spec.MasterIndex, gen.Service()().GetName(), req.Namespace, log)
+	shard, result, err := r.setRedisRoles(ctx, types.NamespacedName{Name: req.Name, Namespace: req.Namespace},
+		*instance.Spec.MasterIndex, gen.Service()().GetName(), log)
 	if result != nil || err != nil {
 		return *result, err
 	}
@@ -108,12 +110,12 @@ func (r *RedisShardReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *RedisShardReconciler) setRedisRoles(ctx context.Context, masterIndex int32, serviceName, namespace string, log logr.Logger) (redis.Shard, *ctrl.Result, error) {
+func (r *RedisShardReconciler) setRedisRoles(ctx context.Context, key types.NamespacedName, masterIndex int32, serviceName string, log logr.Logger) (*redis.Shard, *ctrl.Result, error) {
 
 	redisURLs := make([]string, saasv1alpha1.RedisShardDefaultReplicas)
 	for i := 0; i < int(saasv1alpha1.RedisShardDefaultReplicas); i++ {
 		pod := &corev1.Pod{}
-		key := types.NamespacedName{Name: fmt.Sprintf("%s-%d", serviceName, i), Namespace: namespace}
+		key := types.NamespacedName{Name: fmt.Sprintf("%s-%d", serviceName, i), Namespace: key.Namespace}
 		err := r.GetClient().Get(ctx, key, pod)
 		if err != nil {
 			return nil, &ctrl.Result{}, err
@@ -122,12 +124,12 @@ func (r *RedisShardReconciler) setRedisRoles(ctx context.Context, masterIndex in
 		redisURLs[i] = fmt.Sprintf("redis://%s:%d", pod.Status.PodIP, 6379)
 	}
 
-	shard, err := redis.NewShard(redisURLs)
+	shard, err := redis.NewShard(key.Name, redisURLs)
 	if err != nil {
 		return nil, &ctrl.Result{}, err
 	}
 
-	err = shard.Init(ctx, masterIndex, log)
+	_, err = shard.Init(ctx, masterIndex, log)
 	if err != nil {
 		log.Info("waiting for redis shard init")
 		return nil, &ctrl.Result{Requeue: true, RequeueAfter: 10 * time.Second}, nil
@@ -136,17 +138,17 @@ func (r *RedisShardReconciler) setRedisRoles(ctx context.Context, masterIndex in
 	return shard, nil, nil
 }
 
-func (r *RedisShardReconciler) updateStatus(ctx context.Context, shard redis.Shard, instance *saasv1alpha1.RedisShard, log logr.Logger) error {
+func (r *RedisShardReconciler) updateStatus(ctx context.Context, shard *redis.Shard, instance *saasv1alpha1.RedisShard, log logr.Logger) error {
 
 	status := saasv1alpha1.RedisShardStatus{
 		ShardNodes: &saasv1alpha1.RedisShardNodes{Master: nil, Slaves: []string{}},
 	}
 
-	for _, server := range shard {
-		if server.Role == redis.Master {
-			status.ShardNodes.Master = pointer.StringPtr(fmt.Sprintf("redis://%s:%s", server.GetIP(), server.GetPort()))
-		} else if server.Role == redis.Slave {
-			status.ShardNodes.Slaves = append(status.ShardNodes.Slaves, fmt.Sprintf("redis://%s:%s", server.GetIP(), server.GetPort()))
+	for _, server := range shard.Servers {
+		if server.Role == client.Master {
+			status.ShardNodes.Master = pointer.StringPtr(server.Name)
+		} else if server.Role == client.Slave {
+			status.ShardNodes.Slaves = append(status.ShardNodes.Slaves, server.Name)
 		}
 	}
 	if !equality.Semantic.DeepEqual(status, instance.Status) {

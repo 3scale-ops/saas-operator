@@ -9,7 +9,7 @@ import (
 
 	"github.com/3scale/saas-operator/pkg/redis"
 	"github.com/go-logr/logr"
-	redisgo "github.com/go-redis/redis/v8"
+	goredis "github.com/go-redis/redis/v8"
 	"github.com/prometheus/client_golang/prometheus"
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
 )
@@ -110,6 +110,7 @@ type SentinelMetricsGatherer struct {
 	Log             logr.Logger
 	started         bool
 	cancel          context.CancelFunc
+	sentinel        *redis.SentinelServer
 }
 
 // IsStarted returns whether the metrics gatherer is running or not
@@ -126,15 +127,20 @@ func (smg *SentinelMetricsGatherer) Start(parentCtx context.Context) {
 	}
 
 	go func() {
+		var err error
 		var ctx context.Context
 		ctx, smg.cancel = context.WithCancel(parentCtx)
+
 		ticker := time.NewTicker(smg.RefreshInterval)
-		ss := redis.SentinelServer(smg.SentinelURL)
-		ch, closeWatch, err := ss.Subscribe(ctx, "+switch-master", "-failover-abort-no-good-slave")
+
+		smg.sentinel, err = redis.NewSentinelServerFromConnectionString(smg.SentinelURL, smg.SentinelURL)
 		if err != nil {
-			log.Error(err, "cannot subscribe to events")
+			log.Error(err, "cannot create SentinelServer")
 		}
+
+		ch, closeWatch := smg.sentinel.CRUD.SentinelPSubscribe(ctx, "+switch-master", "-failover-abort-no-good-slave")
 		defer closeWatch()
+
 		log.Info("sentinel metrics gatherer running")
 
 		for {
@@ -174,7 +180,7 @@ func (smg *SentinelMetricsGatherer) Stop() {
 	slaveReplOffset.Reset()
 }
 
-func (smg *SentinelMetricsGatherer) parseEvent(msg *redisgo.Message) {
+func (smg *SentinelMetricsGatherer) parseEvent(msg *goredis.Message) {
 
 	switch msg.Channel {
 	case "+switch-master":
@@ -187,11 +193,8 @@ func (smg *SentinelMetricsGatherer) parseEvent(msg *redisgo.Message) {
 }
 
 func (smg *SentinelMetricsGatherer) gatherMetrics(ctx context.Context) error {
-	ctxWithTimeout, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
 
-	ss := redis.SentinelServer(smg.SentinelURL)
-	mresult, err := (&ss).Masters(ctxWithTimeout)
+	mresult, err := smg.sentinel.CRUD.SentinelMasters(ctx)
 	if err != nil {
 		return err
 	}
@@ -217,7 +220,7 @@ func (smg *SentinelMetricsGatherer) gatherMetrics(ctx context.Context) error {
 			"redis_server": fmt.Sprintf("%s:%d", master.IP, master.Port), "role": master.RoleReported,
 		}).Set(float64(master.NumOtherSentinels))
 
-		sresult, err := (&ss).Slaves(ctxWithTimeout, master.Name)
+		sresult, err := smg.sentinel.CRUD.SentinelSlaves(ctx, master.Name)
 		if err != nil {
 			return err
 		}

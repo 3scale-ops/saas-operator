@@ -134,32 +134,29 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return r.ManageError(ctx, instance, err)
 	}
 
+	// Create the redis-sentinel server pool
 	sentinelPool, err := redis.NewSentinelPool(ctx, r.GetClient(),
 		types.NamespacedName{Name: gen.GetComponent(), Namespace: gen.GetNamespace()}, int(*instance.Spec.Replicas))
 	if err != nil {
 		return r.ManageError(ctx, instance, err)
 	}
 
-	allMonitored, err := sentinelPool.IsMonitoringShards(ctx,
-		func() []string {
-			keys := make([]string, 0, len(instance.Spec.Config.MonitoredShards))
-			for k := range instance.Spec.Config.MonitoredShards {
-				keys = append(keys, k)
-			}
-			return keys
-		}(),
-	)
+	// Create the ShardedCluster objects that represents the redis servers to be monitored by sentinel
+	shardedCluster, err := redis.NewShardedCluster(ctx, instance.Spec.Config.MonitoredShards, log)
 	if err != nil {
 		return r.ManageError(ctx, instance, err)
 	}
 
+	// Ensure all shards are being monitored
+	allMonitored, err := sentinelPool.IsMonitoringShards(ctx, shardedCluster.GetShardNames())
+	if err != nil {
+		return r.ManageError(ctx, instance, err)
+	}
 	if !allMonitored {
-		shardedCluster, err := redis.NewShardedCluster(ctx, instance.Spec.Config.MonitoredShards, log)
-		if err != nil {
+		if err := shardedCluster.Discover(ctx, log); err != nil {
 			return r.ManageError(ctx, instance, err)
 		}
-
-		if err := sentinelPool.Monitor(ctx, shardedCluster); err != nil {
+		if _, err := sentinelPool.Monitor(ctx, shardedCluster); err != nil {
 			return r.ManageError(ctx, instance, err)
 		}
 	}
