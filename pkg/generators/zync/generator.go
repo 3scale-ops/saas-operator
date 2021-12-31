@@ -4,7 +4,6 @@ import (
 	"strings"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	basereconciler_types "github.com/3scale/saas-operator/pkg/basereconciler/types"
 	"github.com/3scale/saas-operator/pkg/generators"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/grafanadashboard"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/hpa"
@@ -12,6 +11,7 @@ import (
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/podmonitor"
 	"github.com/3scale/saas-operator/pkg/generators/zync/config"
+	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
 
@@ -77,14 +77,14 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.ZyncSpec) Genera
 	}
 }
 
-// GrafanaDashboard returns a basereconciler_types.GeneratorFunction
-func (gen *Generator) GrafanaDashboard() basereconciler_types.GeneratorFunction {
+// GrafanaDashboard returns a basereconciler.GeneratorFunction
+func (gen *Generator) GrafanaDashboard() basereconciler.GeneratorFunction {
 	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
 	return grafanadashboard.New(key, gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/zync.json.gtpl")
 }
 
-// ZyncSecretDefinition returns a basereconciler_types.GeneratorFunction
-func (gen *Generator) ZyncSecretDefinition() basereconciler_types.GeneratorFunction {
+// ZyncSecretDefinition returns a basereconciler.GeneratorFunction
+func (gen *Generator) ZyncSecretDefinition() basereconciler.GeneratorFunction {
 	return pod.GenerateSecretDefinitionFn("zync", gen.GetNamespace(), gen.GetLabels(), gen.API.Options)
 }
 
@@ -97,20 +97,20 @@ type APIGenerator struct {
 	Options config.APIOptions
 }
 
-// HPA returns a basereconciler_types.GeneratorFunction
-func (gen *APIGenerator) HPA() basereconciler_types.GeneratorFunction {
+// HPA returns a basereconciler.GeneratorFunction
+func (gen *APIGenerator) HPA() basereconciler.GeneratorFunction {
 	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
 	return hpa.New(key, gen.GetLabels(), *gen.APISpec.HPA)
 }
 
-// PDB returns a basereconciler_types.GeneratorFunction
-func (gen *APIGenerator) PDB() basereconciler_types.GeneratorFunction {
+// PDB returns a basereconciler.GeneratorFunction
+func (gen *APIGenerator) PDB() basereconciler.GeneratorFunction {
 	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
 	return pdb.New(key, gen.GetLabels(), gen.Selector().MatchLabels, *gen.APISpec.PDB)
 }
 
-// PodMonitor returns a basereconciler_types.GeneratorFunction
-func (gen *APIGenerator) PodMonitor() basereconciler_types.GeneratorFunction {
+// PodMonitor returns a basereconciler.GeneratorFunction
+func (gen *APIGenerator) PodMonitor() basereconciler.GeneratorFunction {
 	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
 	return podmonitor.New(key, gen.GetLabels(), gen.Selector().MatchLabels,
 		podmonitor.PodMetricsEndpoint("/metrics", "metrics", 30),
@@ -126,20 +126,20 @@ type QueGenerator struct {
 	Options config.QueOptions
 }
 
-// HPA returns a basereconciler_types.GeneratorFunction
-func (gen *QueGenerator) HPA() basereconciler_types.GeneratorFunction {
+// HPA returns a basereconciler.GeneratorFunction
+func (gen *QueGenerator) HPA() basereconciler.GeneratorFunction {
 	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
 	return hpa.New(key, gen.GetLabels(), *gen.QueSpec.HPA)
 }
 
-// PDB returns a basereconciler_types.GeneratorFunction
-func (gen *QueGenerator) PDB() basereconciler_types.GeneratorFunction {
+// PDB returns a basereconciler.GeneratorFunction
+func (gen *QueGenerator) PDB() basereconciler.GeneratorFunction {
 	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
 	return pdb.New(key, gen.GetLabels(), gen.Selector().MatchLabels, *gen.QueSpec.PDB)
 }
 
-// PodMonitor returns a basereconciler_types.GeneratorFunction
-func (gen *QueGenerator) PodMonitor() basereconciler_types.GeneratorFunction {
+// PodMonitor returns a basereconciler.GeneratorFunction
+func (gen *QueGenerator) PodMonitor() basereconciler.GeneratorFunction {
 	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
 	return podmonitor.New(key, gen.GetLabels(), gen.Selector().MatchLabels,
 		podmonitor.PodMetricsEndpoint("/metrics", "metrics", 30),

@@ -19,6 +19,9 @@ package controllers
 import (
 	"context"
 
+	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	"github.com/3scale/saas-operator/pkg/generators/system"
+	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,10 +29,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/basereconciler"
-	"github.com/3scale/saas-operator/pkg/generators/system"
 )
 
 // SystemReconciler reconciles a System object

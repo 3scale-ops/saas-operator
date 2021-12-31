@@ -1,18 +1,18 @@
 package system
 
 import (
-	basereconciler_types "github.com/3scale/saas-operator/pkg/basereconciler/types"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/service"
 	"github.com/3scale/saas-operator/pkg/generators/system/config"
+	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// Service returns a basereconciler_types.GeneratorFunction function that will return the
+// Service returns a basereconciler.GeneratorFunction function that will return the
 // Service resource when called
-func (gen *SphinxGenerator) Service() basereconciler_types.GeneratorFunction {
+func (gen *SphinxGenerator) Service() basereconciler.GeneratorFunction {
 
 	return func() client.Object {
 

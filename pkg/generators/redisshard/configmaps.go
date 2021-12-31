@@ -1,16 +1,16 @@
 package redisshard
 
 import (
-	basereconciler_types "github.com/3scale/saas-operator/pkg/basereconciler/types"
+	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
 	"github.com/MakeNowJust/heredoc"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// RedisConfigConfigMap returns a basereconciler_types.GeneratorFunction function that will return a ConfigMap
+// RedisConfigConfigMap returns a basereconciler.GeneratorFunction function that will return a ConfigMap
 // resource when called
-func (gen *Generator) RedisConfigConfigMap() basereconciler_types.GeneratorFunction {
+func (gen *Generator) RedisConfigConfigMap() basereconciler.GeneratorFunction {
 	return func() client.Object {
 		return &corev1.ConfigMap{
 			TypeMeta: metav1.TypeMeta{
@@ -34,9 +34,9 @@ func (gen *Generator) RedisConfigConfigMap() basereconciler_types.GeneratorFunct
 	}
 }
 
-// RedisReadinessScriptConfigMap returns a basereconciler_types.GeneratorFunction function that will return a ConfigMap
+// RedisReadinessScriptConfigMap returns a basereconciler.GeneratorFunction function that will return a ConfigMap
 // resource when called
-func (gen *Generator) RedisReadinessScriptConfigMap() basereconciler_types.GeneratorFunction {
+func (gen *Generator) RedisReadinessScriptConfigMap() basereconciler.GeneratorFunction {
 	return func() client.Object {
 		return &corev1.ConfigMap{
 			TypeMeta: metav1.TypeMeta{

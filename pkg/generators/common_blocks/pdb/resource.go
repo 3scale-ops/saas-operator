@@ -2,7 +2,7 @@ package pdb
 
 import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	basereconciler_types "github.com/3scale/saas-operator/pkg/basereconciler/types"
+	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -12,7 +12,7 @@ import (
 // New returns a basereconciler_types.GeneratorFunction function that will return a PodDisruptionBudget
 // resource when called
 func New(key types.NamespacedName, labels map[string]string, selector map[string]string,
-	cfg saasv1alpha1.PodDisruptionBudgetSpec) basereconciler_types.GeneratorFunction {
+	cfg saasv1alpha1.PodDisruptionBudgetSpec) basereconciler.GeneratorFunction {
 
 	return func() client.Object {
 

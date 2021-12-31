@@ -19,6 +19,10 @@ package controllers
 import (
 	"context"
 
+	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	"github.com/3scale/saas-operator/pkg/generators/backend"
+	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
+	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	"github.com/go-logr/logr"
 	"github.com/redhat-cop/operator-utils/pkg/util"
 	corev1 "k8s.io/api/core/v1"
@@ -28,15 +32,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/basereconciler"
-	"github.com/3scale/saas-operator/pkg/generators/backend"
 )
 
 // BackendReconciler reconciles a Backend object
 type BackendReconciler struct {
-	basereconciler.Reconciler
+	workloads.WorkloadReconciler
 	Log logr.Logger
 }
 
@@ -66,8 +66,6 @@ func (r *BackendReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	// Apply defaults for reconcile but do not store them in the API
 	instance.Default()
-	// json, _ := json.Marshal(instance.Spec)
-	// log.V(1).Info("Apply defaults before resolving templates", "JSON", string(json))
 
 	gen, err := backend.NewGenerator(instance.GetName(), instance.GetNamespace(), instance.Spec)
 	if err != nil {
@@ -75,49 +73,46 @@ func (r *BackendReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	// Shared resources
-	resources := &basereconciler.ControlledResources{
-		SecretDefinitions: []basereconciler.SecretDefinition{
-			{Template: gen.SystemEventsHookSecretDefinition(), Enabled: true},
-			{Template: gen.InternalAPISecretDefinition(), Enabled: true},
-			{Template: gen.ErrorMonitoringSecretDefinition(),
-				Enabled: (instance.Spec.Config.ErrorMonitoringService != nil && instance.Spec.Config.ErrorMonitoringKey != nil)},
-		},
-		GrafanaDashboards: []basereconciler.GrafanaDashboard{{
-			Template: gen.GrafanaDashboard(),
-			Enabled:  !instance.Spec.GrafanaDashboard.IsDeactivated(),
-		}},
+	resources := []basereconciler.Resource{
+		gen.GrafanaDashboard(),
+		gen.ErrorMonitoringSecretDefinition(),
+		gen.InternalAPISecretDefinition(),
+		gen.SystemEventsHookSecretDefinition(),
 	}
 
-	// Listener workload resources
-	var listener *basereconciler.ControlledResources
+	// Listener resources
+	var listener_resources []basereconciler.Resource
 	if instance.Spec.Listener.Canary != nil {
-		listener, err = r.NewControlledResourcesFromDeploymentGenerator(ctx, &gen.Listener, &gen.Listener, gen.CanaryListener)
+		listener_resources, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen.Listener, &gen.Listener, gen.CanaryListener)
 	} else {
-		listener, err = r.NewControlledResourcesFromDeploymentGenerator(ctx, &gen.Listener, &gen.Listener)
+		listener_resources, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen.Listener, &gen.Listener)
 	}
 	if err != nil {
 		return r.ManageError(ctx, instance, err)
 	}
+	resources = append(resources, listener_resources...)
 
-	// Worker workload resources
-	var worker *basereconciler.ControlledResources
-	if instance.Spec.Worker.Canary != nil {
-		worker, err = r.NewControlledResourcesFromDeploymentGenerator(ctx, nil, &gen.Worker, gen.CanaryWorker)
+	// Worker resources
+	var worker_resources []basereconciler.Resource
+	if instance.Spec.Listener.Canary != nil {
+		worker_resources, err = r.NewDeploymentWorkload(ctx, instance, r.GetScheme(), &gen.Worker, gen.CanaryWorker)
 	} else {
-		worker, err = r.NewControlledResourcesFromDeploymentGenerator(ctx, nil, &gen.Worker)
+		worker_resources, err = r.NewDeploymentWorkload(ctx, instance, r.GetScheme(), &gen.Worker)
 	}
 	if err != nil {
 		return r.ManageError(ctx, instance, err)
 	}
+	resources = append(resources, worker_resources...)
 
-	// Cron workload resources
-	cron, err := r.NewControlledResourcesFromDeploymentGenerator(ctx, nil, &gen.Cron)
+	// Cron resources
+	cron_resources, err := r.NewDeploymentWorkload(ctx, instance, r.GetScheme(), &gen.Cron)
 	if err != nil {
 		return r.ManageError(ctx, instance, err)
 	}
+	resources = append(resources, cron_resources...)
 
 	// Reconcile all resources
-	err = r.ReconcileOwnedResources(ctx, instance, *resources.Add(listener).Add(worker).Add(cron))
+	err = r.ReconcileOwnedResources(ctx, instance, r.GetScheme(), resources)
 	if err != nil {
 		log.Error(err, "unable to reconcile owned resources")
 		return r.ManageError(ctx, instance, err)

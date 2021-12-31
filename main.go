@@ -40,7 +40,8 @@ import (
 	"github.com/3scale/saas-operator/controllers"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
 	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/basereconciler"
+	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
+	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	"github.com/3scale/saas-operator/pkg/version"
 	// +kubebuilder:scaffold:imports
 )
@@ -149,8 +150,8 @@ func main() {
 	}
 
 	if err = (&controllers.BackendReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("Backend"), false),
-		Log:        ctrl.Log.WithName("controllers").WithName("Backend"),
+		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("Backend"), false),
+		Log:                ctrl.Log.WithName("controllers").WithName("Backend"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Backend")
 		os.Exit(1)

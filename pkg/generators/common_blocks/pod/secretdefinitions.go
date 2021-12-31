@@ -5,14 +5,14 @@ import (
 	"reflect"
 
 	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
-	basereconciler_types "github.com/3scale/saas-operator/pkg/basereconciler/types"
+	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // GenerateSecretDefinitionFn generates a SecretDefinition
 func GenerateSecretDefinitionFn(name, namespace string, labels map[string]string,
-	opts interface{}) basereconciler_types.GeneratorFunction {
+	opts interface{}) basereconciler.GeneratorFunction {
 
 	return func() client.Object {
 		return &secretsmanagerv1alpha1.SecretDefinition{

@@ -22,8 +22,8 @@ import (
 	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/generators/redisshard"
+	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
 	"github.com/3scale/saas-operator/pkg/redis"
 	"github.com/3scale/saas-operator/pkg/redis/crud/client"
 	"github.com/go-logr/logr"

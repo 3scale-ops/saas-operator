@@ -3,35 +3,22 @@ package backend
 import (
 	"fmt"
 
-	basereconciler_types "github.com/3scale/saas-operator/pkg/basereconciler/types"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
 	"github.com/3scale/saas-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// Deployment returns a basereconciler_types.GeneratorFunction funtion that will return a Deployment
+// Deployment returns a basereconciler.GeneratorFunction funtion that will return a Deployment
 // resource when called
-func (gen *WorkerGenerator) Deployment() basereconciler_types.GeneratorFunction {
+func (gen *WorkerGenerator) deployment() func() *appsv1.Deployment {
 
-	return func() client.Object {
+	return func() *appsv1.Deployment {
 
 		dep := &appsv1.Deployment{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       "Deployment",
-				APIVersion: appsv1.SchemeGroupVersion.String(),
-			},
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      gen.GetComponent(),
-				Namespace: gen.Namespace,
-				Labels:    gen.GetLabels(),
-			},
 			Spec: appsv1.DeploymentSpec{
 				Replicas: gen.WorkerSpec.Replicas,
-				Selector: gen.Selector(),
 				Strategy: appsv1.DeploymentStrategy{
 					Type: appsv1.RollingUpdateDeploymentStrategyType,
 					RollingUpdate: &appsv1.RollingUpdateDeployment{
@@ -40,9 +27,6 @@ func (gen *WorkerGenerator) Deployment() basereconciler_types.GeneratorFunction 
 					},
 				},
 				Template: corev1.PodTemplateSpec{
-					ObjectMeta: metav1.ObjectMeta{
-						Labels: gen.LabelsWithSelector(),
-					},
 					Spec: corev1.PodSpec{
 						ImagePullSecrets: func() []corev1.LocalObjectReference {
 							if gen.Image.PullSecretName != nil {
@@ -67,7 +51,7 @@ func (gen *WorkerGenerator) Deployment() basereconciler_types.GeneratorFunction 
 								TerminationMessagePolicy: corev1.TerminationMessageReadFile,
 							},
 						},
-						Affinity:    pod.Affinity(gen.Selector().MatchLabels, gen.WorkerSpec.NodeAffinity),
+						Affinity:    pod.Affinity(gen.GetSelector(), gen.WorkerSpec.NodeAffinity),
 						Tolerations: gen.WorkerSpec.Tolerations,
 					},
 				},

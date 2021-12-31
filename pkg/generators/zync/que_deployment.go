@@ -3,8 +3,9 @@ package zync
 import (
 	"fmt"
 
-	basereconciler_types "github.com/3scale/saas-operator/pkg/basereconciler/types"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
+	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
+
 	"github.com/3scale/saas-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -14,9 +15,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// Deployment returns a basereconciler_types.GeneratorFunction funtion that will return a Deployment
+// Deployment returns a basereconciler.GeneratorFunction funtion that will return a Deployment
 // resource when called
-func (gen *QueGenerator) Deployment() basereconciler_types.GeneratorFunction {
+func (gen *QueGenerator) Deployment() basereconciler.GeneratorFunction {
 
 	return func() client.Object {
 
