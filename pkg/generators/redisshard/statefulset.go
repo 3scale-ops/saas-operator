@@ -13,7 +13,7 @@ import (
 	"k8s.io/utils/pointer"
 )
 
-// StatefulSet returns a basereconciler.GeneratorFunction function that will return
+// StatefulSet returns a function that will return
 // a StatefulSet resource when called
 func (gen *Generator) statefulSet() func() *appsv1.StatefulSet {
 

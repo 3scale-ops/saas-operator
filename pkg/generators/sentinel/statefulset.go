@@ -17,8 +17,8 @@ var (
 	healthCommand string = fmt.Sprintf("redis-cli -p %d PING", saasv1alpha1.SentinelPort)
 )
 
-// statefulSet returns a basereconciler.GeneratorFunction function that will return
-// a statefulSet resource when called
+// statefulSet returns a function that will return
+// a StatefulSet resource when called
 func (gen *Generator) statefulSet() func() *appsv1.StatefulSet {
 
 	return func() *appsv1.StatefulSet {

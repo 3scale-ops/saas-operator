@@ -194,10 +194,10 @@ type ListenerGenerator struct {
 	Traffic      bool
 }
 
-// Validate that ListenerGenerator implements basereconciler.DeploymentWorkloadGenerator interface
+// Validate that ListenerGenerator implements workloads.DeploymentWorkloadWithTraffic interface
 var _ workloads.DeploymentWorkloadWithTraffic = &ListenerGenerator{}
 
-// Validate that ListenerGenerator implements basereconciler.DeploymentWorkloadGenerator interface
+// Validate that ListenerGenerator implements workloads.TrafficManager interface
 var _ workloads.TrafficManager = &ListenerGenerator{}
 
 func (gen *ListenerGenerator) Labels() map[string]string {
@@ -229,8 +229,8 @@ func (gen *ListenerGenerator) MonitoredEndpoints() []monitoringv1.PodMetricsEndp
 }
 func (gen *ListenerGenerator) Services() []basereconciler_resources.ServiceTemplate {
 	return []basereconciler_resources.ServiceTemplate{
-		{Template: gen.Service(), IsEnabled: true},
-		{Template: gen.InternalService(), IsEnabled: true},
+		{Template: gen.service(), IsEnabled: true},
+		{Template: gen.internalService(), IsEnabled: true},
 	}
 }
 func (gen *ListenerGenerator) SendTraffic() bool { return gen.Traffic }
@@ -251,7 +251,7 @@ type WorkerGenerator struct {
 	Options    config.WorkerOptions
 }
 
-// Validate that WorkerGenerator implements basereconciler.DeploymentWorkloadGenerator interface
+// Validate that WorkerGenerator implements workloads.DeploymentWorkload interface
 var _ workloads.DeploymentWorkload = &WorkerGenerator{}
 
 func (gen *WorkerGenerator) Deployment() basereconciler_resources.DeploymentTemplate {
@@ -286,7 +286,7 @@ type CronGenerator struct {
 	Options  config.CronOptions
 }
 
-// Validate that CronGenerator implements basereconciler.DeploymentWorkloadGenerator interface
+// Validate that CronGenerator implements workloads.DeploymentWorkload interface
 var _ workloads.DeploymentWorkload = &CronGenerator{}
 
 func (gen *CronGenerator) Deployment() basereconciler_resources.DeploymentTemplate {

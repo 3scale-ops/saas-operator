@@ -6,7 +6,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// configMap returns a basereconciler.GeneratorFunction function that will return a configMap
+// configMap returns a function that will return a configMap
 // resource when called
 func (gen *Generator) configMap() func() *corev1.ConfigMap {
 

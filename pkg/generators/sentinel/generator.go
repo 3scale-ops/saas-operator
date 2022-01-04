@@ -37,6 +37,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SentinelSpec) Ge
 	}
 }
 
+// Returns all the resource templates that this generator manages
 func (gen *Generator) Resources() []basereconciler.Resource {
 	resources := []basereconciler.Resource{
 		basereconciler_resources.StatefulSetTemplate{

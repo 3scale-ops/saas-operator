@@ -11,7 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-// Deployment returns a basereconciler.GeneratorFunction funtion that will return a Deployment
+// Deployment returns a function that will return a Deployment
 // resource when called
 func (gen *WorkerGenerator) deployment() func() *appsv1.Deployment {
 

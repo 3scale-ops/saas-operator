@@ -7,9 +7,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-// Service returns a basereconciler.GeneratorFunction function that will return the
-// gateway Service resource when called
-func (gen *ListenerGenerator) Service() func() *corev1.Service {
+// service returns a function that will return the
+// public service resource when called
+func (gen *ListenerGenerator) service() func() *corev1.Service {
 
 	return func() *corev1.Service {
 
@@ -38,9 +38,9 @@ func (gen *ListenerGenerator) Service() func() *corev1.Service {
 	}
 }
 
-// InternalService returns a basereconciler.GeneratorFunction function that will return the
-// management Service resource when called
-func (gen *ListenerGenerator) InternalService() func() *corev1.Service {
+// internalService returns a function that will return the
+// internal Service resource when called
+func (gen *ListenerGenerator) internalService() func() *corev1.Service {
 
 	return func() *corev1.Service {
 

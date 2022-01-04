@@ -5,7 +5,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// Service returns a basereconciler.GeneratorFunction function that will return a Service
+// Service returns a function that will return a Service
 // resource when called
 func (gen *Generator) service() func() *corev1.Service {
 

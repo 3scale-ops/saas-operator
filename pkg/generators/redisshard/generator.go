@@ -37,10 +37,12 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.RedisShardSpec) 
 	}
 }
 
+// Returns the name of the StatefulSet headless Service
 func (gen *Generator) ServiceName() string {
 	return fmt.Sprintf("%s-%s", gen.GetComponent(), gen.GetInstanceName())
 }
 
+// Returns all the resource templates that this generator manages
 func (gen *Generator) Resources() []basereconciler.Resource {
 	return []basereconciler.Resource{
 		basereconciler_resources.StatefulSetTemplate{

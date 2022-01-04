@@ -6,7 +6,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// RedisConfigConfigMap returns a basereconciler.GeneratorFunction function that will return a ConfigMap
+// RedisConfigConfigMap returns a function that will return a ConfigMap
 // resource when called
 func (gen *Generator) redisConfigConfigMap() func() *corev1.ConfigMap {
 	return func() *corev1.ConfigMap {
@@ -28,7 +28,7 @@ func (gen *Generator) redisConfigConfigMap() func() *corev1.ConfigMap {
 	}
 }
 
-// RedisReadinessScriptConfigMap returns a basereconciler.GeneratorFunction function that will return a ConfigMap
+// RedisReadinessScriptConfigMap returns a function that will return a ConfigMap
 // resource when called
 func (gen *Generator) redisReadinessScriptConfigMap() func() *corev1.ConfigMap {
 	return func() *corev1.ConfigMap {
