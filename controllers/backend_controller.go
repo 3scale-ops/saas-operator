@@ -94,7 +94,7 @@ func (r *BackendReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	// Worker resources
 	var worker_resources []basereconciler.Resource
-	if instance.Spec.Listener.Canary != nil {
+	if instance.Spec.Worker.Canary != nil {
 		worker_resources, err = r.NewDeploymentWorkload(ctx, instance, r.GetScheme(), &gen.Worker, gen.CanaryWorker)
 	} else {
 		worker_resources, err = r.NewDeploymentWorkload(ctx, instance, r.GetScheme(), &gen.Worker)
