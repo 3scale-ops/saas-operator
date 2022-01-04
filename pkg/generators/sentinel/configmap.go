@@ -1,18 +1,16 @@
 package sentinel
 
 import (
-	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
 	"github.com/MakeNowJust/heredoc"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// ConfigMap returns a basereconciler.GeneratorFunction function that will return a ConfigMap
+// configMap returns a basereconciler.GeneratorFunction function that will return a configMap
 // resource when called
-func (gen *Generator) ConfigMap() basereconciler.GeneratorFunction {
+func (gen *Generator) configMap() func() *corev1.ConfigMap {
 
-	return func() client.Object {
+	return func() *corev1.ConfigMap {
 
 		return &corev1.ConfigMap{
 			TypeMeta: metav1.TypeMeta{

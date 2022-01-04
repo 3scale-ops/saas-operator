@@ -6,23 +6,22 @@ import (
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
-	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
+	"github.com/3scale/saas-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/pointer"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var (
 	healthCommand string = fmt.Sprintf("redis-cli -p %d PING", saasv1alpha1.SentinelPort)
 )
 
-// StatefulSet returns a basereconciler.GeneratorFunction function that will return
-// a StatefulSet resource when called
-func (gen *Generator) StatefulSet() basereconciler.GeneratorFunction {
+// statefulSet returns a basereconciler.GeneratorFunction function that will return
+// a statefulSet resource when called
+func (gen *Generator) statefulSet() func() *appsv1.StatefulSet {
 
-	return func() client.Object {
+	return func() *appsv1.StatefulSet {
 		return &appsv1.StatefulSet{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "StatefulSet",
@@ -36,14 +35,14 @@ func (gen *Generator) StatefulSet() basereconciler.GeneratorFunction {
 			Spec: appsv1.StatefulSetSpec{
 				PodManagementPolicy: appsv1.ParallelPodManagement,
 				Replicas:            gen.Spec.Replicas,
-				Selector:            gen.Selector(),
+				Selector:            &metav1.LabelSelector{MatchLabels: gen.GetSelector()},
 				ServiceName:         gen.GetComponent() + "-headless",
 				Template: corev1.PodTemplateSpec{
 					ObjectMeta: metav1.ObjectMeta{
-						Labels: gen.LabelsWithSelector(),
+						Labels: util.MergeMaps(gen.GetLabels(), gen.GetSelector()),
 					},
 					Spec: corev1.PodSpec{
-						Affinity:                     pod.Affinity(gen.Selector().MatchLabels, gen.Spec.NodeAffinity),
+						Affinity:                     pod.Affinity(gen.GetSelector(), gen.Spec.NodeAffinity),
 						AutomountServiceAccountToken: pointer.Bool(false),
 						ImagePullSecrets: func() []corev1.LocalObjectReference {
 							if gen.Spec.Image.PullSecretName != nil {

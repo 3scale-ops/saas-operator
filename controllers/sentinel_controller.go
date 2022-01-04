@@ -25,7 +25,7 @@ import (
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators/sentinel"
-	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
+	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
 	"github.com/3scale/saas-operator/pkg/redis"
 	redismetrics "github.com/3scale/saas-operator/pkg/redis/metrics"
 	"github.com/go-logr/logr"
@@ -97,8 +97,6 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	// Apply defaults for reconcile but do not store them in the API
 	instance.Default()
-	// json, _ := json.Marshal(instance.Spec)
-	// log.V(1).Info("Apply defaults before resolving templates", "JSON", string(json))
 
 	gen := sentinel.NewGenerator(
 		instance.GetName(),
@@ -106,29 +104,7 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		instance.Spec,
 	)
 
-	if err := r.ReconcileOwnedResources(ctx, instance, basereconciler.ControlledResources{
-		StatefulSets: []basereconciler.StatefulSet{{
-			Template:        gen.StatefulSet(),
-			RolloutTriggers: nil,
-			Enabled:         true,
-		}},
-		ConfigMaps: []basereconciler.ConfigMaps{{
-			Template: gen.ConfigMap(),
-			Enabled:  true,
-		}},
-		Services: func() []basereconciler.Service {
-			fns := append(gen.PodServices(), gen.StatefulSetService())
-			svcs := make([]basereconciler.Service, 0, len(fns))
-			for _, fn := range fns {
-				svcs = append(svcs, basereconciler.Service{Template: fn, Enabled: true})
-			}
-			return svcs
-		}(),
-		PodDisruptionBudgets: []basereconciler.PodDisruptionBudget{{
-			Template: gen.PDB(),
-			Enabled:  !instance.Spec.PDB.IsDeactivated(),
-		}},
-	}); err != nil {
+	if err := r.ReconcileOwnedResources(ctx, instance, r.GetScheme(), gen.Resources()); err != nil {
 		log.Error(err, "unable to update owned resources")
 		return r.ManageError(ctx, instance, err)
 	}
@@ -175,10 +151,8 @@ func (r *SentinelReconciler) ReconcileExporters(ctx context.Context, gen sentine
 
 	// Gather metrics for each sentinel replica
 	shouldRun := map[string]int{}
-	for i, fn := range gen.PodServices() {
-		svc := fn()
+	for i, sentinelURL := range gen.SentinelEndpoints(int(*gen.Spec.Replicas)) {
 		key := fmt.Sprintf("%s/%s/%d", gen.Namespace, gen.InstanceName, i)
-		sentinelURL := fmt.Sprintf("redis://%s.%s.svc.cluster.local:%d", svc.GetName(), svc.GetNamespace(), saasv1alpha1.SentinelPort)
 		shouldRun[key] = 1
 		r.metrics.RunExporter(ctx, key, sentinelURL, *gen.Spec.Config.MetricsRefreshInterval, log)
 	}
