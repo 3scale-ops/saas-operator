@@ -8,6 +8,20 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+var (
+	// DeploymentExcludedPaths is a list fo path to ignore for Deployment resources
+	StatefulSetExcludedPaths []string = []string{
+		"/metadata",
+		"/status",
+		"/spec/revisionHistoryLimit",
+		"/spec/template/spec/dnsPolicy",
+		"/spec/template/spec/restartPolicy",
+		"/spec/template/spec/schedulerName",
+		"/spec/template/spec/securityContext",
+		"/spec/template/spec/terminationGracePeriodSeconds",
+	}
+)
+
 var _ basereconciler.Resource = StatefulSetTemplate{}
 
 // StatefulSet specifies a StatefulSet resource and its rollout triggers
@@ -26,7 +40,7 @@ func (sst StatefulSetTemplate) Build(ctx context.Context, cl client.Client) (cli
 		return nil, nil, err
 	}
 
-	return ss, DefaultExcludedPaths, nil
+	return ss, StatefulSetExcludedPaths, nil
 }
 
 func (sst StatefulSetTemplate) Enabled() bool {

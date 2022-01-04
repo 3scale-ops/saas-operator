@@ -109,6 +109,12 @@ func (gen *Generator) statefulSet() func() *appsv1.StatefulSet {
 						},
 					},
 				},
+				UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
+					Type: appsv1.RollingUpdateStatefulSetStrategyType,
+					RollingUpdate: &appsv1.RollingUpdateStatefulSetStrategy{
+						Partition: pointer.Int32(0),
+					},
+				},
 			},
 		}
 	}

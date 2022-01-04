@@ -44,6 +44,7 @@ func (gen *Generator) statefulSet() func() *appsv1.StatefulSet {
 					Spec: corev1.PodSpec{
 						Affinity:                     pod.Affinity(gen.GetSelector(), gen.Spec.NodeAffinity),
 						AutomountServiceAccountToken: pointer.Bool(false),
+						DNSPolicy:                    corev1.DNSClusterFirst,
 						ImagePullSecrets: func() []corev1.LocalObjectReference {
 							if gen.Spec.Image.PullSecretName != nil {
 								return []corev1.LocalObjectReference{{Name: *gen.Spec.Image.PullSecretName}}
@@ -92,13 +93,16 @@ func (gen *Generator) statefulSet() func() *appsv1.StatefulSet {
 									Name: "POD_IP",
 									ValueFrom: &corev1.EnvVarSource{
 										FieldRef: &corev1.ObjectFieldSelector{
-											FieldPath: "status.podIP",
+											FieldPath:  "status.podIP",
+											APIVersion: corev1.SchemeGroupVersion.Version,
 										},
 									},
 								}},
-								Image:           fmt.Sprintf("%s:%s", *gen.Spec.Image.Name, *gen.Spec.Image.Tag),
-								ImagePullPolicy: *gen.Spec.Image.PullPolicy,
-								Name:            gen.GetComponent() + "-gen-config",
+								Image:                    fmt.Sprintf("%s:%s", *gen.Spec.Image.Name, *gen.Spec.Image.Tag),
+								ImagePullPolicy:          *gen.Spec.Image.PullPolicy,
+								Name:                     gen.GetComponent() + "-gen-config",
+								TerminationMessagePath:   corev1.TerminationMessagePathDefault,
+								TerminationMessagePolicy: corev1.TerminationMessageReadFile,
 								VolumeMounts: []corev1.VolumeMount{
 									{Name: gen.GetComponent() + "-gen-config", MountPath: "/redis-ro"},
 									{Name: gen.GetComponent() + "-config-rw", MountPath: "/redis"},
@@ -116,6 +120,12 @@ func (gen *Generator) statefulSet() func() *appsv1.StatefulSet {
 								}},
 						}},
 				},
+				UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
+					Type: appsv1.RollingUpdateStatefulSetStrategyType,
+					RollingUpdate: &appsv1.RollingUpdateStatefulSetStrategy{
+						Partition: pointer.Int32(0),
+					},
+				},
 				VolumeClaimTemplates: []corev1.PersistentVolumeClaim{{
 					TypeMeta: metav1.TypeMeta{
 						Kind:       "PersistentVolumeClaim",
@@ -130,6 +140,9 @@ func (gen *Generator) statefulSet() func() *appsv1.StatefulSet {
 						StorageClassName: gen.Spec.Config.StorageClass,
 						VolumeMode:       (*corev1.PersistentVolumeMode)(pointer.StringPtr(string(corev1.PersistentVolumeFilesystem))),
 						DataSource:       &corev1.TypedLocalObjectReference{},
+					},
+					Status: corev1.PersistentVolumeClaimStatus{
+						Phase: corev1.ClaimPending,
 					},
 				}},
 			},
