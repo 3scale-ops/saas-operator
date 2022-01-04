@@ -2,6 +2,7 @@ package backend
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
 	"github.com/3scale/saas-operator/pkg/util"
@@ -36,7 +37,7 @@ func (gen *WorkerGenerator) deployment() func() *appsv1.Deployment {
 						}(),
 						Containers: []corev1.Container{
 							{
-								Name:  gen.GetComponent(),
+								Name:  strings.Join([]string{component, worker}, "-"),
 								Image: fmt.Sprintf("%s:%s", *gen.Image.Name, *gen.Image.Tag),
 								Args:  []string{"bin/3scale_backend_worker", "run"},
 								Ports: pod.ContainerPorts(

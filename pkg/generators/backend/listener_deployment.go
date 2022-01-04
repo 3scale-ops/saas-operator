@@ -2,6 +2,7 @@ package backend
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/marin3r"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
@@ -37,7 +38,7 @@ func (gen *ListenerGenerator) deployment() func() *appsv1.Deployment {
 						}(),
 						Containers: []corev1.Container{
 							{
-								Name:  gen.GetComponent(),
+								Name:  strings.Join([]string{component, listener}, "-"),
 								Image: fmt.Sprintf("%s:%s", *gen.Image.Name, *gen.Image.Tag),
 								Args: func() (args []string) {
 									if *gen.ListenerSpec.Config.RedisAsync {
