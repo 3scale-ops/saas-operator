@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
+	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
 	"github.com/3scale/saas-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
