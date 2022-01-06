@@ -7,6 +7,7 @@ import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators"
 	"github.com/3scale/saas-operator/pkg/generators/backend/config"
+	"github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
 	basereconciler_resources "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/resources"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	"github.com/3scale/saas-operator/pkg/resource_builders/grafanadashboard"
@@ -21,6 +22,7 @@ const (
 	listener  string = "listener"
 	worker    string = "worker"
 	cron      string = "cron"
+	twemproxy string = "twemproxy"
 )
 
 // Generator configures the generators for Backend
@@ -31,8 +33,8 @@ type Generator struct {
 	Worker               WorkerGenerator
 	CanaryWorker         *WorkerGenerator
 	Cron                 CronGenerator
-	GrafanaDashboardSpec saasv1alpha1.GrafanaDashboardSpec
-	Config               saasv1alpha1.BackendConfig
+	grafanaDashboardSpec saasv1alpha1.GrafanaDashboardSpec
+	config               saasv1alpha1.BackendConfig
 }
 
 // NewGenerator returns a new Options struct
@@ -59,10 +61,11 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.BackendSpec) (Ge
 					"threescale_component_element": listener,
 				},
 			},
-			ListenerSpec: spec.Listener,
-			Image:        *spec.Image,
-			Options:      config.NewListenerOptions(spec),
-			Traffic:      true,
+			ListenerSpec:  spec.Listener,
+			Image:         *spec.Image,
+			Options:       config.NewListenerOptions(spec),
+			Traffic:       true,
+			TwemproxySpec: spec.Twemproxy,
 		},
 		Worker: WorkerGenerator{
 			BaseOptionsV2: generators.BaseOptionsV2{
@@ -75,9 +78,10 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.BackendSpec) (Ge
 					"threescale_component_element": worker,
 				},
 			},
-			WorkerSpec: *spec.Worker,
-			Image:      *spec.Image,
-			Options:    config.NewWorkerOptions(spec),
+			WorkerSpec:    *spec.Worker,
+			Image:         *spec.Image,
+			Options:       config.NewWorkerOptions(spec),
+			TwemproxySpec: spec.Twemproxy,
 		},
 		Cron: CronGenerator{
 			BaseOptionsV2: generators.BaseOptionsV2{
@@ -94,8 +98,8 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.BackendSpec) (Ge
 			Image:    *spec.Image,
 			Options:  config.NewCronOptions(spec),
 		},
-		GrafanaDashboardSpec: *spec.GrafanaDashboard,
-		Config:               spec.Config,
+		grafanaDashboardSpec: *spec.GrafanaDashboard,
+		config:               spec.Config,
 	}
 
 	if spec.Listener.Canary != nil {
@@ -114,10 +118,11 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.BackendSpec) (Ge
 					"threescale_component_element": "canary-" + listener,
 				},
 			},
-			ListenerSpec: canarySpec.Listener,
-			Image:        *canarySpec.Image,
-			Options:      config.NewListenerOptions(*canarySpec),
-			Traffic:      spec.Listener.Canary.SendTraffic,
+			ListenerSpec:  canarySpec.Listener,
+			Image:         *canarySpec.Image,
+			Options:       config.NewListenerOptions(*canarySpec),
+			Traffic:       spec.Listener.Canary.SendTraffic,
+			TwemproxySpec: canarySpec.Twemproxy,
 		}
 		// Disable PDB and HPA for the canary Deployment
 		generator.CanaryListener.ListenerSpec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
@@ -140,9 +145,10 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.BackendSpec) (Ge
 					"threescale_component_element": "canary-" + worker,
 				},
 			},
-			WorkerSpec: *canarySpec.Worker,
-			Image:      *canarySpec.Image,
-			Options:    config.NewWorkerOptions(*canarySpec),
+			WorkerSpec:    *canarySpec.Worker,
+			Image:         *canarySpec.Image,
+			Options:       config.NewWorkerOptions(*canarySpec),
+			TwemproxySpec: canarySpec.Twemproxy,
 		}
 		// Disable PDB and HPA for the canary Deployment
 		generator.CanaryWorker.WorkerSpec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
@@ -152,35 +158,27 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.BackendSpec) (Ge
 	return generator, nil
 }
 
-// GrafanaDashboard returns a basereconciler_resources.GrafanaDashboardTemplate
-func (gen *Generator) GrafanaDashboard() basereconciler_resources.GrafanaDashboardTemplate {
-	return basereconciler_resources.GrafanaDashboardTemplate{
-		Template:  grafanadashboard.New(gen.GetKey(), gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/backend.json.gtpl"),
-		IsEnabled: true,
-	}
-}
-
-// SystemEventsHookSecretDefinition returns a basereconciler_resources.SecretDefinitionTemplate
-func (gen *Generator) SystemEventsHookSecretDefinition() basereconciler_resources.SecretDefinitionTemplate {
-	return basereconciler_resources.SecretDefinitionTemplate{
-		Template:  pod.GenerateSecretDefinitionFn("backend-system-events-hook", gen.GetNamespace(), gen.GetLabels(), gen.Worker.Options),
-		IsEnabled: true,
-	}
-}
-
-// InternalAPISecretDefinition returns a basereconciler_resources.SecretDefinitionTemplate
-func (gen *Generator) InternalAPISecretDefinition() basereconciler_resources.SecretDefinitionTemplate {
-	return basereconciler_resources.SecretDefinitionTemplate{
-		Template:  pod.GenerateSecretDefinitionFn("backend-internal-api", gen.GetNamespace(), gen.GetLabels(), gen.Listener.Options),
-		IsEnabled: true,
-	}
-}
-
-// ErrorMonitoringSecretDefinition returns a basereconciler_resources.SecretDefinitionTemplate
-func (gen *Generator) ErrorMonitoringSecretDefinition() basereconciler_resources.SecretDefinitionTemplate {
-	return basereconciler_resources.SecretDefinitionTemplate{
-		Template:  pod.GenerateSecretDefinitionFn("backend-error-monitoring", gen.GetNamespace(), gen.GetLabels(), gen.Listener.Options),
-		IsEnabled: gen.Config.ErrorMonitoringKey != nil,
+// Resources returns functions to generate all Backend's shared resources
+func (gen *Generator) Resources() []basereconciler.Resource {
+	return []basereconciler.Resource{
+		// GrafanaDashboard
+		basereconciler_resources.GrafanaDashboardTemplate{
+			Template:  grafanadashboard.New(gen.GetKey(), gen.GetLabels(), gen.grafanaDashboardSpec, "dashboards/backend.json.gtpl"),
+			IsEnabled: true,
+		},
+		// SecretDefinitions
+		basereconciler_resources.SecretDefinitionTemplate{
+			Template:  pod.GenerateSecretDefinitionFn("backend-system-events-hook", gen.GetNamespace(), gen.GetLabels(), gen.Worker.Options),
+			IsEnabled: true,
+		},
+		basereconciler_resources.SecretDefinitionTemplate{
+			Template:  pod.GenerateSecretDefinitionFn("backend-internal-api", gen.GetNamespace(), gen.GetLabels(), gen.Listener.Options),
+			IsEnabled: true,
+		},
+		basereconciler_resources.SecretDefinitionTemplate{
+			Template:  pod.GenerateSecretDefinitionFn("backend-error-monitoring", gen.GetNamespace(), gen.GetLabels(), gen.Listener.Options),
+			IsEnabled: gen.config.ErrorMonitoringKey != nil,
+		},
 	}
 }
 
@@ -188,10 +186,11 @@ func (gen *Generator) ErrorMonitoringSecretDefinition() basereconciler_resources
 // Backend environment
 type ListenerGenerator struct {
 	generators.BaseOptionsV2
-	Image        saasv1alpha1.ImageSpec
-	ListenerSpec saasv1alpha1.ListenerSpec
-	Options      config.ListenerOptions
-	Traffic      bool
+	Image         saasv1alpha1.ImageSpec
+	ListenerSpec  saasv1alpha1.ListenerSpec
+	Options       config.ListenerOptions
+	Traffic       bool
+	TwemproxySpec *saasv1alpha1.TwemproxySpec
 }
 
 // Validate that ListenerGenerator implements workloads.DeploymentWorkloadWithTraffic interface
@@ -206,10 +205,12 @@ func (gen *ListenerGenerator) Labels() map[string]string {
 func (gen *ListenerGenerator) Deployment() basereconciler_resources.DeploymentTemplate {
 	return basereconciler_resources.DeploymentTemplate{
 		Template: gen.deployment(),
-		RolloutTriggers: []basereconciler_resources.RolloutTrigger{
-			{Name: "backend-internal-api", SecretName: pointer.String("backend-internal-api")},
-			{Name: "backend-error-monitoring", SecretName: pointer.String("backend-error-monitoring")},
-		},
+		RolloutTriggers: func() []basereconciler_resources.RolloutTrigger {
+			return []basereconciler_resources.RolloutTrigger{
+				{Name: "backend-internal-api", SecretName: pointer.String("backend-internal-api")},
+				{Name: "backend-error-monitoring", SecretName: pointer.String("backend-error-monitoring")},
+			}
+		}(),
 		EnforceReplicas: gen.ListenerSpec.HPA.IsDeactivated(),
 		IsEnabled:       true,
 	}
@@ -246,9 +247,10 @@ func (gen *ListenerGenerator) TrafficSelector() map[string]string {
 // Backend environment
 type WorkerGenerator struct {
 	generators.BaseOptionsV2
-	Image      saasv1alpha1.ImageSpec
-	WorkerSpec saasv1alpha1.WorkerSpec
-	Options    config.WorkerOptions
+	Image         saasv1alpha1.ImageSpec
+	WorkerSpec    saasv1alpha1.WorkerSpec
+	Options       config.WorkerOptions
+	TwemproxySpec *saasv1alpha1.TwemproxySpec
 }
 
 // Validate that WorkerGenerator implements workloads.DeploymentWorkload interface
@@ -257,10 +259,12 @@ var _ workloads.DeploymentWorkload = &WorkerGenerator{}
 func (gen *WorkerGenerator) Deployment() basereconciler_resources.DeploymentTemplate {
 	return basereconciler_resources.DeploymentTemplate{
 		Template: gen.deployment(),
-		RolloutTriggers: []basereconciler_resources.RolloutTrigger{
-			{Name: "backend-system-events-hook", SecretName: pointer.String("backend-system-events-hook")},
-			{Name: "backend-error-monitoring", SecretName: pointer.String("backend-error-monitoring")},
-		},
+		RolloutTriggers: func() []basereconciler_resources.RolloutTrigger {
+			return []basereconciler_resources.RolloutTrigger{
+				{Name: "backend-system-events-hook", SecretName: pointer.String("backend-system-events-hook")},
+				{Name: "backend-error-monitoring", SecretName: pointer.String("backend-error-monitoring")},
+			}
+		}(),
 		EnforceReplicas: gen.WorkerSpec.HPA.IsDeactivated(),
 		IsEnabled:       true,
 	}

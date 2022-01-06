@@ -67,6 +67,10 @@ func (gen *ListenerGenerator) deployment() func() *appsv1.Deployment {
 			dep = marin3r.EnableSidecar(*dep, *gen.ListenerSpec.Marin3r)
 		}
 
+		if gen.TwemproxySpec != nil {
+			dep = addTwemproxySidecar(*dep, gen.TwemproxySpec)
+		}
+
 		return dep
 	}
 }

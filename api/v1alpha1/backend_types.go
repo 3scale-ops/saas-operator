@@ -154,6 +154,10 @@ type BackendSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Cron *CronSpec `json:"cron,omitempty"`
+	// Configures twemproxy
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Twemproxy *TwemproxySpec `json:"twemproxy,omitempty"`
 }
 
 // Default implements defaulting for BackendSpec
@@ -171,12 +175,18 @@ func (spec *BackendSpec) Default() {
 	}
 	spec.Cron.Default()
 	spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(spec.GrafanaDashboard, backendDefaultGrafanaDashboard)
+	if spec.Twemproxy != nil {
+		spec.Twemproxy.Default()
+	}
 }
 
 // ResolveCanarySpec modifies the BackendSpec given the provided canary configuration
 func (spec *BackendSpec) ResolveCanarySpec(canary *Canary) (*BackendSpec, error) {
 	canarySpec := &BackendSpec{}
-	canary.PatchSpec(spec, canarySpec)
+	if err := canary.PatchSpec(spec, canarySpec); err != nil {
+		return nil, err
+	}
+
 	if canary.ImageName != nil {
 		canarySpec.Image.Name = canary.ImageName
 	}
