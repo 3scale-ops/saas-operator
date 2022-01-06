@@ -29,6 +29,8 @@ import (
 	"github.com/3scale/saas-operator/pkg/redis"
 	redismetrics "github.com/3scale/saas-operator/pkg/redis/metrics"
 	"github.com/go-logr/logr"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -90,7 +92,7 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	instance := &saasv1alpha1.Sentinel{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx, key, instance, saasv1alpha1.Finalizer, []func(){r.CleanupExporters(req.NamespacedName)}, log)
+	result, err := r.GetInstance(ctx, key, instance, saasv1alpha1.Finalizer, []func(){r.cleanupExporters(req.NamespacedName)}, log)
 	if result != nil || err != nil {
 		return *result, err
 	}
@@ -136,14 +138,20 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 	}
 
-	r.ReconcileExporters(ctx, gen, log.WithName("exporter"))
+	// Reconcilce sentinel exporters
+	r.reconcileExporters(ctx, gen, log.WithName("exporter"))
+
+	// Reconcile status of the Sentinel resource
+	if err := r.reconcileStatus(ctx, instance, &gen, log); err != nil {
+		return r.ManageError(ctx, instance, err)
+	}
 
 	return r.ManageSuccess(ctx, instance)
 }
 
-// ReconcileExporters ensures that all Pods within the statefulset have a running exporter. It also stops
+// reconcileExporters ensures that all Pods within the statefulset have a running exporter. It also stops
 // exporters for no longer running replicas (in the case the statefulset number of replicas is reduced)
-func (r *SentinelReconciler) ReconcileExporters(ctx context.Context, gen sentinel.Generator, log logr.Logger) {
+func (r *SentinelReconciler) reconcileExporters(ctx context.Context, gen sentinel.Generator, log logr.Logger) {
 
 	if r.metrics.exporters == nil {
 		r.metrics.exporters = map[string]*redismetrics.SentinelMetricsGatherer{}
@@ -168,9 +176,9 @@ func (r *SentinelReconciler) ReconcileExporters(ctx context.Context, gen sentine
 	}
 }
 
-// CleanupExporters stops all the exporters for this instance of the Sentinel custom resource
+// cleanupExporters stops all the exporters for this instance of the Sentinel custom resource
 // This is used as a cleanup function in the finalize phase of the controller loop.
-func (r *SentinelReconciler) CleanupExporters(instance types.NamespacedName) func() {
+func (r *SentinelReconciler) cleanupExporters(instance types.NamespacedName) func() {
 	return func() {
 		prefix := fmt.Sprintf("%s/%s/", instance.Namespace, instance.Name)
 		for key := range r.metrics.exporters {
@@ -179,6 +187,33 @@ func (r *SentinelReconciler) CleanupExporters(instance types.NamespacedName) fun
 			}
 		}
 	}
+}
+
+func (r *SentinelReconciler) reconcileStatus(ctx context.Context, instance *saasv1alpha1.Sentinel, gen *sentinel.Generator, log logr.Logger) error {
+	replicas := int(*gen.Spec.Replicas)
+	addressList := make([]string, 0, replicas)
+
+	for i := 0; i < replicas; i++ {
+		key := types.NamespacedName{Name: gen.PodServiceName(i), Namespace: instance.GetNamespace()}
+		svc := &corev1.Service{}
+		if err := r.GetClient().Get(ctx, key, svc); err != nil {
+			return err
+		}
+		addressList = append(addressList, fmt.Sprintf("%s:%d", svc.Spec.ClusterIP, saasv1alpha1.SentinelPort))
+	}
+
+	status := saasv1alpha1.SentinelStatus{
+		Sentinels: addressList,
+	}
+
+	if !equality.Semantic.DeepEqual(status, instance.Status) {
+		instance.Status = status
+		if err := r.GetClient().Status().Update(ctx, instance); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // SetupWithManager sets up the controller with the Manager.

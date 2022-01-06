@@ -16,7 +16,11 @@ spec:
     singular: sentinel
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - jsonPath: .status.sentinels
+      name: Sentinels
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: Sentinel is the Schema for the sentinels API
@@ -445,6 +449,12 @@ spec:
             type: object
           status:
             description: SentinelStatus defines the observed state of Sentinel
+            properties:
+              sentinels:
+                description: Addresses of the sentinel instances currently running
+                items:
+                  type: string
+                type: array
             type: object
         type: object
     served: true

@@ -161,13 +161,15 @@ func (spec *SentinelSpec) Default() {
 
 // SentinelStatus defines the observed state of Sentinel
 type SentinelStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// Addresses of the sentinel instances currently running
+	// +operator-sdk:csv:customresourcedefinitions:type=status
+	// +optional
+	Sentinels []string `json:"sentinels,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
-
+//+kubebuilder:printcolumn:JSONPath=".status.sentinels",name=Sentinels,type=string
 // Sentinel is the Schema for the sentinels API
 type Sentinel struct {
 	metav1.TypeMeta   `json:",inline"`
