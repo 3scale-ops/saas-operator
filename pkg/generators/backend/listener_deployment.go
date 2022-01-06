@@ -1,7 +1,6 @@
 package backend
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/3scale/saas-operator/pkg/resource_builders/marin3r"
@@ -30,16 +29,11 @@ func (gen *ListenerGenerator) deployment() func() *appsv1.Deployment {
 				},
 				Template: corev1.PodTemplateSpec{
 					Spec: corev1.PodSpec{
-						ImagePullSecrets: func() []corev1.LocalObjectReference {
-							if gen.Image.PullSecretName != nil {
-								return []corev1.LocalObjectReference{{Name: *gen.Image.PullSecretName}}
-							}
-							return nil
-						}(),
+						ImagePullSecrets: pod.ImagePullSecrets(gen.Image.PullSecretName),
 						Containers: []corev1.Container{
 							{
 								Name:  strings.Join([]string{component, listener}, "-"),
-								Image: fmt.Sprintf("%s:%s", *gen.Image.Name, *gen.Image.Tag),
+								Image: pod.Image(gen.Image),
 								Args: func() (args []string) {
 									if *gen.ListenerSpec.Config.RedisAsync {
 										args = []string{"bin/3scale_backend", "-s", "falcon", "start"}

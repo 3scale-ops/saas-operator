@@ -103,3 +103,14 @@ func ContainerPorts(ports ...corev1.ContainerPort) []corev1.ContainerPort {
 	list := []corev1.ContainerPort{}
 	return append(list, ports...)
 }
+
+func Image(image saasv1alpha1.ImageSpec) string {
+	return *image.Name + ":" + *image.Tag
+}
+
+func ImagePullSecrets(ips *string) []corev1.LocalObjectReference {
+	if ips != nil {
+		return []corev1.LocalObjectReference{{Name: *ips}}
+	}
+	return nil
+}
