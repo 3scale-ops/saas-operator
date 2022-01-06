@@ -50,10 +50,10 @@ func (dt DeploymentTemplate) Build(ctx context.Context, cl client.Client) (clien
 	}
 
 	if dt.EnforceReplicas {
-		return dep, DeploymentExcludedPaths, nil
+		return dep.DeepCopy(), DeploymentExcludedPaths, nil
 
 	} else {
-		return dep, append(DeploymentExcludedPaths, "/spec/replicas"), nil
+		return dep.DeepCopy(), append(DeploymentExcludedPaths, "/spec/replicas"), nil
 	}
 }
 

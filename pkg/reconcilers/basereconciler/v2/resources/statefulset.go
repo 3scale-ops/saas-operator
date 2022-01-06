@@ -40,7 +40,7 @@ func (sst StatefulSetTemplate) Build(ctx context.Context, cl client.Client) (cli
 		return nil, nil, err
 	}
 
-	return ss, StatefulSetExcludedPaths, nil
+	return ss.DeepCopy(), StatefulSetExcludedPaths, nil
 }
 
 func (sst StatefulSetTemplate) Enabled() bool {

@@ -25,7 +25,7 @@ func (sdt SecretDefinitionTemplate) Build(ctx context.Context, cl client.Client)
 
 	sd := sdt.Template()
 	sd.GetObjectKind().SetGroupVersionKind(secretsmanagerv1alpha1.GroupVersion.WithKind("SecretDefinition"))
-	return sd, DefaultExcludedPaths, nil
+	return sd.DeepCopy(), DefaultExcludedPaths, nil
 }
 
 func (sdt SecretDefinitionTemplate) Enabled() bool {
@@ -44,7 +44,7 @@ func (pdbt PodDisruptionBudgetTemplate) Build(ctx context.Context, cl client.Cli
 
 	pdb := pdbt.Template()
 	pdb.GetObjectKind().SetGroupVersionKind(policyv1beta1.SchemeGroupVersion.WithKind("PodDisruptionBudget"))
-	return pdb, DefaultExcludedPaths, nil
+	return pdb.DeepCopy(), DefaultExcludedPaths, nil
 }
 
 func (pdbt PodDisruptionBudgetTemplate) Enabled() bool {
@@ -63,7 +63,7 @@ func (hpat HorizontalPodAutoscalerTemplate) Build(ctx context.Context, cl client
 
 	hpa := hpat.Template()
 	hpa.GetObjectKind().SetGroupVersionKind(autoscalingv2beta2.SchemeGroupVersion.WithKind("HorizontalPodAutoscaler"))
-	return hpa, DefaultExcludedPaths, nil
+	return hpa.DeepCopy(), DefaultExcludedPaths, nil
 }
 
 func (hpat HorizontalPodAutoscalerTemplate) Enabled() bool {
@@ -82,7 +82,7 @@ func (pmt PodMonitorTemplate) Build(ctx context.Context, cl client.Client) (clie
 
 	pm := pmt.Template()
 	pm.GetObjectKind().SetGroupVersionKind(monitoringv1.SchemeGroupVersion.WithKind("PodMonitor"))
-	return pm, DefaultExcludedPaths, nil
+	return pm.DeepCopy(), DefaultExcludedPaths, nil
 }
 
 func (pmt PodMonitorTemplate) Enabled() bool {
@@ -101,7 +101,7 @@ func (gdt GrafanaDashboardTemplate) Build(ctx context.Context, cl client.Client)
 
 	gd := gdt.Template()
 	gd.GetObjectKind().SetGroupVersionKind(grafanav1alpha1.SchemeGroupVersion.WithKind("GrafanaDashboard"))
-	return gd, DefaultExcludedPaths, nil
+	return gd.DeepCopy(), DefaultExcludedPaths, nil
 }
 
 func (gdt GrafanaDashboardTemplate) Enabled() bool {
@@ -120,7 +120,7 @@ func (cmt ConfigMapTemplate) Build(ctx context.Context, cl client.Client) (clien
 
 	cm := cmt.Template()
 	cm.GetObjectKind().SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("ConfigMap"))
-	return cm, DefaultExcludedPaths, nil
+	return cm.DeepCopy(), DefaultExcludedPaths, nil
 }
 
 func (cmt ConfigMapTemplate) Enabled() bool {

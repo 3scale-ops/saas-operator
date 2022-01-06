@@ -27,7 +27,7 @@ func (st ServiceTemplate) Build(ctx context.Context, cl client.Client) (client.O
 		return nil, nil, err
 	}
 
-	return svc, serviceExcludes(svc), nil
+	return svc.DeepCopy(), serviceExcludes(svc), nil
 }
 
 func (dt ServiceTemplate) Enabled() bool {
