@@ -18,6 +18,7 @@ package v1alpha1
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 
 	jsonpatch "github.com/evanphx/json-patch"
@@ -631,21 +632,25 @@ type Canary struct {
 
 // PatchSpec returns a modified spec given the canary configuration
 func (c *Canary) PatchSpec(spec, canarySpec interface{}) error {
-	doc, _ := json.Marshal(spec)
+	doc, err := json.Marshal(spec)
+	if err != nil {
+		return fmt.Errorf("unable to marshal spec: '%s'", err.Error())
+	}
+
 	for _, p := range c.Patches {
 		patch, err := jsonpatch.DecodePatch([]byte(p))
 		if err != nil {
-			return err
+			return fmt.Errorf("unable to decode canary patch: '%s'", err.Error())
 		}
 
 		doc, err = patch.Apply([]byte(doc))
 		if err != nil {
-			return err
+			return fmt.Errorf("unable to apply canary patch: '%s'", err.Error())
 		}
 	}
 
 	if err := json.Unmarshal(doc, canarySpec); err != nil {
-		return err
+		return fmt.Errorf("unable to unmarshal spec: '%s'", err.Error())
 	}
 
 	return nil
