@@ -156,24 +156,24 @@ type BackendSpec struct {
 	Cron *CronSpec `json:"cron,omitempty"`
 }
 
-// Default implements defaulting for the Backend resource
-func (b *Backend) Default() {
+// Default implements defaulting for BackendSpec
+func (spec *BackendSpec) Default() {
 
-	b.Spec.Image = InitializeImageSpec(b.Spec.Image, backendDefaultImage)
-	b.Spec.Config.Default()
-	b.Spec.Listener.Default()
-	if b.Spec.Worker == nil {
-		b.Spec.Worker = &WorkerSpec{}
+	spec.Image = InitializeImageSpec(spec.Image, backendDefaultImage)
+	spec.Config.Default()
+	spec.Listener.Default()
+	if spec.Worker == nil {
+		spec.Worker = &WorkerSpec{}
 	}
-	b.Spec.Worker.Default()
-	if b.Spec.Cron == nil {
-		b.Spec.Cron = &CronSpec{}
+	spec.Worker.Default()
+	if spec.Cron == nil {
+		spec.Cron = &CronSpec{}
 	}
-	b.Spec.Cron.Default()
-	b.Spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(b.Spec.GrafanaDashboard, backendDefaultGrafanaDashboard)
+	spec.Cron.Default()
+	spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(spec.GrafanaDashboard, backendDefaultGrafanaDashboard)
 }
 
-// Default implements defaulting for the Backend resource
+// ResolveCanarySpec modifies the BackendSpec given the provided canary configuration
 func (spec *BackendSpec) ResolveCanarySpec(canary *Canary) (*BackendSpec, error) {
 	canarySpec := &BackendSpec{}
 	canary.PatchSpec(spec, canarySpec)
@@ -466,6 +466,11 @@ type Backend struct {
 
 	Spec   BackendSpec   `json:"spec,omitempty"`
 	Status BackendStatus `json:"status,omitempty"`
+}
+
+// Defaults impletements defaulting for the Apicast resource
+func (b *Backend) Default() {
+	b.Spec.Default()
 }
 
 // +kubebuilder:object:root=true

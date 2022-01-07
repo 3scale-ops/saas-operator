@@ -133,20 +133,20 @@ type ZyncSpec struct {
 	Que *QueSpec `json:"que,omitempty"`
 }
 
-// Default implements defaulting for the Zync resource
-func (z *Zync) Default() {
+// Default implements defaulting for ZyncSpec
+func (spec *ZyncSpec) Default() {
 
-	z.Spec.Image = InitializeImageSpec(z.Spec.Image, zyncDefaultImage)
-	z.Spec.Config.Default()
-	if z.Spec.API == nil {
-		z.Spec.API = &APISpec{}
+	spec.Image = InitializeImageSpec(spec.Image, zyncDefaultImage)
+	spec.Config.Default()
+	if spec.API == nil {
+		spec.API = &APISpec{}
 	}
-	z.Spec.API.Default()
-	if z.Spec.Que == nil {
-		z.Spec.Que = &QueSpec{}
+	spec.API.Default()
+	if spec.Que == nil {
+		spec.Que = &QueSpec{}
 	}
-	z.Spec.Que.Default()
-	z.Spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(z.Spec.GrafanaDashboard, zyncDefaultGrafanaDashboard)
+	spec.Que.Default()
+	spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(spec.GrafanaDashboard, zyncDefaultGrafanaDashboard)
 }
 
 // APISpec is the configuration for main Zync api component
@@ -320,6 +320,11 @@ type Zync struct {
 
 	Spec   ZyncSpec   `json:"spec,omitempty"`
 	Status ZyncStatus `json:"status,omitempty"`
+}
+
+// Default implements defaulting for the Zync resource
+func (z *Zync) Default() {
+	z.Spec.Default()
 }
 
 // +kubebuilder:object:root=true

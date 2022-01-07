@@ -146,17 +146,17 @@ type SentinelSpec struct {
 	Config *SentinelConfig `json:"config"`
 }
 
-// Default implements defaulting for the Sentinel resource
-func (s *Sentinel) Default() {
+// Default implements defaulting for SentinelSpec
+func (spec *SentinelSpec) Default() {
 
-	s.Spec.Image = InitializeImageSpec(s.Spec.Image, sentinelDefaultImage)
-	s.Spec.Replicas = intOrDefault(s.Spec.Replicas, &sentinelDefaultReplicas)
-	s.Spec.PDB = InitializePodDisruptionBudgetSpec(s.Spec.PDB, sentinelDefaultPDB)
-	s.Spec.Resources = InitializeResourceRequirementsSpec(s.Spec.Resources, sentinelDefaultResources)
-	s.Spec.LivenessProbe = InitializeProbeSpec(s.Spec.LivenessProbe, sentinelDefaultProbe)
-	s.Spec.ReadinessProbe = InitializeProbeSpec(s.Spec.ReadinessProbe, sentinelDefaultProbe)
-	s.Spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(s.Spec.GrafanaDashboard, sentinelDefaultGrafanaDashboard)
-	s.Spec.Config.Default()
+	spec.Image = InitializeImageSpec(spec.Image, sentinelDefaultImage)
+	spec.Replicas = intOrDefault(spec.Replicas, &sentinelDefaultReplicas)
+	spec.PDB = InitializePodDisruptionBudgetSpec(spec.PDB, sentinelDefaultPDB)
+	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, sentinelDefaultResources)
+	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, sentinelDefaultProbe)
+	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, sentinelDefaultProbe)
+	spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(spec.GrafanaDashboard, sentinelDefaultGrafanaDashboard)
+	spec.Config.Default()
 }
 
 // SentinelStatus defines the observed state of Sentinel
@@ -175,6 +175,11 @@ type Sentinel struct {
 
 	Spec   SentinelSpec   `json:"spec,omitempty"`
 	Status SentinelStatus `json:"status,omitempty"`
+}
+
+// Default implements defaulting for the Sentinel resource
+func (s *Sentinel) Default() {
+	s.Spec.Default()
 }
 
 //+kubebuilder:object:root=true

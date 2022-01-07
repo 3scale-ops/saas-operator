@@ -111,24 +111,24 @@ type CORSProxySpec struct {
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
 }
 
-// Default implements defaulting for the CORSProxy resource
-func (a *CORSProxy) Default() {
+// Default implements defaulting for CORSProxySpec
+func (spec *CORSProxySpec) Default() {
 
-	a.Spec.Image = InitializeImageSpec(a.Spec.Image, corsproxyDefaultImage)
-	a.Spec.HPA = InitializeHorizontalPodAutoscalerSpec(a.Spec.HPA, corsproxyDefaultHPA)
+	spec.Image = InitializeImageSpec(spec.Image, corsproxyDefaultImage)
+	spec.HPA = InitializeHorizontalPodAutoscalerSpec(spec.HPA, corsproxyDefaultHPA)
 
-	if a.Spec.HPA.IsDeactivated() {
-		a.Spec.Replicas = intOrDefault(a.Spec.Replicas, &corsproxyDefaultReplicas)
+	if spec.HPA.IsDeactivated() {
+		spec.Replicas = intOrDefault(spec.Replicas, &corsproxyDefaultReplicas)
 	} else {
-		a.Spec.Replicas = nil
+		spec.Replicas = nil
 	}
 
-	a.Spec.PDB = InitializePodDisruptionBudgetSpec(a.Spec.PDB, corsproxyDefaultPDB)
-	a.Spec.Resources = InitializeResourceRequirementsSpec(a.Spec.Resources, corsproxyDefaultResources)
-	a.Spec.LivenessProbe = InitializeProbeSpec(a.Spec.LivenessProbe, corsproxyDefaultProbe)
-	a.Spec.ReadinessProbe = InitializeProbeSpec(a.Spec.ReadinessProbe, corsproxyDefaultProbe)
-	a.Spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(a.Spec.GrafanaDashboard, corsproxyDefaultGrafanaDashboard)
-	a.Spec.Config.Default()
+	spec.PDB = InitializePodDisruptionBudgetSpec(spec.PDB, corsproxyDefaultPDB)
+	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, corsproxyDefaultResources)
+	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, corsproxyDefaultProbe)
+	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, corsproxyDefaultProbe)
+	spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(spec.GrafanaDashboard, corsproxyDefaultGrafanaDashboard)
+	spec.Config.Default()
 }
 
 // CORSProxyConfig defines configuration options for the component
@@ -154,6 +154,11 @@ type CORSProxy struct {
 
 	Spec   CORSProxySpec   `json:"spec,omitempty"`
 	Status CORSProxyStatus `json:"status,omitempty"`
+}
+
+// Default implements defaulting for the CORSProxy resource
+func (c *CORSProxy) Default() {
+	c.Spec.Default()
 }
 
 // +kubebuilder:object:root=true

@@ -131,25 +131,25 @@ type AutoSSLSpec struct {
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
 }
 
-// Default implements defaulting for the AutoSSL resource
-func (a *AutoSSL) Default() {
+// Default implements defaulting for AutoSSLSpec
+func (spec *AutoSSLSpec) Default() {
 
-	a.Spec.Image = InitializeImageSpec(a.Spec.Image, autosslDefaultImage)
-	a.Spec.HPA = InitializeHorizontalPodAutoscalerSpec(a.Spec.HPA, autosslDefaultHPA)
+	spec.Image = InitializeImageSpec(spec.Image, autosslDefaultImage)
+	spec.HPA = InitializeHorizontalPodAutoscalerSpec(spec.HPA, autosslDefaultHPA)
 
-	if a.Spec.HPA.IsDeactivated() {
-		a.Spec.Replicas = intOrDefault(a.Spec.Replicas, &autosslDefaultReplicas)
+	if spec.HPA.IsDeactivated() {
+		spec.Replicas = intOrDefault(spec.Replicas, &autosslDefaultReplicas)
 	} else {
-		a.Spec.Replicas = nil
+		spec.Replicas = nil
 	}
 
-	a.Spec.PDB = InitializePodDisruptionBudgetSpec(a.Spec.PDB, autosslDefaultPDB)
-	a.Spec.Resources = InitializeResourceRequirementsSpec(a.Spec.Resources, autosslDefaultResources)
-	a.Spec.LivenessProbe = InitializeProbeSpec(a.Spec.LivenessProbe, autosslDefaultProbe)
-	a.Spec.ReadinessProbe = InitializeProbeSpec(a.Spec.ReadinessProbe, autosslDefaultProbe)
-	a.Spec.LoadBalancer = InitializeLoadBalancerSpec(a.Spec.LoadBalancer, autosslDefaultLoadBalancer)
-	a.Spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(a.Spec.GrafanaDashboard, autosslDefaultGrafanaDashboard)
-	a.Spec.Config.Default()
+	spec.PDB = InitializePodDisruptionBudgetSpec(spec.PDB, autosslDefaultPDB)
+	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, autosslDefaultResources)
+	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, autosslDefaultProbe)
+	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, autosslDefaultProbe)
+	spec.LoadBalancer = InitializeLoadBalancerSpec(spec.LoadBalancer, autosslDefaultLoadBalancer)
+	spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(spec.GrafanaDashboard, autosslDefaultGrafanaDashboard)
+	spec.Config.Default()
 }
 
 // AutoSSLConfig defines configuration options for the component
@@ -218,6 +218,11 @@ type AutoSSL struct {
 
 	Spec   AutoSSLSpec   `json:"spec,omitempty"`
 	Status AutoSSLStatus `json:"status,omitempty"`
+}
+
+// Default implements defaulting for the AutoSSL resource
+func (a *AutoSSL) Default() {
+	a.Spec.Default()
 }
 
 // +kubebuilder:object:root=true

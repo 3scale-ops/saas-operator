@@ -45,11 +45,11 @@ type RedisShardSpec struct {
 	MasterIndex *int32 `json:"masterIndex,omitempty"`
 }
 
-// Default implements defaulting for the Sentinel resource
-func (rs *RedisShard) Default() {
+// Default implements defaulting for RedisShardSpec
+func (spec *RedisShardSpec) Default() {
 
-	rs.Spec.Image = InitializeImageSpec(rs.Spec.Image, redisShardDefaultImage)
-	rs.Spec.MasterIndex = intOrDefault(rs.Spec.MasterIndex, &redisShardDefaultMasterIndex)
+	spec.Image = InitializeImageSpec(spec.Image, redisShardDefaultImage)
+	spec.MasterIndex = intOrDefault(spec.MasterIndex, &redisShardDefaultMasterIndex)
 }
 
 type RedisShardNodes struct {
@@ -83,6 +83,11 @@ type RedisShard struct {
 
 	Spec   RedisShardSpec   `json:"spec,omitempty"`
 	Status RedisShardStatus `json:"status,omitempty"`
+}
+
+// Default implements defaulting for the RedisShard resource
+func (rs *RedisShard) Default() {
+	rs.Spec.Default()
 }
 
 //+kubebuilder:object:root=true

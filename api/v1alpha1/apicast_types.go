@@ -99,6 +99,15 @@ type ApicastSpec struct {
 	GrafanaDashboard *GrafanaDashboardSpec `json:"grafanaDashboard,omitempty"`
 }
 
+// Default implements defaulting for ApicastSpec
+func (spec *ApicastSpec) Default() {
+
+	spec.Staging.Default()
+	spec.Production.Default()
+	spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(spec.GrafanaDashboard, apicastDefaultGrafanaDashboard)
+
+}
+
 // ApicastEnvironmentSpec is the configuration for an Apicast environment
 type ApicastEnvironmentSpec struct {
 	// Image specification for the component
@@ -149,15 +158,6 @@ type ApicastEnvironmentSpec struct {
 	// If specified, the pod's tolerations.
 	// +optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
-}
-
-// Default implements defaulting for the Apicast resource
-func (a *Apicast) Default() {
-
-	a.Spec.Staging.Default()
-	a.Spec.Production.Default()
-	a.Spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(a.Spec.GrafanaDashboard, apicastDefaultGrafanaDashboard)
-
 }
 
 // Default implements defaulting for the each apicast environment
@@ -221,6 +221,11 @@ type Apicast struct {
 
 	Spec   ApicastSpec   `json:"spec,omitempty"`
 	Status ApicastStatus `json:"status,omitempty"`
+}
+
+// Default implements defaulting for the Apicast resource
+func (a *Apicast) Default() {
+	a.Spec.Default()
 }
 
 // +kubebuilder:object:root=true
