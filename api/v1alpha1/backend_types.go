@@ -186,6 +186,11 @@ func (spec *BackendSpec) ResolveCanarySpec(canary *Canary) (*BackendSpec, error)
 	canarySpec.Listener.Replicas = canary.Replicas
 	canarySpec.Worker.Replicas = canary.Replicas
 	canarySpec.Cron.Replicas = canary.Replicas
+
+	// Call Default() on the resolved canary spec to apply
+	// defaulting to potentially added fields
+	canarySpec.Default()
+
 	return canarySpec, nil
 }
 
