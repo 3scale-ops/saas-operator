@@ -18,6 +18,7 @@ type Generator struct {
 	generators.BaseOptionsV2
 	Image       saasv1alpha1.ImageSpec
 	MasterIndex int32
+	Replicas    int32
 }
 
 // NewGenerator returns a new Options struct
@@ -34,6 +35,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.RedisShardSpec) 
 		},
 		Image:       *spec.Image,
 		MasterIndex: *spec.MasterIndex,
+		Replicas:    *spec.SlaveCount + 1,
 	}
 }
 

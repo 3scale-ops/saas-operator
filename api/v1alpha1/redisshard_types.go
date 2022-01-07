@@ -43,6 +43,10 @@ type RedisShardSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	MasterIndex *int32 `json:"masterIndex,omitempty"`
+	// SlaveCount is the number of redis slaves
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	SlaveCount *int32 `json:"slaveCount,omitempty"`
 }
 
 // Default implements defaulting for RedisShardSpec
@@ -50,6 +54,7 @@ func (spec *RedisShardSpec) Default() {
 
 	spec.Image = InitializeImageSpec(spec.Image, redisShardDefaultImage)
 	spec.MasterIndex = intOrDefault(spec.MasterIndex, &redisShardDefaultMasterIndex)
+	spec.SlaveCount = intOrDefault(spec.SlaveCount, pointer.Int32(RedisShardDefaultReplicas-1))
 }
 
 type RedisShardNodes struct {
