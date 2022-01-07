@@ -21,6 +21,12 @@ type Generator struct {
 	Replicas    int32
 }
 
+// Override the GetSelector function as it needs to be different in this case
+// because there can be more than one redis-shard instance in the same namespace
+func (gen *Generator) GetSelector() map[string]string {
+	return map[string]string{"redis-shard": gen.GetInstanceName()}
+}
+
 // NewGenerator returns a new Options struct
 func NewGenerator(instance, namespace string, spec saasv1alpha1.RedisShardSpec) Generator {
 	return Generator{
