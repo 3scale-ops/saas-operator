@@ -20,6 +20,9 @@ spec:
     - jsonPath: .status.sentinels
       name: Sentinels
       type: string
+    - jsonPath: .status.monitoredShards
+      name: Shards
+      type: string
     name: v1alpha1
     schema:
       openAPIV3Schema:
@@ -450,6 +453,25 @@ spec:
           status:
             description: SentinelStatus defines the observed state of Sentinel
             properties:
+              monitoredShards:
+                description: MonitoredShards is the list of shards that the Sentinel
+                  resource is currently monitoring
+                items:
+                  description: MonitoredShard contains information of one of the shards
+                    monitored by the Sentinel resource
+                  properties:
+                    master:
+                      description: Master is the address of the master redis server
+                        of this shard, in the format "127.0.0.1:6379"
+                      type: string
+                    name:
+                      description: Name is the name of the redis shard
+                      type: string
+                  required:
+                  - master
+                  - name
+                  type: object
+                type: array
               sentinels:
                 description: Addresses of the sentinel instances currently running
                 items:

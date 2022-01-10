@@ -61,6 +61,21 @@ func (ss *SentinelServer) IsMonitoringShards(ctx context.Context, shards []strin
 	return true, nil
 }
 
+// IsMonitoringShards checks whether or all the shards in the passed list are being monitored by the SentinelServer
+func (ss *SentinelServer) MonitoredShards(ctx context.Context) (saasv1alpha1.MonitoredShards, error) {
+
+	sm, err := ss.CRUD.SentinelMasters(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	monitoredShards := make([]saasv1alpha1.MonitoredShard, 0, len(sm))
+	for _, s := range sm {
+		monitoredShards = append(monitoredShards, saasv1alpha1.MonitoredShard{Name: s.Name, Master: fmt.Sprintf("%s:%d", s.IP, s.Port)})
+	}
+	return monitoredShards, nil
+}
+
 // Monitor ensures that all the shards in the ShardedCluster object are monitored by the SentinelServer
 func (ss *SentinelServer) Monitor(ctx context.Context, shards ShardedCluster) ([]string, error) {
 	changed := []string{}

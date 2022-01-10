@@ -43,6 +43,7 @@ import (
 	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
 	basereconciler_v2 "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
+	"github.com/3scale/saas-operator/pkg/redis/events"
 	"github.com/3scale/saas-operator/pkg/version"
 	// +kubebuilder:scaffold:imports
 )
@@ -179,8 +180,9 @@ func main() {
 	/* BASERECONCILER_V2 BASED CONTROLLERS*/
 
 	if err = (&controllers.SentinelReconciler{
-		Reconciler: basereconciler_v2.NewFromManager(mgr, mgr.GetEventRecorderFor("Sentinel"), false),
-		Log:        ctrl.Log.WithName("controllers").WithName("Sentinel"),
+		Reconciler:     basereconciler_v2.NewFromManager(mgr, mgr.GetEventRecorderFor("Sentinel"), false),
+		SentinelEvents: events.NewSentinelEvents(),
+		Log:            ctrl.Log.WithName("controllers").WithName("Sentinel"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Sentinel")
 		os.Exit(1)
