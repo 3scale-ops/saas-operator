@@ -194,6 +194,14 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "RedisShard")
 		os.Exit(1)
 	}
+	if err = (&controllers.TwemproxyConfigReconciler{
+		Reconciler:     basereconciler_v2.NewFromManager(mgr, mgr.GetEventRecorderFor("TwemproxyConfig"), false),
+		SentinelEvents: events.NewSentinelEvents(),
+		Log:            ctrl.Log.WithName("controllers").WithName("TwemproxyConfig"),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "TwemproxyConfig")
+		os.Exit(1)
+	}
 
 	/* WORKLOADS RECONCILER BASED CONTROLLERS*/
 
@@ -204,6 +212,7 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Backend")
 		os.Exit(1)
 	}
+
 	// +kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("health", healthz.Ping); err != nil {

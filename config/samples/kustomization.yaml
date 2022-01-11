@@ -10,4 +10,5 @@ resources:
 - saas_v1alpha1_zync.yaml
 - saas_v1alpha1_sentinel.yaml
 - saas_v1alpha1_redisshard.yaml
+- saas_v1alpha1_twemproxyconfig.yaml
 # +kubebuilder:scaffold:manifestskustomizesamples

@@ -22,6 +22,7 @@ require (
 	k8s.io/client-go v0.21.2
 	k8s.io/utils v0.0.0-20210527160623-6fdb442a123b
 	sigs.k8s.io/controller-runtime v0.9.2
+	sigs.k8s.io/yaml v1.2.0
 )
 
 replace github.com/redhat-cop/operator-utils v1.3.1 => github.com/roivaz/operator-utils v0.0.0-20211230120243-92f66b884446

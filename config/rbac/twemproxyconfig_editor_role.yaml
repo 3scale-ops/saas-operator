@@ -1,0 +1,24 @@
+# permissions for end users to edit twemproxyconfigs.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: twemproxyconfig-editor-role
+rules:
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - twemproxyconfigs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - twemproxyconfigs/status
+  verbs:
+  - get
