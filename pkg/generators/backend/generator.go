@@ -304,4 +304,3 @@ func (gen *CronGenerator) PDBSpec() *saasv1alpha1.PodDisruptionBudgetSpec {
 	return &saasv1alpha1.PodDisruptionBudgetSpec{}
 }
 func (gen *CronGenerator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint { return nil }
-func (gen *CronGenerator) SendTraffic() bool                                     { return false }
