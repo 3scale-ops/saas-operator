@@ -26,6 +26,10 @@ Package v1alpha1 contains API Schema definitions for the saas v1alpha1 API group
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapilist[$$EchoAPIList$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservice[$$MappingService$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicelist[$$MappingServiceList$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshard[$$RedisShard$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshardlist[$$RedisShardList$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinel[$$Sentinel$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinellist[$$SentinelList$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-system[$$System$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemlist[$$SystemList$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zync[$$Zync$$]
@@ -478,6 +482,28 @@ CORSProxySpec defines the desired state of CORSProxy
 
 
 
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-canary"]
+==== Canary 
+
+Canary allows the definition of a canary Deployment
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`sendTraffic`* __boolean__ | SendTraffic controls if traffic is sent to the canary
+| *`imageName`* __string__ | ImageName to use for the canary Deployment
+| *`imageTag`* __string__ | ImageTag to use for the canary Deployment
+| *`replicas`* __integer__ | Number of replicas for the canary Deployment
+| *`patches`* __string array__ | Patches to apply for the canary Deployment. Patches are expected to be JSON documents as an RFC 6902 patches.
+|===
+
+
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-cronspec"]
 ==== CronSpec 
 
@@ -618,6 +644,7 @@ GrafanaDashboardSpec configures the Grafana Dashboard for the component
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backendspec[$$BackendSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelspec[$$SentinelSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]
 ****
@@ -673,6 +700,8 @@ ImageSpec defines the image for the component
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshardspec[$$RedisShardSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelspec[$$SentinelSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsphinxspec[$$SystemSphinxSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]
@@ -733,6 +762,7 @@ ListenerSpec is the configuration for Backend Listener
 | *`loadBalancer`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-nlbloadbalancerspec[$$NLBLoadBalancerSpec$$]__ | Configures the AWS Network load balancer for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
+| *`canary`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
 |===
 
 
@@ -913,6 +943,7 @@ PodDisruptionBudgetSpec defines the PDB for the component
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-quespec[$$QueSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelspec[$$SentinelSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
@@ -941,6 +972,7 @@ ProbeSpec specifies configuration for a probe
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-quespec[$$QueSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelspec[$$SentinelSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsphinxspec[$$SystemSphinxSpec$$]
@@ -1000,6 +1032,99 @@ RedHatCustomerPortalSpec has configuration for integration with Red Hat Customer
 |===
 
 
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshard"]
+==== RedisShard 
+
+RedisShard is the Schema for the redisshards API
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshardlist[$$RedisShardList$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
+| *`kind`* __string__ | `RedisShard`
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+
+| *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshardspec[$$RedisShardSpec$$]__ | 
+| *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshardstatus[$$RedisShardStatus$$]__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshardlist"]
+==== RedisShardList 
+
+RedisShardList contains a list of RedisShard
+
+
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
+| *`kind`* __string__ | `RedisShardList`
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+
+| *`items`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshard[$$RedisShard$$]__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshardnodes"]
+==== RedisShardNodes 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshardstatus[$$RedisShardStatus$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`master`* __string__ | Master is the node that acts as master role in the redis shard
+| *`slaves`* __string array__ | Slaves are the nodes that act as master role in the redis shard
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshardspec"]
+==== RedisShardSpec 
+
+RedisShardSpec defines the desired state of RedisShard
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshard[$$RedisShard$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
+| *`masterIndex`* __integer__ | MasterIndex is the StatefulSet Pod index of the redis server with the master role. The other Pods are slaves of the master one.
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshardstatus"]
+==== RedisShardStatus 
+
+RedisShardStatus defines the observed state of RedisShard
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshard[$$RedisShard$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`shardNodes`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshardnodes[$$RedisShardNodes$$]__ | ShardNodes describes the nodes in the redis shard
+|===
+
+
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisspec"]
 ==== RedisSpec 
 
@@ -1034,6 +1159,7 @@ ResourceRequirementsSpec defines the resource requirements for the component
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-quespec[$$QueSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelspec[$$SentinelSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsphinxspec[$$SystemSphinxSpec$$]
@@ -1118,6 +1244,94 @@ SegmentSpec has configuration for Segment integration
 | *`deletionToken`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Deletion token
 | *`writeKey`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Write key
 |===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinel"]
+==== Sentinel 
+
+Sentinel is the Schema for the sentinels API
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinellist[$$SentinelList$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
+| *`kind`* __string__ | `Sentinel`
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+
+| *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelspec[$$SentinelSpec$$]__ | 
+| *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelstatus[$$SentinelStatus$$]__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelconfig"]
+==== SentinelConfig 
+
+SentinelConfig defines configuration options for the component
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelspec[$$SentinelSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`monitoredShards`* __object (keys:string, values:string array)__ | Monitored shards indicates the redis servers that form part of each shard monitored by sentinel
+| *`storageClass`* __string__ | StorageClass is the storage class to be used for the persistent sentinel config file where the shards state is stored
+| *`storageSize`* __Quantity__ | StorageSize is the storage size to  provision for the persistent sentinel config file where the shards state is stored
+| *`metricsRefreshInterval`* __Duration__ | MetricsRefreshInterval determines the refresh interval for gahtering metrics from sentinel
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinellist"]
+==== SentinelList 
+
+SentinelList contains a list of Sentinel
+
+
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
+| *`kind`* __string__ | `SentinelList`
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+
+| *`items`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinel[$$Sentinel$$]__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelspec"]
+==== SentinelSpec 
+
+SentinelSpec defines the desired state of Sentinel
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinel[$$Sentinel$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
+| *`replicas`* __integer__ | Number of replicas (ignored if hpa is enabled) for the component
+| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
+| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
+| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+| *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
+| *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelconfig[$$SentinelConfig$$]__ | Config configures the sentinel process
+|===
+
+
 
 
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sidecarport"]
@@ -1493,6 +1707,7 @@ WorkerSpec is the configuration for Backend Worker
 | *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
+| *`canary`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
 |===
 
 
