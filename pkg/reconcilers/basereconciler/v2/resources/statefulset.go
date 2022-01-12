@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	// DeploymentExcludedPaths is a list fo path to ignore for Deployment resources
+	// StatefulSetExcludedPaths is a list fo path to ignore for StatefulSet resources
 	StatefulSetExcludedPaths []string = []string{
 		"/metadata",
 		"/status",
@@ -47,7 +47,7 @@ func (sst StatefulSetTemplate) Enabled() bool {
 	return sst.IsEnabled
 }
 
-// DeploymentWithRolloutTriggers returns the Deployment modified with the appropriate rollout triggers (annotations)
+// reconcileRolloutTriggers modifies the StatefulSet with the appropriate rollout triggers (annotations)
 func (sst StatefulSetTemplate) reconcileRolloutTriggers(ctx context.Context, cl client.Client, ss *appsv1.StatefulSet) error {
 
 	if ss.Spec.Template.ObjectMeta.Annotations == nil {

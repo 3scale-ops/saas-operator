@@ -61,8 +61,7 @@ func (dt DeploymentTemplate) Enabled() bool {
 	return dt.IsEnabled
 }
 
-// GetDeploymentReplicas returns the number of replicas for a deployment,
-// current value if HPA is enabled.
+// reconcileDeploymentReplicas reconciles the number of replicas of a Deployment
 func (dt DeploymentTemplate) reconcileDeploymentReplicas(ctx context.Context, cl client.Client, dep *appsv1.Deployment) error {
 
 	if dt.EnforceReplicas {
@@ -90,7 +89,7 @@ func (dt DeploymentTemplate) reconcileDeploymentReplicas(ctx context.Context, cl
 	return nil
 }
 
-// DeploymentWithRolloutTriggers returns the Deployment modified with the appropriate rollout triggers (annotations)
+// reconcileRolloutTriggers modifies the Deployment with the appropriate rollout triggers (annotations)
 func (dt DeploymentTemplate) reconcileRolloutTriggers(ctx context.Context, cl client.Client, dep *appsv1.Deployment) error {
 
 	if dep.Spec.Template.ObjectMeta.Annotations == nil {
