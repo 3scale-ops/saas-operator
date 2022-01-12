@@ -2,9 +2,9 @@ package events
 
 import (
 	"context"
-	"errors"
 	"strings"
 
+	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
 	"github.com/3scale/saas-operator/pkg/redis"
 	"github.com/go-logr/logr"
 	goredis "github.com/go-redis/redis/v8"
@@ -28,7 +28,7 @@ var (
 		prometheus.CounterOpts{
 			Name:      "failover_abort_no_good_slave_count",
 			Namespace: "saas_redis_sentinel",
-			Help:      "no-good-slave (https://redis.io/topics/sentinel#sentinel-api)",
+			Help:      "-failover-abort-no-good-slave (https://redis.io/topics/sentinel#sentinel-api)",
 		},
 		[]string{"sentinel", "shard"},
 	)
@@ -39,41 +39,52 @@ func init() {
 	metrics.Registry.MustRegister(switchMasterCount, failoverAbortNoGoodSlaveCount)
 }
 
+// SentinelEventWatcher implements RunnableThread
+var _ threads.RunnableThread = &SentinelEventWatcher{}
+
 type SentinelEventWatcher struct {
 	Instance      client.Object
 	SentinelURI   string
-	Log           logr.Logger
-	EventsCh      chan event.GenericEvent
 	ExportMetrics bool
+	eventsCh      chan event.GenericEvent
 	started       bool
 	cancel        context.CancelFunc
 	sentinel      *redis.SentinelServer
 }
 
+func (sew *SentinelEventWatcher) GetID() string {
+	return "#" + sew.SentinelURI
+}
+
 // IsStarted returns whether the metrics gatherer is running or not
-func (fw *SentinelEventWatcher) IsStarted() bool {
-	return fw.started
+func (sew *SentinelEventWatcher) IsStarted() bool {
+	return sew.started
+}
+
+func (sew *SentinelEventWatcher) SetChannel(ch chan event.GenericEvent) {
+	sew.eventsCh = ch
 }
 
 //Start starts metrics gatherer for sentinel
-func (fw *SentinelEventWatcher) Start(parentCtx context.Context) {
-	log := fw.Log.WithValues("sentinel", fw.SentinelURI)
-	if fw.started {
-		log.Error(errors.New("already started"), "the event watcher is already running")
-		return
+func (sew *SentinelEventWatcher) Start(parentCtx context.Context, l logr.Logger) error {
+	log := l.WithValues("sentinel", sew.SentinelURI)
+	if sew.started {
+		log.Info("the event watcher is already running")
+		return nil
+	}
+
+	var err error
+	sew.sentinel, err = redis.NewSentinelServerFromConnectionString(sew.SentinelURI, sew.SentinelURI)
+	if err != nil {
+		log.Error(err, "cannot create SentinelServer")
+		return err
 	}
 
 	go func() {
-		var err error
 		var ctx context.Context
-		ctx, fw.cancel = context.WithCancel(parentCtx)
+		ctx, sew.cancel = context.WithCancel(parentCtx)
 
-		fw.sentinel, err = redis.NewSentinelServerFromConnectionString(fw.SentinelURI, fw.SentinelURI)
-		if err != nil {
-			log.Error(err, "cannot create SentinelServer")
-		}
-
-		ch, closeWatch := fw.sentinel.CRUD.SentinelPSubscribe(ctx, "+switch-master", "-failover-abort-no-good-slave")
+		ch, closeWatch := sew.sentinel.CRUD.SentinelPSubscribe(ctx, "+switch-master", "-failover-abort-no-good-slave")
 		defer closeWatch()
 
 		log.Info("event watcher running")
@@ -83,20 +94,21 @@ func (fw *SentinelEventWatcher) Start(parentCtx context.Context) {
 
 			case msg := <-ch:
 				log.V(1).Info("received event from sentinel", "event", msg.String())
-				fw.EventsCh <- event.GenericEvent{Object: fw.Instance}
-				if fw.ExportMetrics {
-					fw.metricsFromEvent(msg)
+				sew.eventsCh <- event.GenericEvent{Object: sew.Instance}
+				if sew.ExportMetrics {
+					sew.metricsFromEvent(msg)
 				}
 
 			case <-ctx.Done():
 				log.Info("shutting down event watcher")
-				fw.started = false
+				sew.started = false
 				return
 			}
 		}
 	}()
 
-	fw.started = true
+	sew.started = true
+	return nil
 }
 
 // Stop stops the sentinel event watcher

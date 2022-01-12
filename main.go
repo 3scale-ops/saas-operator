@@ -42,8 +42,8 @@ import (
 	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
 	basereconciler_v2 "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
+	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
-	"github.com/3scale/saas-operator/pkg/redis/events"
 	"github.com/3scale/saas-operator/pkg/version"
 	// +kubebuilder:scaffold:imports
 )
@@ -181,7 +181,8 @@ func main() {
 
 	if err = (&controllers.SentinelReconciler{
 		Reconciler:     basereconciler_v2.NewFromManager(mgr, mgr.GetEventRecorderFor("Sentinel"), false),
-		SentinelEvents: events.NewSentinelEvents(),
+		SentinelEvents: threads.NewManager(),
+		Metrics:        threads.NewManager(),
 		Log:            ctrl.Log.WithName("controllers").WithName("Sentinel"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Sentinel")
@@ -196,7 +197,7 @@ func main() {
 	}
 	if err = (&controllers.TwemproxyConfigReconciler{
 		Reconciler:     basereconciler_v2.NewFromManager(mgr, mgr.GetEventRecorderFor("TwemproxyConfig"), false),
-		SentinelEvents: events.NewSentinelEvents(),
+		SentinelEvents: threads.NewManager(),
 		Log:            ctrl.Log.WithName("controllers").WithName("TwemproxyConfig"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TwemproxyConfig")

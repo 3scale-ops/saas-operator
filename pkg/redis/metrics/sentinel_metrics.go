@@ -2,13 +2,14 @@ package metrics
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
+	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
 	"github.com/3scale/saas-operator/pkg/redis"
 	"github.com/go-logr/logr"
 	"github.com/prometheus/client_golang/prometheus"
+	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
 )
 
@@ -81,15 +82,21 @@ func init() {
 	)
 }
 
+// SentinelEventWatcher implements RunnableThread
+var _ threads.RunnableThread = &SentinelMetricsGatherer{}
+
 // SentinelMetricsGatherer is used to export sentinel metrics, obtained
 // thrugh several admin commands, as prometheus metrics
 type SentinelMetricsGatherer struct {
 	RefreshInterval time.Duration
 	SentinelURI     string
-	Log             logr.Logger
 	started         bool
 	cancel          context.CancelFunc
 	sentinel        *redis.SentinelServer
+}
+
+func (fw *SentinelMetricsGatherer) GetID() string {
+	return "#" + fw.SentinelURI
 }
 
 // IsStarted returns whether the metrics gatherer is running or not
@@ -97,25 +104,30 @@ func (smg *SentinelMetricsGatherer) IsStarted() bool {
 	return smg.started
 }
 
+// SetChannel is required for SentinelMetricsGatherer to implement the RunnableThread
+// interface, but it actually does nothing with the channel.
+func (fw *SentinelMetricsGatherer) SetChannel(ch chan event.GenericEvent) {}
+
 //Start starts metrics gatherer for sentinel
-func (smg *SentinelMetricsGatherer) Start(parentCtx context.Context) {
-	log := smg.Log.WithValues("sentinel", smg.SentinelURI)
+func (smg *SentinelMetricsGatherer) Start(parentCtx context.Context, l logr.Logger) error {
+	log := l.WithValues("sentinel", smg.SentinelURI)
 	if smg.started {
-		log.Error(errors.New("already started"), "the metrics gatherer is already running")
-		return
+		log.Info("the metrics gatherer is already running")
+		return nil
+	}
+
+	var err error
+	smg.sentinel, err = redis.NewSentinelServerFromConnectionString(smg.SentinelURI, smg.SentinelURI)
+	if err != nil {
+		log.Error(err, "cannot create SentinelServer")
+		return err
 	}
 
 	go func() {
-		var err error
 		var ctx context.Context
 		ctx, smg.cancel = context.WithCancel(parentCtx)
 
 		ticker := time.NewTicker(smg.RefreshInterval)
-
-		smg.sentinel, err = redis.NewSentinelServerFromConnectionString(smg.SentinelURI, smg.SentinelURI)
-		if err != nil {
-			log.Error(err, "cannot create SentinelServer")
-		}
 
 		log.Info("sentinel metrics gatherer running")
 
@@ -136,6 +148,7 @@ func (smg *SentinelMetricsGatherer) Start(parentCtx context.Context) {
 	}()
 
 	smg.started = true
+	return nil
 }
 
 // Stop stops metrics gatherering for sentinel

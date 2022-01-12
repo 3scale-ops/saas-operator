@@ -18,10 +18,12 @@ package controllers
 
 import (
 	"context"
+	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators/twemproxyconfig"
 	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
+	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
 	"github.com/3scale/saas-operator/pkg/redis/events"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/types"
@@ -34,7 +36,7 @@ import (
 type TwemproxyConfigReconciler struct {
 	basereconciler.Reconciler
 	Log            logr.Logger
-	SentinelEvents events.SentinelEvents
+	SentinelEvents threads.Manager
 }
 
 // +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=twemproxyconfigs,verbs=get;list;watch;create;update;patch;delete
@@ -50,7 +52,7 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	instance := &saasv1alpha1.TwemproxyConfig{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
 	result, err := r.GetInstance(ctx, key, instance, saasv1alpha1.Finalizer,
-		[]func(){r.SentinelEvents.CleanupEventWatchers(instance)}, log)
+		[]func(){r.SentinelEvents.CleanupThreads(instance)}, log)
 	if result != nil || err != nil {
 		return *result, err
 	}
@@ -65,12 +67,19 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return r.ManageError(ctx, instance, err)
 	}
 
-	// Reconcile sentinel the event watcher
-	r.SentinelEvents.ReconcileEventWatchers(ctx, instance, gen.Spec.SentinelURIs, log.WithName("event-watcher"))
+	// Reconcile sentinel the event watchers
+	eventWatchers := make([]threads.RunnableThread, 0, len(gen.Spec.SentinelURIs))
+	for _, uri := range gen.Spec.SentinelURIs {
+		eventWatchers = append(eventWatchers, &events.SentinelEventWatcher{
+			Instance:      instance,
+			SentinelURI:   uri,
+			ExportMetrics: false,
+		})
+	}
+	r.SentinelEvents.ReconcileThreads(ctx, instance, eventWatchers, log.WithName("event-watcher"))
 
-	// Always requeue in case some event is lost ...
-	return ctrl.Result{}, nil
-	// return ctrl.Result{RequeueAfter: 30 * time.Second}, nil
+	// Reconcile periodically in case some event is lost ...
+	return ctrl.Result{RequeueAfter: 30 * time.Second}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
@@ -78,6 +87,6 @@ func (r *TwemproxyConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&saasv1alpha1.TwemproxyConfig{}).
 		Watches(&source.Channel{Source: r.GetStatusChangeChannel()}, &handler.EnqueueRequestForObject{}).
-		Watches(&source.Channel{Source: r.SentinelEvents.GetSentinelEventsChannel()}, &handler.EnqueueRequestForObject{}).
+		Watches(&source.Channel{Source: r.SentinelEvents.GetChannel()}, &handler.EnqueueRequestForObject{}).
 		Complete(r)
 }

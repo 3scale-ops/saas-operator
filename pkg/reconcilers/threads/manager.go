@@ -38,6 +38,7 @@ func NewManager() Manager {
 // RunThread runs thread and associates it with a given key so it can later be stopped
 func (mgr *Manager) RunThread(ctx context.Context, thread RunnableThread, log logr.Logger) error {
 	key := thread.GetID()
+	thread.SetChannel(mgr.channel)
 	// run the exporter for this instance if it is not running, do nothing otherwise
 	if w, ok := mgr.threads[key]; !ok || !w.IsStarted() {
 		mgr.mu.Lock()

@@ -19,16 +19,14 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"strings"
-	"sync"
-	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators/sentinel"
 	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
+	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
 	"github.com/3scale/saas-operator/pkg/redis"
 	"github.com/3scale/saas-operator/pkg/redis/events"
-	redismetrics "github.com/3scale/saas-operator/pkg/redis/metrics"
+	"github.com/3scale/saas-operator/pkg/redis/metrics"
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -38,44 +36,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-// SentinelMetrics holds a map of SentinelMetricsGatherer to keep track
-// of which sentinel pods already have a running exporter
-type SentinelMetrics struct {
-	mu        sync.Mutex
-	exporters map[string]*redismetrics.SentinelMetricsGatherer
-}
-
-// RunExporter runs a SentinelMetricsGatherer for the given key. The key should uniquely identify a Pod's exporter.
-func (sm *SentinelMetrics) RunExporter(ctx context.Context, key string, sentinelURI string,
-	refreshInterval time.Duration, log logr.Logger) {
-
-	// run the exporter for this instance if it is not running, do nothing otherwise
-	if _, ok := sm.exporters[key]; !ok {
-		sm.mu.Lock()
-		sm.exporters[key] = &redismetrics.SentinelMetricsGatherer{
-			RefreshInterval: refreshInterval,
-			SentinelURI:     sentinelURI,
-			Log:             log,
-		}
-		sm.exporters[key].Start(ctx)
-		sm.mu.Unlock()
-	}
-}
-
-// StopExporter stops the exporter for the given key
-func (sm *SentinelMetrics) StopExporter(key string) {
-	sm.mu.Lock()
-	sm.exporters[key].Stop()
-	delete(sm.exporters, key)
-	sm.mu.Unlock()
-}
-
 // SentinelReconciler reconciles a Sentinel object
 type SentinelReconciler struct {
 	basereconciler.Reconciler
 	Log            logr.Logger
-	SentinelEvents events.SentinelEvents
-	metrics        SentinelMetrics
+	SentinelEvents threads.Manager
+	Metrics        threads.Manager
 }
 
 // +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=sentinels,verbs=get;list;watch;create;update;patch;delete
@@ -98,7 +64,7 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		key,
 		instance,
 		saasv1alpha1.Finalizer,
-		[]func(){r.SentinelEvents.CleanupEventWatchers(instance), r.cleanupExporters(req.NamespacedName)},
+		[]func(){r.SentinelEvents.CleanupThreads(instance), r.Metrics.CleanupThreads(instance)},
 		log)
 	if result != nil || err != nil {
 		return *result, err
@@ -145,11 +111,26 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 	}
 
-	// Reconcile sentinel the event watcher
-	r.SentinelEvents.ReconcileEventWatchers(ctx, instance, gen.SentinelEndpoints(int(*gen.Spec.Replicas)), log.WithName("event-watcher"))
-
-	// Reconcilce sentinel exporters
-	r.reconcileExporters(ctx, gen, log.WithName("exporter"))
+	// Reconcile sentinel the event watchers and metrics gatherers
+	eventWatchers := make([]threads.RunnableThread, 0, len(gen.SentinelURIs()))
+	metricsGatherers := make([]threads.RunnableThread, 0, len(gen.SentinelURIs()))
+	for _, uri := range gen.SentinelURIs() {
+		eventWatchers = append(eventWatchers, &events.SentinelEventWatcher{
+			Instance:      instance,
+			SentinelURI:   uri,
+			ExportMetrics: true,
+		})
+		metricsGatherers = append(metricsGatherers, &metrics.SentinelMetricsGatherer{
+			RefreshInterval: *gen.Spec.Config.MetricsRefreshInterval,
+			SentinelURI:     uri,
+		})
+	}
+	if err := r.SentinelEvents.ReconcileThreads(ctx, instance, eventWatchers, log.WithName("event-watcher")); err != nil {
+		return r.ManageError(ctx, instance, err)
+	}
+	if err := r.Metrics.ReconcileThreads(ctx, instance, metricsGatherers, log.WithName("metrics-gatherer")); err != nil {
+		return r.ManageError(ctx, instance, err)
+	}
 
 	// Reconcile status of the Sentinel resource
 	if err := r.reconcileStatus(ctx, instance, &gen, log); err != nil {
@@ -157,46 +138,6 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	return r.ManageSuccess(ctx, instance)
-}
-
-// reconcileExporters ensures that all Pods within the statefulset have a running exporter. It also stops
-// exporters for no longer running replicas (in the case the statefulset number of replicas is reduced)
-func (r *SentinelReconciler) reconcileExporters(ctx context.Context, gen sentinel.Generator, log logr.Logger) {
-
-	if r.metrics.exporters == nil {
-		r.metrics.exporters = map[string]*redismetrics.SentinelMetricsGatherer{}
-	}
-
-	// Gather metrics for each sentinel replica
-	shouldRun := map[string]int{}
-	for i, sentinelURI := range gen.SentinelEndpoints(int(*gen.Spec.Replicas)) {
-		key := fmt.Sprintf("%s/%s/%d", gen.Namespace, gen.InstanceName, i)
-		shouldRun[key] = 1
-		r.metrics.RunExporter(ctx, key, sentinelURI, *gen.Spec.Config.MetricsRefreshInterval, log)
-	}
-
-	// Stop gathering metrics for any sentinel replica that does not exist anymore
-	for key := range r.metrics.exporters {
-
-		if strings.Contains(key, fmt.Sprintf("%s/%s/", gen.Namespace, gen.InstanceName)) {
-			if _, ok := shouldRun[key]; !ok {
-				r.metrics.StopExporter(key)
-			}
-		}
-	}
-}
-
-// cleanupExporters stops all the exporters for this instance of the Sentinel custom resource
-// This is used as a cleanup function in the finalize phase of the controller loop.
-func (r *SentinelReconciler) cleanupExporters(instance types.NamespacedName) func() {
-	return func() {
-		prefix := fmt.Sprintf("%s/%s/", instance.Namespace, instance.Name)
-		for key := range r.metrics.exporters {
-			if strings.Contains(key, prefix) {
-				r.metrics.StopExporter(key)
-			}
-		}
-	}
 }
 
 func (r *SentinelReconciler) reconcileStatus(ctx context.Context, instance *saasv1alpha1.Sentinel, gen *sentinel.Generator, log logr.Logger) error {
@@ -243,6 +184,6 @@ func (r *SentinelReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&saasv1alpha1.Sentinel{}).
 		Watches(&source.Channel{Source: r.GetStatusChangeChannel()}, &handler.EnqueueRequestForObject{}).
-		Watches(&source.Channel{Source: r.SentinelEvents.GetSentinelEventsChannel()}, &handler.EnqueueRequestForObject{}).
+		Watches(&source.Channel{Source: r.SentinelEvents.GetChannel()}, &handler.EnqueueRequestForObject{}).
 		Complete(r)
 }
