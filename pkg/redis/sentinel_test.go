@@ -265,7 +265,7 @@ func TestSentinelServer_MonitoredShards(t *testing.T) {
 		name    string
 		ss      *SentinelServer
 		args    args
-		want    []saasv1alpha1.MonitoredShard
+		want    saasv1alpha1.MonitoredShards
 		wantErr bool
 	}{
 		{
@@ -285,7 +285,7 @@ func TestSentinelServer_MonitoredShards(t *testing.T) {
 			args: args{
 				ctx: context.TODO(),
 			},
-			want: []saasv1alpha1.MonitoredShard{
+			want: saasv1alpha1.MonitoredShards{
 				{Name: "shard01", Master: "127.0.0.1:6379"},
 				{Name: "shard02", Master: "127.0.0.2:6379"},
 			},
