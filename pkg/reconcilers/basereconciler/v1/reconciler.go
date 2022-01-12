@@ -15,7 +15,9 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
 var (
@@ -57,18 +59,8 @@ type Reconciler struct {
 // NewFromManager constructs a new Reconciler from the given manager
 func NewFromManager(mgr manager.Manager, recorder record.EventRecorder, clusterWatchers bool) Reconciler {
 	return Reconciler{
-		EnforcingReconciler: lockedresourcecontroller.NewFromManager(mgr, recorder, clusterWatchers, false),
+		EnforcingReconciler: lockedresourcecontroller.NewFromManager(mgr, recorder, clusterWatchers),
 	}
-}
-
-// GeneratorFunction is a function that returns a client.Object
-type GeneratorFunction func() client.Object
-
-// LockedResource is a struct that instructs the reconciler how to
-// generate and reconcile a resource
-type LockedResource struct {
-	GeneratorFn  GeneratorFunction
-	ExcludePaths []string
 }
 
 // GetInstance tries to retrieve the custom resource instance and perform some standard
@@ -184,4 +176,26 @@ func newUnstructured(fn GeneratorFunction, owner client.Object, scheme *runtime.
 		return unstructured.Unstructured{}, err
 	}
 	return unstructured.Unstructured{Object: u}, nil
+}
+
+// SecretEventHandler returns an EventHandler for the specific ExtendedObjectList
+// list object passed as parameter
+func (r *Reconciler) SecretEventHandler(ol ExtendedObjectList, logger logr.Logger) handler.EventHandler {
+	return handler.EnqueueRequestsFromMapFunc(
+		func(o client.Object) []reconcile.Request {
+			if err := r.GetClient().List(context.TODO(), ol); err != nil {
+				logger.Error(err, "unable to retrieve the list of resources")
+				return []reconcile.Request{}
+			}
+			if ol.CountItems() == 0 {
+				return []reconcile.Request{}
+			}
+
+			key := types.NamespacedName{
+				Name:      ol.GetItem(0).GetName(),
+				Namespace: ol.GetItem(0).GetNamespace(),
+			}
+			return []reconcile.Request{{NamespacedName: key}}
+		},
+	)
 }

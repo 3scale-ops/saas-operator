@@ -119,24 +119,24 @@ type MappingServiceSpec struct {
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
 }
 
-// Default implements defaulting for the MappingService resource
-func (ms *MappingService) Default() {
+// Default implements defaulting for MappingServiceSpec
+func (spec *MappingServiceSpec) Default() {
 
-	ms.Spec.Image = InitializeImageSpec(ms.Spec.Image, mappingserviceDefaultImage)
-	ms.Spec.HPA = InitializeHorizontalPodAutoscalerSpec(ms.Spec.HPA, mappingserviceDefaultHPA)
+	spec.Image = InitializeImageSpec(spec.Image, mappingserviceDefaultImage)
+	spec.HPA = InitializeHorizontalPodAutoscalerSpec(spec.HPA, mappingserviceDefaultHPA)
 
-	if ms.Spec.HPA.IsDeactivated() {
-		ms.Spec.Replicas = intOrDefault(ms.Spec.Replicas, &mappingserviceDefaultReplicas)
+	if spec.HPA.IsDeactivated() {
+		spec.Replicas = intOrDefault(spec.Replicas, &mappingserviceDefaultReplicas)
 	} else {
-		ms.Spec.Replicas = nil
+		spec.Replicas = nil
 	}
 
-	ms.Spec.PDB = InitializePodDisruptionBudgetSpec(ms.Spec.PDB, mappingserviceDefaultPDB)
-	ms.Spec.Resources = InitializeResourceRequirementsSpec(ms.Spec.Resources, mappingserviceDefaultResources)
-	ms.Spec.LivenessProbe = InitializeProbeSpec(ms.Spec.LivenessProbe, mappingserviceLivenessDefaultProbe)
-	ms.Spec.ReadinessProbe = InitializeProbeSpec(ms.Spec.ReadinessProbe, mappingserviceReadinessDefaultProbe)
-	ms.Spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(ms.Spec.GrafanaDashboard, mappingserviceDefaultGrafanaDashboard)
-	ms.Spec.Config.Default()
+	spec.PDB = InitializePodDisruptionBudgetSpec(spec.PDB, mappingserviceDefaultPDB)
+	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, mappingserviceDefaultResources)
+	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, mappingserviceLivenessDefaultProbe)
+	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, mappingserviceReadinessDefaultProbe)
+	spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(spec.GrafanaDashboard, mappingserviceDefaultGrafanaDashboard)
+	spec.Config.Default()
 }
 
 // MappingServiceConfig configures app behavior for MappingService
@@ -180,6 +180,11 @@ type MappingService struct {
 
 	Spec   MappingServiceSpec   `json:"spec,omitempty"`
 	Status MappingServiceStatus `json:"status,omitempty"`
+}
+
+// Default implements defaulting for the MappingService resource
+func (ms *MappingService) Default() {
+	ms.Spec.Default()
 }
 
 // +kubebuilder:object:root=true

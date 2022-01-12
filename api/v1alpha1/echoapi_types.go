@@ -122,24 +122,24 @@ type EchoAPISpec struct {
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
 }
 
-// Default implements defaulting for the EchoAPI resource
-func (e *EchoAPI) Default() {
+// Default implements defaulting for EchoAPI
+func (spec *EchoAPISpec) Default() {
 
-	e.Spec.Image = InitializeImageSpec(e.Spec.Image, echoapiDefaultImage)
-	e.Spec.HPA = InitializeHorizontalPodAutoscalerSpec(e.Spec.HPA, echoapiDefaultHPA)
+	spec.Image = InitializeImageSpec(spec.Image, echoapiDefaultImage)
+	spec.HPA = InitializeHorizontalPodAutoscalerSpec(spec.HPA, echoapiDefaultHPA)
 
-	if e.Spec.HPA.IsDeactivated() {
-		e.Spec.Replicas = intOrDefault(e.Spec.Replicas, &echoapiDefaultReplicas)
+	if spec.HPA.IsDeactivated() {
+		spec.Replicas = intOrDefault(spec.Replicas, &echoapiDefaultReplicas)
 	} else {
-		e.Spec.Replicas = nil
+		spec.Replicas = nil
 	}
 
-	e.Spec.PDB = InitializePodDisruptionBudgetSpec(e.Spec.PDB, echoapiDefaultPDB)
-	e.Spec.Resources = InitializeResourceRequirementsSpec(e.Spec.Resources, echoapiDefaultResources)
-	e.Spec.LivenessProbe = InitializeProbeSpec(e.Spec.LivenessProbe, echoapiDefaultLivenessProbe)
-	e.Spec.ReadinessProbe = InitializeProbeSpec(e.Spec.ReadinessProbe, echoapiDefaultReadinessProbe)
-	e.Spec.Marin3r = InitializeMarin3rSidecarSpec(e.Spec.Marin3r, echoapiDefaultMarin3rSpec)
-	e.Spec.LoadBalancer = InitializeNLBLoadBalancerSpec(e.Spec.LoadBalancer, echoapiDefaultNLBLoadBalancer)
+	spec.PDB = InitializePodDisruptionBudgetSpec(spec.PDB, echoapiDefaultPDB)
+	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, echoapiDefaultResources)
+	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, echoapiDefaultLivenessProbe)
+	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, echoapiDefaultReadinessProbe)
+	spec.Marin3r = InitializeMarin3rSidecarSpec(spec.Marin3r, echoapiDefaultMarin3rSpec)
+	spec.LoadBalancer = InitializeNLBLoadBalancerSpec(spec.LoadBalancer, echoapiDefaultNLBLoadBalancer)
 }
 
 // EchoAPIStatus defines the observed state of EchoAPI
@@ -155,6 +155,11 @@ type EchoAPI struct {
 
 	Spec   EchoAPISpec   `json:"spec,omitempty"`
 	Status EchoAPIStatus `json:"status,omitempty"`
+}
+
+// Default implements defaulting for the EchoAPI resource
+func (e *EchoAPI) Default() {
+	e.Spec.Default()
 }
 
 // +kubebuilder:object:root=true

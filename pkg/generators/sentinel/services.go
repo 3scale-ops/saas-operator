@@ -4,22 +4,20 @@ import (
 	"fmt"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/basereconciler"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
 	statefulsetPodSelectorLabelKey string = "statefulset.kubernetes.io/pod-name"
 )
 
-// StatefulSetService returns a basereconciler.GeneratorFunction function that will return a Service
+// statefulSetService returns a function function that returns a Service
 // resource when called
-func (gen *Generator) StatefulSetService() basereconciler.GeneratorFunction {
+func (gen *Generator) statefulSetService() func() *corev1.Service {
 
-	return func() client.Object {
+	return func() *corev1.Service {
 
 		return &corev1.Service{
 			TypeMeta: metav1.TypeMeta{
@@ -36,50 +34,57 @@ func (gen *Generator) StatefulSetService() basereconciler.GeneratorFunction {
 				ClusterIP:       corev1.ClusterIPNone,
 				SessionAffinity: corev1.ServiceAffinityNone,
 				Ports:           []corev1.ServicePort{},
-				Selector:        gen.Selector().MatchLabels,
+				Selector:        gen.GetSelector(),
 			},
 		}
 	}
 }
 
-// PodServices returns a basereconciler.GeneratorFunction a slice of functions that will return Services
+// podServices returns a function that returns a Service that points
+// ot a specific StatefulSet Pod when called
 // resource when called
-func (gen *Generator) PodServices() []basereconciler.GeneratorFunction {
+func (gen *Generator) podServices(index int) func() *corev1.Service {
 
-	fn := func(i int) func() client.Object {
-
-		return func() client.Object {
-			return &corev1.Service{
-				TypeMeta: metav1.TypeMeta{
-					Kind:       "Service",
-					APIVersion: corev1.SchemeGroupVersion.String(),
+	return func() *corev1.Service {
+		return &corev1.Service{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Service",
+				APIVersion: corev1.SchemeGroupVersion.String(),
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      gen.PodServiceName(index),
+				Namespace: gen.GetNamespace(),
+				Labels:    gen.GetLabels(),
+			},
+			Spec: corev1.ServiceSpec{
+				Type:            corev1.ServiceTypeClusterIP,
+				SessionAffinity: corev1.ServiceAffinityNone,
+				Ports: []corev1.ServicePort{{
+					Name:       gen.GetComponent(),
+					Protocol:   corev1.ProtocolTCP,
+					Port:       int32(saasv1alpha1.SentinelPort),
+					TargetPort: intstr.FromString(gen.GetComponent()),
+				}},
+				Selector: map[string]string{
+					statefulsetPodSelectorLabelKey: fmt.Sprintf("%s-%d", gen.GetComponent(), index),
 				},
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      fmt.Sprintf("%s-%d", gen.GetComponent(), i),
-					Namespace: gen.GetNamespace(),
-					Labels:    gen.GetLabels(),
-				},
-				Spec: corev1.ServiceSpec{
-					Type:            corev1.ServiceTypeClusterIP,
-					SessionAffinity: corev1.ServiceAffinityNone,
-					Ports: []corev1.ServicePort{{
-						Name:       gen.GetComponent(),
-						Protocol:   corev1.ProtocolTCP,
-						Port:       int32(saasv1alpha1.SentinelPort),
-						TargetPort: intstr.FromString(gen.GetComponent()),
-					}},
-					Selector: map[string]string{
-						statefulsetPodSelectorLabelKey: fmt.Sprintf("%s-%d", gen.GetComponent(), i),
-					},
-				},
-			}
+			},
 		}
 	}
+}
 
-	svcFns := make([]basereconciler.GeneratorFunction, *gen.Spec.Replicas)
-	for idx := 0; idx < int(*gen.Spec.Replicas); idx++ {
-		svcFns[idx] = fn(idx)
+// PodServiceName generates the name of the pod specific Service
+func (gen *Generator) PodServiceName(index int) string {
+	return fmt.Sprintf("%s-%d", gen.GetComponent(), index)
+}
+
+// SentinelEndpoints returns the list of redis URLs of all the sentinels
+// These URLs point to the Pod specific Service of each sentinel Pod
+func (gen *Generator) SentinelEndpoints(replicas int) []string {
+	urls := make([]string, 0, replicas)
+	for idx := 0; idx < int(replicas); idx++ {
+		urls = append(urls,
+			fmt.Sprintf("redis://%s.%s.svc.cluster.local:%d", gen.PodServiceName(idx), gen.GetNamespace(), saasv1alpha1.SentinelPort))
 	}
-
-	return svcFns
+	return urls
 }

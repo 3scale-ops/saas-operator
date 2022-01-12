@@ -18,8 +18,10 @@ package controllers
 
 import (
 	"context"
-	"encoding/json"
 
+	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	"github.com/3scale/saas-operator/pkg/generators/zync"
+	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
 	"github.com/go-logr/logr"
 	"github.com/redhat-cop/operator-utils/pkg/util"
 	corev1 "k8s.io/api/core/v1"
@@ -29,10 +31,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/basereconciler"
-	"github.com/3scale/saas-operator/pkg/generators/zync"
 )
 
 // ZyncReconciler reconciles a Zync object
@@ -67,8 +65,6 @@ func (r *ZyncReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 
 	// Apply defaults for reconcile but do not store them in the API
 	instance.Default()
-	json, _ := json.Marshal(instance.Spec)
-	log.V(1).Info("Apply defaults before resolving templates", "JSON", string(json))
 
 	gen := zync.NewGenerator(
 		instance.GetName(),

@@ -226,36 +226,36 @@ type SystemSpec struct {
 	GrafanaDashboard *GrafanaDashboardSpec `json:"grafanaDashboard,omitempty"`
 }
 
-// Default implements defaulting for the System resource
-func (s *System) Default() {
+// Default implements defaulting for SystemSpec
+func (spec *SystemSpec) Default() {
 
-	s.Spec.Config.Default()
-	s.Spec.Image = InitializeImageSpec(s.Spec.Image, systemDefaultImage)
-	s.Spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(s.Spec.GrafanaDashboard, systemDefaultGrafanaDashboard)
-	if s.Spec.App == nil {
-		s.Spec.App = &SystemAppSpec{}
+	spec.Config.Default()
+	spec.Image = InitializeImageSpec(spec.Image, systemDefaultImage)
+	spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(spec.GrafanaDashboard, systemDefaultGrafanaDashboard)
+	if spec.App == nil {
+		spec.App = &SystemAppSpec{}
 	}
-	s.Spec.App.Default()
+	spec.App.Default()
 
-	if s.Spec.SidekiqDefault == nil {
-		s.Spec.SidekiqDefault = &SystemSidekiqSpec{}
+	if spec.SidekiqDefault == nil {
+		spec.SidekiqDefault = &SystemSidekiqSpec{}
 	}
-	s.Spec.SidekiqDefault.Default(Default)
+	spec.SidekiqDefault.Default(Default)
 
-	if s.Spec.SidekiqBilling == nil {
-		s.Spec.SidekiqBilling = &SystemSidekiqSpec{}
+	if spec.SidekiqBilling == nil {
+		spec.SidekiqBilling = &SystemSidekiqSpec{}
 	}
-	s.Spec.SidekiqBilling.Default(Billing)
+	spec.SidekiqBilling.Default(Billing)
 
-	if s.Spec.SidekiqLow == nil {
-		s.Spec.SidekiqLow = &SystemSidekiqSpec{}
+	if spec.SidekiqLow == nil {
+		spec.SidekiqLow = &SystemSidekiqSpec{}
 	}
-	s.Spec.SidekiqLow.Default(Low)
+	spec.SidekiqLow.Default(Low)
 
-	if s.Spec.Sphinx == nil {
-		s.Spec.Sphinx = &SystemSphinxSpec{}
+	if spec.Sphinx == nil {
+		spec.Sphinx = &SystemSphinxSpec{}
 	}
-	s.Spec.Sphinx.Default(s.Spec.Image)
+	spec.Sphinx.Default(spec.Image)
 }
 
 // SystemConfig holds configuration for SystemApp component
@@ -774,6 +774,11 @@ type System struct {
 
 	Spec   SystemSpec   `json:"spec,omitempty"`
 	Status SystemStatus `json:"status,omitempty"`
+}
+
+// Default implements defaulting for the System resource
+func (s *System) Default() {
+	s.Spec.Default()
 }
 
 // +kubebuilder:object:root=true

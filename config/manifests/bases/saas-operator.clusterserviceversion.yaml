@@ -890,6 +890,9 @@ spec:
       - description: Configures the backend cron
         displayName: Cron
         path: cron
+      - description: Describes node affinity scheduling rules for the pod.
+        displayName: Node Affinity
+        path: cron.nodeAffinity
       - description: Number of replicas for the component
         displayName: Replicas
         path: cron.replicas
@@ -906,6 +909,9 @@ spec:
           info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
         displayName: Requests
         path: cron.resources.requests
+      - description: If specified, the pod's tolerations.
+        displayName: Tolerations
+        path: cron.tolerations
       - description: Configures the Grafana Dashboard for the component
         displayName: Grafana Dashboard
         path: grafanaDashboard
@@ -934,6 +940,26 @@ spec:
       - description: Configures the backend listener
         displayName: Listener
         path: listener
+      - description: Canary defines spec changes for the canary Deployment. If left
+          unset the canary Deployment wil not be created.
+        displayName: Canary
+        path: listener.canary
+      - description: ImageName to use for the canary Deployment
+        displayName: Image Name
+        path: listener.canary.imageName
+      - description: ImageTag to use for the canary Deployment
+        displayName: Image Tag
+        path: listener.canary.imageTag
+      - description: Patches to apply for the canary Deployment. Patches are expected
+          to be JSON documents as an RFC 6902 patches.
+        displayName: Patches
+        path: listener.canary.patches
+      - description: Number of replicas for the canary Deployment
+        displayName: Replicas
+        path: listener.canary.replicas
+      - description: SendTraffic controls if traffic is sent to the canary
+        displayName: Send Traffic
+        path: listener.canary.sendTraffic
       - description: Listener specific configuration options for the component element
         displayName: Config
         path: listener.config
@@ -1053,6 +1079,9 @@ spec:
       - description: The port where Marin3r's shutdown manager listens
         displayName: Shutdown Manager Port
         path: listener.marin3r.shtdnmgrPort
+      - description: Describes node affinity scheduling rules for the pod.
+        displayName: Node Affinity
+        path: listener.nodeAffinity
       - description: Pod Disruption Budget for the component
         displayName: PDB
         path: listener.pdb
@@ -1105,9 +1134,32 @@ spec:
           info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
         displayName: Requests
         path: listener.resources.requests
+      - description: If specified, the pod's tolerations.
+        displayName: Tolerations
+        path: listener.tolerations
       - description: Configures the backend worker
         displayName: Worker
         path: worker
+      - description: Canary defines spec changes for the canary Deployment. If left
+          unset the canary Deployment wil not be created.
+        displayName: Canary
+        path: worker.canary
+      - description: ImageName to use for the canary Deployment
+        displayName: Image Name
+        path: worker.canary.imageName
+      - description: ImageTag to use for the canary Deployment
+        displayName: Image Tag
+        path: worker.canary.imageTag
+      - description: Patches to apply for the canary Deployment. Patches are expected
+          to be JSON documents as an RFC 6902 patches.
+        displayName: Patches
+        path: worker.canary.patches
+      - description: Number of replicas for the canary Deployment
+        displayName: Replicas
+        path: worker.canary.replicas
+      - description: SendTraffic controls if traffic is sent to the canary
+        displayName: Send Traffic
+        path: worker.canary.sendTraffic
       - description: Listener specific configuration options for the component element
         displayName: Config
         path: worker.config
@@ -1159,6 +1211,9 @@ spec:
       - description: Number of seconds after which the probe times out
         displayName: Timeout Seconds
         path: worker.livenessProbe.timeoutSeconds
+      - description: Describes node affinity scheduling rules for the pod.
+        displayName: Node Affinity
+        path: worker.nodeAffinity
       - description: Pod Disruption Budget for the component
         displayName: PDB
         path: worker.pdb
@@ -1211,6 +1266,9 @@ spec:
           info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
         displayName: Requests
         path: worker.resources.requests
+      - description: If specified, the pod's tolerations.
+        displayName: Tolerations
+        path: worker.tolerations
       version: v1alpha1
     - description: CORSProxy is the Schema for the corsproxies API
       displayName: CORSProxy
@@ -1597,6 +1655,162 @@ spec:
           to autoscale
         displayName: Resource Utilization
         path: hpa.resourceUtilization
+      - description: Image specification for the component
+        displayName: Image
+        path: image
+      - description: Docker repository of the image
+        displayName: Name
+        path: image.name
+      - description: Pull policy for the image
+        displayName: Pull Policy
+        path: image.pullPolicy
+      - description: Name of the Secret that holds quay.io credentials to access the
+          image repository
+        displayName: Pull Secret Name
+        path: image.pullSecretName
+      - description: Image tag
+        displayName: Tag
+        path: image.tag
+      - description: Liveness probe for the component
+        displayName: Liveness Probe
+        path: livenessProbe
+      - description: Minimum consecutive failures for the probe to be considered failed
+          after having succeeded
+        displayName: Failure Threshold
+        path: livenessProbe.failureThreshold
+      - description: Number of seconds after the container has started before liveness
+          probes are initiated
+        displayName: Initial Delay Seconds
+        path: livenessProbe.initialDelaySeconds
+      - description: How often (in seconds) to perform the probe
+        displayName: Period Seconds
+        path: livenessProbe.periodSeconds
+      - description: Minimum consecutive successes for the probe to be considered
+          successful after having failed
+        displayName: Success Threshold
+        path: livenessProbe.successThreshold
+      - description: Number of seconds after which the probe times out
+        displayName: Timeout Seconds
+        path: livenessProbe.timeoutSeconds
+      - description: Pod Disruption Budget for the component
+        displayName: PDB
+        path: pdb
+      - description: An eviction is allowed if at most "maxUnavailable" pods selected
+          by "selector" are unavailable after the eviction, i.e. even in absence of
+          the evicted pod. For example, one can prevent all voluntary evictions by
+          specifying 0. This is a mutually exclusive setting with "minAvailable".
+        displayName: Max Unavailable
+        path: pdb.maxUnavailable
+      - description: An eviction is allowed if at least "minAvailable" pods selected
+          by "selector" will still be available after the eviction, i.e. even in the
+          absence of the evicted pod.  So for example you can prevent all voluntary
+          evictions by specifying "100%".
+        displayName: Min Available
+        path: pdb.minAvailable
+      - description: Readiness probe for the component
+        displayName: Readiness Probe
+        path: readinessProbe
+      - description: Minimum consecutive failures for the probe to be considered failed
+          after having succeeded
+        displayName: Failure Threshold
+        path: readinessProbe.failureThreshold
+      - description: Number of seconds after the container has started before liveness
+          probes are initiated
+        displayName: Initial Delay Seconds
+        path: readinessProbe.initialDelaySeconds
+      - description: How often (in seconds) to perform the probe
+        displayName: Period Seconds
+        path: readinessProbe.periodSeconds
+      - description: Minimum consecutive successes for the probe to be considered
+          successful after having failed
+        displayName: Success Threshold
+        path: readinessProbe.successThreshold
+      - description: Number of seconds after which the probe times out
+        displayName: Timeout Seconds
+        path: readinessProbe.timeoutSeconds
+      - description: Number of replicas (ignored if hpa is enabled) for the component
+        displayName: Replicas
+        path: replicas
+      - description: Resource requirements for the component
+        displayName: Resources
+        path: resources
+      - description: 'Limits describes the maximum amount of compute resources allowed.
+          More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Limits
+        path: resources.limits
+      - description: 'Requests describes the minimum amount of compute resources required.
+          If Requests is omitted for a container, it defaults to Limits if that is
+          explicitly specified, otherwise to an implementation-defined value. More
+          info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Requests
+        path: resources.requests
+      version: v1alpha1
+    - description: RedisShard is the Schema for the redisshards API
+      displayName: Redis Shard
+      kind: RedisShard
+      name: redisshards.saas.3scale.net
+      specDescriptors:
+      - description: Image specification for the component
+        displayName: Image
+        path: image
+      - description: Docker repository of the image
+        displayName: Name
+        path: image.name
+      - description: Pull policy for the image
+        displayName: Pull Policy
+        path: image.pullPolicy
+      - description: Name of the Secret that holds quay.io credentials to access the
+          image repository
+        displayName: Pull Secret Name
+        path: image.pullSecretName
+      - description: Image tag
+        displayName: Tag
+        path: image.tag
+      - description: MasterIndex is the StatefulSet Pod index of the redis server
+          with the master role. The other Pods are slaves of the master one.
+        displayName: Master Index
+        path: masterIndex
+      statusDescriptors:
+      - description: ShardNodes describes the nodes in the redis shard
+        displayName: Shard Nodes
+        path: shardNodes
+      - description: Master is the node that acts as master role in the redis shard
+        displayName: Master
+        path: shardNodes.master
+      - description: Slaves are the nodes that act as master role in the redis shard
+        displayName: Slaves
+        path: shardNodes.slaves
+      version: v1alpha1
+    - description: Sentinel is the Schema for the sentinels API
+      displayName: Sentinel
+      kind: Sentinel
+      name: sentinels.saas.3scale.net
+      specDescriptors:
+      - description: MetricsRefreshInterval determines the refresh interval for gahtering
+          metrics from sentinel
+        displayName: Metrics Refresh Interval
+        path: config.metricsRefreshInterval
+      - description: Monitored shards indicates the redis servers that form part of
+          each shard monitored by sentinel
+        displayName: Monitored Shards
+        path: config.monitoredShards
+      - description: StorageClass is the storage class to be used for the persistent
+          sentinel config file where the shards state is stored
+        displayName: Storage Class
+        path: config.storageClass
+      - description: StorageSize is the storage size to  provision for the persistent
+          sentinel config file where the shards state is stored
+        displayName: Storage Size
+        path: config.storageSize
+      - description: Configures the Grafana Dashboard for the component
+        displayName: Grafana Dashboard
+        path: grafanaDashboard
+      - description: Label key used by grafana-operator for dashboard discovery
+        displayName: Selector Key
+        path: grafanaDashboard.selectorKey
+      - description: Label value used by grafana-operator for dashboard discovery
+        displayName: Selector Value
+        path: grafanaDashboard.selectorValue
       - description: Image specification for the component
         displayName: Image
         path: image

@@ -2,11 +2,11 @@ package sentinel
 
 import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/generators"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pdb"
 	"github.com/3scale/saas-operator/pkg/generators/sentinel/config"
-	"k8s.io/apimachinery/pkg/types"
+	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
+	basereconciler_resources "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/resources"
+	"github.com/3scale/saas-operator/pkg/resource_builders/pdb"
 )
 
 const (
@@ -15,7 +15,7 @@ const (
 
 // Generator configures the generators for Sentinel
 type Generator struct {
-	generators.BaseOptions
+	generators.BaseOptionsV2
 	Spec    saasv1alpha1.SentinelSpec
 	Options config.Options
 }
@@ -23,7 +23,7 @@ type Generator struct {
 // NewGenerator returns a new Options struct
 func NewGenerator(instance, namespace string, spec saasv1alpha1.SentinelSpec) Generator {
 	return Generator{
-		BaseOptions: generators.BaseOptions{
+		BaseOptionsV2: generators.BaseOptionsV2{
 			Component:    component,
 			InstanceName: instance,
 			Namespace:    namespace,
@@ -37,8 +37,32 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SentinelSpec) Ge
 	}
 }
 
-// PDB returns a basereconciler.GeneratorFunction
-func (gen *Generator) PDB() basereconciler.GeneratorFunction {
-	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return pdb.New(key, gen.GetLabels(), gen.Selector().MatchLabels, *gen.Spec.PDB)
+// Returns all the resource templates that this generator manages
+func (gen *Generator) Resources() []basereconciler.Resource {
+	resources := []basereconciler.Resource{
+		basereconciler_resources.StatefulSetTemplate{
+			Template:        gen.statefulSet(),
+			RolloutTriggers: []basereconciler_resources.RolloutTrigger{},
+			IsEnabled:       true,
+		},
+		basereconciler_resources.ServiceTemplate{
+			Template:  gen.statefulSetService(),
+			IsEnabled: true,
+		},
+		basereconciler_resources.PodDisruptionBudgetTemplate{
+			Template:  pdb.New(gen.GetKey(), gen.GetLabels(), gen.GetSelector(), *gen.Spec.PDB),
+			IsEnabled: !gen.Spec.PDB.IsDeactivated(),
+		},
+		basereconciler_resources.ConfigMapTemplate{
+			Template:  gen.configMap(),
+			IsEnabled: true,
+		},
+	}
+
+	for idx := 0; idx < int(*gen.Spec.Replicas); idx++ {
+		resources = append(resources,
+			basereconciler_resources.ServiceTemplate{Template: gen.podServices(idx), IsEnabled: true})
+	}
+
+	return resources
 }

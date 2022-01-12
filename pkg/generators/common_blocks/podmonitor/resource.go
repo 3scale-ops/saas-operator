@@ -3,14 +3,14 @@ package podmonitor
 import (
 	"fmt"
 
-	"github.com/3scale/saas-operator/pkg/basereconciler"
+	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// New returns a basereconciler.GeneratorFunction function that will return a PodMonitor
+// New returns a basereconciler_types.GeneratorFunction function that will return a PodMonitor
 // resource when called
 func New(key types.NamespacedName, labels map[string]string, selector map[string]string,
 	endpoints ...monitoringv1.PodMetricsEndpoint) basereconciler.GeneratorFunction {

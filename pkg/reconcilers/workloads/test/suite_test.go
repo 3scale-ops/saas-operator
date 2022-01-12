@@ -21,30 +21,27 @@ import (
 	"testing"
 	"time"
 
-	"github.com/3scale/saas-operator/pkg/basereconciler"
-	"github.com/3scale/saas-operator/pkg/basereconciler/test/api/v1alpha1"
+	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
+	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
+	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
+	"github.com/3scale/saas-operator/pkg/reconcilers/workloads/test/api/v1alpha1"
 	"github.com/goombaio/namegenerator"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	"sigs.k8s.io/controller-runtime/pkg/envtest/printer"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-
-	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
-	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
-	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 )
 
 // These tests use Ginkgo (BDD-style Go testing framework). Refer to
 // http://onsi.github.io/ginkgo/ to learn more about Ginkgo.
 
 var (
-	cfg           *rest.Config
 	k8sClient     client.Client
 	testEnv       *envtest.Environment
 	nameGenerator namegenerator.Generator
@@ -67,7 +64,7 @@ var _ = BeforeSuite(func() {
 	testEnv = &envtest.Environment{
 		CRDDirectoryPaths: []string{
 			filepath.Join("api", "v1alpha1"),
-			filepath.Join("..", "..", "..", "config", "test", "external-apis"),
+			filepath.Join("..", "..", "..", "..", "config", "test", "external-apis"),
 		},
 	}
 
@@ -106,8 +103,8 @@ var _ = BeforeSuite(func() {
 
 	// Add controllers for testing
 	err = (&Reconciler{
-		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("Test"), false),
-		Log:        ctrl.Log.WithName("controllers").WithName("Test"),
+		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("Test"), false),
+		Log:                ctrl.Log.WithName("controllers").WithName("Test"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 

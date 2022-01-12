@@ -21,9 +21,15 @@ import (
 	"testing"
 	"time"
 
+	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
+	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
+	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
+	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	"github.com/goombaio/namegenerator"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -32,14 +38,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/envtest/printer"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-
-	"github.com/3scale/saas-operator/pkg/basereconciler"
-
-	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
-
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
-	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -139,8 +137,8 @@ var _ = BeforeSuite(func() {
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&BackendReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("Backend"), false),
-		Log:        ctrl.Log.WithName("controllers").WithName("Backend"),
+		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("Backend"), false),
+		Log:                ctrl.Log.WithName("controllers").WithName("Backend"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 

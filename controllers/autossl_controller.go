@@ -18,11 +18,10 @@ package controllers
 
 import (
 	"context"
-	"encoding/json"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/generators/autossl"
+	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
 	"github.com/go-logr/logr"
 	"github.com/redhat-cop/operator-utils/pkg/util"
 	"k8s.io/apimachinery/pkg/types"
@@ -62,8 +61,6 @@ func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	// Apply defaults for reconcile but do not store them in the API
 	instance.Default()
-	json, _ := json.Marshal(instance.Spec)
-	log.V(1).Info("Apply defaults before resolving templates", "JSON", string(json))
 
 	gen := autossl.NewGenerator(
 		instance.GetName(),

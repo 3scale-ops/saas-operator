@@ -2,11 +2,11 @@ package echoapi
 
 import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/generators"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/hpa"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pdb"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/podmonitor"
+	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
 
 	"k8s.io/apimachinery/pkg/types"
 )

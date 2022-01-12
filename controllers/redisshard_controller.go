@@ -18,13 +18,12 @@ package controllers
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/basereconciler"
 	"github.com/3scale/saas-operator/pkg/generators/redisshard"
+	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
 	"github.com/3scale/saas-operator/pkg/redis"
 	"github.com/3scale/saas-operator/pkg/redis/crud/client"
 	"github.com/go-logr/logr"
@@ -64,8 +63,6 @@ func (r *RedisShardReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	// Apply defaults for reconcile but do not store them in the API
 	instance.Default()
-	json, _ := json.Marshal(instance.Spec)
-	log.V(1).Info("Apply defaults before resolving templates", "JSON", string(json))
 
 	gen := redisshard.NewGenerator(
 		instance.GetName(),
@@ -73,24 +70,13 @@ func (r *RedisShardReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		instance.Spec,
 	)
 
-	if err := r.ReconcileOwnedResources(ctx, instance, basereconciler.ControlledResources{
-		StatefulSets: []basereconciler.StatefulSet{
-			{Template: gen.StatefulSet(), RolloutTriggers: nil, Enabled: true},
-		},
-		Services: []basereconciler.Service{
-			{Template: gen.Service(), Enabled: true},
-		},
-		ConfigMaps: []basereconciler.ConfigMaps{
-			{Template: gen.RedisConfigConfigMap(), Enabled: true},
-			{Template: gen.RedisReadinessScriptConfigMap(), Enabled: true},
-		},
-	}); err != nil {
+	if err := r.ReconcileOwnedResources(ctx, instance, r.GetScheme(), gen.Resources()); err != nil {
 		log.Error(err, "unable to update owned resources")
 		return r.ManageError(ctx, instance, err)
 	}
 
 	shard, result, err := r.setRedisRoles(ctx, types.NamespacedName{Name: req.Name, Namespace: req.Namespace},
-		*instance.Spec.MasterIndex, gen.Service()().GetName(), log)
+		*instance.Spec.MasterIndex, gen.ServiceName(), log)
 	if result != nil || err != nil {
 		return *result, err
 	}

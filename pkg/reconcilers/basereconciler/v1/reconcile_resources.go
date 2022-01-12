@@ -6,10 +6,6 @@ import (
 	"hash/fnv"
 	"reflect"
 
-	// grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
-	// secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
-	// monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
-	// autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	"github.com/davecgh/go-spew/spew"
@@ -19,7 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/rand"
-	"sigs.k8s.io/controller-runtime/pkg/client" // policyv1beta1 "k8s.io/api/policy/v1beta1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // ControlledResources defines the resources that each of the
@@ -34,6 +30,19 @@ type ControlledResources struct {
 	PodMonitors              []PodMonitor
 	GrafanaDashboards        []GrafanaDashboard
 	ConfigMaps               []ConfigMaps
+}
+
+func (cm *ControlledResources) Add(resources *ControlledResources) *ControlledResources {
+	cm.Deployments = append(cm.Deployments, resources.Deployments...)
+	cm.StatefulSets = append(cm.StatefulSets, resources.StatefulSets...)
+	cm.SecretDefinitions = append(cm.SecretDefinitions, resources.SecretDefinitions...)
+	cm.Services = append(cm.Services, resources.Services...)
+	cm.PodDisruptionBudgets = append(cm.PodDisruptionBudgets, resources.PodDisruptionBudgets...)
+	cm.HorizontalPodAutoscalers = append(cm.HorizontalPodAutoscalers, resources.HorizontalPodAutoscalers...)
+	cm.PodMonitors = append(cm.PodMonitors, resources.PodMonitors...)
+	cm.GrafanaDashboards = append(cm.GrafanaDashboards, resources.GrafanaDashboards...)
+	cm.ConfigMaps = append(cm.ConfigMaps, resources.ConfigMaps...)
+	return cm
 }
 
 // RolloutTrigger defines a configuration source that should trigger a
@@ -155,6 +164,58 @@ type Service struct {
 	Enabled  bool
 }
 
+func (s *Service) PopulateSpecRuntimeValues(ctx context.Context, cl client.Client) (GeneratorFunction, error) {
+
+	svc := s.Template().(*corev1.Service)
+	instance := &corev1.Service{}
+	if err := cl.Get(ctx, types.NamespacedName{
+		Name:      svc.GetName(),
+		Namespace: svc.GetNamespace(),
+	}, instance); err != nil {
+		if errors.IsNotFound(err) {
+			// Resource not found, return the template as is
+			// because there are not runtime values yet
+			return s.Template, nil
+		}
+		return s.Template, err
+	}
+
+	// Set runtime values in the resource:
+	// "/spec/clusterIP", "/spec/clusterIPs", "/spec/ipFamilies", "/spec/ipFamilyPolicy", "/spec/ports/*/nodePort"
+	svc.Spec.ClusterIP = instance.Spec.ClusterIP
+	svc.Spec.ClusterIPs = instance.Spec.ClusterIPs
+	svc.Spec.IPFamilies = instance.Spec.IPFamilies
+	svc.Spec.IPFamilyPolicy = instance.Spec.IPFamilyPolicy
+
+	// For services that are not ClusterIP we need to populate the runtime values
+	// of NodePort for each port
+	if svc.Spec.Type != corev1.ServiceTypeClusterIP {
+		for idx, port := range svc.Spec.Ports {
+			runtimePort := findPort(port.Port, port.Protocol, instance.Spec.Ports)
+			if runtimePort != nil {
+				svc.Spec.Ports[idx].NodePort = runtimePort.NodePort
+			}
+		}
+	}
+
+	return func() client.Object {
+		return svc
+	}, nil
+}
+
+func findPort(pNumber int32, pProtocol corev1.Protocol, ports []corev1.ServicePort) *corev1.ServicePort {
+	// Ports within a svc are uniquely identified by
+	// the "port" and "protocol" fields. This is documented in
+	// k8s API reference
+	for _, port := range ports {
+		if pNumber == port.Port && pProtocol == port.Protocol {
+			return &port
+		}
+	}
+	// not found
+	return nil
+}
+
 // PodDisruptionBudget specifies a PodDisruptionBudget resource
 type PodDisruptionBudget struct {
 	Template GeneratorFunction
@@ -188,7 +249,6 @@ type ConfigMaps struct {
 // GetDeploymentReplicas returns the number of replicas for a deployment,
 // current value if HPA is enabled.
 func (r *Reconciler) GetDeploymentReplicas(ctx context.Context, d Deployment) (*int32, error) {
-
 	dep := d.Template().(*appsv1.Deployment)
 	if !d.HasHPA {
 		return dep.Spec.Replicas, nil
@@ -216,21 +276,25 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 
 	for _, dep := range crs.Deployments {
 
-		currentReplicas, err := r.GetDeploymentReplicas(ctx, dep)
-		if err != nil {
-			return err
+		if dep.HasHPA {
+			currentReplicas, err := r.GetDeploymentReplicas(ctx, dep)
+			if err != nil {
+				return err
+			}
+			resources = append(resources,
+				LockedResource{
+					GeneratorFn:  r.DeploymentWithRolloutTriggers(dep.Template, dep.RolloutTriggers, currentReplicas),
+					ExcludePaths: append(DeploymentExcludedPaths, "/spec/replicas"),
+				})
+
+		} else {
+			resources = append(resources,
+				LockedResource{
+					GeneratorFn:  r.DeploymentWithRolloutTriggers(dep.Template, dep.RolloutTriggers, nil),
+					ExcludePaths: DeploymentExcludedPaths,
+				})
 		}
 
-		resources = append(resources,
-			LockedResource{
-				GeneratorFn: r.DeploymentWithRolloutTriggers(dep.Template, dep.RolloutTriggers, currentReplicas),
-				ExcludePaths: func() []string {
-					if dep.HasHPA {
-						return append(DeploymentExcludedPaths, "/spec/replicas")
-					}
-					return DeploymentExcludedPaths
-				}(),
-			})
 	}
 
 	for _, ss := range crs.StatefulSets {
@@ -255,9 +319,13 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 
 	for _, svc := range crs.Services {
 		if svc.Enabled {
+			template, err := svc.PopulateSpecRuntimeValues(ctx, r.GetClient())
+			if err != nil {
+				return err
+			}
 			resources = append(resources,
 				LockedResource{
-					GeneratorFn:  svc.Template,
+					GeneratorFn:  template,
 					ExcludePaths: append(DefaultExcludedPaths, ServiceExcludes(svc.Template)...),
 				})
 		}
@@ -337,7 +405,8 @@ func ServiceExcludes(fn GeneratorFunction) []string {
 }
 
 // DeploymentWithRolloutTriggers returns the Deployment modified with the appropriate rollout triggers (annotations)
-func (r *Reconciler) DeploymentWithRolloutTriggers(deployment GeneratorFunction, triggers []RolloutTrigger, replicas *int32) GeneratorFunction {
+func (r *Reconciler) DeploymentWithRolloutTriggers(deployment GeneratorFunction,
+	triggers []RolloutTrigger, replicas *int32) GeneratorFunction {
 
 	return func() client.Object {
 		dep := deployment().(*appsv1.Deployment)
@@ -348,14 +417,17 @@ func (r *Reconciler) DeploymentWithRolloutTriggers(deployment GeneratorFunction,
 			dep.Spec.Template.ObjectMeta.Annotations[trigger.GetAnnotationKey()] = trigger.GetHash()
 		}
 
-		dep.Spec.Replicas = replicas
+		if replicas != nil {
+			dep.Spec.Replicas = replicas
+		}
 
 		return dep
 	}
 }
 
 // StatefulSetWithRolloutTriggers returns the StatefulSet modified with the appropriate rollout triggers (annotations)
-func (r *Reconciler) StatefulSetWithRolloutTriggers(statefulset GeneratorFunction, triggers []RolloutTrigger) GeneratorFunction {
+func (r *Reconciler) StatefulSetWithRolloutTriggers(statefulset GeneratorFunction,
+	triggers []RolloutTrigger) GeneratorFunction {
 
 	return func() client.Object {
 		ss := statefulset().(*appsv1.StatefulSet)

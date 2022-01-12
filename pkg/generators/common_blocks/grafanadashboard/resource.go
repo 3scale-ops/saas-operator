@@ -6,13 +6,13 @@ import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/assets"
-	"github.com/3scale/saas-operator/pkg/basereconciler"
+	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// New returns a basereconciler.GeneratorFunction function that will return a GrafanaDashboard
+// New returns a basereconciler_types.GeneratorFunction function that will return a GrafanaDashboard
 // resource when called
 func New(key types.NamespacedName, labels map[string]string, cfg saasv1alpha1.GrafanaDashboardSpec,
 	template string) basereconciler.GeneratorFunction {
