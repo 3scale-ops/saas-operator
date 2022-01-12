@@ -3,6 +3,8 @@ package redis
 import (
 	"context"
 	"fmt"
+	"reflect"
+	"sort"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/redis/crud"
@@ -61,7 +63,7 @@ func (ss *SentinelServer) IsMonitoringShards(ctx context.Context, shards []strin
 	return true, nil
 }
 
-// IsMonitoringShards checks whether or all the shards in the passed list are being monitored by the SentinelServer
+// MonitoredShards returns the list of monitored shards of this SentinelServer
 func (ss *SentinelServer) MonitoredShards(ctx context.Context) (saasv1alpha1.MonitoredShards, error) {
 
 	sm, err := ss.CRUD.SentinelMasters(ctx)
@@ -94,7 +96,7 @@ func (ss *SentinelServer) Monitor(ctx context.Context, shards ShardedCluster) ([
 					return changed, err
 				}
 
-				err = ss.CRUD.SentinelMonitor(ctx, name, host, port, 2)
+				err = ss.CRUD.SentinelMonitor(ctx, name, host, port, saasv1alpha1.SentinelDefaultQuorum)
 				if err != nil {
 					return changed, util.WrapError("redis-sentinel/SentinelServer.Monitor", err)
 				}
@@ -160,6 +162,29 @@ func (sp SentinelPool) IsMonitoringShards(ctx context.Context, shards []string) 
 	return true, nil
 }
 
+// MonitoredShards returns the list of monitored shards of this SentinelServer
+func (sp SentinelPool) MonitoredShards(ctx context.Context, quorum int) (saasv1alpha1.MonitoredShards, error) {
+
+	responses := make([]saasv1alpha1.MonitoredShards, 0, len(sp))
+
+	for _, srv := range sp {
+
+		resp, err := srv.MonitoredShards(ctx)
+		if err != nil {
+			// jump to next sentinel if error occurs
+			continue
+		}
+		responses = append(responses, resp)
+	}
+
+	monitoredShards, err := applyQuorum(responses, saasv1alpha1.SentinelDefaultQuorum)
+	if err != nil {
+		return nil, err
+	}
+
+	return monitoredShards, nil
+}
+
 // Monitor ensures that all the shards in the ShardedCluster object are monitored by
 // all sentinel servers in the SentinelPool
 func (sp SentinelPool) Monitor(ctx context.Context, shards ShardedCluster) (map[string][]string, error) {
@@ -174,4 +199,29 @@ func (sp SentinelPool) Monitor(ctx context.Context, shards ShardedCluster) (map[
 		}
 	}
 	return changes, nil
+}
+
+func applyQuorum(responses []saasv1alpha1.MonitoredShards, quorum int) (saasv1alpha1.MonitoredShards, error) {
+
+	for _, r := range responses {
+		// Sort each of the MonitoredShards responses to
+		// avoid diffs due to unordered responses from redis
+		sort.Sort(r)
+	}
+
+	for idx, a := range responses {
+		count := 0
+		for _, b := range responses {
+			if reflect.DeepEqual(a, b) {
+				count++
+			}
+		}
+
+		// check if this response has quorum
+		if count >= quorum {
+			return responses[idx], nil
+		}
+	}
+
+	return nil, fmt.Errorf("unable to get monitored shards from sentinel")
 }

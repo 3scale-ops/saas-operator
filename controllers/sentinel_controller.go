@@ -133,21 +133,17 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	// Reconcile status of the Sentinel resource
-	if err := r.reconcileStatus(ctx, instance, &gen, log); err != nil {
+	if err := r.reconcileStatus(ctx, instance, &gen, sentinelPool, log); err != nil {
 		return r.ManageError(ctx, instance, err)
 	}
 
 	return r.ManageSuccess(ctx, instance)
 }
 
-func (r *SentinelReconciler) reconcileStatus(ctx context.Context, instance *saasv1alpha1.Sentinel, gen *sentinel.Generator, log logr.Logger) error {
+func (r *SentinelReconciler) reconcileStatus(ctx context.Context, instance *saasv1alpha1.Sentinel, gen *sentinel.Generator,
+	spool redis.SentinelPool, log logr.Logger) error {
 
-	sentinel, err := redis.NewSentinelServerFromConnectionString("sentinel", gen.SentinelServiceEndpoint())
-	if err != nil {
-		return err
-	}
-
-	monitoredShards, err := sentinel.MonitoredShards(ctx)
+	monitoredShards, err := spool.MonitoredShards(ctx, saasv1alpha1.SentinelDefaultQuorum)
 	if err != nil {
 		return err
 	}

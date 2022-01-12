@@ -2,9 +2,6 @@ package twemproxyconfig
 
 import (
 	"context"
-	"fmt"
-	"reflect"
-	"sort"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators"
@@ -51,7 +48,7 @@ func NewGenerator(ctx context.Context, instance *saasv1alpha1.TwemproxyConfig) (
 
 func (gen *Generator) getMonitoredShards(ctx context.Context) (map[string]TwemproxyServer, error) {
 
-	responses := make([]saasv1alpha1.MonitoredShards, 0, len(gen.Spec.SentinelURIs))
+	spool := make(redis.SentinelPool, 0, len(gen.Spec.SentinelURIs))
 
 	for _, uri := range gen.Spec.SentinelURIs {
 		sentinel, err := redis.NewSentinelServerFromConnectionString("sentinel", uri)
@@ -59,21 +56,15 @@ func (gen *Generator) getMonitoredShards(ctx context.Context) (map[string]Twempr
 			return nil, err
 		}
 
-		resp, err := sentinel.MonitoredShards(ctx)
-		if err != nil {
-			// jump to next sentinel if error occurs
-			continue
-		}
-		responses = append(responses, resp)
+		spool = append(spool, *sentinel)
 	}
 
-	monitoredShards, err := applyQuorum(responses, 2)
+	monitoredShards, err := spool.MonitoredShards(ctx, 2)
 	if err != nil {
 		return nil, err
 	}
 
 	m := make(map[string]TwemproxyServer, len(monitoredShards))
-
 	for _, s := range monitoredShards {
 		m[s.Name] = TwemproxyServer{
 			Name:     s.Name,
@@ -93,29 +84,4 @@ func (gen *Generator) Resources() []basereconciler.Resource {
 			IsEnabled: true,
 		},
 	}
-}
-
-func applyQuorum(responses []saasv1alpha1.MonitoredShards, quorum int) (saasv1alpha1.MonitoredShards, error) {
-
-	for _, r := range responses {
-		// Sort each of the MonitoredShards responses to
-		// avoid diffs due to unordered responses from redis
-		sort.Sort(r)
-	}
-
-	for idx, a := range responses {
-		count := 0
-		for _, b := range responses {
-			if reflect.DeepEqual(a, b) {
-				count++
-			}
-		}
-
-		// check if this response has quorum
-		if count >= quorum {
-			return responses[idx], nil
-		}
-	}
-
-	return nil, fmt.Errorf("unable to get monitored shards from sentinel")
 }

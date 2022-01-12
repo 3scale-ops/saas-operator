@@ -35,6 +35,7 @@ const (
 // bitnami/redis-sentinel:4.0.11-debian-9-r110
 var (
 	sentinelDefaultReplicas int32            = 3
+	SentinelDefaultQuorum   int              = 2
 	sentinelDefaultImage    defaultImageSpec = defaultImageSpec{
 		Name:       pointer.StringPtr("bitnami/redis-sentinel"),
 		Tag:        pointer.StringPtr("4.0.11-debian-9-r110"),
