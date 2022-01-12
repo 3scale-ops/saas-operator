@@ -15,42 +15,6 @@ const (
 
 // statefulSetService returns a function function that returns a Service
 // resource when called
-func (gen *Generator) service() func() *corev1.Service {
-
-	return func() *corev1.Service {
-
-		return &corev1.Service{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       "Service",
-				APIVersion: corev1.SchemeGroupVersion.String(),
-			},
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      gen.GetComponent(),
-				Namespace: gen.GetNamespace(),
-				Labels:    gen.GetLabels(),
-			},
-			Spec: corev1.ServiceSpec{
-				Type:            corev1.ServiceTypeClusterIP,
-				SessionAffinity: corev1.ServiceAffinityNone,
-				Ports: []corev1.ServicePort{{
-					Name:       gen.GetComponent(),
-					Protocol:   corev1.ProtocolTCP,
-					Port:       int32(saasv1alpha1.SentinelPort),
-					TargetPort: intstr.FromString(gen.GetComponent()),
-				}},
-				Selector: gen.GetSelector(),
-			},
-		}
-	}
-}
-
-// SentinelServiceEndpoint returns the URI of the ClusterIP Service
-func (gen *Generator) SentinelServiceEndpoint() string {
-	return fmt.Sprintf("redis://%s.%s.svc.cluster.local:%d", gen.GetComponent(), gen.GetNamespace(), saasv1alpha1.SentinelPort)
-}
-
-// statefulSetService returns a function function that returns a Service
-// resource when called
 func (gen *Generator) statefulSetService() func() *corev1.Service {
 
 	return func() *corev1.Service {

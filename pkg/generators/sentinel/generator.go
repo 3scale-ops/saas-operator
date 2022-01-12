@@ -49,10 +49,6 @@ func (gen *Generator) Resources() []basereconciler.Resource {
 			Template:  gen.statefulSetService(),
 			IsEnabled: true,
 		},
-		basereconciler_resources.ServiceTemplate{
-			Template:  gen.service(),
-			IsEnabled: true,
-		},
 		basereconciler_resources.PodDisruptionBudgetTemplate{
 			Template:  pdb.New(gen.GetKey(), gen.GetLabels(), gen.GetSelector(), *gen.Spec.PDB),
 			IsEnabled: !gen.Spec.PDB.IsDeactivated(),
