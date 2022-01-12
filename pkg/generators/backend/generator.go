@@ -291,8 +291,10 @@ var _ workloads.DeploymentWorkload = &CronGenerator{}
 
 func (gen *CronGenerator) Deployment() basereconciler_resources.DeploymentTemplate {
 	return basereconciler_resources.DeploymentTemplate{
-		Template:        gen.deployment(),
-		RolloutTriggers: nil,
+		Template: gen.deployment(),
+		RolloutTriggers: []basereconciler_resources.RolloutTrigger{
+			{Name: "backend-error-monitoring", SecretName: pointer.String("backend-error-monitoring")},
+		},
 		EnforceReplicas: true,
 		IsEnabled:       true,
 	}
