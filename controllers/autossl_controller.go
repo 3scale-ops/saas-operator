@@ -61,8 +61,6 @@ func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	// Apply defaults for reconcile but do not store them in the API
 	instance.Default()
-	// json, _ := json.Marshal(instance.Spec)
-	// log.V(1).Info("Apply defaults before resolving templates", "JSON", string(json))
 
 	gen := autossl.NewGenerator(
 		instance.GetName(),
