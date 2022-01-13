@@ -21,6 +21,12 @@ import (
 
 	"github.com/3scale/saas-operator/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+)
+
+var (
+	PodSyncLabelKey   string = fmt.Sprintf("%s/twemproxyconfig.sync", GroupVersion.Group)
+	SyncAnnotationKey string = fmt.Sprintf("%s/twemproxyconfig.configmap-hash", GroupVersion.Group)
 )
 
 // TwemproxyConfigSpec defines the desired state of TwemproxyConfig
@@ -84,15 +90,9 @@ type TwemproxyConfig struct {
 	Status TwemproxyConfigStatus `json:"status,omitempty"`
 }
 
-func (tc *TwemproxyConfig) SyncLabel() map[string]string {
-	return map[string]string{
-		fmt.Sprintf("%s/twemproxyconfig/sync", GroupVersion.Group): util.ObjectKey(tc).String(),
-	}
-}
-
-func (tc *TwemproxyConfig) SyncAnnotation(hash string) map[string]string {
-	return map[string]string{
-		fmt.Sprintf("%s/twemproxyconfig.configmap-hash", GroupVersion.Group): hash,
+func (tc *TwemproxyConfig) PodSyncSelector() client.MatchingLabels {
+	return client.MatchingLabels{
+		PodSyncLabelKey: util.ObjectKey(tc).Name,
 	}
 }
 
