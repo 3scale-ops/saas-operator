@@ -91,6 +91,9 @@ vet: ## Run go vet against code.
 test: manifests generate fmt vet envtest assets ginkgo ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" $(GINKGO) -p -r ./... -coverprofile cover.out
 
+test-sequential: manifests generate fmt vet envtest assets ginkgo ## Run tests.
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" $(GINKGO) -r ./... -coverprofile cover.out
+
 assets: go-bindata ## assets: Generate embedded assets
 	@echo Generate Go embedded assets files by processing source
 	PATH=$$PATH:$$PWD/bin go generate github.com/3scale/saas-operator/pkg/assets
