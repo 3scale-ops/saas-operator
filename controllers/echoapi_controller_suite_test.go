@@ -67,10 +67,7 @@ var _ = Describe("EchoAPI controller", func() {
 			Eventually(func() bool {
 				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, echoapi)
 				Expect(err).ToNot(HaveOccurred())
-				if len(echoapi.GetFinalizers()) > 0 {
-					return true
-				}
-				return false
+				return len(echoapi.GetFinalizers()) > 0
 			}, timeout, poll).Should(BeTrue())
 
 			dep := &appsv1.Deployment{}
