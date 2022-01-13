@@ -1,0 +1,7 @@
+apiVersion: saas.3scale.net/v1alpha1
+kind: TwemproxyConfig
+metadata:
+  name: twemproxyconfig-sample
+spec:
+  # Add fields here
+  foo: bar

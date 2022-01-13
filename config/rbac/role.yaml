@@ -344,6 +344,32 @@ rules:
 - apiGroups:
   - saas.3scale.net
   resources:
+  - twemproxyconfigs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - twemproxyconfigs/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - twemproxyconfigs/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - saas.3scale.net
+  resources:
   - zyncs
   verbs:
   - create

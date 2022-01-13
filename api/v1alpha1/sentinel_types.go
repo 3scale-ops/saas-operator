@@ -35,6 +35,7 @@ const (
 // bitnami/redis-sentinel:4.0.11-debian-9-r110
 var (
 	sentinelDefaultReplicas int32            = 3
+	SentinelDefaultQuorum   int              = 2
 	sentinelDefaultImage    defaultImageSpec = defaultImageSpec{
 		Name:       pointer.StringPtr("bitnami/redis-sentinel"),
 		Tag:        pointer.StringPtr("4.0.11-debian-9-r110"),
@@ -161,13 +162,40 @@ func (spec *SentinelSpec) Default() {
 
 // SentinelStatus defines the observed state of Sentinel
 type SentinelStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// Addresses of the sentinel instances currently running
+	// +operator-sdk:csv:customresourcedefinitions:type=status
+	// +optional
+	Sentinels []string `json:"sentinels,omitempty"`
+	// MonitoredShards is the list of shards that the Sentinel
+	// resource is currently monitoring
+	// +operator-sdk:csv:customresourcedefinitions:type=status
+	// +optional
+	MonitoredShards MonitoredShards `json:"monitoredShards,omitempty"`
+}
+
+type MonitoredShards []MonitoredShard
+
+// MonitoredShards implements sort.Interface based on the Name field.
+func (ms MonitoredShards) Len() int           { return len(ms) }
+func (ms MonitoredShards) Less(i, j int) bool { return ms[i].Name < ms[j].Name }
+func (ms MonitoredShards) Swap(i, j int)      { ms[i], ms[j] = ms[j], ms[i] }
+
+// MonitoredShard contains information of one of the shards
+// monitored by the Sentinel resource
+type MonitoredShard struct {
+	// Name is the name of the redis shard
+	// +operator-sdk:csv:customresourcedefinitions:type=status
+	Name string `json:"name"`
+	// Master is the address of the master redis server of
+	// this shard, in the format "127.0.0.1:6379"
+	// +operator-sdk:csv:customresourcedefinitions:type=status
+	Master string `json:"master"`
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
-
+//+kubebuilder:printcolumn:JSONPath=".status.sentinels",name=Sentinels,type=string
+//+kubebuilder:printcolumn:JSONPath=".status.monitoredShards",name=Shards,type=string
 // Sentinel is the Schema for the sentinels API
 type Sentinel struct {
 	metav1.TypeMeta   `json:",inline"`

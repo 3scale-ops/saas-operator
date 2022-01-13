@@ -76,7 +76,7 @@ func (r *RedisShardReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	shard, result, err := r.setRedisRoles(ctx, types.NamespacedName{Name: req.Name, Namespace: req.Namespace},
-		*instance.Spec.MasterIndex, gen.ServiceName(), log)
+		*instance.Spec.MasterIndex, *instance.Spec.SlaveCount+1, gen.ServiceName(), log)
 	if result != nil || err != nil {
 		return *result, err
 	}
@@ -96,10 +96,10 @@ func (r *RedisShardReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *RedisShardReconciler) setRedisRoles(ctx context.Context, key types.NamespacedName, masterIndex int32, serviceName string, log logr.Logger) (*redis.Shard, *ctrl.Result, error) {
+func (r *RedisShardReconciler) setRedisRoles(ctx context.Context, key types.NamespacedName, masterIndex, replicas int32, serviceName string, log logr.Logger) (*redis.Shard, *ctrl.Result, error) {
 
-	redisURLs := make([]string, saasv1alpha1.RedisShardDefaultReplicas)
-	for i := 0; i < int(saasv1alpha1.RedisShardDefaultReplicas); i++ {
+	redisURLs := make([]string, replicas)
+	for i := 0; i < int(replicas); i++ {
 		pod := &corev1.Pod{}
 		key := types.NamespacedName{Name: fmt.Sprintf("%s-%d", serviceName, i), Namespace: key.Namespace}
 		err := r.GetClient().Get(ctx, key, pod)

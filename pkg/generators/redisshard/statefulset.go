@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
 	"github.com/3scale/saas-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
@@ -26,7 +25,7 @@ func (gen *Generator) statefulSet() func() *appsv1.StatefulSet {
 			},
 			Spec: appsv1.StatefulSetSpec{
 				PodManagementPolicy:  appsv1.ParallelPodManagement,
-				Replicas:             pointer.Int32(saasv1alpha1.RedisShardDefaultReplicas),
+				Replicas:             pointer.Int32(gen.Replicas),
 				RevisionHistoryLimit: pointer.Int32(1),
 				Selector:             &metav1.LabelSelector{MatchLabels: gen.GetSelector()},
 				ServiceName:          gen.ServiceName(),

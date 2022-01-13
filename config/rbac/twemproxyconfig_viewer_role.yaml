@@ -1,0 +1,20 @@
+# permissions for end users to view twemproxyconfigs.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: twemproxyconfig-viewer-role
+rules:
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - twemproxyconfigs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - twemproxyconfigs/status
+  verbs:
+  - get

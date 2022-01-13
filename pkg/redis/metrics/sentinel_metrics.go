@@ -2,15 +2,14 @@ package metrics
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"strings"
 	"time"
 
+	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
 	"github.com/3scale/saas-operator/pkg/redis"
 	"github.com/go-logr/logr"
-	goredis "github.com/go-redis/redis/v8"
 	"github.com/prometheus/client_golang/prometheus"
+	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
 )
 
@@ -73,24 +72,6 @@ var (
 		},
 		[]string{"sentinel", "shard", "redis_server", "role"},
 	)
-
-	switchMasterCount = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name:      "switch_master_count",
-			Namespace: "saas_redis_sentinel",
-			Help:      "+switch-master (https://redis.io/topics/sentinel#sentinel-api)",
-		},
-		[]string{"sentinel", "shard"},
-	)
-
-	failoverAbortNoGoodSlaveCount = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name:      "failover_abort_no_good_slave_count",
-			Namespace: "saas_redis_sentinel",
-			Help:      "no-good-slave (https://redis.io/topics/sentinel#sentinel-api)",
-		},
-		[]string{"sentinel", "shard"},
-	)
 )
 
 func init() {
@@ -98,19 +79,24 @@ func init() {
 	metrics.Registry.MustRegister(
 		linkPendingCommands, lastOkPingReply, roleReportedTime,
 		numSlaves, numOtherSentinels, masterLinkDownTime, slaveReplOffset,
-		switchMasterCount, failoverAbortNoGoodSlaveCount,
 	)
 }
+
+// SentinelEventWatcher implements RunnableThread
+var _ threads.RunnableThread = &SentinelMetricsGatherer{}
 
 // SentinelMetricsGatherer is used to export sentinel metrics, obtained
 // thrugh several admin commands, as prometheus metrics
 type SentinelMetricsGatherer struct {
 	RefreshInterval time.Duration
-	SentinelURL     string
-	Log             logr.Logger
+	SentinelURI     string
 	started         bool
 	cancel          context.CancelFunc
 	sentinel        *redis.SentinelServer
+}
+
+func (fw *SentinelMetricsGatherer) GetID() string {
+	return fw.SentinelURI
 }
 
 // IsStarted returns whether the metrics gatherer is running or not
@@ -118,37 +104,35 @@ func (smg *SentinelMetricsGatherer) IsStarted() bool {
 	return smg.started
 }
 
+// SetChannel is required for SentinelMetricsGatherer to implement the RunnableThread
+// interface, but it actually does nothing with the channel.
+func (fw *SentinelMetricsGatherer) SetChannel(ch chan event.GenericEvent) {}
+
 //Start starts metrics gatherer for sentinel
-func (smg *SentinelMetricsGatherer) Start(parentCtx context.Context) {
-	log := smg.Log.WithValues("sentinel", smg.SentinelURL)
+func (smg *SentinelMetricsGatherer) Start(parentCtx context.Context, l logr.Logger) error {
+	log := l.WithValues("sentinel", smg.SentinelURI)
 	if smg.started {
-		log.Error(errors.New("already started"), "the metrics gatherer is already running")
-		return
+		log.Info("the metrics gatherer is already running")
+		return nil
+	}
+
+	var err error
+	smg.sentinel, err = redis.NewSentinelServerFromConnectionString(smg.SentinelURI, smg.SentinelURI)
+	if err != nil {
+		log.Error(err, "cannot create SentinelServer")
+		return err
 	}
 
 	go func() {
-		var err error
 		var ctx context.Context
 		ctx, smg.cancel = context.WithCancel(parentCtx)
 
 		ticker := time.NewTicker(smg.RefreshInterval)
 
-		smg.sentinel, err = redis.NewSentinelServerFromConnectionString(smg.SentinelURL, smg.SentinelURL)
-		if err != nil {
-			log.Error(err, "cannot create SentinelServer")
-		}
-
-		ch, closeWatch := smg.sentinel.CRUD.SentinelPSubscribe(ctx, "+switch-master", "-failover-abort-no-good-slave")
-		defer closeWatch()
-
 		log.Info("sentinel metrics gatherer running")
 
 		for {
 			select {
-
-			case msg := <-ch:
-				log.V(1).Info("received event from sentinel", "event", msg.String())
-				smg.parseEvent(msg)
 
 			case <-ticker.C:
 				if err := smg.gatherMetrics(ctx); err != nil {
@@ -157,12 +141,14 @@ func (smg *SentinelMetricsGatherer) Start(parentCtx context.Context) {
 
 			case <-ctx.Done():
 				log.Info("shutting down sentinel metrics gatherer")
+				smg.started = false
 				return
 			}
 		}
 	}()
 
 	smg.started = true
+	return nil
 }
 
 // Stop stops metrics gatherering for sentinel
@@ -180,18 +166,6 @@ func (smg *SentinelMetricsGatherer) Stop() {
 	slaveReplOffset.Reset()
 }
 
-func (smg *SentinelMetricsGatherer) parseEvent(msg *goredis.Message) {
-
-	switch msg.Channel {
-	case "+switch-master":
-		shard := strings.Split(msg.Payload, " ")[0]
-		switchMasterCount.With(prometheus.Labels{"sentinel": smg.SentinelURL, "shard": shard}).Add(1)
-	case "-failover-abort-no-good-slave":
-		shard := strings.Split(msg.Payload, " ")[1]
-		failoverAbortNoGoodSlaveCount.With(prometheus.Labels{"sentinel": smg.SentinelURL, "shard": shard}).Add(1)
-	}
-}
-
 func (smg *SentinelMetricsGatherer) gatherMetrics(ctx context.Context) error {
 
 	mresult, err := smg.sentinel.CRUD.SentinelMasters(ctx)
@@ -200,23 +174,23 @@ func (smg *SentinelMetricsGatherer) gatherMetrics(ctx context.Context) error {
 	}
 
 	for _, master := range mresult {
-		linkPendingCommands.With(prometheus.Labels{"sentinel": smg.SentinelURL, "shard": master.Name,
+		linkPendingCommands.With(prometheus.Labels{"sentinel": smg.SentinelURI, "shard": master.Name,
 			"redis_server": fmt.Sprintf("%s:%d", master.IP, master.Port), "role": master.RoleReported,
 		}).Set(float64(master.LinkPendingCommands))
 
-		lastOkPingReply.With(prometheus.Labels{"sentinel": smg.SentinelURL, "shard": master.Name,
+		lastOkPingReply.With(prometheus.Labels{"sentinel": smg.SentinelURI, "shard": master.Name,
 			"redis_server": fmt.Sprintf("%s:%d", master.IP, master.Port), "role": master.RoleReported,
 		}).Set(float64(master.LastOkPingReply))
 
-		roleReportedTime.With(prometheus.Labels{"sentinel": smg.SentinelURL, "shard": master.Name,
+		roleReportedTime.With(prometheus.Labels{"sentinel": smg.SentinelURI, "shard": master.Name,
 			"redis_server": fmt.Sprintf("%s:%d", master.IP, master.Port), "role": master.RoleReported,
 		}).Set(float64(master.RoleReportedTime))
 
-		numSlaves.With(prometheus.Labels{"sentinel": smg.SentinelURL, "shard": master.Name,
+		numSlaves.With(prometheus.Labels{"sentinel": smg.SentinelURI, "shard": master.Name,
 			"redis_server": fmt.Sprintf("%s:%d", master.IP, master.Port), "role": master.RoleReported,
 		}).Set(float64(master.NumSlaves))
 
-		numOtherSentinels.With(prometheus.Labels{"sentinel": smg.SentinelURL, "shard": master.Name,
+		numOtherSentinels.With(prometheus.Labels{"sentinel": smg.SentinelURI, "shard": master.Name,
 			"redis_server": fmt.Sprintf("%s:%d", master.IP, master.Port), "role": master.RoleReported,
 		}).Set(float64(master.NumOtherSentinels))
 
@@ -227,23 +201,23 @@ func (smg *SentinelMetricsGatherer) gatherMetrics(ctx context.Context) error {
 
 		for _, slave := range sresult {
 
-			linkPendingCommands.With(prometheus.Labels{"sentinel": smg.SentinelURL, "shard": master.Name,
+			linkPendingCommands.With(prometheus.Labels{"sentinel": smg.SentinelURI, "shard": master.Name,
 				"redis_server": fmt.Sprintf("%s:%d", slave.IP, slave.Port), "role": slave.RoleReported,
 			}).Set(float64(slave.LinkPendingCommands))
 
-			lastOkPingReply.With(prometheus.Labels{"sentinel": smg.SentinelURL, "shard": master.Name,
+			lastOkPingReply.With(prometheus.Labels{"sentinel": smg.SentinelURI, "shard": master.Name,
 				"redis_server": fmt.Sprintf("%s:%d", slave.IP, slave.Port), "role": slave.RoleReported,
 			}).Set(float64(slave.LastOkPingReply))
 
-			roleReportedTime.With(prometheus.Labels{"sentinel": smg.SentinelURL, "shard": master.Name,
+			roleReportedTime.With(prometheus.Labels{"sentinel": smg.SentinelURI, "shard": master.Name,
 				"redis_server": fmt.Sprintf("%s:%d", slave.IP, slave.Port), "role": slave.RoleReported,
 			}).Set(float64(slave.RoleReportedTime))
 
-			masterLinkDownTime.With(prometheus.Labels{"sentinel": smg.SentinelURL, "shard": master.Name,
+			masterLinkDownTime.With(prometheus.Labels{"sentinel": smg.SentinelURI, "shard": master.Name,
 				"redis_server": fmt.Sprintf("%s:%d", slave.IP, slave.Port), "role": slave.RoleReported,
 			}).Set(float64(slave.MasterLinkDownTime))
 
-			slaveReplOffset.With(prometheus.Labels{"sentinel": smg.SentinelURL, "shard": master.Name,
+			slaveReplOffset.With(prometheus.Labels{"sentinel": smg.SentinelURI, "shard": master.Name,
 				"redis_server": fmt.Sprintf("%s:%d", slave.IP, slave.Port), "role": slave.RoleReported,
 			}).Set(float64(slave.SlaveReplOffset))
 		}

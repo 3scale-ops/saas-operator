@@ -257,6 +257,70 @@ func TestSentinelServer_IsMonitoringShards(t *testing.T) {
 	}
 }
 
+func TestSentinelServer_MonitoredShards(t *testing.T) {
+	type args struct {
+		ctx context.Context
+	}
+	tests := []struct {
+		name    string
+		ss      *SentinelServer
+		args    args
+		want    saasv1alpha1.MonitoredShards
+		wantErr bool
+	}{
+		{
+			name: "Returns all shards monitored by sentinel",
+			ss: &SentinelServer{
+				Name: "test-server",
+				CRUD: crud.NewFakeCRUD(redis.FakeResponse{
+					InjectResponse: func() interface{} {
+						return []interface{}{
+							[]interface{}{"name", "shard01", "ip", "127.0.0.1", "port", "6379"},
+							[]interface{}{"name", "shard02", "ip", "127.0.0.2", "port", "6379"},
+						}
+					},
+					InjectError: func() error { return nil },
+				}),
+			},
+			args: args{
+				ctx: context.TODO(),
+			},
+			want: saasv1alpha1.MonitoredShards{
+				{Name: "shard01", Master: "127.0.0.1:6379"},
+				{Name: "shard02", Master: "127.0.0.2:6379"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Returns an error",
+			ss: &SentinelServer{
+				Name: "test-server",
+				CRUD: crud.NewFakeCRUD(redis.FakeResponse{
+					InjectResponse: func() interface{} { return []interface{}{} },
+					InjectError:    func() error { return errors.New("error") },
+				}),
+			},
+			args: args{
+				ctx: context.TODO(),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.ss.MonitoredShards(tt.args.ctx)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("SentinelServer.MonitoredShards() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("SentinelServer.MonitoredShards() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestSentinelServer_Monitor(t *testing.T) {
 	type fields struct {
 		Name string
@@ -1264,6 +1328,76 @@ func TestSentinelPool_Monitor(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("SentinelPool.Monitor() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_applyQuorum(t *testing.T) {
+	type args struct {
+		responses []saasv1alpha1.MonitoredShards
+		quorum    int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    saasv1alpha1.MonitoredShards
+		wantErr bool
+	}{
+		{
+			name: "Should return the accepted response",
+			args: args{
+				responses: []saasv1alpha1.MonitoredShards{
+					{
+						{Name: "shard01", Master: "127.0.0.1:1111"},
+						{Name: "shard02", Master: "127.0.0.2:2222"},
+						{Name: "shard03", Master: "127.0.0.3:3333"},
+					},
+					{
+						{Name: "shard03", Master: "127.0.0.3:3333"},
+						{Name: "shard02", Master: "127.0.0.2:2222"},
+						{Name: "shard01", Master: "127.0.0.1:1111"},
+					},
+				},
+				quorum: 2,
+			},
+			want: []saasv1alpha1.MonitoredShard{
+				{Name: "shard01", Master: "127.0.0.1:1111"},
+				{Name: "shard02", Master: "127.0.0.2:2222"},
+				{Name: "shard03", Master: "127.0.0.3:3333"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Should fail, no quorum",
+			args: args{
+				responses: []saasv1alpha1.MonitoredShards{
+					{
+						{Name: "shard01", Master: "127.0.0.1:1111"},
+						{Name: "shard02", Master: "127.0.0.2:2222"},
+						{Name: "shard03", Master: "127.0.0.3:3333"},
+					},
+					{
+						{Name: "shard03", Master: "127.0.0.3:3333"},
+						{Name: "shard02", Master: "127.0.0.2:2222"},
+						{Name: "shard01", Master: "127.0.0.4:4444"},
+					},
+				},
+				quorum: 2,
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := applyQuorum(tt.args.responses, tt.args.quorum)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("applyQuorum() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("applyQuorum() = %v, want %v", got, tt.want)
 			}
 		})
 	}
