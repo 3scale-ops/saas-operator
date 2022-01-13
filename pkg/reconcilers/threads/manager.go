@@ -19,8 +19,8 @@ type RunnableThread interface {
 	IsStarted() bool
 }
 
-// SentinelEvents is a struct that holds configuration to
-// run sentinel event watchers
+// Manager is a struct that holds configuration to
+// manage concurrent RunnableThreads
 type Manager struct {
 	mu      sync.Mutex
 	channel chan event.GenericEvent
@@ -50,7 +50,7 @@ func (mgr *Manager) RunThread(ctx context.Context, key string, thread RunnableTh
 	return nil
 }
 
-// StopExporter stops the thread identified by the given key
+// StopThread stops the thread identified by the given key
 func (mgr *Manager) StopThread(key string) {
 	mgr.mu.Lock()
 	if _, ok := mgr.threads[key]; !ok {
