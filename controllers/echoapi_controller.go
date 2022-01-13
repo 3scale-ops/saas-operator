@@ -21,7 +21,7 @@ import (
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators/echoapi"
-	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
+	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	"github.com/go-logr/logr"
 	"github.com/redhat-cop/operator-utils/pkg/util"
 	"k8s.io/apimachinery/pkg/types"
@@ -33,7 +33,7 @@ import (
 
 // EchoAPIReconciler reconciles a EchoAPI object
 type EchoAPIReconciler struct {
-	basereconciler.Reconciler
+	workloads.WorkloadReconciler
 	Log logr.Logger
 }
 
@@ -61,36 +61,21 @@ func (r *EchoAPIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	// Apply defaults for reconcile but do not store them in the API
 	instance.Default()
 
-	gen := echoapi.NewGenerator(
+	gen, err := echoapi.NewGenerator(
 		instance.GetName(),
 		instance.GetNamespace(),
 		instance.Spec,
 	)
+	if err != nil {
+		return r.ManageError(ctx, instance, err)
+	}
 
-	err = r.ReconcileOwnedResources(ctx, instance, basereconciler.ControlledResources{
-		Deployments: []basereconciler.Deployment{{
-			Template:        gen.Deployment(),
-			RolloutTriggers: nil,
-			HasHPA:          !instance.Spec.HPA.IsDeactivated(),
-		}},
-		Services: []basereconciler.Service{{
-			Template: gen.Service(),
-			Enabled:  true,
-		}},
-		PodDisruptionBudgets: []basereconciler.PodDisruptionBudget{{
-			Template: gen.PDB(),
-			Enabled:  !instance.Spec.PDB.IsDeactivated(),
-		}},
-		HorizontalPodAutoscalers: []basereconciler.HorizontalPodAutoscaler{{
-			Template: gen.HPA(),
-			Enabled:  !instance.Spec.HPA.IsDeactivated(),
-		}},
-		PodMonitors: []basereconciler.PodMonitor{{
-			Template: gen.PodMonitor(),
-			Enabled:  true,
-		}},
-	})
+	resources, err := r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen, &gen)
+	if err != nil {
+		return r.ManageError(ctx, instance, err)
+	}
 
+	err = r.ReconcileOwnedResources(ctx, instance, r.GetScheme(), resources)
 	if err != nil {
 		log.Error(err, "unable to update owned resources")
 		return r.ManageError(ctx, instance, err)

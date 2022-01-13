@@ -1,14 +1,14 @@
 package echoapi
 
 import (
+	"fmt"
+
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/hpa"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pdb"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/podmonitor"
-	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
-
-	"k8s.io/apimachinery/pkg/types"
+	basereconciler_resources "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/resources"
+	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 )
 
 const (
@@ -17,40 +17,65 @@ const (
 
 // Generator configures the generators for EchoAPI
 type Generator struct {
-	generators.BaseOptions
-	Spec saasv1alpha1.EchoAPISpec
+	generators.BaseOptionsV2
+	Spec    saasv1alpha1.EchoAPISpec
+	Traffic bool
 }
 
 // NewGenerator returns a new Options struct
-func NewGenerator(instance, namespace string, spec saasv1alpha1.EchoAPISpec) Generator {
+func NewGenerator(instance, namespace string, spec saasv1alpha1.EchoAPISpec) (Generator, error) {
 	return Generator{
-		BaseOptions: generators.BaseOptions{
-			Component:    component,
-			InstanceName: instance,
-			Namespace:    namespace,
-			Labels: map[string]string{
-				"app":     component,
-				"part-of": "3scale-saas",
+			BaseOptionsV2: generators.BaseOptionsV2{
+				Component:    component,
+				InstanceName: instance,
+				Namespace:    namespace,
+				Labels: map[string]string{
+					"app":     component,
+					"part-of": "3scale-saas",
+				},
 			},
+			Spec:    spec,
+			Traffic: true,
 		},
-		Spec: spec,
+		nil
+}
+
+// Validate that Generator implements workloads.TrafficManager interface
+var _ workloads.TrafficManager = &Generator{}
+
+func (gen *Generator) Services() []basereconciler_resources.ServiceTemplate {
+	return []basereconciler_resources.ServiceTemplate{
+		{Template: gen.service(), IsEnabled: true},
+	}
+}
+func (gen *Generator) SendTraffic() bool { return gen.Traffic }
+func (gen *Generator) TrafficSelector() map[string]string {
+	return map[string]string{
+		fmt.Sprintf("%s/traffic", saasv1alpha1.GroupVersion.Group): component,
 	}
 }
 
-// HPA returns a basereconciler.GeneratorFunction
-func (gen *Generator) HPA() basereconciler.GeneratorFunction {
-	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return hpa.New(key, gen.GetLabels(), *gen.Spec.HPA)
+// Validate that Generator implements workloads.DeploymentWorkload interface
+var _ workloads.DeploymentWorkloadWithTraffic = &Generator{}
+
+func (gen *Generator) Deployment() basereconciler_resources.DeploymentTemplate {
+	return basereconciler_resources.DeploymentTemplate{
+		Template:        gen.deployment(),
+		EnforceReplicas: gen.Spec.HPA.IsDeactivated(),
+		IsEnabled:       true,
+	}
 }
 
-// PDB returns a basereconciler.GeneratorFunction
-func (gen *Generator) PDB() basereconciler.GeneratorFunction {
-	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return pdb.New(key, gen.GetLabels(), gen.Selector().MatchLabels, *gen.Spec.PDB)
+func (gen *Generator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {
+	return gen.Spec.HPA
 }
 
-// PodMonitor returns a basereconciler.GeneratorFunction
-func (gen *Generator) PodMonitor() basereconciler.GeneratorFunction {
-	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return podmonitor.New(key, gen.GetLabels(), gen.Selector().MatchLabels, podmonitor.PodMetricsEndpoint("/stats/prometheus", "envoy-metrics", 60))
+func (gen *Generator) PDBSpec() *saasv1alpha1.PodDisruptionBudgetSpec {
+	return gen.Spec.PDB
+}
+
+func (gen *Generator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint {
+	return []monitoringv1.PodMetricsEndpoint{
+		podmonitor.PodMetricsEndpoint("/stats/prometheus", "envoy-metrics", 60),
+	}
 }
