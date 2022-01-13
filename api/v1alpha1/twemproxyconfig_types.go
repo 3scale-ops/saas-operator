@@ -17,6 +17,9 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"fmt"
+
+	"github.com/3scale/saas-operator/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -79,6 +82,18 @@ type TwemproxyConfig struct {
 
 	Spec   TwemproxyConfigSpec   `json:"spec,omitempty"`
 	Status TwemproxyConfigStatus `json:"status,omitempty"`
+}
+
+func (tc *TwemproxyConfig) SyncLabel() map[string]string {
+	return map[string]string{
+		fmt.Sprintf("%s/twemproxyconfig/sync", GroupVersion.Group): util.ObjectKey(tc).String(),
+	}
+}
+
+func (tc *TwemproxyConfig) SyncAnnotation(hash string) map[string]string {
+	return map[string]string{
+		fmt.Sprintf("%s/twemproxyconfig.configmap-hash", GroupVersion.Group): hash,
+	}
 }
 
 //+kubebuilder:object:root=true

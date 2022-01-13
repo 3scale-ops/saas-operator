@@ -25,9 +25,14 @@ import (
 	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
 	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
 	"github.com/3scale/saas-operator/pkg/redis/events"
+	"github.com/3scale/saas-operator/pkg/util"
 	"github.com/go-logr/logr"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
@@ -57,17 +62,22 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return *result, err
 	}
 
+	// Generate the ConfigMap
 	gen, err := twemproxyconfig.NewGenerator(ctx, instance)
 	if err != nil {
 		return r.ManageError(ctx, instance, err)
 	}
-
-	if err := r.ReconcileOwnedResources(ctx, instance, r.GetScheme(), gen.Resources()); err != nil {
-		log.Error(err, "unable to update owned resources")
+	cm, _, err := gen.ConfigMap().Build(ctx, r.GetClient())
+	if err != nil {
 		return r.ManageError(ctx, instance, err)
 	}
 
-	// Reconcile sentinel the event watchers
+	// Reconcile the ConfigMap
+	if err := r.reconcileConfigMap(ctx, cm.(*corev1.ConfigMap), log); err != nil {
+		return r.ManageError(ctx, instance, err)
+	}
+
+	// Reconcile sentinel event watchers
 	eventWatchers := make([]threads.RunnableThread, 0, len(gen.Spec.SentinelURIs))
 	for _, uri := range gen.Spec.SentinelURIs {
 		eventWatchers = append(eventWatchers, &events.SentinelEventWatcher{
@@ -80,6 +90,36 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	// Reconcile periodically in case some event is lost ...
 	return ctrl.Result{RequeueAfter: 30 * time.Second}, nil
+}
+
+func (r *TwemproxyConfigReconciler) reconcileConfigMap(ctx context.Context, desired *corev1.ConfigMap, log logr.Logger) error {
+
+	current := &corev1.ConfigMap{}
+	err := r.GetClient().Get(ctx, util.ObjectKey(desired), current)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			// Create
+			if err := r.GetClient().Create(ctx, desired); err != nil {
+				return err
+			}
+			log.Info("created ConfigMap")
+			return nil
+		}
+		return err
+	}
+
+	// Compare .data field of both ConfigMaps and patch if required
+	// We use patch to avoid failures due to having an older version
+	// of the configmap so the config changes are propagated faster.
+	if !equality.Semantic.DeepEqual(desired.Data, current.Data) {
+		if err := r.GetClient().Patch(ctx, desired, client.MergeFrom(current)); err != nil {
+			log.Error(err, "unable to patch ConfigMap")
+			return err
+		}
+		log.Info("updated ConfigMap")
+	}
+
+	return nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
