@@ -53,7 +53,7 @@ type SentinelEventWatcher struct {
 }
 
 func (sew *SentinelEventWatcher) GetID() string {
-	return "#" + sew.SentinelURI
+	return sew.SentinelURI
 }
 
 // IsStarted returns whether the metrics gatherer is running or not

@@ -96,7 +96,7 @@ type SentinelMetricsGatherer struct {
 }
 
 func (fw *SentinelMetricsGatherer) GetID() string {
-	return "#" + fw.SentinelURI
+	return fw.SentinelURI
 }
 
 // IsStarted returns whether the metrics gatherer is running or not

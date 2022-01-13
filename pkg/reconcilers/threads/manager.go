@@ -36,8 +36,7 @@ func NewManager() Manager {
 }
 
 // RunThread runs thread and associates it with a given key so it can later be stopped
-func (mgr *Manager) RunThread(ctx context.Context, thread RunnableThread, log logr.Logger) error {
-	key := thread.GetID()
+func (mgr *Manager) RunThread(ctx context.Context, key string, thread RunnableThread, log logr.Logger) error {
 	thread.SetChannel(mgr.channel)
 	// run the exporter for this instance if it is not running, do nothing otherwise
 	if w, ok := mgr.threads[key]; !ok || !w.IsStarted() {
@@ -54,6 +53,9 @@ func (mgr *Manager) RunThread(ctx context.Context, thread RunnableThread, log lo
 // StopExporter stops the thread identified by the given key
 func (mgr *Manager) StopThread(key string) {
 	mgr.mu.Lock()
+	if _, ok := mgr.threads[key]; !ok {
+		return
+	}
 	mgr.threads[key].Stop()
 	delete(mgr.threads, key)
 	mgr.mu.Unlock()
@@ -72,9 +74,9 @@ func (mgr *Manager) ReconcileThreads(ctx context.Context, instance client.Object
 	shouldRun := map[string]int{}
 
 	for _, thread := range threads {
-		key := thread.GetID()
+		key := prefix(instance) + thread.GetID()
 		shouldRun[key] = 1
-		if err := mgr.RunThread(ctx, thread, log); err != nil {
+		if err := mgr.RunThread(ctx, key, thread, log); err != nil {
 			return err
 		}
 	}
@@ -94,16 +96,16 @@ func (mgr *Manager) ReconcileThreads(ctx context.Context, instance client.Object
 // CleanupThreads returns a function that cleans matching threads when invoked.
 // This is intended for use as a cleanup function in the finalize phase of a controller's
 // reconcile loop.
-func (se *Manager) CleanupThreads(instance client.Object) func() {
+func (mgr *Manager) CleanupThreads(instance client.Object) func() {
 	return func() {
-		for key := range se.threads {
+		for key := range mgr.threads {
 			if strings.Contains(key, prefix(instance)) {
-				se.StopThread(key)
+				mgr.StopThread(key)
 			}
 		}
 	}
 }
 
 func prefix(o client.Object) string {
-	return util.ObjectKey(o).String()
+	return util.ObjectKey(o).String() + "_"
 }
