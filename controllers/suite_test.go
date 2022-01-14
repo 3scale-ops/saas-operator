@@ -120,8 +120,8 @@ var _ = BeforeSuite(func() {
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&EchoAPIReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("EchoAPI"), false),
-		Log:        ctrl.Log.WithName("controllers").WithName("EchoAPI"),
+		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("EchoAPI"), false),
+		Log:                ctrl.Log.WithName("controllers").WithName("EchoAPI"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 

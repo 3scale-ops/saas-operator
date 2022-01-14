@@ -169,14 +169,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.EchoAPIReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("EchoAPI"), false),
-		Log:        ctrl.Log.WithName("controllers").WithName("EchoAPI"),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "EchoAPI")
-		os.Exit(1)
-	}
-
 	/* BASERECONCILER_V2 BASED CONTROLLERS*/
 
 	if err = (&controllers.SentinelReconciler{
@@ -205,6 +197,14 @@ func main() {
 	}
 
 	/* WORKLOADS RECONCILER BASED CONTROLLERS*/
+
+	if err = (&controllers.EchoAPIReconciler{
+		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("EchoAPI"), false),
+		Log:                ctrl.Log.WithName("controllers").WithName("EchoAPI"),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "EchoAPI")
+		os.Exit(1)
+	}
 
 	if err = (&controllers.BackendReconciler{
 		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("Backend"), false),
