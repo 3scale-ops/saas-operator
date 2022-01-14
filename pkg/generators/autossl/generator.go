@@ -2,6 +2,7 @@ package autossl
 
 import (
 	"fmt"
+	"strings"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators"
@@ -22,12 +23,14 @@ type Generator struct {
 	generators.BaseOptionsV2
 	Spec    saasv1alpha1.AutoSSLSpec
 	Options config.Options
+	Canary  *Generator
 	Traffic bool
 }
 
 // NewGenerator returns a new Options struct
 func NewGenerator(instance, namespace string, spec saasv1alpha1.AutoSSLSpec) (Generator, error) {
-	return Generator{
+
+	generator := Generator{
 		BaseOptionsV2: generators.BaseOptionsV2{
 			Component:    component,
 			InstanceName: instance,
@@ -39,7 +42,34 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.AutoSSLSpec) (Ge
 		},
 		Spec:    spec,
 		Options: config.NewOptions(spec),
-	}, nil
+	}
+
+	if spec.Canary != nil {
+		canarySpec, err := spec.ResolveCanarySpec(spec.Canary)
+		if err != nil {
+			return Generator{}, err
+		}
+		generator.Canary = &Generator{
+			BaseOptionsV2: generators.BaseOptionsV2{
+				Component:    strings.Join([]string{component, "canary"}, "-"),
+				InstanceName: instance,
+				Namespace:    namespace,
+				Labels: map[string]string{
+					"app":                          "3scale-api-management",
+					"threescale_component":         component,
+					"threescale_component_element": "canary",
+				},
+			},
+			Spec:    *canarySpec,
+			Options: config.NewOptions(*canarySpec),
+			Traffic: spec.Canary.SendTraffic,
+		}
+		// Disable PDB and HPA for the canary Deployment
+		generator.Canary.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
+		generator.Canary.Spec.PDB = &saasv1alpha1.PodDisruptionBudgetSpec{}
+	}
+
+	return generator, nil
 }
 
 // Validate that Generator implements workloads.TrafficManager interface

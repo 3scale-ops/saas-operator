@@ -129,6 +129,11 @@ type AutoSSLSpec struct {
 	// If specified, the pod's tolerations.
 	// +optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
+	// Canary defines spec changes for the canary Deployment. If
+	// left unset the canary Deployment wil not be created.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Canary *Canary `json:"canary,omitempty"`
 }
 
 // Default implements defaulting for AutoSSLSpec
@@ -136,13 +141,7 @@ func (spec *AutoSSLSpec) Default() {
 
 	spec.Image = InitializeImageSpec(spec.Image, autosslDefaultImage)
 	spec.HPA = InitializeHorizontalPodAutoscalerSpec(spec.HPA, autosslDefaultHPA)
-
-	if spec.HPA.IsDeactivated() {
-		spec.Replicas = intOrDefault(spec.Replicas, &autosslDefaultReplicas)
-	} else {
-		spec.Replicas = nil
-	}
-
+	spec.Replicas = intOrDefault(spec.Replicas, &autosslDefaultReplicas)
 	spec.PDB = InitializePodDisruptionBudgetSpec(spec.PDB, autosslDefaultPDB)
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, autosslDefaultResources)
 	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, autosslDefaultProbe)
@@ -150,6 +149,25 @@ func (spec *AutoSSLSpec) Default() {
 	spec.LoadBalancer = InitializeLoadBalancerSpec(spec.LoadBalancer, autosslDefaultLoadBalancer)
 	spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(spec.GrafanaDashboard, autosslDefaultGrafanaDashboard)
 	spec.Config.Default()
+}
+
+// ResolveCanarySpec modifies the AutoSSLSpec given the provided canary configuration
+func (spec *AutoSSLSpec) ResolveCanarySpec(canary *Canary) (*AutoSSLSpec, error) {
+	canarySpec := &AutoSSLSpec{}
+	canary.PatchSpec(spec, canarySpec)
+	if canary.ImageName != nil {
+		canarySpec.Image.Name = canary.ImageName
+	}
+	if canary.ImageTag != nil {
+		canarySpec.Image.Tag = canary.ImageTag
+	}
+	canarySpec.Replicas = canary.Replicas
+
+	// Call Default() on the resolved canary spec to apply
+	// defaulting to potentially added fields
+	canarySpec.Default()
+
+	return canarySpec, nil
 }
 
 // AutoSSLConfig defines configuration options for the component

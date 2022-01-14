@@ -75,8 +75,13 @@ func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	resources := []basereconciler.Resource{
 		gen.GrafanaDashboard(),
 	}
-
-	workload, err := r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen, &gen)
+	// Listener resources
+	var workload []basereconciler.Resource
+	if instance.Spec.Canary != nil {
+		workload, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen, &gen, gen.Canary)
+	} else {
+		workload, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen, &gen)
+	}
 	if err != nil {
 		return r.ManageError(ctx, instance, err)
 	}
