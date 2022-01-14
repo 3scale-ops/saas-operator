@@ -4,6 +4,7 @@ import (
 	"context"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
 	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
 	"github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1/test/api/v1alpha1"
@@ -92,6 +93,15 @@ var _ = Describe("Test controller", func() {
 					context.Background(),
 					types.NamespacedName{Name: "secret", Namespace: namespace},
 					sd,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+
+			es := &externalsecretsv1alpha1.ExternalSecret{}
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "secret", Namespace: namespace},
+					es,
 				)
 			}, timeout, poll).ShouldNot(HaveOccurred())
 
@@ -196,6 +206,15 @@ var _ = Describe("Test controller", func() {
 				)
 			}, timeout, poll).ShouldNot(HaveOccurred())
 
+			es := &externalsecretsv1alpha1.ExternalSecret{}
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "secret", Namespace: namespace},
+					es,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+
 			// Delete the custom resource
 			err := k8sClient.Delete(context.Background(), instance)
 			Expect(err).ToNot(HaveOccurred())
@@ -215,6 +234,8 @@ var _ = Describe("Test controller", func() {
 				types.NamespacedName{Name: "service", Namespace: namespace}, &corev1.Service{})).To(HaveOccurred())
 			Expect(k8sClient.Get(context.Background(),
 				types.NamespacedName{Name: "secret-definition", Namespace: namespace}, &secretsmanagerv1alpha1.SecretDefinition{})).To(HaveOccurred())
+			Expect(k8sClient.Get(context.Background(),
+				types.NamespacedName{Name: "external-secret", Namespace: namespace}, &externalsecretsv1alpha1.ExternalSecret{})).To(HaveOccurred())
 		})
 
 		It("updates service annotations", func() {

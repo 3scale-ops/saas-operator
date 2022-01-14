@@ -18,8 +18,10 @@ package test
 
 import (
 	"context"
+	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
 	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/marin3r"
 	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
@@ -69,6 +71,10 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		}},
 		SecretDefinitions: []basereconciler.SecretDefinition{{
 			Template: secretDefinition(req.Namespace),
+			Enabled:  true,
+		}},
+		ExternalSecrets: []basereconciler.ExternalSecret{{
+			Template: externalSecret(req.Namespace),
 			Enabled:  true,
 		}},
 		Services: []basereconciler.Service{{
@@ -193,6 +199,36 @@ func secretDefinition(namespace string) basereconciler.GeneratorFunction {
 				Type: "opaque",
 				KeysMap: map[string]secretsmanagerv1alpha1.DataSource{
 					"KEY": {Key: "vault-key", Path: "vault-path"},
+				},
+			},
+		}
+	}
+}
+
+func externalSecret(namespace string) basereconciler.GeneratorFunction {
+
+	return func() client.Object {
+		return &externalsecretsv1alpha1.ExternalSecret{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       externalsecretsv1alpha1.ExtSecretKind,
+				APIVersion: externalsecretsv1alpha1.ExtSecretGroupVersionKind.GroupVersion().String(),
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "secret",
+				Namespace: namespace,
+			},
+			Spec: externalsecretsv1alpha1.ExternalSecretSpec{
+				SecretStoreRef:  externalsecretsv1alpha1.SecretStoreRef{Name: "vault-mgmt", Kind: "ClusterSecretStore"},
+				Target:          externalsecretsv1alpha1.ExternalSecretTarget{Name: "secret"},
+				RefreshInterval: &metav1.Duration{Duration: 60 * time.Second},
+				Data: []externalsecretsv1alpha1.ExternalSecretData{
+					{
+						SecretKey: "KEY",
+						RemoteRef: externalsecretsv1alpha1.ExternalSecretDataRemoteRef{
+							Key:      "vault-path",
+							Property: "vault-key",
+						},
+					},
 				},
 			},
 		}
