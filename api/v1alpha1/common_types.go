@@ -20,10 +20,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"time"
 
 	jsonpatch "github.com/evanphx/json-patch"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/utils/pointer"
 )
 
 const (
@@ -32,6 +35,14 @@ const (
 	// AnnotationsDomain is a common prefix for all "rollout triggering"
 	// annotation keys
 	AnnotationsDomain string = "saas.3scale.net"
+)
+
+var (
+	defaultVaultRefreshInterval      metav1.Duration                      = metav1.Duration{Duration: time.Minute}
+	defaultVaultSecretStoreReference defaultVaultSecretStoreReferenceSpec = defaultVaultSecretStoreReferenceSpec{
+		Name: pointer.StringPtr("vault-mgmt"),
+		Kind: pointer.StringPtr("ClusterSecretStore"),
+	}
 )
 
 // ImageSpec defines the image for the component
@@ -591,6 +602,61 @@ type VaultSecretReference struct {
 	// The Vault key of the secret
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Key string `json:"key"`
+	// The Vault secret store reference
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	SecretStoreRef *VaultSecretStoreReferenceSpec `json:"secretStoreRef,omitempty"`
+	// The Vault refresh interval of the secret (seconds)
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	RefreshInterval *metav1.Duration `json:"refreshInterval,omitempty"`
+}
+
+func (spec *VaultSecretReference) Default() {
+	spec.SecretStoreRef = InitializeVaultSecretStoreReferenceSpec(spec.SecretStoreRef, defaultVaultSecretStoreReference)
+	spec.RefreshInterval = durationOrDefault(spec.RefreshInterval, &defaultVaultRefreshInterval)
+}
+
+// VaultSecretStoreReferenceSpec is a reference to a secret store
+type VaultSecretStoreReferenceSpec struct {
+	// The Vault secret store reference name
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Name *string `json:"name,omitempty"`
+	// The Vault secret store reference kind
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Kind *string `json:"kind,omitempty"`
+}
+
+type defaultVaultSecretStoreReferenceSpec struct {
+	Name, Kind *string
+}
+
+// Default sets default values for any value not specifically set in the VaultSecretStoreReferenceSpec struct
+func (spec *VaultSecretStoreReferenceSpec) Default(def defaultVaultSecretStoreReferenceSpec) {
+	spec.Name = stringOrDefault(spec.Name, def.Name)
+	spec.Kind = stringOrDefault(spec.Kind, def.Kind)
+}
+
+// IsDeactivated true if the field is set with the deactivated value (empty struct)
+func (spec *VaultSecretStoreReferenceSpec) IsDeactivated() bool {
+	return reflect.DeepEqual(spec, &VaultSecretStoreReferenceSpec{})
+}
+
+// InitializeVaultSecretStoreReferenceSpec initializes a LoadBalancerSpec struct
+func InitializeVaultSecretStoreReferenceSpec(spec *VaultSecretStoreReferenceSpec, def defaultVaultSecretStoreReferenceSpec) *VaultSecretStoreReferenceSpec {
+	if spec == nil {
+		new := &VaultSecretStoreReferenceSpec{}
+		new.Default(def)
+		return new
+	}
+	if !spec.IsDeactivated() {
+		copy := spec.DeepCopy()
+		copy.Default(def)
+		return copy
+	}
+	return spec
 }
 
 // BugsnagSpec has configuration for Bugsnag integration
@@ -671,6 +737,13 @@ func intOrDefault(value *int32, defValue *int32) *int32 {
 }
 
 func boolOrDefault(value *bool, defValue *bool) *bool {
+	if value == nil {
+		return defValue
+	}
+	return value
+}
+
+func durationOrDefault(value *metav1.Duration, defValue *metav1.Duration) *metav1.Duration {
 	if value == nil {
 		return defValue
 	}
