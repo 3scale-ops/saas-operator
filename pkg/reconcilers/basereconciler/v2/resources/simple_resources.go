@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 
+	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
 	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
@@ -30,6 +31,25 @@ func (sdt SecretDefinitionTemplate) Build(ctx context.Context, cl client.Client)
 
 func (sdt SecretDefinitionTemplate) Enabled() bool {
 	return sdt.IsEnabled
+}
+
+var _ basereconciler.Resource = ExternalSecretTemplate{}
+
+// ExternalSecretTemplate specifies a ExternalSecret resource
+type ExternalSecretTemplate struct {
+	Template  func() *externalsecretsv1alpha1.ExternalSecret
+	IsEnabled bool
+}
+
+func (est ExternalSecretTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
+
+	es := est.Template()
+	es.GetObjectKind().SetGroupVersionKind(externalsecretsv1alpha1.SchemeGroupVersion.WithKind("ExternalSecret"))
+	return es.DeepCopy(), DefaultExcludedPaths, nil
+}
+
+func (est ExternalSecretTemplate) Enabled() bool {
+	return est.IsEnabled
 }
 
 var _ basereconciler.Resource = PodDisruptionBudgetTemplate{}
