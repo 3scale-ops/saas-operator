@@ -64,6 +64,10 @@ spec:
                   one.
                 format: int32
                 type: integer
+              slaveCount:
+                description: SlaveCount is the number of redis slaves
+                format: int32
+                type: integer
             type: object
           status:
             description: RedisShardStatus defines the observed state of RedisShard

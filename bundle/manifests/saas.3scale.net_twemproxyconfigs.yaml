@@ -1,0 +1,108 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.6.1
+  creationTimestamp: null
+  name: twemproxyconfigs.saas.3scale.net
+spec:
+  group: saas.3scale.net
+  names:
+    kind: TwemproxyConfig
+    listKind: TwemproxyConfigList
+    plural: twemproxyconfigs
+    singular: twemproxyconfig
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: TwemproxyConfig is the Schema for the twemproxyconfigs API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: TwemproxyConfigSpec defines the desired state of TwemproxyConfig
+            properties:
+              sentinelURIs:
+                description: SentinelURI is the redis URI of sentinel. This is required
+                  as TewmproxyConfig will obtain the info about available redis servers
+                  from sentinel.
+                items:
+                  type: string
+                type: array
+              serverPools:
+                description: ServerPools is the list of Twemproxy server pools
+                items:
+                  properties:
+                    bindAddress:
+                      description: The address to bind to. Format is ip:port
+                      type: string
+                    name:
+                      description: The name of the server pool
+                      type: string
+                    preConnect:
+                      description: Connect to all servers in the pool during startup
+                      type: boolean
+                    tcpBacklog:
+                      description: Max number of pending connections in the queue
+                      type: integer
+                    timeout:
+                      description: Timeout to stablish connection with the servers
+                        in the server pool
+                      type: integer
+                    topology:
+                      description: The topology of the servers within the server pool.
+                        This field describes the association of logical shards to
+                        physical shards.
+                      items:
+                        properties:
+                          physicalShard:
+                            description: The physical shard where the logical one
+                              is stored. This name should match the shard names monitored
+                              by Sentinel.
+                            type: string
+                          shardName:
+                            description: The name of the locigal shard
+                            type: string
+                        required:
+                        - physicalShard
+                        - shardName
+                        type: object
+                      type: array
+                  required:
+                  - bindAddress
+                  - name
+                  - preConnect
+                  - tcpBacklog
+                  - timeout
+                  - topology
+                  type: object
+                type: array
+            required:
+            - serverPools
+            type: object
+          status:
+            description: TwemproxyConfigStatus defines the observed state of TwemproxyConfig
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

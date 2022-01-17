@@ -1193,19 +1193,15 @@ spec:
                           max: 11)'
                         format: int32
                         type: integer
-                      statsAddr:
-                        description: 'Set stats monitoring IP to address.  (default:
-                          0.0.0.0)'
-                        type: string
-                      statsInterval:
-                        description: 'Set stats aggregation interval in msec to interval.  (default:
-                          30s)'
-                        type: string
-                      statsPort:
+                      metricsAddress:
                         description: 'Set stats monitoring port to port.  (default:
                           22222)'
                         format: int32
                         type: integer
+                      statsInterval:
+                        description: 'Set stats aggregation interval in msec to interval.  (default:
+                          30s)'
+                        type: string
                     type: object
                   readinessProbe:
                     description: Readiness probe for the component
