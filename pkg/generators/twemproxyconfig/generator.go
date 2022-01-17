@@ -76,12 +76,10 @@ func (gen *Generator) getMonitoredShards(ctx context.Context) (map[string]Twempr
 	return m, nil
 }
 
-// Returns all the resource templates that this generator manages
-func (gen *Generator) Resources() []basereconciler.Resource {
-	return []basereconciler.Resource{
-		basereconciler_resources.ConfigMapTemplate{
-			Template:  gen.configMap(true),
-			IsEnabled: true,
-		},
+// Returns the twemproxy config ConfigMap
+func (gen *Generator) ConfigMap() basereconciler.Resource {
+	return basereconciler_resources.ConfigMapTemplate{
+		Template:  gen.configMap(true),
+		IsEnabled: true,
 	}
 }
