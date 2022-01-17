@@ -54,7 +54,7 @@ spec:
                             type: string
                           refreshInterval:
                             description: The Vault refresh interval of the secret
-                              (seconds)
+                              (duration)
                             type: string
                           secretStoreRef:
                             description: The Vault secret store reference

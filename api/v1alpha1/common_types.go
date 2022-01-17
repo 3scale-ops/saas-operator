@@ -606,7 +606,7 @@ type VaultSecretReference struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	SecretStoreRef *VaultSecretStoreReferenceSpec `json:"secretStoreRef,omitempty"`
-	// The Vault refresh interval of the secret (seconds)
+	// The Vault refresh interval of the secret (duration)
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	RefreshInterval *metav1.Duration `json:"refreshInterval,omitempty"`
