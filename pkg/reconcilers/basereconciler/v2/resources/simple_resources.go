@@ -44,7 +44,7 @@ type ExternalSecretTemplate struct {
 func (est ExternalSecretTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
 
 	es := est.Template()
-	es.GetObjectKind().SetGroupVersionKind(externalsecretsv1alpha1.SchemeGroupVersion.WithKind("ExternalSecret"))
+	es.GetObjectKind().SetGroupVersionKind(externalsecretsv1alpha1.SchemeGroupVersion.WithKind(externalsecretsv1alpha1.ExtSecretKind))
 	return es.DeepCopy(), DefaultExcludedPaths, nil
 }
 

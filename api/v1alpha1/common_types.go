@@ -38,7 +38,7 @@ const (
 )
 
 var (
-	defaultVaultRefreshInterval      metav1.Duration                      = metav1.Duration{Duration: time.Minute}
+	defaultVaultRefreshInterval      metav1.Duration                      = metav1.Duration{Duration: 60 * time.Second}
 	defaultVaultSecretStoreReference defaultVaultSecretStoreReferenceSpec = defaultVaultSecretStoreReferenceSpec{
 		Name: pointer.StringPtr("vault-mgmt"),
 		Kind: pointer.StringPtr("ClusterSecretStore"),
@@ -639,11 +639,6 @@ func (spec *VaultSecretStoreReferenceSpec) Default(def defaultVaultSecretStoreRe
 	spec.Kind = stringOrDefault(spec.Kind, def.Kind)
 }
 
-// IsDeactivated true if the field is set with the deactivated value (empty struct)
-func (spec *VaultSecretStoreReferenceSpec) IsDeactivated() bool {
-	return reflect.DeepEqual(spec, &VaultSecretStoreReferenceSpec{})
-}
-
 // InitializeVaultSecretStoreReferenceSpec initializes a LoadBalancerSpec struct
 func InitializeVaultSecretStoreReferenceSpec(spec *VaultSecretStoreReferenceSpec, def defaultVaultSecretStoreReferenceSpec) *VaultSecretStoreReferenceSpec {
 	if spec == nil {
@@ -651,12 +646,9 @@ func InitializeVaultSecretStoreReferenceSpec(spec *VaultSecretStoreReferenceSpec
 		new.Default(def)
 		return new
 	}
-	if !spec.IsDeactivated() {
-		copy := spec.DeepCopy()
-		copy.Default(def)
-		return copy
-	}
-	return spec
+	copy := spec.DeepCopy()
+	copy.Default(def)
+	return copy
 }
 
 // BugsnagSpec has configuration for Bugsnag integration

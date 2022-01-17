@@ -34,7 +34,7 @@ func TestGenerateExternalSecretFn(t *testing.T) {
 				namespace:       "test",
 				secretStoreName: "vault-mgmt",
 				secretStoreKind: "ClusterSecretStore",
-				refreshInterval: metav1.Duration{Duration: time.Minute},
+				refreshInterval: metav1.Duration{Duration: 60 * time.Second},
 				labels:          map[string]string{},
 				opts: struct {
 					Option1 EnvVarValue `env:"OPTION1"`
@@ -53,10 +53,6 @@ func TestGenerateExternalSecretFn(t *testing.T) {
 				},
 			},
 			want: &externalsecretsv1alpha1.ExternalSecret{
-				TypeMeta: metav1.TypeMeta{
-					Kind:       externalsecretsv1alpha1.ExtSecretKind,
-					APIVersion: externalsecretsv1alpha1.ExtSecretGroupVersionKind.GroupVersion().String(),
-				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "my-secret",
 					Namespace: "test",
@@ -68,7 +64,7 @@ func TestGenerateExternalSecretFn(t *testing.T) {
 						Kind: "ClusterSecretStore",
 					},
 					Target:          externalsecretsv1alpha1.ExternalSecretTarget{Name: "my-secret"},
-					RefreshInterval: &metav1.Duration{Duration: time.Minute},
+					RefreshInterval: &metav1.Duration{Duration: 60 * time.Second},
 					Data: []externalsecretsv1alpha1.ExternalSecretData{
 						{
 							SecretKey: "OPTION2",
@@ -95,7 +91,7 @@ func TestGenerateExternalSecretFn(t *testing.T) {
 				namespace:       "test",
 				secretStoreName: "vault-mgmt",
 				secretStoreKind: "ClusterSecretStore",
-				refreshInterval: metav1.Duration{Duration: time.Minute},
+				refreshInterval: metav1.Duration{Duration: 60 * time.Second},
 				labels:          map[string]string{},
 				opts: struct {
 					Option1 EnvVarValue `env:"OPTION1"`
@@ -113,10 +109,6 @@ func TestGenerateExternalSecretFn(t *testing.T) {
 				},
 			},
 			want: &externalsecretsv1alpha1.ExternalSecret{
-				TypeMeta: metav1.TypeMeta{
-					Kind:       externalsecretsv1alpha1.ExtSecretKind,
-					APIVersion: externalsecretsv1alpha1.ExtSecretGroupVersionKind.GroupVersion().String(),
-				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "other-secret",
 					Namespace: "test",
@@ -128,7 +120,7 @@ func TestGenerateExternalSecretFn(t *testing.T) {
 						Kind: "ClusterSecretStore",
 					},
 					Target:          externalsecretsv1alpha1.ExternalSecretTarget{Name: "other-secret"},
-					RefreshInterval: &metav1.Duration{Duration: time.Minute},
+					RefreshInterval: &metav1.Duration{Duration: 60 * time.Second},
 					Data: []externalsecretsv1alpha1.ExternalSecretData{
 						{
 							SecretKey: "OPTION4",

@@ -14,10 +14,6 @@ func GenerateExternalSecretFn(name, namespace, secretStoreName, secretStoreKind 
 
 	return func() *externalsecretsv1alpha1.ExternalSecret {
 		return &externalsecretsv1alpha1.ExternalSecret{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       externalsecretsv1alpha1.ExtSecretKind,
-				APIVersion: externalsecretsv1alpha1.ExtSecretGroupVersionKind.GroupVersion().String(),
-			},
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: namespace,

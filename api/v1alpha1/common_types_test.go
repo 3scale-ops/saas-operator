@@ -1564,25 +1564,6 @@ func TestVaultSecretStoreReferenceSpec_Default(t *testing.T) {
 	}
 }
 
-func TestVaultSecretStoreReferenceSpec_IsDeactivated(t *testing.T) {
-	tests := []struct {
-		name string
-		spec *VaultSecretStoreReferenceSpec
-		want bool
-	}{
-		{"Wants true if empty", &VaultSecretStoreReferenceSpec{}, true},
-		{"Wants false if nil", nil, false},
-		{"Wants false if other", &VaultSecretStoreReferenceSpec{Name: pointer.StringPtr("vault-mgmt")}, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.spec.IsDeactivated(); got != tt.want {
-				t.Errorf("VaultSecretStoreReferenceSpec.IsDeactivated() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestInitializeVaultSecretStoreReferenceSpec(t *testing.T) {
 	type args struct {
 		spec *VaultSecretStoreReferenceSpec
