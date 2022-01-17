@@ -76,7 +76,7 @@ func TestGenerator_configMap(t *testing.T) {
 					Labels:    map[string]string{},
 				},
 				Data: map[string]string{
-					"nutcracker.yml": `{"pool1":{"listen":"localhost:2000","hash":"fnv1a_64","hash_tag":"{}","distribution":"ketama","timeout":1000,"backlog":500,"preconnect":false,"redis":true,"auto_eject_hosts":false,"server_failure_limit":0,"servers":["127.0.0.1:6379:1 lshard01","127.0.0.1:6379:1 lshard02","127.0.0.1:6379:1 lshard03","127.0.0.2:6379:1 lshard04"]},"pool2":{"listen":"localhost:3000","hash":"fnv1a_64","hash_tag":"{}","distribution":"ketama","timeout":1000,"backlog":500,"preconnect":false,"redis":true,"auto_eject_hosts":false,"server_failure_limit":0,"servers":["127.0.0.1:6379:1 lshard01","127.0.0.2:6379:1 lshard02"]}}`,
+					"nutcracker.yml": `{"health":{"listen":"127.0.0.1:22333","preconnect":false,"redis":true,"auto_eject_hosts":false,"servers":["127.0.0.1:6379:1 dummy"]},"pool1":{"listen":"localhost:2000","hash":"fnv1a_64","hash_tag":"{}","distribution":"ketama","timeout":1000,"backlog":500,"preconnect":false,"redis":true,"auto_eject_hosts":false,"servers":["127.0.0.1:6379:1 lshard01","127.0.0.1:6379:1 lshard02","127.0.0.1:6379:1 lshard03","127.0.0.2:6379:1 lshard04"]},"pool2":{"listen":"localhost:3000","hash":"fnv1a_64","hash_tag":"{}","distribution":"ketama","timeout":1000,"backlog":500,"preconnect":false,"redis":true,"auto_eject_hosts":false,"servers":["127.0.0.1:6379:1 lshard01","127.0.0.2:6379:1 lshard02"]}}`,
 				},
 			},
 		},

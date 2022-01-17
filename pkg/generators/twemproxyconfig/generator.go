@@ -2,12 +2,14 @@ package twemproxyconfig
 
 import (
 	"context"
+	"fmt"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators"
 	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
 	basereconciler_resources "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/resources"
 	"github.com/3scale/saas-operator/pkg/redis"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -22,7 +24,7 @@ type Generator struct {
 }
 
 // NewGenerator returns a new Options struct
-func NewGenerator(ctx context.Context, instance *saasv1alpha1.TwemproxyConfig) (Generator, error) {
+func NewGenerator(ctx context.Context, instance *saasv1alpha1.TwemproxyConfig, cl client.Client) (Generator, error) {
 
 	gen := Generator{
 		BaseOptionsV2: generators.BaseOptionsV2{
@@ -38,7 +40,13 @@ func NewGenerator(ctx context.Context, instance *saasv1alpha1.TwemproxyConfig) (
 	}
 
 	var err error
-	gen.monitoredShards, err = gen.getMonitoredShards(ctx)
+	if gen.Spec.SentinelURIs == nil {
+		gen.Spec.SentinelURIs, err = discoverSentinels(ctx, cl, instance.GetNamespace())
+		if err != nil {
+			return Generator{}, err
+		}
+	}
+	gen.monitoredShards, err = gen.getMonitoredMasters(ctx)
 	if err != nil {
 		return Generator{}, err
 	}
@@ -46,7 +54,25 @@ func NewGenerator(ctx context.Context, instance *saasv1alpha1.TwemproxyConfig) (
 	return gen, nil
 }
 
-func (gen *Generator) getMonitoredShards(ctx context.Context) (map[string]TwemproxyServer, error) {
+func discoverSentinels(ctx context.Context, cl client.Client, namespace string) ([]string, error) {
+	sl := &saasv1alpha1.SentinelList{}
+	if err := cl.List(ctx, sl, client.InNamespace(namespace)); err != nil {
+		return nil, err
+	}
+
+	if len(sl.Items) != 1 {
+		return nil, fmt.Errorf("unexpected number (%d) of Sentinel resources in namespace", len(sl.Items))
+	}
+
+	uris := make([]string, 0, len(sl.Items[0].Status.Sentinels))
+	for _, address := range sl.Items[0].Status.Sentinels {
+		uris = append(uris, fmt.Sprintf("redis://%s", address))
+	}
+
+	return uris, nil
+}
+
+func (gen *Generator) getMonitoredMasters(ctx context.Context) (map[string]TwemproxyServer, error) {
 
 	spool := make(redis.SentinelPool, 0, len(gen.Spec.SentinelURIs))
 

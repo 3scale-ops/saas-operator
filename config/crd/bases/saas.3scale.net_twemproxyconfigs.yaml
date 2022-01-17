@@ -92,7 +92,6 @@ spec:
                   type: object
                 type: array
             required:
-            - sentinelURIs
             - serverPools
             type: object
           status:
