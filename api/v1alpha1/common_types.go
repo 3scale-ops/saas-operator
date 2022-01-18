@@ -639,7 +639,7 @@ func (spec *VaultSecretStoreReferenceSpec) Default(def defaultVaultSecretStoreRe
 	spec.Kind = stringOrDefault(spec.Kind, def.Kind)
 }
 
-// InitializeVaultSecretStoreReferenceSpec initializes a LoadBalancerSpec struct
+// InitializeVaultSecretStoreReferenceSpec initializes a VaultSecretStoreReferenceSpec struct
 func InitializeVaultSecretStoreReferenceSpec(spec *VaultSecretStoreReferenceSpec, def defaultVaultSecretStoreReferenceSpec) *VaultSecretStoreReferenceSpec {
 	if spec == nil {
 		new := &VaultSecretStoreReferenceSpec{}
