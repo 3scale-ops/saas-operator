@@ -6,6 +6,7 @@ resources:
 - external-apis/grafanadashboards.integreatly.org.yaml
 - external-apis/podmonitors.monitoring.coreos.com.yaml
 - external-apis/secretdefinitions.secrets-manager.tuenti.io.yaml
+- external-apis/externalsecrets.external-secrets.io.yaml
 patches:
   - target:
       group: apps

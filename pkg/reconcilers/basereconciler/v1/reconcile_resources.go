@@ -7,6 +7,7 @@ import (
 	"reflect"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
 	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/redhat-cop/operator-utils/pkg/util/lockedresourcecontroller/lockedpatch"
@@ -24,6 +25,7 @@ type ControlledResources struct {
 	Deployments              []Deployment
 	StatefulSets             []StatefulSet
 	SecretDefinitions        []SecretDefinition
+	ExternalSecrets          []ExternalSecret
 	Services                 []Service
 	PodDisruptionBudgets     []PodDisruptionBudget
 	HorizontalPodAutoscalers []HorizontalPodAutoscaler
@@ -110,6 +112,23 @@ func (r *Reconciler) TriggersFromSecretDefs(ctx context.Context, sd ...Generator
 	return triggers, nil
 }
 
+// TriggersFromExternalSecrets generates a list of RolloutTrigger from the given ExternalSecret generator functions
+func (r *Reconciler) TriggersFromExternalSecrets(ctx context.Context, es ...GeneratorFunction) ([]RolloutTrigger, error) {
+
+	triggers := []RolloutTrigger{}
+
+	for _, externalSecret := range es {
+		es := externalSecret().(*externalsecretsv1alpha1.ExternalSecret)
+		strgs, err := r.TriggersFromSecret(ctx, es.GetNamespace(), es.GetName())
+		if err != nil {
+			return nil, err
+		}
+		triggers = append(triggers, strgs...)
+	}
+
+	return triggers, nil
+}
+
 // TriggersFromSecret generates a list of RolloutTriggers from the given Secrets name list
 func (r *Reconciler) TriggersFromSecret(ctx context.Context, namespace string, secrets ...string) ([]RolloutTrigger, error) {
 
@@ -154,6 +173,12 @@ type StatefulSet struct {
 
 // SecretDefinition specifies a SecretDefinition resource
 type SecretDefinition struct {
+	Template GeneratorFunction
+	Enabled  bool
+}
+
+// ExternalSecret specifies a ExternalSecret resource
+type ExternalSecret struct {
 	Template GeneratorFunction
 	Enabled  bool
 }
@@ -312,6 +337,16 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 			resources = append(resources,
 				LockedResource{
 					GeneratorFn:  sd.Template,
+					ExcludePaths: DefaultExcludedPaths,
+				})
+		}
+	}
+
+	for _, es := range crs.ExternalSecrets {
+		if es.Enabled {
+			resources = append(resources,
+				LockedResource{
+					GeneratorFn:  es.Template,
 					ExcludePaths: DefaultExcludedPaths,
 				})
 		}

@@ -4,7 +4,6 @@ import (
 	"context"
 	"reflect"
 
-	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads/test/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/util"
 	. "github.com/onsi/ginkgo"
@@ -162,15 +161,6 @@ var _ = Describe("Test controller", func() {
 			}, timeout, poll).ShouldNot(HaveOccurred())
 			Expect(svc.Spec.Selector).To(Equal(instance.Spec.TrafficSelector))
 
-			// SecretDefinition
-			sd := &secretsmanagerv1alpha1.SecretDefinition{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "secret", Namespace: namespace},
-					sd,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
 		})
 
 		It("Triggers Deployment rollouts on Secret contents change", func() {

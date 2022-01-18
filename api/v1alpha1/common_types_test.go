@@ -1508,3 +1508,94 @@ func TestCanary_CanarySpec(t *testing.T) {
 		})
 	}
 }
+
+func TestVaultSecretStoreReferenceSpec_Default(t *testing.T) {
+	type fields struct {
+		Name *string
+		Kind *string
+	}
+	type args struct {
+		def defaultVaultSecretStoreReferenceSpec
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   *VaultSecretStoreReferenceSpec
+	}{
+		{
+			name:   "Sets defaults",
+			fields: fields{},
+			args: args{def: defaultVaultSecretStoreReferenceSpec{
+				Name: pointer.StringPtr("vault-mgmt"),
+				Kind: pointer.StringPtr("ClusterSecretStore"),
+			}},
+			want: &VaultSecretStoreReferenceSpec{
+				Name: pointer.StringPtr("vault-mgmt"),
+				Kind: pointer.StringPtr("ClusterSecretStore"),
+			},
+		},
+		{
+			name: "Combines explicitely set values with defaults",
+			fields: fields{
+				Name: pointer.StringPtr("other-vault"),
+			},
+			args: args{def: defaultVaultSecretStoreReferenceSpec{
+				Name: pointer.StringPtr("vault-mgmt"),
+				Kind: pointer.StringPtr("ClusterSecretStore"),
+			}},
+			want: &VaultSecretStoreReferenceSpec{
+				Name: pointer.StringPtr("other-vault"),
+				Kind: pointer.StringPtr("ClusterSecretStore"),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			spec := &VaultSecretStoreReferenceSpec{
+				Name: tt.fields.Name,
+				Kind: tt.fields.Kind,
+			}
+			spec.Default(tt.args.def)
+			if !reflect.DeepEqual(spec, tt.want) {
+				t.Errorf("VaultSecretStoreReferenceSpec_Default() = %v, want %v", *spec, *tt.want)
+			}
+		})
+	}
+}
+
+func TestInitializeVaultSecretStoreReferenceSpec(t *testing.T) {
+	type args struct {
+		spec *VaultSecretStoreReferenceSpec
+		def  defaultVaultSecretStoreReferenceSpec
+	}
+	tests := []struct {
+		name string
+		args args
+		want *VaultSecretStoreReferenceSpec
+	}{
+		{
+			name: "Initializes the struct with appropriate defaults if nil",
+			args: args{nil, defaultVaultSecretStoreReferenceSpec{
+				Name: pointer.StringPtr("vault-mgmt"),
+				Kind: pointer.StringPtr("ClusterSecretStore"),
+			}},
+			want: &VaultSecretStoreReferenceSpec{
+				Name: pointer.StringPtr("vault-mgmt"),
+				Kind: pointer.StringPtr("ClusterSecretStore"),
+			},
+		},
+		{
+			name: "Deactivated",
+			args: args{&VaultSecretStoreReferenceSpec{}, defaultVaultSecretStoreReferenceSpec{}},
+			want: &VaultSecretStoreReferenceSpec{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := InitializeVaultSecretStoreReferenceSpec(tt.args.spec, tt.args.def); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("InitializeVaultSecretStoreReferenceSpec() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

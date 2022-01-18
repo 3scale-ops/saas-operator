@@ -20,8 +20,6 @@ import (
 	"context"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
-	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
 	"github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/resources"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads/test/api/v1alpha1"
@@ -81,21 +79,14 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		TSelector:  instance.Spec.Bob.Selector,
 	}
 
-	// Shared resources
-	resources := []basereconciler.Resource{
-		secretDefinition("secret", req.Namespace),
-	}
-
 	deployments, err := r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(),
 		tm, alice, bob)
 	if err != nil {
 		return r.ManageError(ctx, instance, err)
 	}
 
-	resources = append(resources, deployments...)
-
 	// Reconcile all resources
-	err = r.ReconcileOwnedResources(ctx, instance, r.GetScheme(), resources)
+	err = r.ReconcileOwnedResources(ctx, instance, r.GetScheme(), deployments)
 	if err != nil {
 		log.Error(err, "unable to reconcile owned resources")
 		return r.ManageError(ctx, instance, err)
@@ -217,29 +208,3 @@ func (gen *TestWorkloadGenerator) PDBSpec() *saasv1alpha1.PodDisruptionBudgetSpe
 	}
 }
 func (gen *TestWorkloadGenerator) SendTraffic() bool { return gen.TTraffic }
-
-func secretDefinition(name, namespace string) resources.SecretDefinitionTemplate {
-
-	return resources.SecretDefinitionTemplate{
-		Template: func() *secretsmanagerv1alpha1.SecretDefinition {
-			return &secretsmanagerv1alpha1.SecretDefinition{
-				TypeMeta: metav1.TypeMeta{
-					Kind:       "SecretDefinition",
-					APIVersion: secretsmanagerv1alpha1.GroupVersion.String(),
-				},
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "secret",
-					Namespace: namespace,
-				},
-				Spec: secretsmanagerv1alpha1.SecretDefinitionSpec{
-					Name: "secret",
-					Type: "opaque",
-					KeysMap: map[string]secretsmanagerv1alpha1.DataSource{
-						"KEY": {Key: "vault-key", Path: "vault-path"},
-					},
-				},
-			}
-		},
-		IsEnabled: true,
-	}
-}
