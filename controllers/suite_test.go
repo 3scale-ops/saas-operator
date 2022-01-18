@@ -111,8 +111,8 @@ var _ = BeforeSuite(func() {
 
 	// Add controllers for testing
 	err = (&AutoSSLReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("AutoSSL"), false),
-		Log:        ctrl.Log.WithName("controllers").WithName("AutoSSL"),
+		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("AutoSSL"), false),
+		Log:                ctrl.Log.WithName("controllers").WithName("AutoSSL"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 

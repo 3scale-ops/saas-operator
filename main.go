@@ -123,14 +123,6 @@ func main() {
 
 	/* BASERECONCILER_V1 BASED CONTROLLERS*/
 
-	if err = (&controllers.AutoSSLReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("AutoSSL"), false),
-		Log:        ctrl.Log.WithName("controllers").WithName("AutoSSL"),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "AutoSSL")
-		os.Exit(1)
-	}
-
 	if err = (&controllers.ApicastReconciler{
 		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("Apicast"), false),
 		Log:        ctrl.Log.WithName("controllers").WithName("Apicast"),
@@ -199,6 +191,14 @@ func main() {
 	}
 
 	/* WORKLOADS RECONCILER BASED CONTROLLERS*/
+
+	if err = (&controllers.AutoSSLReconciler{
+		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("AutoSSL"), false),
+		Log:                ctrl.Log.WithName("controllers").WithName("AutoSSL"),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "AutoSSL")
+		os.Exit(1)
+	}
 
 	if err = (&controllers.EchoAPIReconciler{
 		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("EchoAPI"), false),

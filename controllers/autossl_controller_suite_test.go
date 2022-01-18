@@ -75,10 +75,7 @@ var _ = Describe("AutoSSL controller", func() {
 			Eventually(func() bool {
 				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, autossl)
 				Expect(err).ToNot(HaveOccurred())
-				if len(autossl.GetFinalizers()) > 0 {
-					return true
-				}
-				return false
+				return len(autossl.GetFinalizers()) > 0
 			}, timeout, poll).Should(BeTrue())
 
 			dep := &appsv1.Deployment{}
@@ -216,6 +213,131 @@ var _ = Describe("AutoSSL controller", func() {
 				)
 			}, timeout, poll).Should(HaveOccurred())
 		})
+	})
+
+	Context("All defaults AutoSSL resource with canary", func() {
+
+		BeforeEach(func() {
+			By("creating an AutoSSL simple resource")
+			autossl = &saasv1alpha1.AutoSSL{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "instance",
+					Namespace: namespace,
+				},
+				Spec: saasv1alpha1.AutoSSLSpec{
+					Config: saasv1alpha1.AutoSSLConfig{
+						ContactEmail:         "test@example.com",
+						ProxyEndpoint:        "example.com",
+						VerificationEndpoint: "example.com/verification",
+						RedisHost:            "redis.example.com",
+					},
+					Endpoint: saasv1alpha1.Endpoint{
+						DNS: []string{"autossl.example.com"},
+					},
+					Canary: &saasv1alpha1.Canary{
+						ImageName: pointer.StringPtr("newImage"),
+						ImageTag:  pointer.StringPtr("newTag"),
+						Replicas:  pointer.Int32Ptr(2),
+					},
+				},
+			}
+			err := k8sClient.Create(context.Background(), autossl)
+			Expect(err).ToNot(HaveOccurred())
+			Eventually(func() error {
+				return k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, autossl)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+		})
+
+		It("creates the required resources", func() {
+
+			Eventually(func() bool {
+				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, autossl)
+				Expect(err).ToNot(HaveOccurred())
+				return len(autossl.GetFinalizers()) > 0
+			}, timeout, poll).Should(BeTrue())
+
+			dep := &appsv1.Deployment{}
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "autossl", Namespace: namespace},
+					dep,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "autossl-canary", Namespace: namespace},
+					dep,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+
+			Expect(dep.Spec.Template.Spec.Containers[0].Image).To(Equal("newImage:newTag"))
+			Expect(dep.Spec.Replicas).To(Equal(pointer.Int32Ptr(2)))
+
+			svc := &corev1.Service{}
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "autossl", Namespace: namespace},
+					svc,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+
+			pm := &monitoringv1.PodMonitor{}
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "autossl", Namespace: namespace},
+					pm,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+
+			hpa := &autoscalingv2beta2.HorizontalPodAutoscaler{}
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "autossl", Namespace: namespace},
+					hpa,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "autossl-canary", Namespace: namespace},
+					hpa,
+				)
+			}, timeout, poll).Should(HaveOccurred())
+
+			pdb := &policyv1beta1.PodDisruptionBudget{}
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "autossl", Namespace: namespace},
+					pdb,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "autossl-canary", Namespace: namespace},
+					pdb,
+				)
+			}, timeout, poll).Should(HaveOccurred())
+
+			gd := &grafanav1alpha1.GrafanaDashboard{}
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "autossl", Namespace: namespace},
+					gd,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+		})
+
 	})
 
 })
