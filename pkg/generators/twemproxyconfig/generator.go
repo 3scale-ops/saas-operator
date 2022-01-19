@@ -19,8 +19,9 @@ const (
 // Generator configures the generators for Sentinel
 type Generator struct {
 	generators.BaseOptionsV2
-	Spec            saasv1alpha1.TwemproxyConfigSpec
-	monitoredShards map[string]TwemproxyServer
+	Spec           saasv1alpha1.TwemproxyConfigSpec
+	masterTargets  map[string]TwemproxyServer
+	slaverwTargets map[string]TwemproxyServer
 }
 
 // NewGenerator returns a new Options struct
@@ -46,9 +47,24 @@ func NewGenerator(ctx context.Context, instance *saasv1alpha1.TwemproxyConfig, c
 			return Generator{}, err
 		}
 	}
-	gen.monitoredShards, err = gen.getMonitoredMasters(ctx)
+
+	gen.masterTargets, err = gen.getMonitoredMasters(ctx)
 	if err != nil {
 		return Generator{}, err
+	}
+
+	// Check if there are pools in the config that require slave discovery
+	discoverSlavesRW := false
+	for _, pool := range gen.Spec.ServerPools {
+		if *pool.Target == saasv1alpha1.SlavesRW {
+			discoverSlavesRW = true
+		}
+	}
+	if discoverSlavesRW {
+		gen.slaverwTargets, err = gen.getMonitoredReadWriteSlavesWithFallbackToMasters(ctx)
+		if err != nil {
+			return Generator{}, err
+		}
 	}
 
 	return gen, nil
@@ -85,7 +101,7 @@ func (gen *Generator) getMonitoredMasters(ctx context.Context) (map[string]Twemp
 		spool = append(spool, *sentinel)
 	}
 
-	monitoredShards, err := spool.MonitoredShards(ctx, 2)
+	monitoredShards, err := spool.MonitoredShards(ctx, 2, false)
 	if err != nil {
 		return nil, err
 	}
@@ -96,6 +112,47 @@ func (gen *Generator) getMonitoredMasters(ctx context.Context) (map[string]Twemp
 			Name:     s.Name,
 			Address:  s.Master,
 			Priority: 1,
+		}
+	}
+
+	return m, nil
+}
+
+func (gen *Generator) getMonitoredReadWriteSlavesWithFallbackToMasters(ctx context.Context) (map[string]TwemproxyServer, error) {
+
+	spool := make(redis.SentinelPool, 0, len(gen.Spec.SentinelURIs))
+
+	for _, uri := range gen.Spec.SentinelURIs {
+		sentinel, err := redis.NewSentinelServerFromConnectionString("sentinel", uri)
+		if err != nil {
+			return nil, err
+		}
+
+		spool = append(spool, *sentinel)
+	}
+
+	monitoredShards, err := spool.MonitoredShards(ctx, 2, true)
+	if err != nil {
+		return nil, err
+	}
+
+	m := make(map[string]TwemproxyServer, len(monitoredShards))
+	for _, shard := range monitoredShards {
+
+		if len(shard.SlavesRW) > 0 {
+			m[shard.Name] = TwemproxyServer{
+				Name:     shard.Name,
+				Address:  shard.SlavesRW[0],
+				Priority: 1,
+			}
+		} else {
+			// Fall back to masters if there are no
+			// available RW slaves
+			m[shard.Name] = TwemproxyServer{
+				Name:     shard.Name,
+				Address:  shard.Master,
+				Priority: 1,
+			}
 		}
 	}
 

@@ -56,6 +56,19 @@ spec:
                     preConnect:
                       description: Connect to all servers in the pool during startup
                       type: boolean
+                    target:
+                      description: Target defines which are the servers that will
+                        be configured as backend redis servers for the Twemproxy configuration.
+                        The default is to target masters, but read-write slaves can
+                        be configured through this option. If read-write slaves are
+                        configured but there are none available, the config will fall
+                        back to masters. The masters never fall back to slaves though
+                        and will just wait for sentinel triggered failovers to solve
+                        the unavailability.
+                      enum:
+                      - masters
+                      - slaves-rw
+                      type: string
                     tcpBacklog:
                       description: Max number of pending connections in the queue
                       type: integer

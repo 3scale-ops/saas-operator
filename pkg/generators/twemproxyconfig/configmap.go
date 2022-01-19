@@ -47,7 +47,11 @@ func (gen *Generator) configMap(toYAML bool) func() *corev1.ConfigMap {
 
 		config := make(map[string]TwemproxyConfigServerPool, len(gen.Spec.ServerPools)+1)
 		for _, pool := range gen.Spec.ServerPools {
-			config[pool.Name] = generateServerPool(pool, gen.monitoredShards)
+			if *pool.Target == saasv1alpha1.Masters {
+				config[pool.Name] = generateServerPool(pool, gen.masterTargets)
+			} else {
+				config[pool.Name] = generateServerPool(pool, gen.slaverwTargets)
+			}
 		}
 
 		config[HealthPoolName] = TwemproxyConfigServerPool{
@@ -86,11 +90,11 @@ func (gen *Generator) configMap(toYAML bool) func() *corev1.ConfigMap {
 	}
 }
 
-func generateServerPool(pool saasv1alpha1.TwemproxyServerPool, monitoredShards map[string]TwemproxyServer) TwemproxyConfigServerPool {
+func generateServerPool(pool saasv1alpha1.TwemproxyServerPool, targets map[string]TwemproxyServer) TwemproxyConfigServerPool {
 
 	servers := make([]TwemproxyServer, 0, len(pool.Topology))
 	for _, s := range pool.Topology {
-		srv := monitoredShards[s.PhysicalShard]
+		srv := targets[s.PhysicalShard]
 		srv.Name = s.ShardName
 		servers = append(servers, srv)
 	}

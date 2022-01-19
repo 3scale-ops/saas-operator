@@ -84,7 +84,7 @@ func (sew *SentinelEventWatcher) Start(parentCtx context.Context, l logr.Logger)
 		var ctx context.Context
 		ctx, sew.cancel = context.WithCancel(parentCtx)
 
-		ch, closeWatch := sew.sentinel.CRUD.SentinelPSubscribe(ctx, "+switch-master", "-failover-abort-no-good-slave")
+		ch, closeWatch := sew.sentinel.CRUD.SentinelPSubscribe(ctx, "+switch-master", "-failover-abort-no-good-slave", "sdown")
 		defer closeWatch()
 
 		log.Info("event watcher running")
