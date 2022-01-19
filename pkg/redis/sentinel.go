@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+	"strings"
+	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/redis/crud"
@@ -76,6 +78,40 @@ func (ss *SentinelServer) MonitoredShards(ctx context.Context) (saasv1alpha1.Mon
 		monitoredShards = append(monitoredShards, saasv1alpha1.MonitoredShard{Name: s.Name, Master: fmt.Sprintf("%s:%d", s.IP, s.Port)})
 	}
 	return monitoredShards, nil
+}
+
+func (ss *SentinelServer) DiscoverSlaves(ctx context.Context, shard string, maxInfoCacheAge time.Duration) ([]string, []string, error) {
+	slavesRO := []string{}
+	slavesRW := []string{}
+
+	infoCache, err := ss.CRUD.SentinelInfoCache(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	slaves, err := ss.CRUD.SentinelSlaves(ctx, shard)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	for _, slave := range slaves {
+		if !strings.Contains(slave.Flags, "s_down") {
+			isRO, err := infoCache.GetValue(shard, slave.RunID, "slave_read_only", maxInfoCacheAge)
+			if err != nil {
+				// ignore this slave as we have no reliable information
+				// to determine if its RO or RW
+				continue
+			}
+
+			if isRO == "0" {
+				slavesRW = append(slavesRW, fmt.Sprintf("%s:%d", slave.IP, slave.Port))
+			} else {
+				slavesRO = append(slavesRO, fmt.Sprintf("%s:%d", slave.IP, slave.Port))
+			}
+		}
+	}
+
+	return slavesRO, slavesRW, nil
 }
 
 // Monitor ensures that all the shards in the ShardedCluster object are monitored by the SentinelServer
