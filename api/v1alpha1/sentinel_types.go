@@ -190,6 +190,16 @@ type MonitoredShard struct {
 	// this shard, in the format "127.0.0.1:6379"
 	// +operator-sdk:csv:customresourcedefinitions:type=status
 	Master string `json:"master"`
+	// SlavesRO is the list of addresses of the read-only slave
+	// servers in this shard, in the format "127.0.0.1:6379"
+	// +operator-sdk:csv:customresourcedefinitions:type=status
+	// +optional
+	SlavesRO []string `json:"slavesRO,omitempty"`
+	// SlavesRW is the list of addresses of the read-write slave
+	// servers in this shard, in the format "127.0.0.1:6379"
+	// +operator-sdk:csv:customresourcedefinitions:type=status
+	// +optional
+	SlavesRW []string `json:"slavesRW,omitempty"`
 }
 
 //+kubebuilder:object:root=true

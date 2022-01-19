@@ -260,7 +260,8 @@ func TestSentinelServer_IsMonitoringShards(t *testing.T) {
 
 func TestSentinelServer_MonitoredShards(t *testing.T) {
 	type args struct {
-		ctx context.Context
+		ctx            context.Context
+		discoverSlaves bool
 	}
 	tests := []struct {
 		name    string
@@ -284,7 +285,8 @@ func TestSentinelServer_MonitoredShards(t *testing.T) {
 				}),
 			},
 			args: args{
-				ctx: context.TODO(),
+				ctx:            context.TODO(),
+				discoverSlaves: false,
 			},
 			want: saasv1alpha1.MonitoredShards{
 				{Name: "shard01", Master: "127.0.0.1:6379"},
@@ -302,7 +304,8 @@ func TestSentinelServer_MonitoredShards(t *testing.T) {
 				}),
 			},
 			args: args{
-				ctx: context.TODO(),
+				ctx:            context.TODO(),
+				discoverSlaves: false,
 			},
 			want:    nil,
 			wantErr: true,
@@ -310,7 +313,7 @@ func TestSentinelServer_MonitoredShards(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.ss.MonitoredShards(tt.args.ctx)
+			got, err := tt.ss.MonitoredShards(tt.args.ctx, tt.args.discoverSlaves)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SentinelServer.MonitoredShards() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -373,17 +376,17 @@ func TestSentinelServer_DiscoverSlaves(t *testing.T) {
 						InjectResponse: func() interface{} {
 							return []interface{}{
 								[]interface{}{
-									"name", "10.244.0.6:6379",
-									"ip", "10.244.0.6",
-									"port", "6379",
-									"runid", "bce68a863acb3bb1e02c2caae48ce36373c524fc",
-									"flags", "slave",
-								},
-								[]interface{}{
 									"name", "10.244.0.7:6379",
 									"ip", "10.244.0.7",
 									"port", "6379",
 									"runid", "1f67e9246d3017be5d5cb9a1fdc6020c8338da76",
+									"flags", "slave",
+								},
+								[]interface{}{
+									"name", "10.244.0.6:6379",
+									"ip", "10.244.0.6",
+									"port", "6379",
+									"runid", "bce68a863acb3bb1e02c2caae48ce36373c524fc",
 									"flags", "slave",
 								},
 								[]interface{}{

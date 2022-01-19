@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators/sentinel"
@@ -137,13 +138,13 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return r.ManageError(ctx, instance, err)
 	}
 
-	return r.ManageSuccess(ctx, instance)
+	return ctrl.Result{RequeueAfter: 30 * time.Second}, nil
 }
 
 func (r *SentinelReconciler) reconcileStatus(ctx context.Context, instance *saasv1alpha1.Sentinel, gen *sentinel.Generator,
 	spool redis.SentinelPool, log logr.Logger) error {
 
-	monitoredShards, err := spool.MonitoredShards(ctx, saasv1alpha1.SentinelDefaultQuorum)
+	monitoredShards, err := spool.MonitoredShards(ctx, saasv1alpha1.SentinelDefaultQuorum, true)
 	if err != nil {
 		return err
 	}
