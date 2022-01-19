@@ -1,9 +1,11 @@
 package crud
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/3scale/saas-operator/pkg/redis/crud/client"
 	"github.com/go-redis/redis/v8"
@@ -22,6 +24,7 @@ type Client interface {
 	SentinelMonitor(context.Context, string, string, string, int) error
 	SentinelSet(context.Context, string, string, string) error
 	SentinelPSubscribe(context.Context, ...string) (<-chan *redis.Message, func() error)
+	SentinelInfoCache(context.Context) (interface{}, error)
 	RedisRole(context.Context) (interface{}, error)
 	RedisConfigGet(context.Context, string) ([]interface{}, error)
 	RedisSlaveOf(context.Context, string, string) error
@@ -130,6 +133,28 @@ func (crud *CRUD) SentinelPSubscribe(ctx context.Context, events ...string) (<-c
 	return crud.Client.SentinelPSubscribe(ctx, events...)
 }
 
+func (crud *CRUD) SentinelInfoCache(ctx context.Context) (client.SentinelInfoCache, error) {
+	result := client.SentinelInfoCache{}
+
+	raw, err := crud.Client.SentinelInfoCache(ctx)
+	mval := islice2imap(raw)
+
+	for shard, servers := range mval {
+		result[shard] = make(map[string]client.RedisServerInfoCache, len(servers.([]interface{})))
+
+		for _, server := range servers.([]interface{}) {
+
+			info := infoStringToMap(server.([]interface{})[1].(string))
+			result[shard][info["run_id"]] = client.RedisServerInfoCache{
+				CacheAge: time.Duration(server.([]interface{})[0].(int64)) * time.Millisecond,
+				Info:     info,
+			}
+		}
+	}
+
+	return result, err
+}
+
 func (crud *CRUD) RedisRole(ctx context.Context) (client.Role, string, error) {
 	val, err := crud.Client.RedisRole(ctx)
 	if err != nil {
@@ -171,4 +196,30 @@ func sliceCmdToStruct(in interface{}, out interface{}) error {
 		return err
 	}
 	return nil
+}
+
+func islice2imap(in interface{}) map[string]interface{} {
+	m := map[string]interface{}{}
+	for i := range in.([]interface{}) {
+		if i%2 != 0 {
+			continue
+		}
+		m[in.([]interface{})[i].(string)] = in.([]interface{})[i+1].([]interface{})
+	}
+	return m
+}
+
+func infoStringToMap(in string) map[string]string {
+
+	m := map[string]string{}
+	scanner := bufio.NewScanner(strings.NewReader(in))
+	for scanner.Scan() {
+		// do not add empty lines or section headings (see the test for more info)
+		if line := scanner.Text(); line != "" && !strings.HasPrefix(line, "# ") {
+			kv := strings.SplitN(line, ":", 2)
+			m[kv[0]] = kv[1]
+		}
+	}
+
+	return m
 }

@@ -1,5 +1,10 @@
 package client
 
+import (
+	"fmt"
+	"time"
+)
+
 // Role represents the role of a redis server within a shard
 type Role string
 
@@ -60,4 +65,28 @@ type SentinelSlaveCmdResult struct {
 	MasterPort            int    `redis:"master-port"`
 	SlavePriority         int    `redis:"slave-priority"`
 	SlaveReplOffset       int    `redis:"slave-repl-offset"`
+}
+
+type RedisServerInfoCache struct {
+	CacheAge time.Duration
+	Info     map[string]string
+}
+
+type SentinelInfoCache map[string]map[string]RedisServerInfoCache
+
+func (sic SentinelInfoCache) GetValue(shard, runID, key string, maxCacheAge time.Duration) (string, error) {
+	if _, ok := sic[shard]; !ok {
+		return "", fmt.Errorf("unable to find shard '%s' in cache", shard)
+	}
+	if _, ok := sic[shard][runID]; !ok {
+		return "", fmt.Errorf("unable to find run_id '%s' in %s's cache", runID, shard)
+	}
+	if age := sic[shard][runID].CacheAge; age > maxCacheAge {
+		return "", fmt.Errorf("cache is too old (%s)", age)
+	}
+	if value, ok := sic[shard][runID].Info[key]; !ok {
+		return "", fmt.Errorf("unable to find run_id '%s' in %s's cache", runID, shard)
+	} else {
+		return value, nil
+	}
 }
