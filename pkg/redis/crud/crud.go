@@ -143,11 +143,14 @@ func (crud *CRUD) SentinelInfoCache(ctx context.Context) (client.SentinelInfoCac
 		result[shard] = make(map[string]client.RedisServerInfoCache, len(servers.([]interface{})))
 
 		for _, server := range servers.([]interface{}) {
-
-			info := infoStringToMap(server.([]interface{})[1].(string))
-			result[shard][info["run_id"]] = client.RedisServerInfoCache{
-				CacheAge: time.Duration(server.([]interface{})[0].(int64)) * time.Millisecond,
-				Info:     info,
+			// When sentinel is unable to reach the redis slave the info field can be nil
+			// so we have to check this to avoid panics
+			if server.([]interface{})[1] != nil {
+				info := infoStringToMap(server.([]interface{})[1].(string))
+				result[shard][info["run_id"]] = client.RedisServerInfoCache{
+					CacheAge: time.Duration(server.([]interface{})[0].(int64)) * time.Millisecond,
+					Info:     info,
+				}
 			}
 		}
 	}
