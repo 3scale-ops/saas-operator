@@ -29,7 +29,7 @@ var (
 	// TODO: add requirements
 	defaultTwemproxyResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{}
 	defaultTwemproxyImage     defaultImageSpec                = defaultImageSpec{
-		Name:       pointer.StringPtr("quay.io/3scale/backend-twemproxy"),
+		Name:       pointer.StringPtr("quay.io/3scale/twemproxy"),
 		Tag:        pointer.StringPtr("v0.5.0"),
 		PullPolicy: (*corev1.PullPolicy)(pointer.StringPtr(string(corev1.PullIfNotPresent))),
 	}
