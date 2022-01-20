@@ -10,7 +10,6 @@ import (
 
 var (
 	// Twemproxy defaults
-	// WARNING -> REVIEW THIS!!!
 	defaultTwemproxyLivenessProbe defaultProbeSpec = defaultProbeSpec{
 		InitialDelaySeconds: pointer.Int32Ptr(0),
 		TimeoutSeconds:      pointer.Int32Ptr(1),
@@ -18,7 +17,6 @@ var (
 		SuccessThreshold:    pointer.Int32Ptr(1),
 		FailureThreshold:    pointer.Int32Ptr(3),
 	}
-	// WARNING -> REVIEW THIS!!!
 	defaultTwemproxyReadinessProbe defaultProbeSpec = defaultProbeSpec{
 		InitialDelaySeconds: pointer.Int32Ptr(0),
 		TimeoutSeconds:      pointer.Int32Ptr(1),
