@@ -10,6 +10,11 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
+const (
+	HealthPoolName    string = "health"
+	HealthBindAddress string = "127.0.0.1:22333"
+)
+
 type TwemproxyServer struct {
 	Address  string
 	Priority int
@@ -22,15 +27,15 @@ func (tserver *TwemproxyServer) MarshalJSON() ([]byte, error) {
 
 type TwemproxyConfigServerPool struct {
 	Listen             string            `json:"listen"`
-	Hash               string            `json:"hash"`
-	HashTag            string            `json:"hash_tag"`
-	Distribution       string            `json:"distribution"`
-	Timeout            int               `json:"timeout"`
-	Backlog            int               `json:"backlog"`
+	Hash               string            `json:"hash,omitempty"`
+	HashTag            string            `json:"hash_tag,omitempty"`
+	Distribution       string            `json:"distribution,omitempty"`
+	Timeout            int               `json:"timeout,omitempty"`
+	Backlog            int               `json:"backlog,omitempty"`
 	PreConnect         bool              `json:"preconnect"`
 	Redis              bool              `json:"redis"`
 	AutoEjectHosts     bool              `json:"auto_eject_hosts"`
-	ServerFailureLimit int               `json:"server_failure_limit"`
+	ServerFailureLimit int               `json:"server_failure_limit,omitempty"`
 	Servers            []TwemproxyServer `json:"servers"`
 }
 
@@ -40,9 +45,19 @@ func (gen *Generator) configMap(toYAML bool) func() *corev1.ConfigMap {
 
 	return func() *corev1.ConfigMap {
 
-		config := make(map[string]TwemproxyConfigServerPool, len(gen.Spec.ServerPools))
+		config := make(map[string]TwemproxyConfigServerPool, len(gen.Spec.ServerPools)+1)
 		for _, pool := range gen.Spec.ServerPools {
 			config[pool.Name] = generateServerPool(pool, gen.monitoredShards)
+		}
+
+		config[HealthPoolName] = TwemproxyConfigServerPool{
+			Listen: HealthBindAddress,
+			Redis:  true,
+			Servers: []TwemproxyServer{{
+				Address:  "127.0.0.1:6379",
+				Priority: 1,
+				Name:     "dummy",
+			}},
 		}
 
 		var b []byte

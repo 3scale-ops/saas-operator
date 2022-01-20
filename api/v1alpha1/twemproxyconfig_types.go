@@ -25,8 +25,8 @@ import (
 )
 
 var (
-	PodSyncLabelKey   string = fmt.Sprintf("%s/twemproxyconfig.sync", GroupVersion.Group)
-	SyncAnnotationKey string = fmt.Sprintf("%s/twemproxyconfig.configmap-hash", GroupVersion.Group)
+	TwemproxyPodSyncLabelKey   string = fmt.Sprintf("%s/twemproxyconfig.sync", GroupVersion.Group)
+	TwemproxySyncAnnotationKey string = fmt.Sprintf("%s/twemproxyconfig.configmap-hash", GroupVersion.Group)
 )
 
 // TwemproxyConfigSpec defines the desired state of TwemproxyConfig
@@ -34,7 +34,8 @@ type TwemproxyConfigSpec struct {
 	// SentinelURI is the redis URI of sentinel. This is required as TewmproxyConfig
 	// will obtain the info about available redis servers from sentinel.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	SentinelURIs []string `json:"sentinelURIs"`
+	// +optional
+	SentinelURIs []string `json:"sentinelURIs,omitempty"`
 	// ServerPools is the list of Twemproxy server pools
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	ServerPools []TwemproxyServerPool `json:"serverPools"`
@@ -92,7 +93,7 @@ type TwemproxyConfig struct {
 
 func (tc *TwemproxyConfig) PodSyncSelector() client.MatchingLabels {
 	return client.MatchingLabels{
-		PodSyncLabelKey: util.ObjectKey(tc).Name,
+		TwemproxyPodSyncLabelKey: util.ObjectKey(tc).Name,
 	}
 }
 

@@ -1137,6 +1137,133 @@ spec:
                 required:
                 - endpoint
                 type: object
+              twemproxy:
+                description: Configures twemproxy
+                properties:
+                  image:
+                    description: Image specification for the component
+                    properties:
+                      name:
+                        description: Docker repository of the image
+                        type: string
+                      pullPolicy:
+                        description: Pull policy for the image
+                        type: string
+                      pullSecretName:
+                        description: Name of the Secret that holds quay.io credentials
+                          to access the image repository
+                        type: string
+                      tag:
+                        description: Image tag
+                        type: string
+                    type: object
+                  livenessProbe:
+                    description: Liveness probe for the component
+                    properties:
+                      failureThreshold:
+                        description: Minimum consecutive failures for the probe to
+                          be considered failed after having succeeded
+                        format: int32
+                        type: integer
+                      initialDelaySeconds:
+                        description: Number of seconds after the container has started
+                          before liveness probes are initiated
+                        format: int32
+                        type: integer
+                      periodSeconds:
+                        description: How often (in seconds) to perform the probe
+                        format: int32
+                        type: integer
+                      successThreshold:
+                        description: Minimum consecutive successes for the probe to
+                          be considered successful after having failed
+                        format: int32
+                        type: integer
+                      timeoutSeconds:
+                        description: Number of seconds after which the probe times
+                          out
+                        format: int32
+                        type: integer
+                    type: object
+                  options:
+                    description: Options
+                    properties:
+                      logLevel:
+                        description: 'Set logging level to N. (default: 5, min: 0,
+                          max: 11)'
+                        format: int32
+                        type: integer
+                      metricsAddress:
+                        description: 'Set stats monitoring port to port.  (default:
+                          22222)'
+                        format: int32
+                        type: integer
+                      statsInterval:
+                        description: 'Set stats aggregation interval in msec to interval.  (default:
+                          30s)'
+                        type: string
+                    type: object
+                  readinessProbe:
+                    description: Readiness probe for the component
+                    properties:
+                      failureThreshold:
+                        description: Minimum consecutive failures for the probe to
+                          be considered failed after having succeeded
+                        format: int32
+                        type: integer
+                      initialDelaySeconds:
+                        description: Number of seconds after the container has started
+                          before liveness probes are initiated
+                        format: int32
+                        type: integer
+                      periodSeconds:
+                        description: How often (in seconds) to perform the probe
+                        format: int32
+                        type: integer
+                      successThreshold:
+                        description: Minimum consecutive successes for the probe to
+                          be considered successful after having failed
+                        format: int32
+                        type: integer
+                      timeoutSeconds:
+                        description: Number of seconds after which the probe times
+                          out
+                        format: int32
+                        type: integer
+                    type: object
+                  resources:
+                    description: Resource requirements for the component
+                    properties:
+                      limits:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Limits describes the maximum amount of compute
+                          resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        type: object
+                      requests:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Requests describes the minimum amount of compute
+                          resources required. If Requests is omitted for a container,
+                          it defaults to Limits if that is explicitly specified, otherwise
+                          to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        type: object
+                    type: object
+                  twemproxyConfigRef:
+                    description: TwemproxyConfigRef is a reference to a TwemproxyConfig
+                      resource in the same Namespace
+                    type: string
+                required:
+                - twemproxyConfigRef
+                type: object
               worker:
                 description: Configures the backend worker
                 properties:

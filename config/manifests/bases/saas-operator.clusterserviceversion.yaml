@@ -1137,6 +1137,97 @@ spec:
       - description: If specified, the pod's tolerations.
         displayName: Tolerations
         path: listener.tolerations
+      - description: Configures twemproxy
+        displayName: Twemproxy
+        path: twemproxy
+      - description: Image specification for the component
+        displayName: Image
+        path: twemproxy.image
+      - description: Docker repository of the image
+        displayName: Name
+        path: twemproxy.image.name
+      - description: Pull policy for the image
+        displayName: Pull Policy
+        path: twemproxy.image.pullPolicy
+      - description: Name of the Secret that holds quay.io credentials to access the
+          image repository
+        displayName: Pull Secret Name
+        path: twemproxy.image.pullSecretName
+      - description: Image tag
+        displayName: Tag
+        path: twemproxy.image.tag
+      - description: Liveness probe for the component
+        displayName: Liveness Probe
+        path: twemproxy.livenessProbe
+      - description: Minimum consecutive failures for the probe to be considered failed
+          after having succeeded
+        displayName: Failure Threshold
+        path: twemproxy.livenessProbe.failureThreshold
+      - description: Number of seconds after the container has started before liveness
+          probes are initiated
+        displayName: Initial Delay Seconds
+        path: twemproxy.livenessProbe.initialDelaySeconds
+      - description: How often (in seconds) to perform the probe
+        displayName: Period Seconds
+        path: twemproxy.livenessProbe.periodSeconds
+      - description: Minimum consecutive successes for the probe to be considered
+          successful after having failed
+        displayName: Success Threshold
+        path: twemproxy.livenessProbe.successThreshold
+      - description: Number of seconds after which the probe times out
+        displayName: Timeout Seconds
+        path: twemproxy.livenessProbe.timeoutSeconds
+      - description: Options
+        displayName: Options
+        path: twemproxy.options
+      - description: 'Set logging level to N. (default: 5, min: 0, max: 11)'
+        displayName: Log Level
+        path: twemproxy.options.logLevel
+      - description: 'Set stats monitoring port to port.  (default: 22222)'
+        displayName: Metrics Port
+        path: twemproxy.options.metricsAddress
+      - description: 'Set stats aggregation interval in msec to interval.  (default:
+          30s)'
+        displayName: Stats Interval
+        path: twemproxy.options.statsInterval
+      - description: Readiness probe for the component
+        displayName: Readiness Probe
+        path: twemproxy.readinessProbe
+      - description: Minimum consecutive failures for the probe to be considered failed
+          after having succeeded
+        displayName: Failure Threshold
+        path: twemproxy.readinessProbe.failureThreshold
+      - description: Number of seconds after the container has started before liveness
+          probes are initiated
+        displayName: Initial Delay Seconds
+        path: twemproxy.readinessProbe.initialDelaySeconds
+      - description: How often (in seconds) to perform the probe
+        displayName: Period Seconds
+        path: twemproxy.readinessProbe.periodSeconds
+      - description: Minimum consecutive successes for the probe to be considered
+          successful after having failed
+        displayName: Success Threshold
+        path: twemproxy.readinessProbe.successThreshold
+      - description: Number of seconds after which the probe times out
+        displayName: Timeout Seconds
+        path: twemproxy.readinessProbe.timeoutSeconds
+      - description: Resource requirements for the component
+        displayName: Resources
+        path: twemproxy.resources
+      - description: 'Limits describes the maximum amount of compute resources allowed.
+          More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Limits
+        path: twemproxy.resources.limits
+      - description: 'Requests describes the minimum amount of compute resources required.
+          If Requests is omitted for a container, it defaults to Limits if that is
+          explicitly specified, otherwise to an implementation-defined value. More
+          info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Requests
+        path: twemproxy.resources.requests
+      - description: TwemproxyConfigRef is a reference to a TwemproxyConfig resource
+          in the same Namespace
+        displayName: Twemproxy Config Ref
+        path: twemproxy.twemproxyConfigRef
       - description: Configures the backend worker
         displayName: Worker
         path: worker
@@ -1770,6 +1861,9 @@ spec:
           with the master role. The other Pods are slaves of the master one.
         displayName: Master Index
         path: masterIndex
+      - description: SlaveCount is the number of redis slaves
+        displayName: Slave Count
+        path: slaveCount
       statusDescriptors:
       - description: ShardNodes describes the nodes in the redis shard
         displayName: Shard Nodes
@@ -1900,6 +1994,14 @@ spec:
           info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
         displayName: Requests
         path: resources.requests
+      statusDescriptors:
+      - description: MonitoredShards is the list of shards that the Sentinel resource
+          is currently monitoring
+        displayName: Monitored Shards
+        path: monitoredShards
+      - description: Addresses of the sentinel instances currently running
+        displayName: Sentinels
+        path: sentinels
       version: v1alpha1
     - description: System is the Schema for the systems API
       displayName: System
@@ -3080,6 +3182,47 @@ spec:
           info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
         displayName: Requests
         path: sphinx.resources.requests
+      version: v1alpha1
+    - description: TwemproxyConfig is the Schema for the twemproxyconfigs API
+      displayName: Twemproxy Config
+      kind: TwemproxyConfig
+      name: twemproxyconfigs.saas.3scale.net
+      specDescriptors:
+      - description: SentinelURI is the redis URI of sentinel. This is required as
+          TewmproxyConfig will obtain the info about available redis servers from
+          sentinel.
+        displayName: Sentinel URIs
+        path: sentinelURIs
+      - description: ServerPools is the list of Twemproxy server pools
+        displayName: Server Pools
+        path: serverPools
+      - description: The address to bind to. Format is ip:port
+        displayName: Bind Address
+        path: serverPools[0].bindAddress
+      - description: The name of the server pool
+        displayName: Name
+        path: serverPools[0].name
+      - description: Connect to all servers in the pool during startup
+        displayName: Pre Connect
+        path: serverPools[0].preConnect
+      - description: Max number of pending connections in the queue
+        displayName: TCPBacklog
+        path: serverPools[0].tcpBacklog
+      - description: Timeout to stablish connection with the servers in the server
+          pool
+        displayName: Timeout
+        path: serverPools[0].timeout
+      - description: The topology of the servers within the server pool. This field
+          describes the association of logical shards to physical shards.
+        displayName: Topology
+        path: serverPools[0].topology
+      - description: The physical shard where the logical one is stored. This name
+          should match the shard names monitored by Sentinel.
+        displayName: Physical Shard
+        path: serverPools[0].topology[0].physicalShard
+      - description: The name of the locigal shard
+        displayName: Shard Name
+        path: serverPools[0].topology[0].shardName
       version: v1alpha1
     - description: Zync is the Schema for the zyncs API
       displayName: Zync

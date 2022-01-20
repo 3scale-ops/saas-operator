@@ -67,7 +67,7 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	}
 
 	// Generate the ConfigMap
-	gen, err := twemproxyconfig.NewGenerator(ctx, instance)
+	gen, err := twemproxyconfig.NewGenerator(ctx, instance, r.GetClient())
 	if err != nil {
 		return r.ManageError(ctx, instance, err)
 	}
@@ -182,14 +182,14 @@ func (r *TwemproxyConfigReconciler) reconcileSyncAnnotations(ctx context.Context
 }
 
 func (r *TwemproxyConfigReconciler) syncPod(ctx context.Context, pod corev1.Pod, hash string, errCh chan<- error, log logr.Logger) {
-	annotatedHash, ok := pod.GetAnnotations()[saasv1alpha1.SyncAnnotationKey]
+	annotatedHash, ok := pod.GetAnnotations()[saasv1alpha1.TwemproxySyncAnnotationKey]
 	if !ok || annotatedHash != hash {
 		patch := client.MergeFrom(pod.DeepCopy())
 		if pod.GetAnnotations() != nil {
-			pod.ObjectMeta.Annotations[saasv1alpha1.SyncAnnotationKey] = hash
+			pod.ObjectMeta.Annotations[saasv1alpha1.TwemproxySyncAnnotationKey] = hash
 		} else {
 			pod.ObjectMeta.Annotations = map[string]string{
-				saasv1alpha1.SyncAnnotationKey: hash,
+				saasv1alpha1.TwemproxySyncAnnotationKey: hash,
 			}
 		}
 

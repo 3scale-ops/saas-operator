@@ -73,12 +73,7 @@ func (r *BackendReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	// Shared resources
-	resources := []basereconciler.Resource{
-		gen.GrafanaDashboard(),
-		gen.ErrorMonitoringSecretDefinition(),
-		gen.InternalAPISecretDefinition(),
-		gen.SystemEventsHookSecretDefinition(),
-	}
+	resources := gen.Resources()
 
 	// Listener resources
 	var listener_resources []basereconciler.Resource

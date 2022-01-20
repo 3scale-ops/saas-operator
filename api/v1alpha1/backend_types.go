@@ -154,6 +154,10 @@ type BackendSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Cron *CronSpec `json:"cron,omitempty"`
+	// Configures twemproxy
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Twemproxy *TwemproxySpec `json:"twemproxy,omitempty"`
 }
 
 // Default implements defaulting for BackendSpec
@@ -171,12 +175,18 @@ func (spec *BackendSpec) Default() {
 	}
 	spec.Cron.Default()
 	spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(spec.GrafanaDashboard, backendDefaultGrafanaDashboard)
+	if spec.Twemproxy != nil {
+		spec.Twemproxy.Default()
+	}
 }
 
 // ResolveCanarySpec modifies the BackendSpec given the provided canary configuration
 func (spec *BackendSpec) ResolveCanarySpec(canary *Canary) (*BackendSpec, error) {
 	canarySpec := &BackendSpec{}
-	canary.PatchSpec(spec, canarySpec)
+	if err := canary.PatchSpec(spec, canarySpec); err != nil {
+		return nil, err
+	}
+
 	if canary.ImageName != nil {
 		canarySpec.Image.Name = canary.ImageName
 	}
@@ -254,13 +264,7 @@ type ListenerSpec struct {
 func (spec *ListenerSpec) Default() {
 
 	spec.HPA = InitializeHorizontalPodAutoscalerSpec(spec.HPA, backendDefaultListenerHPA)
-
-	if spec.HPA.IsDeactivated() {
-		spec.Replicas = intOrDefault(spec.Replicas, &backendDefaultListenerReplicas)
-	} else {
-		spec.Replicas = nil
-	}
-
+	spec.Replicas = intOrDefault(spec.Replicas, &backendDefaultListenerReplicas)
 	spec.PDB = InitializePodDisruptionBudgetSpec(spec.PDB, backendDefaultListenerPDB)
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, backendDefaultListenerResources)
 	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, backendDefaultListenerLivenessProbe)
@@ -322,13 +326,7 @@ type WorkerSpec struct {
 func (spec *WorkerSpec) Default() {
 
 	spec.HPA = InitializeHorizontalPodAutoscalerSpec(spec.HPA, backendDefaultWorkerHPA)
-
-	if spec.HPA.IsDeactivated() {
-		spec.Replicas = intOrDefault(spec.Replicas, &backendDefaultWorkerReplicas)
-	} else {
-		spec.Replicas = nil
-	}
-
+	spec.Replicas = intOrDefault(spec.Replicas, &backendDefaultWorkerReplicas)
 	spec.PDB = InitializePodDisruptionBudgetSpec(spec.PDB, backendDefaultWorkerPDB)
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, backendDefaultWorkerResources)
 	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, backendDefaultWorkerLivenessProbe)

@@ -1,6 +1,8 @@
 package pod
 
 import (
+	"strings"
+
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -52,6 +54,23 @@ func TCPProbe(port intstr.IntOrString, cfg saasv1alpha1.ProbeSpec) *corev1.Probe
 				Port: port,
 			},
 		},
+		InitialDelaySeconds: *cfg.InitialDelaySeconds,
+		TimeoutSeconds:      *cfg.TimeoutSeconds,
+		PeriodSeconds:       *cfg.PeriodSeconds,
+		SuccessThreshold:    *cfg.SuccessThreshold,
+		FailureThreshold:    *cfg.FailureThreshold,
+	}
+}
+
+// ExecProbe returns a exec type corev1.Probe struct
+func ExecProbe(command string, cfg saasv1alpha1.ProbeSpec) *corev1.Probe {
+	if cfg.IsDeactivated() {
+		return nil
+	}
+	return &corev1.Probe{
+		Handler: corev1.Handler{Exec: &corev1.ExecAction{
+			Command: strings.Split(command, " "),
+		}},
 		InitialDelaySeconds: *cfg.InitialDelaySeconds,
 		TimeoutSeconds:      *cfg.TimeoutSeconds,
 		PeriodSeconds:       *cfg.PeriodSeconds,

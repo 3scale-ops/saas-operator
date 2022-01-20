@@ -52,6 +52,11 @@ func (gen *WorkerGenerator) deployment() func() *appsv1.Deployment {
 				},
 			},
 		}
+
+		if gen.TwemproxySpec != nil {
+			dep = addTwemproxySidecar(*dep, gen.TwemproxySpec)
+		}
+
 		return dep
 	}
 }
