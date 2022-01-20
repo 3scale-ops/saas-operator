@@ -32,11 +32,19 @@ var (
 		},
 		[]string{"sentinel", "shard"},
 	)
+	sdownCount = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name:      "sdown_count",
+			Namespace: "saas_redis_sentinel",
+			Help:      "+sdown (https://redis.io/topics/sentinel#sentinel-api)",
+		},
+		[]string{"sentinel", "shard", "server", "role"},
+	)
 )
 
 func init() {
 	// Register custom metrics with the global prometheus registry
-	metrics.Registry.MustRegister(switchMasterCount, failoverAbortNoGoodSlaveCount)
+	metrics.Registry.MustRegister(switchMasterCount, failoverAbortNoGoodSlaveCount, sdownCount)
 }
 
 // SentinelEventWatcher implements RunnableThread
@@ -84,7 +92,11 @@ func (sew *SentinelEventWatcher) Start(parentCtx context.Context, l logr.Logger)
 		var ctx context.Context
 		ctx, sew.cancel = context.WithCancel(parentCtx)
 
-		ch, closeWatch := sew.sentinel.CRUD.SentinelPSubscribe(ctx, "+switch-master", "-failover-abort-no-good-slave", "sdown")
+		ch, closeWatch := sew.sentinel.CRUD.SentinelPSubscribe(ctx,
+			`+switch-master`,
+			`-failover-abort-no-good-slave`,
+			`[+\-]sdown`,
+		)
 		defer closeWatch()
 
 		log.Info("event watcher running")
@@ -125,5 +137,9 @@ func (smg *SentinelEventWatcher) metricsFromEvent(msg *goredis.Message) {
 	case "-failover-abort-no-good-slave":
 		shard := strings.Split(msg.Payload, " ")[1]
 		failoverAbortNoGoodSlaveCount.With(prometheus.Labels{"sentinel": smg.SentinelURI, "shard": shard}).Add(1)
+	case "+sdown":
+		parts := strings.Split(msg.Payload, " ")
+		sdownCount.With(prometheus.Labels{
+			"sentinel": smg.SentinelURI, "shard": parts[5], "role": parts[0], "server": parts[1]}).Add(1)
 	}
 }
