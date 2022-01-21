@@ -771,6 +771,198 @@ func TestCRUD_SentinelPSubscribe(t *testing.T) {
 		})
 	}
 }
+
+func TestCRUD_SentinelInfoCache(t *testing.T) {
+	type fields struct {
+		Client Client
+		IP     string
+		Port   string
+	}
+	type args struct {
+		ctx context.Context
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    client.SentinelInfoCache
+		wantErr bool
+	}{
+		{
+			name: "Returns the info cache from sentinel",
+			fields: fields{
+				Client: &client.FakeClient{
+					Responses: []client.FakeResponse{{
+						InjectResponse: func() interface{} {
+							return []interface{}{
+								"shard01",
+								[]interface{}{
+									[]interface{}{
+										int64(1000),
+										"# Server\r\nredis_version:4.0.11\r\nredis_git_sha1:00000000\r\nredis_git_dirty:0\r\nredis_build_id:f7b13aa754d83881\r\nredis_mode:standalone\r\nos:Linux 5.15.10-200.fc35.x86_64 x86_64\r\narch_bits:64\r\nmultiplexing_api:epoll\r\natomicvar_api:atomic-builtin\r\ngcc_version:6.4.0\r\nprocess_id:1\r\nrun_id:bce68a863acb3bb1e02c2caae48ce36373c524fc\r\n",
+									},
+									[]interface{}{
+										int64(2000),
+										"# Server\r\nredis_version:4.0.11\r\nredis_git_sha1:00000000\r\nredis_git_dirty:0\r\nredis_build_id:f7b13aa754d83881\r\nredis_mode:standalone\r\nos:Linux 5.15.10-200.fc35.x86_64 x86_64\r\narch_bits:64\r\nmultiplexing_api:epoll\r\natomicvar_api:atomic-builtin\r\ngcc_version:6.4.0\r\nprocess_id:1\r\nrun_id:1f67e9246d3017be5d5cb9a1fdc6020c8338da76\r\n",
+									},
+								},
+								"shard02",
+								[]interface{}{
+									[]interface{}{
+										int64(3000),
+										"# Server\r\nredis_version:4.0.11\r\nredis_git_sha1:00000000\r\nredis_git_dirty:0\r\nredis_build_id:f7b13aa754d83881\r\nredis_mode:standalone\r\nos:Linux 5.15.10-200.fc35.x86_64 x86_64\r\narch_bits:64\r\nmultiplexing_api:epoll\r\natomicvar_api:atomic-builtin\r\ngcc_version:6.4.0\r\nprocess_id:1\r\nrun_id:70f3bdb57e626160f0f1367e2c854053ab03002f\r\n",
+									},
+									[]interface{}{
+										int64(4000),
+										"# Server\r\nredis_version:4.0.11\r\nredis_git_sha1:00000000\r\nredis_git_dirty:0\r\nredis_build_id:f7b13aa754d83881\r\nredis_mode:standalone\r\nos:Linux 5.15.10-200.fc35.x86_64 x86_64\r\narch_bits:64\r\nmultiplexing_api:epoll\r\natomicvar_api:atomic-builtin\r\ngcc_version:6.4.0\r\nprocess_id:1\r\nrun_id:751aa448e290591354f20780e38d86a85145eeb2\r\n",
+									},
+								},
+							}
+						},
+						InjectError: func() error { return nil },
+					}},
+				},
+				IP:   "abc",
+				Port: "abc",
+			},
+			args: args{ctx: nil},
+			want: client.SentinelInfoCache{
+				"shard01": {
+					"bce68a863acb3bb1e02c2caae48ce36373c524fc": client.RedisServerInfoCache{
+						CacheAge: 1 * time.Second,
+						Info: map[string]string{
+							"arch_bits": "64", "atomicvar_api": "atomic-builtin", "gcc_version": "6.4.0", "multiplexing_api": "epoll",
+							"os": "Linux 5.15.10-200.fc35.x86_64 x86_64", "process_id": "1", "redis_build_id": "f7b13aa754d83881",
+							"redis_git_dirty": "0", "redis_git_sha1": "00000000", "redis_mode": "standalone", "redis_version": "4.0.11",
+							"run_id": "bce68a863acb3bb1e02c2caae48ce36373c524fc",
+						},
+					},
+					"1f67e9246d3017be5d5cb9a1fdc6020c8338da76": client.RedisServerInfoCache{
+						CacheAge: 2 * time.Second,
+						Info: map[string]string{
+							"arch_bits": "64", "atomicvar_api": "atomic-builtin", "gcc_version": "6.4.0", "multiplexing_api": "epoll",
+							"os": "Linux 5.15.10-200.fc35.x86_64 x86_64", "process_id": "1", "redis_build_id": "f7b13aa754d83881",
+							"redis_git_dirty": "0", "redis_git_sha1": "00000000", "redis_mode": "standalone", "redis_version": "4.0.11",
+							"run_id": "1f67e9246d3017be5d5cb9a1fdc6020c8338da76",
+						},
+					},
+				},
+				"shard02": {
+					"70f3bdb57e626160f0f1367e2c854053ab03002f": client.RedisServerInfoCache{
+						CacheAge: 3 * time.Second,
+						Info: map[string]string{
+							"arch_bits": "64", "atomicvar_api": "atomic-builtin", "gcc_version": "6.4.0", "multiplexing_api": "epoll",
+							"os": "Linux 5.15.10-200.fc35.x86_64 x86_64", "process_id": "1", "redis_build_id": "f7b13aa754d83881",
+							"redis_git_dirty": "0", "redis_git_sha1": "00000000", "redis_mode": "standalone", "redis_version": "4.0.11",
+							"run_id": "70f3bdb57e626160f0f1367e2c854053ab03002f",
+						},
+					},
+					"751aa448e290591354f20780e38d86a85145eeb2": client.RedisServerInfoCache{
+						CacheAge: 4 * time.Second,
+						Info: map[string]string{
+							"arch_bits": "64", "atomicvar_api": "atomic-builtin", "gcc_version": "6.4.0", "multiplexing_api": "epoll",
+							"os": "Linux 5.15.10-200.fc35.x86_64 x86_64", "process_id": "1", "redis_build_id": "f7b13aa754d83881",
+							"redis_git_dirty": "0", "redis_git_sha1": "00000000", "redis_mode": "standalone", "redis_version": "4.0.11",
+							"run_id": "751aa448e290591354f20780e38d86a85145eeb2",
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Does not panic on info being 'nil'",
+			fields: fields{
+				Client: &client.FakeClient{
+					Responses: []client.FakeResponse{{
+						InjectResponse: func() interface{} {
+							return []interface{}{
+								"shard01",
+								[]interface{}{
+									[]interface{}{
+										int64(1000),
+										nil,
+									},
+									[]interface{}{
+										int64(2000),
+										"# Server\r\nredis_version:4.0.11\r\nredis_git_sha1:00000000\r\nredis_git_dirty:0\r\nredis_build_id:f7b13aa754d83881\r\nredis_mode:standalone\r\nos:Linux 5.15.10-200.fc35.x86_64 x86_64\r\narch_bits:64\r\nmultiplexing_api:epoll\r\natomicvar_api:atomic-builtin\r\ngcc_version:6.4.0\r\nprocess_id:1\r\nrun_id:1f67e9246d3017be5d5cb9a1fdc6020c8338da76\r\n",
+									},
+								},
+								"shard02",
+								[]interface{}{
+									[]interface{}{
+										int64(3000),
+										"# Server\r\nredis_version:4.0.11\r\nredis_git_sha1:00000000\r\nredis_git_dirty:0\r\nredis_build_id:f7b13aa754d83881\r\nredis_mode:standalone\r\nos:Linux 5.15.10-200.fc35.x86_64 x86_64\r\narch_bits:64\r\nmultiplexing_api:epoll\r\natomicvar_api:atomic-builtin\r\ngcc_version:6.4.0\r\nprocess_id:1\r\nrun_id:70f3bdb57e626160f0f1367e2c854053ab03002f\r\n",
+									},
+									[]interface{}{
+										int64(4000),
+										"# Server\r\nredis_version:4.0.11\r\nredis_git_sha1:00000000\r\nredis_git_dirty:0\r\nredis_build_id:f7b13aa754d83881\r\nredis_mode:standalone\r\nos:Linux 5.15.10-200.fc35.x86_64 x86_64\r\narch_bits:64\r\nmultiplexing_api:epoll\r\natomicvar_api:atomic-builtin\r\ngcc_version:6.4.0\r\nprocess_id:1\r\nrun_id:751aa448e290591354f20780e38d86a85145eeb2\r\n",
+									},
+								},
+							}
+						},
+						InjectError: func() error { return nil },
+					}},
+				},
+				IP:   "abc",
+				Port: "abc",
+			},
+			args: args{ctx: nil},
+			want: client.SentinelInfoCache{
+				"shard01": {
+					"1f67e9246d3017be5d5cb9a1fdc6020c8338da76": client.RedisServerInfoCache{
+						CacheAge: 2 * time.Second,
+						Info: map[string]string{
+							"arch_bits": "64", "atomicvar_api": "atomic-builtin", "gcc_version": "6.4.0", "multiplexing_api": "epoll",
+							"os": "Linux 5.15.10-200.fc35.x86_64 x86_64", "process_id": "1", "redis_build_id": "f7b13aa754d83881",
+							"redis_git_dirty": "0", "redis_git_sha1": "00000000", "redis_mode": "standalone", "redis_version": "4.0.11",
+							"run_id": "1f67e9246d3017be5d5cb9a1fdc6020c8338da76",
+						},
+					},
+				},
+				"shard02": {
+					"70f3bdb57e626160f0f1367e2c854053ab03002f": client.RedisServerInfoCache{
+						CacheAge: 3 * time.Second,
+						Info: map[string]string{
+							"arch_bits": "64", "atomicvar_api": "atomic-builtin", "gcc_version": "6.4.0", "multiplexing_api": "epoll",
+							"os": "Linux 5.15.10-200.fc35.x86_64 x86_64", "process_id": "1", "redis_build_id": "f7b13aa754d83881",
+							"redis_git_dirty": "0", "redis_git_sha1": "00000000", "redis_mode": "standalone", "redis_version": "4.0.11",
+							"run_id": "70f3bdb57e626160f0f1367e2c854053ab03002f",
+						},
+					},
+					"751aa448e290591354f20780e38d86a85145eeb2": client.RedisServerInfoCache{
+						CacheAge: 4 * time.Second,
+						Info: map[string]string{
+							"arch_bits": "64", "atomicvar_api": "atomic-builtin", "gcc_version": "6.4.0", "multiplexing_api": "epoll",
+							"os": "Linux 5.15.10-200.fc35.x86_64 x86_64", "process_id": "1", "redis_build_id": "f7b13aa754d83881",
+							"redis_git_dirty": "0", "redis_git_sha1": "00000000", "redis_mode": "standalone", "redis_version": "4.0.11",
+							"run_id": "751aa448e290591354f20780e38d86a85145eeb2",
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			crud := &CRUD{
+				Client: tt.fields.Client,
+				IP:     tt.fields.IP,
+				Port:   tt.fields.Port,
+			}
+			got, err := crud.SentinelInfoCache(tt.args.ctx)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("CRUD.SentinelInfoCache() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if diff := deep.Equal(got, tt.want); len(diff) > 0 {
+				t.Errorf("CRUD.SentinelInfoCache() = diff %v", diff)
+			}
+		})
+	}
+}
+
 func TestClient_RedisRole(t *testing.T) {
 	type fields struct {
 		client Client
@@ -1118,6 +1310,105 @@ func Test_sliceCmdToStruct(t *testing.T) {
 			}
 			if !reflect.DeepEqual(tt.args.out, tt.want) {
 				t.Errorf("sliceCmdToStruct() = %v, want %v", tt.args.out, tt.want)
+			}
+		})
+	}
+}
+
+func Test_islice2imap(t *testing.T) {
+	type args struct {
+		in interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want map[string]interface{}
+	}{
+		{
+			name: "",
+			args: args{
+				in: []interface{}{
+					"key1",
+					[]interface{}{1, 2, 3},
+					"key2",
+					[]interface{}{4, 5, 6},
+				},
+			},
+			want: map[string]interface{}{
+				"key1": []interface{}{1, 2, 3},
+				"key2": []interface{}{4, 5, 6},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := islice2imap(tt.args.in); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("islice2imap() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_infoStringToMap(t *testing.T) {
+	type args struct {
+		in string
+	}
+	tests := []struct {
+		name string
+		args args
+		want map[string]string
+	}{
+		{
+			name: "",
+			args: args{
+				in: "# Server\r\nredis_version:4.0.11\r\nredis_git_sha1:00000000\r\nredis_git_dirty:0\r\nredis_build_id:f7b13aa754d83881\r\nredis_mode:standalone\r\nos:Linux 5.15.10-200.fc35.x86_64 x86_64\r\narch_bits:64\r\nmultiplexing_api:epoll\r\natomicvar_api:atomic-builtin\r\ngcc_version:6.4.0\r\nprocess_id:1\r\nrun_id:4366cdf810a9c473b4fc9c161ba1cdca260aee6f\r\ntcp_port:6379\r\nuptime_in_seconds:5389\r\nuptime_in_days:0\r\nhz:10\r\nlru_clock:14986150\r\nexecutable:/data/redis-server\r\nconfig_file:/redis/redis.conf\r\n\r\n# Clients\r\nconnected_clients:7\r\nclient_longest_output_list:0\r\nclient_biggest_input_buf:14\r\nblocked_clients:0\r\n\r\n# Memory\r\nused_memory:2023296\r\nused_memory_human:1.93M\r\nused_memory_rss:3997696\r\nused_memory_rss_human:3.81M\r\nused_memory_peak:2332192\r\nused_memory_peak_human:2.22M\r\nused_memory_peak_perc:86.76%\r\nused_memory_overhead:1985866\r\nused_memory_startup:786512\r\nused_memory_dataset:37430\r\nused_memory_dataset_perc:3.03%\r\ntotal_system_memory:33424752640\r\ntotal_system_memory_human:31.13G\r\nused_memory_lua:37888\r\nused_memory_lua_human:37.00K\r\n",
+			},
+			want: map[string]string{
+				"blocked_clients":            "0",
+				"used_memory":                "2023296",
+				"used_memory_human":          "1.93M",
+				"used_memory_startup":        "786512",
+				"used_memory_lua_human":      "37.00K",
+				"uptime_in_days":             "0",
+				"client_biggest_input_buf":   "14",
+				"used_memory_peak":           "2332192",
+				"tcp_port":                   "6379",
+				"config_file":                "/redis/redis.conf",
+				"os":                         "Linux 5.15.10-200.fc35.x86_64 x86_64",
+				"gcc_version":                "6.4.0",
+				"arch_bits":                  "64",
+				"atomicvar_api":              "atomic-builtin",
+				"used_memory_overhead":       "1985866",
+				"used_memory_lua":            "37888",
+				"redis_git_sha1":             "00000000",
+				"redis_mode":                 "standalone",
+				"run_id":                     "4366cdf810a9c473b4fc9c161ba1cdca260aee6f",
+				"connected_clients":          "7",
+				"used_memory_peak_human":     "2.22M",
+				"used_memory_dataset":        "37430",
+				"redis_git_dirty":            "0",
+				"process_id":                 "1",
+				"total_system_memory":        "33424752640",
+				"uptime_in_seconds":          "5389",
+				"lru_clock":                  "14986150",
+				"client_longest_output_list": "0",
+				"used_memory_rss":            "3997696",
+				"used_memory_dataset_perc":   "3.03%",
+				"hz":                         "10",
+				"executable":                 "/data/redis-server",
+				"multiplexing_api":           "epoll",
+				"used_memory_rss_human":      "3.81M",
+				"used_memory_peak_perc":      "86.76%",
+				"total_system_memory_human":  "31.13G",
+				"redis_version":              "4.0.11",
+				"redis_build_id":             "f7b13aa754d83881",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := infoStringToMap(tt.args.in); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("infoStringToMap() = %v, want %v", got, tt.want)
 			}
 		})
 	}

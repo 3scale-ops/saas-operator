@@ -71,6 +71,11 @@ func (c *GoRedisClient) SentinelPSubscribe(ctx context.Context, events ...string
 	return pubsub.Channel(), pubsub.Close
 }
 
+func (c *GoRedisClient) SentinelInfoCache(ctx context.Context) (interface{}, error) {
+	val, err := c.redis.Do(ctx, "sentinel", "info-cache").Result()
+	return val, err
+}
+
 func (c *GoRedisClient) RedisRole(ctx context.Context) (interface{}, error) {
 
 	val, err := c.redis.Do(ctx, "role").Result()

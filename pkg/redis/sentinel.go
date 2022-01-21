@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+	"strings"
+	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/redis/crud"
@@ -16,6 +18,7 @@ import (
 
 const (
 	shardNotInitializedError = "ERR No such master with that name"
+	maxInfoCacheAge          = 10 * time.Second
 )
 
 // SentinelServer represents a sentinel Pod
@@ -64,7 +67,7 @@ func (ss *SentinelServer) IsMonitoringShards(ctx context.Context, shards []strin
 }
 
 // MonitoredShards returns the list of monitored shards of this SentinelServer
-func (ss *SentinelServer) MonitoredShards(ctx context.Context) (saasv1alpha1.MonitoredShards, error) {
+func (ss *SentinelServer) MonitoredShards(ctx context.Context, discoverSlaves bool) (saasv1alpha1.MonitoredShards, error) {
 
 	sm, err := ss.CRUD.SentinelMasters(ctx)
 	if err != nil {
@@ -73,9 +76,54 @@ func (ss *SentinelServer) MonitoredShards(ctx context.Context) (saasv1alpha1.Mon
 
 	monitoredShards := make([]saasv1alpha1.MonitoredShard, 0, len(sm))
 	for _, s := range sm {
-		monitoredShards = append(monitoredShards, saasv1alpha1.MonitoredShard{Name: s.Name, Master: fmt.Sprintf("%s:%d", s.IP, s.Port)})
+		shard := saasv1alpha1.MonitoredShard{Name: s.Name, Master: fmt.Sprintf("%s:%d", s.IP, s.Port)}
+		if discoverSlaves {
+			// ignore errors trying to discover slaves so at least the master info
+			// is returned
+			shard.SlavesRO, shard.SlavesRW, _ = ss.DiscoverSlaves(ctx, s.Name, maxInfoCacheAge)
+		}
+		monitoredShards = append(monitoredShards, shard)
 	}
 	return monitoredShards, nil
+}
+
+func (ss *SentinelServer) DiscoverSlaves(ctx context.Context, shard string, maxInfoCacheAge time.Duration) ([]string, []string, error) {
+	slavesRO := []string{}
+	slavesRW := []string{}
+
+	infoCache, err := ss.CRUD.SentinelInfoCache(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	slaves, err := ss.CRUD.SentinelSlaves(ctx, shard)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	for _, slave := range slaves {
+		if !strings.Contains(slave.Flags, "s_down") {
+			isRO, err := infoCache.GetValue(shard, slave.RunID, "slave_read_only", maxInfoCacheAge)
+			if err != nil {
+				// ignore this slave as we have no reliable information
+				// to determine if its RO or RW
+				continue
+			}
+
+			if isRO == "0" {
+				slavesRW = append(slavesRW, fmt.Sprintf("%s:%d", slave.IP, slave.Port))
+			} else {
+				slavesRO = append(slavesRO, fmt.Sprintf("%s:%d", slave.IP, slave.Port))
+			}
+		}
+	}
+
+	// sort arrays before returning so sentinel discovery responses
+	// can be easily compared
+	sort.Strings(slavesRO)
+	sort.Strings(slavesRW)
+
+	return slavesRO, slavesRW, nil
 }
 
 // Monitor ensures that all the shards in the ShardedCluster object are monitored by the SentinelServer
@@ -163,13 +211,13 @@ func (sp SentinelPool) IsMonitoringShards(ctx context.Context, shards []string) 
 }
 
 // MonitoredShards returns the list of monitored shards of this SentinelServer
-func (sp SentinelPool) MonitoredShards(ctx context.Context, quorum int) (saasv1alpha1.MonitoredShards, error) {
+func (sp SentinelPool) MonitoredShards(ctx context.Context, quorum int, discoverSlaves bool) (saasv1alpha1.MonitoredShards, error) {
 
 	responses := make([]saasv1alpha1.MonitoredShards, 0, len(sp))
 
 	for _, srv := range sp {
 
-		resp, err := srv.MonitoredShards(ctx)
+		resp, err := srv.MonitoredShards(ctx, discoverSlaves)
 		if err != nil {
 			// jump to next sentinel if error occurs
 			continue

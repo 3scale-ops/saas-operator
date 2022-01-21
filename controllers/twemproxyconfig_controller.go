@@ -66,6 +66,9 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return *result, err
 	}
 
+	// Apply defaults for reconcile but do not store them in the API
+	instance.Default()
+
 	// Generate the ConfigMap
 	gen, err := twemproxyconfig.NewGenerator(ctx, instance, r.GetClient())
 	if err != nil {

@@ -41,6 +41,12 @@ type TwemproxyConfigSpec struct {
 	ServerPools []TwemproxyServerPool `json:"serverPools"`
 }
 
+func (spec *TwemproxyConfigSpec) Default() {
+	for idx := range spec.ServerPools {
+		spec.ServerPools[idx].Default()
+	}
+}
+
 type TwemproxyServerPool struct {
 	// The name of the server pool
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
@@ -63,7 +69,32 @@ type TwemproxyServerPool struct {
 	// Connect to all servers in the pool during startup
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	PreConnect bool `json:"preConnect"`
+	// Target defines which are the servers that will be configured
+	// as backend redis servers for the Twemproxy configuration. The
+	// default is to target masters, but read-write slaves can be configured
+	// through this option. If read-write slaves are configured but there are none
+	// available, the config will fall back to masters. The masters never fall back
+	// to slaves though and will just wait for sentinel triggered failovers to solve
+	// the unavailability.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +kubebuilder:validation:Enum=masters;slaves-rw
+	// +optional
+	Target *TargetRedisServers `json:"target,omitempty"`
 }
+
+func (pool *TwemproxyServerPool) Default() {
+	if pool.Target == nil {
+		t := Masters
+		pool.Target = &t
+	}
+}
+
+type TargetRedisServers string
+
+const (
+	Masters  TargetRedisServers = "masters"
+	SlavesRW TargetRedisServers = "slaves-rw"
+)
 
 type ShardedRedisTopology struct {
 	// The name of the locigal shard
@@ -89,6 +120,10 @@ type TwemproxyConfig struct {
 
 	Spec   TwemproxyConfigSpec   `json:"spec,omitempty"`
 	Status TwemproxyConfigStatus `json:"status,omitempty"`
+}
+
+func (tc *TwemproxyConfig) Default() {
+	tc.Spec.Default()
 }
 
 func (tc *TwemproxyConfig) PodSyncSelector() client.MatchingLabels {

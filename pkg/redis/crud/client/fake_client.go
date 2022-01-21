@@ -45,6 +45,11 @@ func (fc *FakeClient) SentinelPSubscribe(ctx context.Context, events ...string) 
 	return rsp.InjectResponse().(<-chan *redis.Message), nil
 }
 
+func (fc *FakeClient) SentinelInfoCache(ctx context.Context) (interface{}, error) {
+	rsp := fc.pop()
+	return rsp.InjectResponse(), rsp.InjectError()
+}
+
 func (fc *FakeClient) RedisRole(ctx context.Context) (interface{}, error) {
 	rsp := fc.pop()
 	return rsp.InjectResponse(), rsp.InjectError()
