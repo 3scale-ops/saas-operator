@@ -42,6 +42,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.AutoSSLSpec) (Ge
 		},
 		Spec:    spec,
 		Options: config.NewOptions(spec),
+		Traffic: true,
 	}
 
 	if spec.Canary != nil {
