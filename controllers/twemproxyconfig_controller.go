@@ -80,7 +80,8 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	}
 
 	// Reconcile the ConfigMap
-	if err := r.reconcileConfigMap(ctx, instance, cm.(*corev1.ConfigMap), log); err != nil {
+	hash, err := r.reconcileConfigMap(ctx, instance, cm.(*corev1.ConfigMap), *instance.Spec.ReconcileServerPools, log)
+	if err != nil {
 		return r.ManageError(ctx, instance, err)
 	}
 
@@ -88,7 +89,6 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	// Pods annotations so the ConfigMap is re-synced inside the container. Otherwide kubelet
 	// would re-sync the file asynchronously depending on its configured refresh time, which might
 	// take several seconds.
-	hash := util.Hash(cm.(*corev1.ConfigMap).Data)
 	if err := r.reconcileSyncAnnotations(ctx, instance, hash, log); err != nil {
 		return r.ManageError(ctx, instance, err)
 	}
@@ -108,36 +108,44 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	return ctrl.Result{RequeueAfter: 30 * time.Second}, nil
 }
 
-func (r *TwemproxyConfigReconciler) reconcileConfigMap(ctx context.Context, owner client.Object, desired *corev1.ConfigMap, log logr.Logger) error {
+func (r *TwemproxyConfigReconciler) reconcileConfigMap(ctx context.Context, owner client.Object,
+	desired *corev1.ConfigMap, reconcileData bool, log logr.Logger) (string, error) {
+
 	current := &corev1.ConfigMap{}
 	err := r.GetClient().Get(ctx, util.ObjectKey(desired), current)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Create
 			if err := controllerutil.SetControllerReference(owner, desired, r.GetScheme()); err != nil {
-				return err
+				return "", err
 			}
 			if err := r.GetClient().Create(ctx, desired); err != nil {
-				return err
+				return "", err
 			}
 			log.Info("created ConfigMap")
-			return nil
+			return util.Hash(desired.Data), nil
 		}
-		return err
+		return "", err
 	}
 
-	// Compare .data field of both ConfigMaps and patch if required
-	// We use patch to avoid failures due to having an older version
-	// of the configmap so the config changes are propagated faster.
-	if !reflect.DeepEqual(desired.Data, current.Data) {
-		if err := r.GetClient().Patch(ctx, desired, client.MergeFrom(current)); err != nil {
-			log.Error(err, "unable to patch ConfigMap")
-			return err
+	var hash string
+	if reconcileData {
+		// Compare .data field of both ConfigMaps and patch if required.
+		// We use patch to avoid failures due to having an older version
+		// of the configmap so the config changes are propagated faster.
+		if !reflect.DeepEqual(desired.Data, current.Data) {
+			if err := r.GetClient().Patch(ctx, desired, client.MergeFrom(current)); err != nil {
+				log.Error(err, "unable to patch ConfigMap")
+				return "", err
+			}
+			log.Info("updated ConfigMap")
 		}
-		log.Info("updated ConfigMap")
+		hash = util.Hash(desired.Data)
+	} else {
+		hash = util.Hash(current.Data)
 	}
 
-	return nil
+	return hash, nil
 }
 
 func (r *TwemproxyConfigReconciler) reconcileSyncAnnotations(ctx context.Context,
