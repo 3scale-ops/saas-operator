@@ -21,6 +21,7 @@ import (
 
 	"github.com/3scale/saas-operator/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -39,11 +40,21 @@ type TwemproxyConfigSpec struct {
 	// ServerPools is the list of Twemproxy server pools
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	ServerPools []TwemproxyServerPool `json:"serverPools"`
+	// ReconcileServerPools is a flag that allows to deactivate
+	// the reconcile of the contents of the managed ConfigMap. This is
+	// useful in an emergency, to fix something manually. The re-sync
+	// logic will still work whenever the contents of the ConfigMap
+	// are changed, even if they are manually changed.
+	// This switch defaults to "true".
+	ReconcileServerPools *bool `json:"reconcileServerPools,omitempty"`
 }
 
 func (spec *TwemproxyConfigSpec) Default() {
 	for idx := range spec.ServerPools {
 		spec.ServerPools[idx].Default()
+	}
+	if spec.ReconcileServerPools == nil {
+		spec.ReconcileServerPools = pointer.Bool(true)
 	}
 }
 
