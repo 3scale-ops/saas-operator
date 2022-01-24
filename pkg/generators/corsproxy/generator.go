@@ -1,16 +1,18 @@
 package corsproxy
 
 import (
+	"fmt"
+
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/grafanadashboard"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/hpa"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pdb"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/podmonitor"
 	"github.com/3scale/saas-operator/pkg/generators/corsproxy/config"
-	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
-	"k8s.io/apimachinery/pkg/types"
+	basereconciler_resources "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/resources"
+	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
+	"github.com/3scale/saas-operator/pkg/resource_builders/grafanadashboard"
+	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
+	"github.com/3scale/saas-operator/pkg/resource_builders/podmonitor"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	"k8s.io/utils/pointer"
 )
 
 const (
@@ -19,53 +21,84 @@ const (
 
 // Generator configures the generators for CORSProxy
 type Generator struct {
-	generators.BaseOptions
+	generators.BaseOptionsV2
 	Spec    saasv1alpha1.CORSProxySpec
 	Options config.Options
+	Traffic bool
 }
 
 // NewGenerator returns a new Options struct
-func NewGenerator(instance, namespace string, spec saasv1alpha1.CORSProxySpec) Generator {
+func NewGenerator(instance, namespace string, spec saasv1alpha1.CORSProxySpec) (Generator, error) {
 	return Generator{
-		BaseOptions: generators.BaseOptions{
-			Component:    component,
-			InstanceName: instance,
-			Namespace:    namespace,
-			Labels: map[string]string{
-				"app":     component,
-				"part-of": "3scale-saas",
+			BaseOptionsV2: generators.BaseOptionsV2{
+				Component:    component,
+				InstanceName: instance,
+				Namespace:    namespace,
+				Labels: map[string]string{
+					"app":     component,
+					"part-of": "3scale-saas",
+				},
 			},
+			Spec:    spec,
+			Options: config.NewOptions(spec),
+			Traffic: true,
 		},
-		Spec:    spec,
-		Options: config.NewOptions(spec),
+		nil
+}
+
+// Validate that Generator implements workloads.TrafficManager interface
+var _ workloads.TrafficManager = &Generator{}
+
+func (gen *Generator) Services() []basereconciler_resources.ServiceTemplate {
+	return []basereconciler_resources.ServiceTemplate{
+		{Template: gen.service(), IsEnabled: true},
+	}
+}
+func (gen *Generator) SendTraffic() bool { return gen.Traffic }
+func (gen *Generator) TrafficSelector() map[string]string {
+	return map[string]string{
+		fmt.Sprintf("%s/traffic", saasv1alpha1.GroupVersion.Group): component,
 	}
 }
 
-// HPA returns a basereconciler.GeneratorFunction
-func (gen *Generator) HPA() basereconciler.GeneratorFunction {
-	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return hpa.New(key, gen.GetLabels(), *gen.Spec.HPA)
+// Validate that Generator implements workloads.DeploymentWorkload interface
+var _ workloads.DeploymentWorkloadWithTraffic = &Generator{}
+
+func (gen *Generator) Deployment() basereconciler_resources.DeploymentTemplate {
+	return basereconciler_resources.DeploymentTemplate{
+		Template: gen.deployment(),
+		RolloutTriggers: []basereconciler_resources.RolloutTrigger{
+			{Name: "cors-proxy-system-database", SecretName: pointer.String("cors-proxy-system-database")},
+		},
+		EnforceReplicas: gen.Spec.HPA.IsDeactivated(),
+		IsEnabled:       true,
+	}
 }
 
-// PDB returns a basereconciler.GeneratorFunction
-func (gen *Generator) PDB() basereconciler.GeneratorFunction {
-	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return pdb.New(key, gen.GetLabels(), gen.Selector().MatchLabels, *gen.Spec.PDB)
+func (gen *Generator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {
+	return gen.Spec.HPA
 }
 
-// PodMonitor returns a basereconciler.GeneratorFunction
-func (gen *Generator) PodMonitor() basereconciler.GeneratorFunction {
-	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return podmonitor.New(key, gen.GetLabels(), gen.Selector().MatchLabels, podmonitor.PodMetricsEndpoint("/metrics", "metrics", 30))
+func (gen *Generator) PDBSpec() *saasv1alpha1.PodDisruptionBudgetSpec {
+	return gen.Spec.PDB
 }
 
-// GrafanaDashboard returns a basereconciler.GeneratorFunction
-func (gen *Generator) GrafanaDashboard() basereconciler.GeneratorFunction {
-	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return grafanadashboard.New(key, gen.GetLabels(), *gen.Spec.GrafanaDashboard, "dashboards/cors-proxy.json.gtpl")
+func (gen *Generator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint {
+	return []monitoringv1.PodMetricsEndpoint{
+		podmonitor.PodMetricsEndpoint("/metrics", "metrics", 30),
+	}
 }
 
-// SecretDefinition returns a basereconciler.GeneratorFunction
-func (gen *Generator) SecretDefinition() basereconciler.GeneratorFunction {
-	return pod.GenerateSecretDefinitionFn("cors-proxy-system-database", gen.GetNamespace(), gen.GetLabels(), gen.Options)
+func (gen *Generator) GrafanaDashboard() basereconciler_resources.GrafanaDashboardTemplate {
+	return basereconciler_resources.GrafanaDashboardTemplate{
+		Template:  grafanadashboard.New(gen.GetKey(), gen.GetLabels(), *gen.Spec.GrafanaDashboard, "dashboards/cors-proxy.json.gtpl"),
+		IsEnabled: !gen.Spec.GrafanaDashboard.IsDeactivated(),
+	}
+}
+
+func (gen *Generator) SecretDefinition() basereconciler_resources.SecretDefinitionTemplate {
+	return basereconciler_resources.SecretDefinitionTemplate{
+		Template:  pod.GenerateSecretDefinitionFn("cors-proxy-system-database", gen.GetNamespace(), gen.GetLabels(), gen.Options),
+		IsEnabled: true,
+	}
 }
