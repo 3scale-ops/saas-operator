@@ -465,6 +465,18 @@ spec:
                     name:
                       description: Name is the name of the redis shard
                       type: string
+                    slavesRO:
+                      description: SlavesRO is the list of addresses of the read-only
+                        slave servers in this shard, in the format "127.0.0.1:6379"
+                      items:
+                        type: string
+                      type: array
+                    slavesRW:
+                      description: SlavesRW is the list of addresses of the read-write
+                        slave servers in this shard, in the format "127.0.0.1:6379"
+                      items:
+                        type: string
+                      type: array
                   required:
                   - master
                   - name

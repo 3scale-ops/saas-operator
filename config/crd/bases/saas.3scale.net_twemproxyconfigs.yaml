@@ -36,6 +36,13 @@ spec:
           spec:
             description: TwemproxyConfigSpec defines the desired state of TwemproxyConfig
             properties:
+              reconcileServerPools:
+                description: ReconcileServerPools is a flag that allows to deactivate
+                  the reconcile of the contents of the managed ConfigMap. This is
+                  useful in an emergency, to fix something manually. The re-sync logic
+                  will still work whenever the contents of the ConfigMap are changed,
+                  even if they are manually changed. This switch defaults to "true".
+                type: boolean
               sentinelURIs:
                 description: SentinelURI is the redis URI of sentinel. This is required
                   as TewmproxyConfig will obtain the info about available redis servers
