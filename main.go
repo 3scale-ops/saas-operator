@@ -139,14 +139,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.CORSProxyReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("CORSProxy"), false),
-		Log:        ctrl.Log.WithName("controllers").WithName("CORSProxy"),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "CORSProxy")
-		os.Exit(1)
-	}
-
 	if err = (&controllers.SystemReconciler{
 		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("System"), false),
 		Log:        ctrl.Log.WithName("controllers").WithName("System"),
@@ -191,6 +183,14 @@ func main() {
 	}
 
 	/* WORKLOADS RECONCILER BASED CONTROLLERS*/
+
+	if err = (&controllers.CORSProxyReconciler{
+		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("CORSProxy"), false),
+		Log:                ctrl.Log.WithName("controllers").WithName("CORSProxy"),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "CORSProxy")
+		os.Exit(1)
+	}
 
 	if err = (&controllers.AutoSSLReconciler{
 		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("AutoSSL"), false),

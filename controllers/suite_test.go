@@ -135,8 +135,8 @@ var _ = BeforeSuite(func() {
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&CORSProxyReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("CORSProxy"), false),
-		Log:        ctrl.Log.WithName("controllers").WithName("CORSProxy"),
+		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("CORSProxy"), false),
+		Log:                ctrl.Log.WithName("controllers").WithName("CORSProxy"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
