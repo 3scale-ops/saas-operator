@@ -129,8 +129,8 @@ var _ = BeforeSuite(func() {
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&MappingServiceReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("MappingService"), false),
-		Log:        ctrl.Log.WithName("controllers").WithName("MappingService"),
+		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("MappingService"), false),
+		Log:                ctrl.Log.WithName("controllers").WithName("MappingService"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 

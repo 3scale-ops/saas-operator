@@ -131,14 +131,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.MappingServiceReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("MappingService"), false),
-		Log:        ctrl.Log.WithName("controllers").WithName("MappingService"),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "MappingService")
-		os.Exit(1)
-	}
-
 	if err = (&controllers.SystemReconciler{
 		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("System"), false),
 		Log:        ctrl.Log.WithName("controllers").WithName("System"),
@@ -183,6 +175,14 @@ func main() {
 	}
 
 	/* WORKLOADS RECONCILER BASED CONTROLLERS*/
+
+	if err = (&controllers.MappingServiceReconciler{
+		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("MappingService"), false),
+		Log:                ctrl.Log.WithName("controllers").WithName("MappingService"),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "MappingService")
+		os.Exit(1)
+	}
 
 	if err = (&controllers.CORSProxyReconciler{
 		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("CORSProxy"), false),
