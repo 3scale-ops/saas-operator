@@ -34,6 +34,32 @@ spec:
           spec:
             description: AutoSSLSpec defines the desired state of AutoSSL
             properties:
+              canary:
+                description: Canary defines spec changes for the canary Deployment.
+                  If left unset the canary Deployment wil not be created.
+                properties:
+                  imageName:
+                    description: ImageName to use for the canary Deployment
+                    type: string
+                  imageTag:
+                    description: ImageTag to use for the canary Deployment
+                    type: string
+                  patches:
+                    description: Patches to apply for the canary Deployment. Patches
+                      are expected to be JSON documents as an RFC 6902 patches.
+                    items:
+                      type: string
+                    type: array
+                  replicas:
+                    description: Number of replicas for the canary Deployment
+                    format: int32
+                    type: integer
+                  sendTraffic:
+                    description: SendTraffic controls if traffic is sent to the canary
+                    type: boolean
+                required:
+                - sendTraffic
+                type: object
               config:
                 description: Application specific configuration options for the component
                 properties:

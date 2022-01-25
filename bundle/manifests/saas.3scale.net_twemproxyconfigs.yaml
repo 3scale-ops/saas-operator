@@ -34,6 +34,13 @@ spec:
           spec:
             description: TwemproxyConfigSpec defines the desired state of TwemproxyConfig
             properties:
+              reconcileServerPools:
+                description: ReconcileServerPools is a flag that allows to deactivate
+                  the reconcile of the contents of the managed ConfigMap. This is
+                  useful in an emergency, to fix something manually. The re-sync logic
+                  will still work whenever the contents of the ConfigMap are changed,
+                  even if they are manually changed. This switch defaults to "true".
+                type: boolean
               sentinelURIs:
                 description: SentinelURI is the redis URI of sentinel. This is required
                   as TewmproxyConfig will obtain the info about available redis servers
@@ -54,6 +61,19 @@ spec:
                     preConnect:
                       description: Connect to all servers in the pool during startup
                       type: boolean
+                    target:
+                      description: Target defines which are the servers that will
+                        be configured as backend redis servers for the Twemproxy configuration.
+                        The default is to target masters, but read-write slaves can
+                        be configured through this option. If read-write slaves are
+                        configured but there are none available, the config will fall
+                        back to masters. The masters never fall back to slaves though
+                        and will just wait for sentinel triggered failovers to solve
+                        the unavailability.
+                      enum:
+                      - masters
+                      - slaves-rw
+                      type: string
                     tcpBacklog:
                       description: Max number of pending connections in the queue
                       type: integer

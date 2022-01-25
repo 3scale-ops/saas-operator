@@ -21,7 +21,8 @@ import (
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators/mappingservice"
-	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
+	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
+	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	"github.com/go-logr/logr"
 	"github.com/redhat-cop/operator-utils/pkg/util"
 	corev1 "k8s.io/api/core/v1"
@@ -35,7 +36,7 @@ import (
 
 // MappingServiceReconciler reconciles a MappingService object
 type MappingServiceReconciler struct {
-	basereconciler.Reconciler
+	workloads.WorkloadReconciler
 	Log logr.Logger
 }
 
@@ -72,46 +73,21 @@ func (r *MappingServiceReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		instance.Spec,
 	)
 
-	// Calculate rollout triggers
-	triggers, err := r.TriggersFromSecretDefs(ctx, gen.SecretDefinition())
-	if err != nil {
-		return ctrl.Result{}, err
+	resources := []basereconciler.Resource{
+		gen.GrafanaDashboard(),
+		gen.SecretDefinition(),
 	}
 
-	err = r.ReconcileOwnedResources(ctx, instance, basereconciler.ControlledResources{
-		Deployments: []basereconciler.Deployment{{
-			Template:        gen.Deployment(),
-			RolloutTriggers: triggers,
-			HasHPA:          !instance.Spec.HPA.IsDeactivated(),
-		}},
-		SecretDefinitions: []basereconciler.SecretDefinition{{
-			Template: gen.SecretDefinition(),
-			Enabled:  true,
-		}},
-		Services: []basereconciler.Service{{
-			Template: gen.Service(),
-			Enabled:  true,
-		}},
-		PodDisruptionBudgets: []basereconciler.PodDisruptionBudget{{
-			Template: gen.PDB(),
-			Enabled:  !instance.Spec.PDB.IsDeactivated(),
-		}},
-		HorizontalPodAutoscalers: []basereconciler.HorizontalPodAutoscaler{{
-			Template: gen.HPA(),
-			Enabled:  !instance.Spec.HPA.IsDeactivated(),
-		}},
-		PodMonitors: []basereconciler.PodMonitor{{
-			Template: gen.PodMonitor(),
-			Enabled:  true,
-		}},
-		GrafanaDashboards: []basereconciler.GrafanaDashboard{{
-			Template: gen.GrafanaDashboard(),
-			Enabled:  !instance.Spec.GrafanaDashboard.IsDeactivated(),
-		}},
-	})
-
+	var workload []basereconciler.Resource
+	workload, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen, &gen)
 	if err != nil {
-		log.Error(err, "unable to update owned resources")
+		return r.ManageError(ctx, instance, err)
+	}
+	resources = append(resources, workload...)
+
+	err = r.ReconcileOwnedResources(ctx, instance, r.GetScheme(), resources)
+	if err != nil {
+		log.Error(err, "unable to reconcile owned resources")
 		return r.ManageError(ctx, instance, err)
 	}
 

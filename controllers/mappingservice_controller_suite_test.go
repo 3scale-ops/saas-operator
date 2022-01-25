@@ -75,10 +75,7 @@ var _ = Describe("MappingService controller", func() {
 			Eventually(func() bool {
 				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, mappingservice)
 				Expect(err).ToNot(HaveOccurred())
-				if len(mappingservice.GetFinalizers()) > 0 {
-					return true
-				}
-				return false
+				return len(mappingservice.GetFinalizers()) > 0
 			}, timeout, poll).Should(BeTrue())
 
 			dep := &appsv1.Deployment{}
