@@ -61,14 +61,11 @@ func (r *EchoAPIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	// Apply defaults for reconcile but do not store them in the API
 	instance.Default()
 
-	gen, err := echoapi.NewGenerator(
+	gen := echoapi.NewGenerator(
 		instance.GetName(),
 		instance.GetNamespace(),
 		instance.Spec,
 	)
-	if err != nil {
-		return r.ManageError(ctx, instance, err)
-	}
 
 	resources, err := r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen, &gen)
 	if err != nil {

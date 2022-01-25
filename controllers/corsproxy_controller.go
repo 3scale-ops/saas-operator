@@ -65,14 +65,11 @@ func (r *CORSProxyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	// Apply defaults for reconcile but do not store them in the API
 	instance.Default()
 
-	gen, err := corsproxy.NewGenerator(
+	gen := corsproxy.NewGenerator(
 		instance.GetName(),
 		instance.GetNamespace(),
 		instance.Spec,
 	)
-	if err != nil {
-		return r.ManageError(ctx, instance, err)
-	}
 
 	resources := []basereconciler.Resource{
 		gen.GrafanaDashboard(),

@@ -28,22 +28,21 @@ type Generator struct {
 }
 
 // NewGenerator returns a new Options struct
-func NewGenerator(instance, namespace string, spec saasv1alpha1.CORSProxySpec) (Generator, error) {
+func NewGenerator(instance, namespace string, spec saasv1alpha1.CORSProxySpec) Generator {
 	return Generator{
-			BaseOptionsV2: generators.BaseOptionsV2{
-				Component:    component,
-				InstanceName: instance,
-				Namespace:    namespace,
-				Labels: map[string]string{
-					"app":     component,
-					"part-of": "3scale-saas",
-				},
+		BaseOptionsV2: generators.BaseOptionsV2{
+			Component:    component,
+			InstanceName: instance,
+			Namespace:    namespace,
+			Labels: map[string]string{
+				"app":     component,
+				"part-of": "3scale-saas",
 			},
-			Spec:    spec,
-			Options: config.NewOptions(spec),
-			Traffic: true,
 		},
-		nil
+		Spec:    spec,
+		Options: config.NewOptions(spec),
+		Traffic: true,
+	}
 }
 
 // Validate that Generator implements workloads.TrafficManager interface
