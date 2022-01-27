@@ -32,6 +32,8 @@ Package v1alpha1 contains API Schema definitions for the saas v1alpha1 API group
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinellist[$$SentinelList$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-system[$$System$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemlist[$$SystemList$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfig[$$TwemproxyConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfiglist[$$TwemproxyConfigList$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zync[$$Zync$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zynclist[$$ZyncList$$]
 
@@ -283,6 +285,7 @@ AutoSSLSpec defines the desired state of AutoSSL
 | *`endpoint`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-endpoint[$$Endpoint$$]__ | The external endpoint/s for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
+| *`canary`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
 |===
 
 
@@ -373,6 +376,7 @@ BackendSpec defines the desired state of Backend
 | *`listener`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]__ | Configures the backend listener
 | *`worker`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]__ | Configures the backend worker
 | *`cron`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-cronspec[$$CronSpec$$]__ | Configures the backend cron
+| *`twemproxy`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyspec[$$TwemproxySpec$$]__ | Configures twemproxy
 |===
 
 
@@ -489,6 +493,7 @@ Canary allows the definition of a canary Deployment
 
 .Appears In:
 ****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
 ****
@@ -704,6 +709,7 @@ ImageSpec defines the image for the component
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelspec[$$SentinelSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsphinxspec[$$SystemSphinxSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyspec[$$TwemproxySpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]
 ****
 
@@ -908,6 +914,28 @@ Marin3rSidecarSpec defines the marin3r sidecar for the component
 |===
 
 
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-monitoredshard"]
+==== MonitoredShard 
+
+MonitoredShard contains information of one of the shards monitored by the Sentinel resource
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelstatus[$$SentinelStatus$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`name`* __string__ | Name is the name of the redis shard
+| *`master`* __string__ | Master is the address of the master redis server of this shard, in the format "127.0.0.1:6379"
+| *`slavesRO`* __string array__ | SlavesRO is the list of addresses of the read-only slave servers in this shard, in the format "127.0.0.1:6379"
+| *`slavesRW`* __string array__ | SlavesRW is the list of addresses of the read-write slave servers in this shard, in the format "127.0.0.1:6379"
+|===
+
+
+
+
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-nlbloadbalancerspec"]
 ==== NLBLoadBalancerSpec 
 
@@ -976,6 +1004,7 @@ ProbeSpec specifies configuration for a probe
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsphinxspec[$$SystemSphinxSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyspec[$$TwemproxySpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
 ****
 
@@ -1105,6 +1134,7 @@ RedisShardSpec defines the desired state of RedisShard
 | Field | Description
 | *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
 | *`masterIndex`* __integer__ | MasterIndex is the StatefulSet Pod index of the redis server with the master role. The other Pods are slaves of the master one.
+| *`slaveCount`* __integer__ | SlaveCount is the number of redis slaves
 |===
 
 
@@ -1163,6 +1193,7 @@ ResourceRequirementsSpec defines the resource requirements for the component
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsphinxspec[$$SystemSphinxSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyspec[$$TwemproxySpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
 ****
 
@@ -1332,6 +1363,40 @@ SentinelSpec defines the desired state of Sentinel
 |===
 
 
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelstatus"]
+==== SentinelStatus 
+
+SentinelStatus defines the observed state of Sentinel
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinel[$$Sentinel$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`sentinels`* __string array__ | Addresses of the sentinel instances currently running
+| *`monitoredShards`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-monitoredshard[$$MonitoredShard$$] array__ | MonitoredShards is the list of shards that the Sentinel resource is currently monitoring
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-shardedredistopology"]
+==== ShardedRedisTopology 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyserverpool[$$TwemproxyServerPool$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`shardName`* __string__ | The name of the locigal shard
+| *`physicalShard`* __string__ | The physical shard where the logical one is stored. This name should match the shard names monitored by Sentinel.
+|===
 
 
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sidecarport"]
@@ -1626,6 +1691,18 @@ SystemSphinxSpec configures the App component of System
 
 
 
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-targetredisservers"]
+==== TargetRedisServers (string) 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyserverpool[$$TwemproxyServerPool$$]
+****
+
+
+
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-thinkingspec"]
 ==== ThinkingSpec 
 
@@ -1649,6 +1726,131 @@ ThinkingSpec configures the thinking library for sphinx
 |===
 
 
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfig"]
+==== TwemproxyConfig 
+
+TwemproxyConfig is the Schema for the twemproxyconfigs API
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfiglist[$$TwemproxyConfigList$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
+| *`kind`* __string__ | `TwemproxyConfig`
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+
+| *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfigspec[$$TwemproxyConfigSpec$$]__ | 
+| *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfigstatus[$$TwemproxyConfigStatus$$]__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfiglist"]
+==== TwemproxyConfigList 
+
+TwemproxyConfigList contains a list of TwemproxyConfig
+
+
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
+| *`kind`* __string__ | `TwemproxyConfigList`
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+
+| *`items`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfig[$$TwemproxyConfig$$]__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfigspec"]
+==== TwemproxyConfigSpec 
+
+TwemproxyConfigSpec defines the desired state of TwemproxyConfig
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfig[$$TwemproxyConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`sentinelURIs`* __string array__ | SentinelURI is the redis URI of sentinel. This is required as TewmproxyConfig will obtain the info about available redis servers from sentinel.
+| *`serverPools`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyserverpool[$$TwemproxyServerPool$$] array__ | ServerPools is the list of Twemproxy server pools
+| *`reconcileServerPools`* __boolean__ | ReconcileServerPools is a flag that allows to deactivate the reconcile of the contents of the managed ConfigMap. This is useful in an emergency, to fix something manually. The re-sync logic will still work whenever the contents of the ConfigMap are changed, even if they are manually changed. This switch defaults to "true".
+|===
+
+
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyoptions"]
+==== TwemproxyOptions 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyspec[$$TwemproxySpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`logLevel`* __integer__ | Set logging level to N. (default: 5, min: 0, max: 11)
+| *`metricsAddress`* __integer__ | Set stats monitoring port to port.  (default: 22222)
+| *`statsInterval`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#duration-v1-meta[$$Duration$$]__ | Set stats aggregation interval in msec to interval.  (default: 30s)
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyserverpool"]
+==== TwemproxyServerPool 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfigspec[$$TwemproxyConfigSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`name`* __string__ | The name of the server pool
+| *`topology`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-shardedredistopology[$$ShardedRedisTopology$$] array__ | The topology of the servers within the server pool. This field describes the association of logical shards to physical shards.
+| *`bindAddress`* __string__ | The address to bind to. Format is ip:port
+| *`timeout`* __integer__ | Timeout to stablish connection with the servers in the server pool
+| *`tcpBacklog`* __integer__ | Max number of pending connections in the queue
+| *`preConnect`* __boolean__ | Connect to all servers in the pool during startup
+| *`target`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-targetredisservers[$$TargetRedisServers$$]__ | Target defines which are the servers that will be configured as backend redis servers for the Twemproxy configuration. The default is to target masters, but read-write slaves can be configured through this option. If read-write slaves are configured but there are none available, the config will fall back to masters. The masters never fall back to slaves though and will just wait for sentinel triggered failovers to solve the unavailability.
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyspec"]
+==== TwemproxySpec 
+
+TwemproxySpec configures twemproxy sidecars to access a sharded redis
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backendspec[$$BackendSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
+| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
+| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+| *`twemproxyConfigRef`* __string__ | TwemproxyConfigRef is a reference to a TwemproxyConfig resource in the same Namespace
+| *`options`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyoptions[$$TwemproxyOptions$$]__ | Options
+|===
+
+
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-vaultsecretreference"]
 ==== VaultSecretReference 
 
@@ -1664,6 +1866,26 @@ VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
 | Field | Description
 | *`path`* __string__ | The Vault path where the secret is located
 | *`key`* __string__ | The Vault key of the secret
+| *`secretStoreRef`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-vaultsecretstorereferencespec[$$VaultSecretStoreReferenceSpec$$]__ | The Vault secret store reference
+| *`refreshInterval`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#duration-v1-meta[$$Duration$$]__ | The Vault refresh interval of the secret (duration)
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-vaultsecretstorereferencespec"]
+==== VaultSecretStoreReferenceSpec 
+
+VaultSecretStoreReferenceSpec is a reference to a secret store
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-vaultsecretreference[$$VaultSecretReference$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`name`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-string[$$string$$]__ | The Vault secret store reference name
+| *`kind`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-string[$$string$$]__ | The Vault secret store reference kind
 |===
 
 
