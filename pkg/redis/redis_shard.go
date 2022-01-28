@@ -3,6 +3,7 @@ package redis
 import (
 	"context"
 	"fmt"
+	"net"
 	"sort"
 
 	"github.com/3scale/saas-operator/pkg/redis/crud"
@@ -14,11 +15,30 @@ import (
 // RedisServer represent a redis server and its characteristics
 type RedisServer struct {
 	Name     string
-	IP       string
+	Host     string
 	Port     string
 	Role     client.Role
 	ReadOnly bool
 	CRUD     *crud.CRUD
+}
+
+func (rs *RedisServer) IP() (string, error) {
+	var ip string
+	if r := net.ParseIP(rs.Host); r != nil {
+		ip = r.String()
+	} else {
+		// if it is not an IP, try to resolve a DNS
+		ips, err := net.LookupIP(rs.Host)
+		if err != nil {
+			return "", err
+		}
+		if len(ips) > 1 {
+			return "", fmt.Errorf("dns resolves to more than 1 IP")
+		}
+		ip = ips[0].String()
+	}
+
+	return ip, nil
 }
 
 func NewRedisServerFromConnectionString(name, connectionString string) (*RedisServer, error) {
@@ -28,7 +48,7 @@ func NewRedisServerFromConnectionString(name, connectionString string) (*RedisSe
 		return nil, err
 	}
 
-	return &RedisServer{Name: name, IP: crud.GetIP(), Port: crud.GetPort(), CRUD: crud, ReadOnly: false, Role: client.Unknown}, nil
+	return &RedisServer{Name: name, Host: crud.GetIP(), Port: crud.GetPort(), CRUD: crud, ReadOnly: false, Role: client.Unknown}, nil
 }
 
 // Discover returns the Role and the IsReadOnly flag for a given
@@ -106,7 +126,11 @@ func (s *Shard) Discover(ctx context.Context, log logr.Logger) error {
 func (s *Shard) GetMasterAddr() (string, string, error) {
 	for _, srv := range s.Servers {
 		if srv.Role == client.Master {
-			return srv.IP, srv.Port, nil
+			ip, err := srv.IP()
+			if err != nil {
+				return "", "", util.WrapError("redis-autodiscovery/Shard.GetMasterAddr", err)
+			}
+			return ip, srv.Port, nil
 		}
 	}
 	return "", "", fmt.Errorf("[redis-autodiscovery/Shard.GetMasterAddr] master not found")
@@ -133,7 +157,7 @@ func (s *Shard) Init(ctx context.Context, masterIndex int32, log logr.Logger) ([
 					log.Info(fmt.Sprintf("[@redis-setup] Configured %s as master", srv.Name))
 					changed = append(changed, srv.Name)
 				} else {
-					if err := srv.CRUD.RedisSlaveOf(ctx, s.Servers[masterIndex].IP, s.Servers[masterIndex].Port); err != nil {
+					if err := srv.CRUD.RedisSlaveOf(ctx, s.Servers[masterIndex].Host, s.Servers[masterIndex].Port); err != nil {
 						return changed, err
 					}
 					log.Info(fmt.Sprintf("[@redis-setup] Configured %s as slave", srv.Name))

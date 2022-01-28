@@ -32,7 +32,7 @@ func TestNewRedisServerFromConnectionString(t *testing.T) {
 			},
 			want: &RedisServer{
 				Name:     "test",
-				IP:       "127.0.0.1",
+				Host:     "127.0.0.1",
 				Port:     "3333",
 				Role:     client.Unknown,
 				ReadOnly: false,
@@ -190,7 +190,7 @@ func TestRedisServer_Discover(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			srv := &RedisServer{
 				Name:     tt.fields.Name,
-				IP:       tt.fields.IP,
+				Host:     tt.fields.IP,
 				Port:     tt.fields.Port,
 				Role:     tt.fields.Role,
 				ReadOnly: tt.fields.ReadOnly,
@@ -229,7 +229,7 @@ func TestNewShard(t *testing.T) {
 				Servers: []RedisServer{
 					{
 						Name:     "redis://127.0.0.1:1000",
-						IP:       "127.0.0.1",
+						Host:     "127.0.0.1",
 						Port:     "1000",
 						Role:     client.Unknown,
 						ReadOnly: false,
@@ -237,7 +237,7 @@ func TestNewShard(t *testing.T) {
 					},
 					{
 						Name:     "redis://127.0.0.1:2000",
-						IP:       "127.0.0.1",
+						Host:     "127.0.0.1",
 						Port:     "2000",
 						Role:     client.Unknown,
 						ReadOnly: false,
@@ -245,7 +245,7 @@ func TestNewShard(t *testing.T) {
 					},
 					{
 						Name:     "redis://127.0.0.1:3000",
-						IP:       "127.0.0.1",
+						Host:     "127.0.0.1",
 						Port:     "3000",
 						Role:     client.Unknown,
 						ReadOnly: false,
@@ -301,7 +301,7 @@ func TestShard_Discover(t *testing.T) {
 				Servers: []RedisServer{
 					{
 						Name:     "redis://127.0.0.1:1000",
-						IP:       "127.0.0.1",
+						Host:     "127.0.0.1",
 						Port:     "1000",
 						Role:     client.Unknown,
 						ReadOnly: false,
@@ -322,7 +322,7 @@ func TestShard_Discover(t *testing.T) {
 					},
 					{
 						Name:     "redis://127.0.0.1:2000",
-						IP:       "127.0.0.1",
+						Host:     "127.0.0.1",
 						Port:     "2000",
 						Role:     client.Unknown,
 						ReadOnly: false,
@@ -342,7 +342,7 @@ func TestShard_Discover(t *testing.T) {
 						)},
 					{
 						Name:     "redis://127.0.0.1:3000",
-						IP:       "127.0.0.1",
+						Host:     "127.0.0.1",
 						Port:     "3000",
 						Role:     client.Unknown,
 						ReadOnly: false,
@@ -372,7 +372,7 @@ func TestShard_Discover(t *testing.T) {
 				Servers: []RedisServer{
 					{
 						Name:     "redis://127.0.0.1:1000",
-						IP:       "127.0.0.1",
+						Host:     "127.0.0.1",
 						Port:     "1000",
 						Role:     client.Unknown,
 						ReadOnly: false,
@@ -393,7 +393,7 @@ func TestShard_Discover(t *testing.T) {
 					},
 					{
 						Name:     "redis://127.0.0.1:2000",
-						IP:       "127.0.0.1",
+						Host:     "127.0.0.1",
 						Port:     "2000",
 						Role:     client.Unknown,
 						ReadOnly: false,
@@ -407,7 +407,7 @@ func TestShard_Discover(t *testing.T) {
 						)},
 					{
 						Name:     "redis://127.0.0.1:3000",
-						IP:       "127.0.0.1",
+						Host:     "127.0.0.1",
 						Port:     "3000",
 						Role:     client.Unknown,
 						ReadOnly: false,
@@ -437,7 +437,7 @@ func TestShard_Discover(t *testing.T) {
 				Servers: []RedisServer{
 					{
 						Name:     "redis://127.0.0.1:1000",
-						IP:       "127.0.0.1",
+						Host:     "127.0.0.1",
 						Port:     "1000",
 						Role:     client.Unknown,
 						ReadOnly: false,
@@ -458,7 +458,7 @@ func TestShard_Discover(t *testing.T) {
 					},
 					{
 						Name:     "redis://127.0.0.1:2000",
-						IP:       "127.0.0.1",
+						Host:     "127.0.0.1",
 						Port:     "2000",
 						Role:     client.Unknown,
 						ReadOnly: false,
@@ -479,7 +479,7 @@ func TestShard_Discover(t *testing.T) {
 					},
 					{
 						Name:     "redis://127.0.0.1:3000",
-						IP:       "127.0.0.1",
+						Host:     "127.0.0.1",
 						Port:     "3000",
 						Role:     client.Unknown,
 						ReadOnly: false,
@@ -540,7 +540,7 @@ func TestShard_Init(t *testing.T) {
 				Servers: []RedisServer{
 					{
 						Name:     "redis://127.0.0.1:1000",
-						IP:       "127.0.0.1",
+						Host:     "127.0.0.1",
 						Port:     "1000",
 						Role:     client.Unknown,
 						ReadOnly: false,
@@ -559,7 +559,7 @@ func TestShard_Init(t *testing.T) {
 					},
 					{
 						Name:     "redis://127.0.0.1:2000",
-						IP:       "127.0.0.1",
+						Host:     "127.0.0.1",
 						Port:     "2000",
 						Role:     client.Unknown,
 						ReadOnly: false,
@@ -577,7 +577,7 @@ func TestShard_Init(t *testing.T) {
 						)},
 					{
 						Name:     "redis://127.0.0.1:3000",
-						IP:       "127.0.0.1",
+						Host:     "127.0.0.1",
 						Port:     "3000",
 						Role:     client.Unknown,
 						ReadOnly: false,
@@ -606,7 +606,7 @@ func TestShard_Init(t *testing.T) {
 				Servers: []RedisServer{
 					{
 						Name:     "redis://127.0.0.1:1000",
-						IP:       "127.0.0.1",
+						Host:     "127.0.0.1",
 						Port:     "1000",
 						Role:     client.Unknown,
 						ReadOnly: false,
@@ -625,7 +625,7 @@ func TestShard_Init(t *testing.T) {
 					},
 					{
 						Name:     "redis://127.0.0.1:2000",
-						IP:       "127.0.0.1",
+						Host:     "127.0.0.1",
 						Port:     "2000",
 						Role:     client.Unknown,
 						ReadOnly: false,
@@ -643,7 +643,7 @@ func TestShard_Init(t *testing.T) {
 						)},
 					{
 						Name:     "redis://127.0.0.1:3000",
-						IP:       "127.0.0.1",
+						Host:     "127.0.0.1",
 						Port:     "3000",
 						Role:     client.Unknown,
 						ReadOnly: false,
@@ -672,7 +672,7 @@ func TestShard_Init(t *testing.T) {
 				Servers: []RedisServer{
 					{
 						Name:     "redis://127.0.0.1:1000",
-						IP:       "127.0.0.1",
+						Host:     "127.0.0.1",
 						Port:     "1000",
 						Role:     client.Unknown,
 						ReadOnly: false,
@@ -736,7 +736,7 @@ func TestNewShardedCluster(t *testing.T) {
 					Servers: []RedisServer{
 						{
 							Name:     "redis://127.0.0.1:1000",
-							IP:       "127.0.0.1",
+							Host:     "127.0.0.1",
 							Port:     "1000",
 							Role:     client.Unknown,
 							ReadOnly: false,
@@ -744,7 +744,7 @@ func TestNewShardedCluster(t *testing.T) {
 						},
 						{
 							Name:     "redis://127.0.0.1:2000",
-							IP:       "127.0.0.1",
+							Host:     "127.0.0.1",
 							Port:     "2000",
 							Role:     client.Unknown,
 							ReadOnly: false,
@@ -757,7 +757,7 @@ func TestNewShardedCluster(t *testing.T) {
 					Servers: []RedisServer{
 						{
 							Name:     "redis://127.0.0.1:3000",
-							IP:       "127.0.0.1",
+							Host:     "127.0.0.1",
 							Port:     "3000",
 							Role:     client.Unknown,
 							ReadOnly: false,
@@ -765,7 +765,7 @@ func TestNewShardedCluster(t *testing.T) {
 						},
 						{
 							Name:     "redis://127.0.0.1:4000",
-							IP:       "127.0.0.1",
+							Host:     "127.0.0.1",
 							Port:     "4000",
 							Role:     client.Unknown,
 							ReadOnly: false,
@@ -826,7 +826,7 @@ func TestShardedCluster_Discover(t *testing.T) {
 					Servers: []RedisServer{
 						{
 							Name:     "redis://127.0.0.1:1000",
-							IP:       "127.0.0.1",
+							Host:     "127.0.0.1",
 							Port:     "1000",
 							Role:     client.Unknown,
 							ReadOnly: false,
@@ -845,7 +845,7 @@ func TestShardedCluster_Discover(t *testing.T) {
 					Servers: []RedisServer{
 						{
 							Name:     "redis://127.0.0.1:3000",
-							IP:       "127.0.0.1",
+							Host:     "127.0.0.1",
 							Port:     "3000",
 							Role:     client.Unknown,
 							ReadOnly: false,
@@ -871,7 +871,7 @@ func TestShardedCluster_Discover(t *testing.T) {
 					Servers: []RedisServer{
 						{
 							Name:     "redis://127.0.0.1:1000",
-							IP:       "127.0.0.1",
+							Host:     "127.0.0.1",
 							Port:     "1000",
 							Role:     client.Unknown,
 							ReadOnly: false,
@@ -888,7 +888,7 @@ func TestShardedCluster_Discover(t *testing.T) {
 					Servers: []RedisServer{
 						{
 							Name:     "redis://127.0.0.1:3000",
-							IP:       "127.0.0.1",
+							Host:     "127.0.0.1",
 							Port:     "3000",
 							Role:     client.Unknown,
 							ReadOnly: false,
@@ -961,7 +961,7 @@ func TestShardedCluster_GetShardByName(t *testing.T) {
 					Servers: []RedisServer{
 						{
 							Name:     "redis://127.0.0.1:1000",
-							IP:       "127.0.0.1",
+							Host:     "127.0.0.1",
 							Port:     "1000",
 							Role:     client.Unknown,
 							ReadOnly: false,
@@ -974,7 +974,7 @@ func TestShardedCluster_GetShardByName(t *testing.T) {
 					Servers: []RedisServer{
 						{
 							Name:     "redis://127.0.0.1:2000",
-							IP:       "127.0.0.1",
+							Host:     "127.0.0.1",
 							Port:     "3000",
 							Role:     client.Unknown,
 							ReadOnly: false,
@@ -991,7 +991,7 @@ func TestShardedCluster_GetShardByName(t *testing.T) {
 				Servers: []RedisServer{
 					{
 						Name:     "redis://127.0.0.1:2000",
-						IP:       "127.0.0.1",
+						Host:     "127.0.0.1",
 						Port:     "3000",
 						Role:     client.Unknown,
 						ReadOnly: false,
@@ -1013,6 +1013,57 @@ func TestShardedCluster_GetShardByName(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if diff := deep.Equal(tt.sc.GetShardByName(tt.args.name), tt.want); len(diff) > 0 {
 				t.Errorf("ShardedCluster.GetShardByName() got diff: %v", diff)
+			}
+		})
+	}
+}
+
+func TestRedisServer_IP(t *testing.T) {
+	type fields struct {
+		Name     string
+		Host     string
+		Port     string
+		Role     client.Role
+		ReadOnly bool
+		CRUD     *crud.CRUD
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "Returns the IP",
+			fields: fields{
+				Name:     "test",
+				Host:     "10.0.0.0",
+				Port:     "3333",
+				Role:     "",
+				ReadOnly: false,
+				CRUD:     &crud.CRUD{},
+			},
+			want:    "10.0.0.0",
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rs := &RedisServer{
+				Name:     tt.fields.Name,
+				Host:     tt.fields.Host,
+				Port:     tt.fields.Port,
+				Role:     tt.fields.Role,
+				ReadOnly: tt.fields.ReadOnly,
+				CRUD:     tt.fields.CRUD,
+			}
+			got, err := rs.IP()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("RedisServer.IP() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("RedisServer.IP() = %v, want %v", got, tt.want)
 			}
 		})
 	}
