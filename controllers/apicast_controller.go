@@ -21,7 +21,7 @@ import (
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators/apicast"
-	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
+	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	"github.com/go-logr/logr"
 	"github.com/redhat-cop/operator-utils/pkg/util"
 	"k8s.io/apimachinery/pkg/types"
@@ -33,7 +33,7 @@ import (
 
 // ApicastReconciler reconciles a Apicast object
 type ApicastReconciler struct {
-	basereconciler.Reconciler
+	workloads.WorkloadReconciler
 	Log logr.Logger
 }
 
@@ -68,80 +68,23 @@ func (r *ApicastReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		instance.Spec,
 	)
 
-	err = r.ReconcileOwnedResources(ctx, instance, basereconciler.ControlledResources{
-		Deployments: []basereconciler.Deployment{
-			{
-				Template: gen.Staging.Deployment(),
-				HasHPA:   !instance.Spec.Staging.HPA.IsDeactivated(),
-			},
-			{
-				Template: gen.Production.Deployment(),
-				HasHPA:   !instance.Spec.Production.HPA.IsDeactivated(),
-			},
-		},
-		SecretDefinitions: []basereconciler.SecretDefinition{},
-		Services: []basereconciler.Service{
-			{
-				Template: gen.Staging.GatewayService(),
-				Enabled:  true,
-			},
-			{
-				Template: gen.Staging.MgmtService(),
-				Enabled:  true,
-			},
-			{
-				Template: gen.Production.GatewayService(),
-				Enabled:  true,
-			},
-			{
-				Template: gen.Production.MgmtService(),
-				Enabled:  true,
-			},
-		},
-		PodDisruptionBudgets: []basereconciler.PodDisruptionBudget{
-			{
-				Template: gen.Staging.PDB(),
-				Enabled:  !instance.Spec.Staging.PDB.IsDeactivated(),
-			},
-			{
-				Template: gen.Production.PDB(),
-				Enabled:  !instance.Spec.Production.PDB.IsDeactivated(),
-			},
-		},
-		HorizontalPodAutoscalers: []basereconciler.HorizontalPodAutoscaler{
-			{
-				Template: gen.Staging.HPA(),
-				Enabled:  !instance.Spec.Staging.HPA.IsDeactivated(),
-			},
-			{
-				Template: gen.Production.HPA(),
-				Enabled:  !instance.Spec.Production.HPA.IsDeactivated(),
-			},
-		},
-		PodMonitors: []basereconciler.PodMonitor{
-			{
-				Template: gen.Staging.PodMonitor(),
-				Enabled:  true,
-			},
-			{
-				Template: gen.Production.PodMonitor(),
-				Enabled:  true,
-			},
-		},
-		GrafanaDashboards: []basereconciler.GrafanaDashboard{
-			{
-				Template: gen.ApicastDashboard(),
-				Enabled:  !instance.Spec.GrafanaDashboard.IsDeactivated(),
-			},
-			{
-				Template: gen.ApicastServicesDashboard(),
-				Enabled:  !instance.Spec.GrafanaDashboard.IsDeactivated(),
-			},
-		},
-	})
+	resources := gen.Resources()
 
+	aStaging, err := r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen.Staging, &gen.Staging)
 	if err != nil {
-		log.Error(err, "unable to update locked resources")
+		return r.ManageError(ctx, instance, err)
+	}
+	resources = append(resources, aStaging...)
+
+	aProduction, err := r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen.Production, &gen.Production)
+	if err != nil {
+		return r.ManageError(ctx, instance, err)
+	}
+	resources = append(resources, aProduction...)
+
+	err = r.ReconcileOwnedResources(ctx, instance, resources)
+	if err != nil {
+		log.Error(err, "unable to update owned resources")
 		return r.ManageError(ctx, instance, err)
 	}
 

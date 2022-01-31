@@ -1,29 +1,21 @@
 package apicast
 
 import (
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/service"
-	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
+	"github.com/3scale/saas-operator/pkg/resource_builders/service"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// GatewayService returns a basereconciler.GeneratorFunction function that will return the
+// GatewayService returns a function that will return the
 // gateway Service resource when called
-func (gen *EnvGenerator) GatewayService() basereconciler.GeneratorFunction {
+func (gen *EnvGenerator) gatewayService() func() *corev1.Service {
 
-	return func() client.Object {
+	return func() *corev1.Service {
 
 		return &corev1.Service{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       "Service",
-				APIVersion: corev1.SchemeGroupVersion.String(),
-			},
 			ObjectMeta: metav1.ObjectMeta{
 				Name:        gen.GetComponent(),
-				Namespace:   gen.GetNamespace(),
-				Labels:      gen.GetLabels(),
 				Annotations: service.ELBServiceAnnotations(*gen.Spec.LoadBalancer, gen.Spec.Endpoint.DNS),
 			},
 			Spec: corev1.ServiceSpec{
@@ -41,27 +33,20 @@ func (gen *EnvGenerator) GatewayService() basereconciler.GeneratorFunction {
 						service.TCPPort("gateway-https", 443, intstr.FromString("gateway-https")),
 					)
 				}(),
-				Selector: gen.Selector().MatchLabels,
 			},
 		}
 	}
 }
 
-// MgmtService returns a basereconciler.GeneratorFunction function that will return the
+// MgmtService returns a function that will return the
 // management Service resource when called
-func (gen *EnvGenerator) MgmtService() basereconciler.GeneratorFunction {
+func (gen *EnvGenerator) mgmtService() func() *corev1.Service {
 
-	return func() client.Object {
+	return func() *corev1.Service {
 
 		return &corev1.Service{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       "Service",
-				APIVersion: corev1.SchemeGroupVersion.String(),
-			},
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      gen.GetComponent() + "-management",
-				Namespace: gen.GetNamespace(),
-				Labels:    gen.GetLabels(),
+				Name: gen.GetComponent() + "-management",
 			},
 			Spec: corev1.ServiceSpec{
 				Type:            corev1.ServiceTypeClusterIP,
@@ -69,7 +54,6 @@ func (gen *EnvGenerator) MgmtService() basereconciler.GeneratorFunction {
 				Ports: service.Ports(
 					service.TCPPort("management", 8090, intstr.FromString("management")),
 				),
-				Selector: gen.Selector().MatchLabels,
 			},
 		}
 	}
