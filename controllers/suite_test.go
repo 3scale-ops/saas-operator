@@ -153,8 +153,8 @@ var _ = BeforeSuite(func() {
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&ZyncReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("Zync"), false),
-		Log:        ctrl.Log.WithName("controllers").WithName("Zync"),
+		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("Zync"), false),
+		Log:                ctrl.Log.WithName("controllers").WithName("Zync"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
