@@ -16,41 +16,27 @@ import (
 )
 
 const (
-	apicastStaging    string = "apicast-staging"
-	apicastProduction string = "apicast-production"
-	apicast           string = "apicast"
+	apicastStaging          string = "apicast-staging"
+	apicastCanaryStaging    string = "apicast-canary-staging"
+	apicastProduction       string = "apicast-production"
+	apicastCanaryProduction string = "apicast-canary-production"
+	apicast                 string = "apicast"
 )
 
 // Generator configures the generators for Apicast
 type Generator struct {
 	generators.BaseOptionsV2
 	Staging              EnvGenerator
+	CanaryStaging        *EnvGenerator
 	Production           EnvGenerator
+	CanaryProduction     *EnvGenerator
 	LoadBalancerSpec     saasv1alpha1.LoadBalancerSpec
 	GrafanaDashboardSpec saasv1alpha1.GrafanaDashboardSpec
 }
 
-// Resources returns a list of basereconciler_v2.Resource
-func (gen *Generator) Resources() []basereconciler.Resource {
-	return []basereconciler.Resource{
-		basereconciler_resources.GrafanaDashboardTemplate{
-			Template: grafanadashboard.New(
-				types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace},
-				gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/apicast.json.gtpl"),
-			IsEnabled: !gen.GrafanaDashboardSpec.IsDeactivated(),
-		},
-		basereconciler_resources.GrafanaDashboardTemplate{
-			Template: grafanadashboard.New(
-				types.NamespacedName{Name: gen.Component + "-services", Namespace: gen.Namespace},
-				gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/apicast-services.json.gtpl"),
-			IsEnabled: !gen.GrafanaDashboardSpec.IsDeactivated(),
-		},
-	}
-}
-
 // NewGenerator returns a new Options struct
-func NewGenerator(instance, namespace string, spec saasv1alpha1.ApicastSpec) Generator {
-	return Generator{
+func NewGenerator(instance, namespace string, spec saasv1alpha1.ApicastSpec) (Generator, error) {
+	generator := Generator{
 		BaseOptionsV2: generators.BaseOptionsV2{
 			Component:    apicast,
 			InstanceName: instance,
@@ -73,6 +59,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.ApicastSpec) Gen
 			},
 			Spec:    spec.Staging,
 			Options: config.NewEnvOptions(spec.Staging, "staging"),
+			Traffic: true,
 		},
 		Production: EnvGenerator{
 			BaseOptionsV2: generators.BaseOptionsV2{
@@ -87,8 +74,79 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.ApicastSpec) Gen
 			},
 			Spec:    spec.Production,
 			Options: config.NewEnvOptions(spec.Production, "production"),
+			Traffic: true,
 		},
 		GrafanaDashboardSpec: *spec.GrafanaDashboard,
+	}
+
+	if spec.Staging.Canary != nil {
+		canarySpec, err := spec.ResolveCanarySpec(spec.Staging.Canary)
+		if err != nil {
+			return Generator{}, err
+		}
+		generator.CanaryStaging = &EnvGenerator{
+			BaseOptionsV2: generators.BaseOptionsV2{
+				Component:    apicastCanaryStaging,
+				InstanceName: instance,
+				Namespace:    namespace,
+				Labels: map[string]string{
+					"app":                          "3scale-api-management",
+					"threescale_component":         apicastCanaryStaging,
+					"threescale_component_element": "gateway",
+				},
+			},
+			Spec:    canarySpec.Staging,
+			Options: config.NewEnvOptions(canarySpec.Staging, "staging"),
+			Traffic: canarySpec.Staging.Canary.SendTraffic,
+		}
+		// Disable PDB and HPA for the canary Deployment
+		generator.CanaryStaging.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
+		generator.CanaryStaging.Spec.PDB = &saasv1alpha1.PodDisruptionBudgetSpec{}
+	}
+
+	if spec.Production.Canary != nil {
+		canarySpec, err := spec.ResolveCanarySpec(spec.Production.Canary)
+		if err != nil {
+			return Generator{}, err
+		}
+		generator.CanaryProduction = &EnvGenerator{
+			BaseOptionsV2: generators.BaseOptionsV2{
+				Component:    apicastCanaryProduction,
+				InstanceName: instance,
+				Namespace:    namespace,
+				Labels: map[string]string{
+					"app":                          "3scale-api-management",
+					"threescale_component":         apicastCanaryProduction,
+					"threescale_component_element": "gateway",
+				},
+			},
+			Spec:    canarySpec.Production,
+			Options: config.NewEnvOptions(canarySpec.Production, "production"),
+			Traffic: *&canarySpec.Production.Canary.SendTraffic,
+		}
+		// Disable PDB and HPA for the canary Deployment
+		generator.CanaryProduction.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
+		generator.CanaryProduction.Spec.PDB = &saasv1alpha1.PodDisruptionBudgetSpec{}
+	}
+
+	return generator, nil
+}
+
+// Resources returns a list of basereconciler_v2.Resource
+func (gen *Generator) Resources() []basereconciler.Resource {
+	return []basereconciler.Resource{
+		basereconciler_resources.GrafanaDashboardTemplate{
+			Template: grafanadashboard.New(
+				types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace},
+				gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/apicast.json.gtpl"),
+			IsEnabled: !gen.GrafanaDashboardSpec.IsDeactivated(),
+		},
+		basereconciler_resources.GrafanaDashboardTemplate{
+			Template: grafanadashboard.New(
+				types.NamespacedName{Name: gen.Component + "-services", Namespace: gen.Namespace},
+				gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/apicast-services.json.gtpl"),
+			IsEnabled: !gen.GrafanaDashboardSpec.IsDeactivated(),
+		},
 	}
 }
 
@@ -98,6 +156,7 @@ type EnvGenerator struct {
 	generators.BaseOptionsV2
 	Spec    saasv1alpha1.ApicastEnvironmentSpec
 	Options config.EnvOptions
+	Traffic bool
 }
 
 // Validate that EnvGenerator implements workloads.DeploymentWorkloadWithTraffic interface
@@ -136,7 +195,7 @@ func (gen *EnvGenerator) Services() []basereconciler_resources.ServiceTemplate {
 		{Template: gen.mgmtService(), IsEnabled: true},
 	}
 }
-func (gen *EnvGenerator) SendTraffic() bool { return true }
+func (gen *EnvGenerator) SendTraffic() bool { return gen.Traffic }
 func (gen *EnvGenerator) TrafficSelector() map[string]string {
 	return map[string]string{
 		// This is purposedly hardcoded as the TrafficSelector needs to be the same for all workloads produced

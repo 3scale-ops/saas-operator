@@ -21,6 +21,7 @@ import (
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators/apicast"
+	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	"github.com/go-logr/logr"
 	"github.com/redhat-cop/operator-utils/pkg/util"
@@ -62,25 +63,34 @@ func (r *ApicastReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	// Apply defaults for reconcile but do not store them in the API
 	instance.Default()
 
-	gen := apicast.NewGenerator(
-		instance.GetName(),
-		instance.GetNamespace(),
-		instance.Spec,
-	)
+	gen, err := apicast.NewGenerator(instance.GetName(), instance.GetNamespace(), instance.Spec)
+	if err != nil {
+		return r.ManageError(ctx, instance, err)
+	}
 
 	resources := gen.Resources()
 
-	aStaging, err := r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen.Staging, &gen.Staging)
+	var staging []basereconciler.Resource
+	if instance.Spec.Staging.Canary != nil {
+		staging, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen.Staging, &gen.Staging, gen.CanaryStaging)
+	} else {
+		staging, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen.Staging, &gen.Staging)
+	}
 	if err != nil {
 		return r.ManageError(ctx, instance, err)
 	}
-	resources = append(resources, aStaging...)
+	resources = append(resources, staging...)
 
-	aProduction, err := r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen.Production, &gen.Production)
+	var production []basereconciler.Resource
+	if instance.Spec.Production.Canary != nil {
+		production, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen.Production, &gen.Production, gen.CanaryProduction)
+	} else {
+		production, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen.Production, &gen.Production)
+	}
 	if err != nil {
 		return r.ManageError(ctx, instance, err)
 	}
-	resources = append(resources, aProduction...)
+	resources = append(resources, production...)
 
 	err = r.ReconcileOwnedResources(ctx, instance, resources)
 	if err != nil {

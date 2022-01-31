@@ -108,6 +108,32 @@ func (spec *ApicastSpec) Default() {
 
 }
 
+// ResolveCanarySpec modifies the BackendSpec given the provided canary configuration
+func (spec *ApicastSpec) ResolveCanarySpec(canary *Canary) (*ApicastSpec, error) {
+	canarySpec := &ApicastSpec{}
+	if err := canary.PatchSpec(spec, canarySpec); err != nil {
+		return nil, err
+	}
+
+	if canary.ImageName != nil {
+		canarySpec.Staging.Image.Name = canary.ImageName
+		canarySpec.Production.Image.Name = canary.ImageName
+	}
+	if canary.ImageTag != nil {
+		canarySpec.Staging.Image.Tag = canary.ImageTag
+		canarySpec.Production.Image.Tag = canary.ImageTag
+	}
+
+	canarySpec.Staging.Replicas = canary.Replicas
+	canarySpec.Production.Replicas = canary.Replicas
+
+	// Call Default() on the resolved canary spec to apply
+	// defaulting to potentially added fields
+	canarySpec.Default()
+
+	return canarySpec, nil
+}
+
 // ApicastEnvironmentSpec is the configuration for an Apicast environment
 type ApicastEnvironmentSpec struct {
 	// Image specification for the component
@@ -158,6 +184,11 @@ type ApicastEnvironmentSpec struct {
 	// If specified, the pod's tolerations.
 	// +optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
+	// Canary defines spec changes for the canary Deployment. If
+	// left unset the canary Deployment wil not be created.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Canary *Canary `json:"canary,omitempty"`
 }
 
 // Default implements defaulting for the each apicast environment
@@ -165,13 +196,7 @@ func (spec *ApicastEnvironmentSpec) Default() {
 
 	spec.Image = InitializeImageSpec(spec.Image, apicastDefaultImage)
 	spec.HPA = InitializeHorizontalPodAutoscalerSpec(spec.HPA, apicastDefaultHPA)
-
-	if spec.HPA.IsDeactivated() {
-		spec.Replicas = intOrDefault(spec.Replicas, &apicastDefaultReplicas)
-	} else {
-		spec.Replicas = nil
-	}
-
+	spec.Replicas = intOrDefault(spec.Replicas, &apicastDefaultReplicas)
 	spec.PDB = InitializePodDisruptionBudgetSpec(spec.PDB, apicastDefaultPDB)
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, apicastDefaultResources)
 	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, apicastDefaultLivenessProbe)
