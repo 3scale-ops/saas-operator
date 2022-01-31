@@ -1,18 +1,22 @@
 package zync
 
 import (
+	"fmt"
 	"strings"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/grafanadashboard"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/hpa"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pdb"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/podmonitor"
+
 	"github.com/3scale/saas-operator/pkg/generators/zync/config"
-	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
-	"k8s.io/apimachinery/pkg/types"
+	"github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
+	basereconciler_resources "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/resources"
+	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
+	"github.com/3scale/saas-operator/pkg/resource_builders/grafanadashboard"
+	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
+	"github.com/3scale/saas-operator/pkg/resource_builders/podmonitor"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+
+	"k8s.io/utils/pointer"
 )
 
 const (
@@ -23,7 +27,7 @@ const (
 
 // Generator configures the generators for Zync
 type Generator struct {
-	generators.BaseOptions
+	generators.BaseOptionsV2
 	API                  APIGenerator
 	Que                  QueGenerator
 	GrafanaDashboardSpec saasv1alpha1.GrafanaDashboardSpec
@@ -33,7 +37,7 @@ type Generator struct {
 // NewGenerator returns a new Options struct
 func NewGenerator(instance, namespace string, spec saasv1alpha1.ZyncSpec) Generator {
 	return Generator{
-		BaseOptions: generators.BaseOptions{
+		BaseOptionsV2: generators.BaseOptionsV2{
 			Component:    component,
 			InstanceName: instance,
 			Namespace:    namespace,
@@ -43,7 +47,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.ZyncSpec) Genera
 			},
 		},
 		API: APIGenerator{
-			BaseOptions: generators.BaseOptions{
+			BaseOptionsV2: generators.BaseOptionsV2{
 				Component:    api,
 				InstanceName: instance,
 				Namespace:    namespace,
@@ -56,9 +60,10 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.ZyncSpec) Genera
 			APISpec: *spec.API,
 			Image:   *spec.Image,
 			Options: config.NewAPIOptions(spec),
+			Traffic: true,
 		},
 		Que: QueGenerator{
-			BaseOptions: generators.BaseOptions{
+			BaseOptionsV2: generators.BaseOptionsV2{
 				Component:    strings.Join([]string{component, que}, "-"),
 				InstanceName: instance,
 				Namespace:    namespace,
@@ -77,71 +82,109 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.ZyncSpec) Genera
 	}
 }
 
-// GrafanaDashboard returns a basereconciler.GeneratorFunction
-func (gen *Generator) GrafanaDashboard() basereconciler.GeneratorFunction {
-	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return grafanadashboard.New(key, gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/zync.json.gtpl")
-}
-
-// ZyncSecretDefinition returns a basereconciler.GeneratorFunction
-func (gen *Generator) ZyncSecretDefinition() basereconciler.GeneratorFunction {
-	return pod.GenerateSecretDefinitionFn("zync", gen.GetNamespace(), gen.GetLabels(), gen.API.Options)
+// Resources returns functions to generate all Zync's shared resources
+func (gen *Generator) Resources() []basereconciler.Resource {
+	return []basereconciler.Resource{
+		// GrafanaDashboard
+		basereconciler_resources.GrafanaDashboardTemplate{
+			Template:  grafanadashboard.New(gen.GetKey(), gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/zync.json.gtpl"),
+			IsEnabled: !gen.GrafanaDashboardSpec.IsDeactivated(),
+		},
+		// SecretDefinition
+		basereconciler_resources.SecretDefinitionTemplate{
+			Template:  pod.GenerateSecretDefinitionFn("zync", gen.GetNamespace(), gen.GetLabels(), gen.API.Options),
+			IsEnabled: true,
+		},
+	}
 }
 
 // APIGenerator has methods to generate resources for a
 // Zync environment
 type APIGenerator struct {
-	generators.BaseOptions
+	generators.BaseOptionsV2
 	Image   saasv1alpha1.ImageSpec
 	APISpec saasv1alpha1.APISpec
 	Options config.APIOptions
+	Traffic bool
 }
 
-// HPA returns a basereconciler.GeneratorFunction
-func (gen *APIGenerator) HPA() basereconciler.GeneratorFunction {
-	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return hpa.New(key, gen.GetLabels(), *gen.APISpec.HPA)
+// Validate that APIGenerator implements workloads.DeploymentWorkloadWithTraffic interface
+var _ workloads.DeploymentWorkloadWithTraffic = &APIGenerator{}
+
+// Validate that APIGenerator implements workloads.TrafficManager interface
+var _ workloads.TrafficManager = &APIGenerator{}
+
+func (gen *APIGenerator) Labels() map[string]string {
+	return gen.GetLabels()
+}
+func (gen *APIGenerator) Deployment() basereconciler_resources.DeploymentTemplate {
+	return basereconciler_resources.DeploymentTemplate{
+		Template: gen.deployment(),
+		RolloutTriggers: func() []basereconciler_resources.RolloutTrigger {
+			return []basereconciler_resources.RolloutTrigger{
+				{Name: "zync", SecretName: pointer.String("zync")},
+			}
+		}(),
+		EnforceReplicas: gen.APISpec.HPA.IsDeactivated(),
+		IsEnabled:       true,
+	}
 }
 
-// PDB returns a basereconciler.GeneratorFunction
-func (gen *APIGenerator) PDB() basereconciler.GeneratorFunction {
-	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return pdb.New(key, gen.GetLabels(), gen.Selector().MatchLabels, *gen.APISpec.PDB)
+func (gen *APIGenerator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {
+	return gen.APISpec.HPA
 }
-
-// PodMonitor returns a basereconciler.GeneratorFunction
-func (gen *APIGenerator) PodMonitor() basereconciler.GeneratorFunction {
-	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return podmonitor.New(key, gen.GetLabels(), gen.Selector().MatchLabels,
+func (gen *APIGenerator) PDBSpec() *saasv1alpha1.PodDisruptionBudgetSpec {
+	return gen.APISpec.PDB
+}
+func (gen *APIGenerator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint {
+	return []monitoringv1.PodMetricsEndpoint{
 		podmonitor.PodMetricsEndpoint("/metrics", "metrics", 30),
-	)
+	}
+}
+func (gen *APIGenerator) Services() []basereconciler_resources.ServiceTemplate {
+	return []basereconciler_resources.ServiceTemplate{
+		{Template: gen.service(), IsEnabled: true},
+	}
+}
+func (gen *APIGenerator) SendTraffic() bool { return gen.Traffic }
+func (gen *APIGenerator) TrafficSelector() map[string]string {
+	return map[string]string{
+		fmt.Sprintf("%s/traffic", saasv1alpha1.GroupVersion.Group): component,
+	}
 }
 
 // QueGenerator has methods to generate resources for a
 // Que environment
 type QueGenerator struct {
-	generators.BaseOptions
+	generators.BaseOptionsV2
 	Image   saasv1alpha1.ImageSpec
 	QueSpec saasv1alpha1.QueSpec
 	Options config.QueOptions
 }
 
-// HPA returns a basereconciler.GeneratorFunction
-func (gen *QueGenerator) HPA() basereconciler.GeneratorFunction {
-	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return hpa.New(key, gen.GetLabels(), *gen.QueSpec.HPA)
-}
+// Validate that QueGenerator implements workloads.DeploymentWorkload interface
+var _ workloads.DeploymentWorkload = &QueGenerator{}
 
-// PDB returns a basereconciler.GeneratorFunction
-func (gen *QueGenerator) PDB() basereconciler.GeneratorFunction {
-	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return pdb.New(key, gen.GetLabels(), gen.Selector().MatchLabels, *gen.QueSpec.PDB)
+func (gen *QueGenerator) Deployment() basereconciler_resources.DeploymentTemplate {
+	return basereconciler_resources.DeploymentTemplate{
+		Template: gen.deployment(),
+		RolloutTriggers: func() []basereconciler_resources.RolloutTrigger {
+			return []basereconciler_resources.RolloutTrigger{
+				{Name: "zync", SecretName: pointer.String("zync")},
+			}
+		}(),
+		EnforceReplicas: gen.QueSpec.HPA.IsDeactivated(),
+		IsEnabled:       true,
+	}
 }
-
-// PodMonitor returns a basereconciler.GeneratorFunction
-func (gen *QueGenerator) PodMonitor() basereconciler.GeneratorFunction {
-	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return podmonitor.New(key, gen.GetLabels(), gen.Selector().MatchLabels,
+func (gen *QueGenerator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {
+	return gen.QueSpec.HPA
+}
+func (gen *QueGenerator) PDBSpec() *saasv1alpha1.PodDisruptionBudgetSpec {
+	return gen.QueSpec.PDB
+}
+func (gen *QueGenerator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint {
+	return []monitoringv1.PodMetricsEndpoint{
 		podmonitor.PodMetricsEndpoint("/metrics", "metrics", 30),
-	)
+	}
 }

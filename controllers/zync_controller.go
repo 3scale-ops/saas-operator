@@ -21,7 +21,7 @@ import (
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators/zync"
-	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
+	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	"github.com/go-logr/logr"
 	"github.com/redhat-cop/operator-utils/pkg/util"
 	corev1 "k8s.io/api/core/v1"
@@ -35,7 +35,7 @@ import (
 
 // ZyncReconciler reconciles a Zync object
 type ZyncReconciler struct {
-	basereconciler.Reconciler
+	workloads.WorkloadReconciler
 	Log logr.Logger
 }
 
@@ -72,76 +72,25 @@ func (r *ZyncReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		instance.Spec,
 	)
 
-	// Calculate rollout triggers
-	triggers, err := r.TriggersFromSecretDefs(ctx,
-		gen.ZyncSecretDefinition(),
-	)
+	// Shared resources
+	resources := gen.Resources()
+
+	// Api resources
+	api_resources, err := r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen.API, &gen.API)
 	if err != nil {
-		return ctrl.Result{}, err
+		return r.ManageError(ctx, instance, err)
 	}
+	resources = append(resources, api_resources...)
 
-	err = r.ReconcileOwnedResources(ctx, instance, basereconciler.ControlledResources{
-		Deployments: []basereconciler.Deployment{
-			{
-				Template:        gen.API.Deployment(),
-				HasHPA:          !instance.Spec.API.HPA.IsDeactivated(),
-				RolloutTriggers: triggers,
-			},
-			{
-				Template:        gen.Que.Deployment(),
-				HasHPA:          !instance.Spec.Que.HPA.IsDeactivated(),
-				RolloutTriggers: triggers,
-			},
-		},
-		SecretDefinitions: []basereconciler.SecretDefinition{
-			{
-				Template: gen.ZyncSecretDefinition(),
-				Enabled:  true,
-			},
-		},
-		Services: []basereconciler.Service{
-			{
-				Template: gen.API.Service(),
-				Enabled:  true,
-			}},
-		PodDisruptionBudgets: []basereconciler.PodDisruptionBudget{
-			{
-				Template: gen.API.PDB(),
-				Enabled:  !instance.Spec.API.PDB.IsDeactivated(),
-			},
-			{
-				Template: gen.Que.PDB(),
-				Enabled:  !instance.Spec.Que.PDB.IsDeactivated(),
-			},
-		},
-		HorizontalPodAutoscalers: []basereconciler.HorizontalPodAutoscaler{
-			{
-				Template: gen.API.HPA(),
-				Enabled:  !instance.Spec.API.HPA.IsDeactivated(),
-			},
-			{
-				Template: gen.Que.HPA(),
-				Enabled:  !instance.Spec.Que.HPA.IsDeactivated(),
-			},
-		},
-		PodMonitors: []basereconciler.PodMonitor{
-			{
-				Template: gen.API.PodMonitor(),
-				Enabled:  true,
-			},
-			{
-				Template: gen.Que.PodMonitor(),
-				Enabled:  true,
-			},
-		},
-		GrafanaDashboards: []basereconciler.GrafanaDashboard{
-			{
-				Template: gen.GrafanaDashboard(),
-				Enabled:  !instance.Spec.GrafanaDashboard.IsDeactivated(),
-			},
-		},
-	})
+	// Que resources
+	que_resources, err := r.NewDeploymentWorkload(ctx, instance, r.GetScheme(), &gen.Que)
+	if err != nil {
+		return r.ManageError(ctx, instance, err)
+	}
+	resources = append(resources, que_resources...)
 
+	// Reconcile all resources
+	err = r.ReconcileOwnedResources(ctx, instance, r.GetScheme(), resources)
 	if err != nil {
 		log.Error(err, "unable to reconcile owned resources")
 		return r.ManageError(ctx, instance, err)
