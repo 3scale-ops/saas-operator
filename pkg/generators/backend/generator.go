@@ -164,7 +164,7 @@ func (gen *Generator) Resources() []basereconciler.Resource {
 		// GrafanaDashboard
 		basereconciler_resources.GrafanaDashboardTemplate{
 			Template:  grafanadashboard.New(gen.GetKey(), gen.GetLabels(), gen.grafanaDashboardSpec, "dashboards/backend.json.gtpl"),
-			IsEnabled: true,
+			IsEnabled: !gen.grafanaDashboardSpec.IsDeactivated(),
 		},
 		// SecretDefinitions
 		basereconciler_resources.SecretDefinitionTemplate{
