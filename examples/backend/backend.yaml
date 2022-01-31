@@ -1,0 +1,46 @@
+---
+apiVersion: saas.3scale.net/v1alpha1
+kind: Backend
+metadata:
+  name: backned
+spec:
+  image:
+    tag: v3.4.3
+  config:
+    rackEnv: preview
+    redisStorageDSN: redis://127.0.0.1:22121
+    redisQueuesDSN: redis://redis-shard-resque-0.redis-shard-resque:6379
+    systemEventsHookURL:
+      override: https://master:3000/master/events/import
+    systemEventsHookPassword:
+      override: megalol
+    internalAPIUser:
+      override: multitenant
+    internalAPIPassword:
+      override: superlol
+  listener:
+    replicas: 1
+    hpa: {}
+    pdb: {}
+    endpoint:
+      dns:
+        - backend.example.net
+    resources: {}
+  worker:
+    config:
+      redisAsync: true
+    replicas: 1
+    hpa: {}
+    pdb: {}
+    resources: {}
+  cron:
+    replicas: 1
+    resources: {}
+  twemproxy:
+    twemproxyConfigRef: backend-twemproxyconfig
+    image:
+      name: quay.io/3scale/twemproxy
+      tag: v0.5.0
+    options:
+      logLevel: 6
+      statsInterval: 10s

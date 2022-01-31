@@ -1,0 +1,24 @@
+---
+apiVersion: saas.3scale.net/v1alpha1
+kind: TwemproxyConfig
+metadata:
+  name: system-twemproxyconfig
+spec:
+  serverPools:
+    - name: test
+      bindAddress: 0.0.0.0:22121
+      target: slaves-rw
+      timeout: 5000
+      tcpBacklog: 512
+      preConnect: false
+      topology:
+        - shardName: logical-shard01
+          physicalShard: shard01
+        - shardName: logical-shard02
+          physicalShard: shard01
+        - shardName: logical-shard03
+          physicalShard: shard01
+        - shardName: logical-shard04
+          physicalShard: shard02
+        - shardName: logical-shard05
+          physicalShard: shard02

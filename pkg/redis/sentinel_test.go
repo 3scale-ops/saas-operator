@@ -28,7 +28,7 @@ var (
 			Servers: []RedisServer{
 				{
 					Name:     "shard00-0",
-					IP:       "127.0.0.1",
+					Host:     "127.0.0.1",
 					Port:     "2000",
 					Role:     redis.Master,
 					ReadOnly: false,
@@ -36,7 +36,7 @@ var (
 				},
 				{
 					Name:     "shard00-1",
-					IP:       "127.0.0.1",
+					Host:     "127.0.0.1",
 					Port:     "2001",
 					Role:     redis.Slave,
 					ReadOnly: true,
@@ -44,7 +44,7 @@ var (
 				},
 				{
 					Name:     "shard00-2",
-					IP:       "127.0.0.1",
+					Host:     "127.0.0.1",
 					Port:     "2002",
 					Role:     redis.Slave,
 					ReadOnly: true,
@@ -57,7 +57,7 @@ var (
 			Servers: []RedisServer{
 				{
 					Name:     "shard01-0",
-					IP:       "127.0.0.1",
+					Host:     "127.0.0.1",
 					Port:     "3000",
 					Role:     redis.Master,
 					ReadOnly: false,
@@ -65,7 +65,7 @@ var (
 				},
 				{
 					Name:     "shard01-1",
-					IP:       "127.0.0.1",
+					Host:     "127.0.0.1",
 					Port:     "3001",
 					Role:     redis.Slave,
 					ReadOnly: true,
@@ -73,7 +73,7 @@ var (
 				},
 				{
 					Name:     "shard01-2",
-					IP:       "127.0.0.1",
+					Host:     "127.0.0.1",
 					Port:     "3002",
 					Role:     redis.Slave,
 					ReadOnly: true,
@@ -86,7 +86,7 @@ var (
 			Servers: []RedisServer{
 				{
 					Name:     "shard02-0",
-					IP:       "127.0.0.1",
+					Host:     "127.0.0.1",
 					Port:     "4000",
 					Role:     redis.Master,
 					ReadOnly: false,
@@ -94,7 +94,7 @@ var (
 				},
 				{
 					Name:     "shard02-1",
-					IP:       "127.0.0.1",
+					Host:     "127.0.0.1",
 					Port:     "4001",
 					Role:     redis.Slave,
 					ReadOnly: true,
@@ -102,7 +102,7 @@ var (
 				},
 				{
 					Name:     "shard02-2",
-					IP:       "127.0.0.1",
+					Host:     "127.0.0.1",
 					Port:     "4002",
 					Role:     redis.Slave,
 					ReadOnly: true,
@@ -829,7 +829,7 @@ func TestSentinelServer_Monitor(t *testing.T) {
 					Servers: []RedisServer{
 						{
 							Name:     "shard00-0",
-							IP:       "127.0.0.1",
+							Host:     "127.0.0.1",
 							Port:     "2000",
 							Role:     redis.Slave,
 							ReadOnly: true,
@@ -837,7 +837,7 @@ func TestSentinelServer_Monitor(t *testing.T) {
 						},
 						{
 							Name:     "shard00-1",
-							IP:       "127.0.0.1",
+							Host:     "127.0.0.1",
 							Port:     "2001",
 							Role:     redis.Slave,
 							ReadOnly: true,
@@ -845,7 +845,7 @@ func TestSentinelServer_Monitor(t *testing.T) {
 						},
 						{
 							Name:     "shard00-2",
-							IP:       "127.0.0.1",
+							Host:     "127.0.0.1",
 							Port:     "2002",
 							Role:     redis.Slave,
 							ReadOnly: true,
@@ -1261,7 +1261,7 @@ func TestSentinelPool_Monitor(t *testing.T) {
 					Servers: []RedisServer{
 						{
 							Name:     "shard00-0",
-							IP:       "127.0.0.1",
+							Host:     "127.0.0.1",
 							Port:     "2000",
 							Role:     redis.Master,
 							ReadOnly: false,
@@ -1269,7 +1269,7 @@ func TestSentinelPool_Monitor(t *testing.T) {
 						},
 						{
 							Name:     "shard00-1",
-							IP:       "127.0.0.1",
+							Host:     "127.0.0.1",
 							Port:     "2001",
 							Role:     redis.Slave,
 							ReadOnly: true,
@@ -1277,7 +1277,7 @@ func TestSentinelPool_Monitor(t *testing.T) {
 						},
 						{
 							Name:     "shard00-2",
-							IP:       "127.0.0.1",
+							Host:     "127.0.0.1",
 							Port:     "2002",
 							Role:     redis.Slave,
 							ReadOnly: true,
@@ -1372,7 +1372,7 @@ func TestSentinelPool_Monitor(t *testing.T) {
 					Servers: []RedisServer{
 						{
 							Name:     "shard00-0",
-							IP:       "127.0.0.1",
+							Host:     "127.0.0.1",
 							Port:     "2000",
 							Role:     redis.Master,
 							ReadOnly: false,
@@ -1380,7 +1380,7 @@ func TestSentinelPool_Monitor(t *testing.T) {
 						},
 						{
 							Name:     "shard00-1",
-							IP:       "127.0.0.1",
+							Host:     "127.0.0.1",
 							Port:     "2001",
 							Role:     redis.Slave,
 							ReadOnly: true,
@@ -1388,7 +1388,7 @@ func TestSentinelPool_Monitor(t *testing.T) {
 						},
 						{
 							Name:     "shard00-2",
-							IP:       "127.0.0.1",
+							Host:     "127.0.0.1",
 							Port:     "2002",
 							Role:     redis.Slave,
 							ReadOnly: true,
@@ -1460,7 +1460,7 @@ func TestSentinelPool_Monitor(t *testing.T) {
 					Servers: []RedisServer{
 						{
 							Name:     "shard00-0",
-							IP:       "127.0.0.1",
+							Host:     "127.0.0.1",
 							Port:     "2000",
 							Role:     redis.Master,
 							ReadOnly: false,
@@ -1468,7 +1468,7 @@ func TestSentinelPool_Monitor(t *testing.T) {
 						},
 						{
 							Name:     "shard00-1",
-							IP:       "127.0.0.1",
+							Host:     "127.0.0.1",
 							Port:     "2001",
 							Role:     redis.Slave,
 							ReadOnly: true,
@@ -1476,7 +1476,7 @@ func TestSentinelPool_Monitor(t *testing.T) {
 						},
 						{
 							Name:     "shard00-2",
-							IP:       "127.0.0.1",
+							Host:     "127.0.0.1",
 							Port:     "2002",
 							Role:     redis.Slave,
 							ReadOnly: true,
