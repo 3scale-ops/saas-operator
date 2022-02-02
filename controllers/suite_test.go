@@ -117,8 +117,8 @@ var _ = BeforeSuite(func() {
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&ApicastReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("Apicast"), false),
-		Log:        ctrl.Log.WithName("controllers").WithName("Apicast"),
+		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("Apicast"), false),
+		Log:                ctrl.Log.WithName("controllers").WithName("Apicast"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 

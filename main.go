@@ -123,14 +123,6 @@ func main() {
 
 	/* BASERECONCILER_V1 BASED CONTROLLERS*/
 
-	if err = (&controllers.ApicastReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("Apicast"), false),
-		Log:        ctrl.Log.WithName("controllers").WithName("Apicast"),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Apicast")
-		os.Exit(1)
-	}
-
 	if err = (&controllers.SystemReconciler{
 		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("System"), false),
 		Log:        ctrl.Log.WithName("controllers").WithName("System"),
@@ -167,6 +159,14 @@ func main() {
 	}
 
 	/* WORKLOADS RECONCILER BASED CONTROLLERS*/
+
+	if err = (&controllers.ApicastReconciler{
+		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("Apicast"), false),
+		Log:                ctrl.Log.WithName("controllers").WithName("Apicast"),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Apicast")
+		os.Exit(1)
+	}
 
 	if err = (&controllers.ZyncReconciler{
 		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("Zync"), false),
