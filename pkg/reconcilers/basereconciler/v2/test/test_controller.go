@@ -58,7 +58,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		return *result, err
 	}
 
-	err = r.ReconcileOwnedResources(ctx, instance, r.GetScheme(), []basereconciler.Resource{
+	err = r.ReconcileOwnedResources(ctx, instance, []basereconciler.Resource{
 		resources.DeploymentTemplate{
 			Template: deployment(req.Namespace, instance.Spec.Marin3r),
 			RolloutTriggers: []resources.RolloutTrigger{{

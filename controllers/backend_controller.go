@@ -107,7 +107,7 @@ func (r *BackendReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	resources = append(resources, cron_resources...)
 
 	// Reconcile all resources
-	err = r.ReconcileOwnedResources(ctx, instance, r.GetScheme(), resources)
+	err = r.ReconcileOwnedResources(ctx, instance, resources)
 	if err != nil {
 		log.Error(err, "unable to reconcile owned resources")
 		return r.ManageError(ctx, instance, err)

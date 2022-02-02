@@ -72,7 +72,7 @@ func (r *EchoAPIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return r.ManageError(ctx, instance, err)
 	}
 
-	err = r.ReconcileOwnedResources(ctx, instance, r.GetScheme(), resources)
+	err = r.ReconcileOwnedResources(ctx, instance, resources)
 	if err != nil {
 		log.Error(err, "unable to update owned resources")
 		return r.ManageError(ctx, instance, err)
