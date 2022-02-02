@@ -187,13 +187,7 @@ type APISpec struct {
 func (spec *APISpec) Default() {
 
 	spec.HPA = InitializeHorizontalPodAutoscalerSpec(spec.HPA, zyncDefaultAPIHPA)
-
-	if spec.HPA.IsDeactivated() {
-		spec.Replicas = intOrDefault(spec.Replicas, &zyncDefaultAPIReplicas)
-	} else {
-		spec.Replicas = nil
-	}
-
+	spec.Replicas = intOrDefault(spec.Replicas, &zyncDefaultAPIReplicas)
 	spec.PDB = InitializePodDisruptionBudgetSpec(spec.PDB, zyncDefaultAPIPDB)
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, zyncDefaultAPIResources)
 	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, zyncDefaultAPILivenessProbe)
@@ -238,13 +232,7 @@ type QueSpec struct {
 func (spec *QueSpec) Default() {
 
 	spec.HPA = InitializeHorizontalPodAutoscalerSpec(spec.HPA, zyncDefaultQueHPA)
-
-	if spec.HPA.IsDeactivated() {
-		spec.Replicas = intOrDefault(spec.Replicas, &zyncDefaultQueReplicas)
-	} else {
-		spec.Replicas = nil
-	}
-
+	spec.Replicas = intOrDefault(spec.Replicas, &zyncDefaultQueReplicas)
 	spec.PDB = InitializePodDisruptionBudgetSpec(spec.PDB, zyncDefaultQuePDB)
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, zyncDefaultQueResources)
 	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, zyncDefaultQueLivenessProbe)

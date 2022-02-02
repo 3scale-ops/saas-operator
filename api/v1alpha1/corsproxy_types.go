@@ -116,13 +116,7 @@ func (spec *CORSProxySpec) Default() {
 
 	spec.Image = InitializeImageSpec(spec.Image, corsproxyDefaultImage)
 	spec.HPA = InitializeHorizontalPodAutoscalerSpec(spec.HPA, corsproxyDefaultHPA)
-
-	if spec.HPA.IsDeactivated() {
-		spec.Replicas = intOrDefault(spec.Replicas, &corsproxyDefaultReplicas)
-	} else {
-		spec.Replicas = nil
-	}
-
+	spec.Replicas = intOrDefault(spec.Replicas, &corsproxyDefaultReplicas)
 	spec.PDB = InitializePodDisruptionBudgetSpec(spec.PDB, corsproxyDefaultPDB)
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, corsproxyDefaultResources)
 	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, corsproxyDefaultProbe)
