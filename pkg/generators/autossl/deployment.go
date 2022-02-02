@@ -49,7 +49,7 @@ func (gen *Generator) deployment() func() *appsv1.Deployment {
 						}(),
 						Containers: []corev1.Container{
 							{
-								Name:  gen.GetComponent(),
+								Name:  "autossl",
 								Image: fmt.Sprintf("%s:%s", *gen.Spec.Image.Name, *gen.Spec.Image.Tag),
 								Ports: pod.ContainerPorts(
 									pod.ContainerPortTCP("http", 8081),

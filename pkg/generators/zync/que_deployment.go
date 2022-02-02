@@ -37,7 +37,7 @@ func (gen *QueGenerator) deployment() func() *appsv1.Deployment {
 						}(),
 						Containers: []corev1.Container{
 							{
-								Name:  gen.GetComponent(),
+								Name:  "zync-que",
 								Image: fmt.Sprintf("%s:%s", *gen.Image.Name, *gen.Image.Tag),
 								Command: []string{
 									"/usr/bin/bash",
