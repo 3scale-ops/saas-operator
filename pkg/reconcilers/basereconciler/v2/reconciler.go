@@ -113,8 +113,7 @@ func (r *Reconciler) ManageCleanUpLogic(instance client.Object, fns []func(), lo
 
 // ReconcileOwnedResources handles generalized resource reconcile logic for
 // all controllers
-func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.Object,
-	scheme *runtime.Scheme, resources []Resource) error {
+func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.Object, resources []Resource) error {
 
 	lr := make([]lockedresource.LockedResource, 0, len(resources))
 
@@ -126,7 +125,7 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 				return err
 			}
 
-			if err := controllerutil.SetControllerReference(owner, object, scheme); err != nil {
+			if err := controllerutil.SetControllerReference(owner, object, r.GetScheme()); err != nil {
 				return err
 			}
 

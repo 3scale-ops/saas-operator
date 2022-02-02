@@ -86,7 +86,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	}
 
 	// Reconcile all resources
-	err = r.ReconcileOwnedResources(ctx, instance, r.GetScheme(), deployments)
+	err = r.ReconcileOwnedResources(ctx, instance, deployments)
 	if err != nil {
 		log.Error(err, "unable to reconcile owned resources")
 		return r.ManageError(ctx, instance, err)

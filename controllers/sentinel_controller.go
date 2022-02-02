@@ -80,7 +80,7 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		instance.Spec,
 	)
 
-	if err := r.ReconcileOwnedResources(ctx, instance, r.GetScheme(), gen.Resources()); err != nil {
+	if err := r.ReconcileOwnedResources(ctx, instance, gen.Resources()); err != nil {
 		log.Error(err, "unable to update owned resources")
 		return r.ManageError(ctx, instance, err)
 	}
