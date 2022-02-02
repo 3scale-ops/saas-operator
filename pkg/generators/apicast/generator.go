@@ -17,9 +17,9 @@ import (
 
 const (
 	apicastStaging          string = "apicast-staging"
-	apicastCanaryStaging    string = "apicast-canary-staging"
+	apicastCanaryStaging    string = "apicast-staging-canary"
 	apicastProduction       string = "apicast-production"
-	apicastCanaryProduction string = "apicast-canary-production"
+	apicastCanaryProduction string = "apicast-production-canary"
 	apicast                 string = "apicast"
 )
 
