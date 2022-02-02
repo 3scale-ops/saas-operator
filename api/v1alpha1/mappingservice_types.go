@@ -124,13 +124,7 @@ func (spec *MappingServiceSpec) Default() {
 
 	spec.Image = InitializeImageSpec(spec.Image, mappingserviceDefaultImage)
 	spec.HPA = InitializeHorizontalPodAutoscalerSpec(spec.HPA, mappingserviceDefaultHPA)
-
-	if spec.HPA.IsDeactivated() {
-		spec.Replicas = intOrDefault(spec.Replicas, &mappingserviceDefaultReplicas)
-	} else {
-		spec.Replicas = nil
-	}
-
+	spec.Replicas = intOrDefault(spec.Replicas, &mappingserviceDefaultReplicas)
 	spec.PDB = InitializePodDisruptionBudgetSpec(spec.PDB, mappingserviceDefaultPDB)
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, mappingserviceDefaultResources)
 	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, mappingserviceLivenessDefaultProbe)

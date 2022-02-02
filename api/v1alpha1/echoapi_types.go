@@ -127,13 +127,7 @@ func (spec *EchoAPISpec) Default() {
 
 	spec.Image = InitializeImageSpec(spec.Image, echoapiDefaultImage)
 	spec.HPA = InitializeHorizontalPodAutoscalerSpec(spec.HPA, echoapiDefaultHPA)
-
-	if spec.HPA.IsDeactivated() {
-		spec.Replicas = intOrDefault(spec.Replicas, &echoapiDefaultReplicas)
-	} else {
-		spec.Replicas = nil
-	}
-
+	spec.Replicas = intOrDefault(spec.Replicas, &echoapiDefaultReplicas)
 	spec.PDB = InitializePodDisruptionBudgetSpec(spec.PDB, echoapiDefaultPDB)
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, echoapiDefaultResources)
 	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, echoapiDefaultLivenessProbe)
