@@ -36,7 +36,7 @@ func (gen *APIGenerator) deployment() func() *appsv1.Deployment {
 						}(),
 						Containers: []corev1.Container{
 							{
-								Name:  gen.GetComponent(),
+								Name:  "zync",
 								Image: fmt.Sprintf("%s:%s", *gen.Image.Name, *gen.Image.Tag),
 								Ports: pod.ContainerPorts(
 									pod.ContainerPortTCP("http", 8080),
