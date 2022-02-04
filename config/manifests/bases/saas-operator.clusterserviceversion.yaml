@@ -170,6 +170,26 @@ spec:
       - description: Configures the production Apicast environment
         displayName: Production
         path: production
+      - description: Canary defines spec changes for the canary Deployment. If left
+          unset the canary Deployment wil not be created.
+        displayName: Canary
+        path: production.canary
+      - description: ImageName to use for the canary Deployment
+        displayName: Image Name
+        path: production.canary.imageName
+      - description: ImageTag to use for the canary Deployment
+        displayName: Image Tag
+        path: production.canary.imageTag
+      - description: Patches to apply for the canary Deployment. Patches are expected
+          to be JSON documents as an RFC 6902 patches.
+        displayName: Patches
+        path: production.canary.patches
+      - description: Number of replicas for the canary Deployment
+        displayName: Replicas
+        path: production.canary.replicas
+      - description: SendTraffic controls if traffic is sent to the canary
+        displayName: Send Traffic
+        path: production.canary.sendTraffic
       - description: Application specific configuration options for the component
         displayName: Config
         path: production.config
@@ -375,6 +395,26 @@ spec:
       - description: Configures the staging Apicast environment
         displayName: Staging
         path: staging
+      - description: Canary defines spec changes for the canary Deployment. If left
+          unset the canary Deployment wil not be created.
+        displayName: Canary
+        path: staging.canary
+      - description: ImageName to use for the canary Deployment
+        displayName: Image Name
+        path: staging.canary.imageName
+      - description: ImageTag to use for the canary Deployment
+        displayName: Image Tag
+        path: staging.canary.imageTag
+      - description: Patches to apply for the canary Deployment. Patches are expected
+          to be JSON documents as an RFC 6902 patches.
+        displayName: Patches
+        path: staging.canary.patches
+      - description: Number of replicas for the canary Deployment
+        displayName: Replicas
+        path: staging.canary.replicas
+      - description: SendTraffic controls if traffic is sent to the canary
+        displayName: Send Traffic
+        path: staging.canary.sendTraffic
       - description: Application specific configuration options for the component
         displayName: Config
         path: staging.config
