@@ -17,6 +17,8 @@ limitations under the License.
 package controllers
 
 import (
+	"context"
+	"fmt"
 	"path/filepath"
 	"testing"
 	"time"
@@ -25,6 +27,10 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
+	policyv1beta1 "k8s.io/api/policy/v1beta1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -41,6 +47,107 @@ import (
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	// +kubebuilder:scaffold:imports
 )
+
+type expectedWorkload struct {
+	Namespace      string
+	Name           string
+	Replicas       int
+	ContainerName  string
+	ContainerImage string
+	ContainterArgs []string
+	HPA            bool
+	PDB            bool
+	PodMonitor     bool
+}
+
+func checkWorkloadResources(dep *appsv1.Deployment, ew expectedWorkload) func() {
+	return func() {
+		Eventually(func() error {
+			return k8sClient.Get(
+				context.Background(),
+				types.NamespacedName{Name: ew.Name, Namespace: ew.Namespace},
+				dep,
+			)
+		}, timeout, poll).ShouldNot(HaveOccurred())
+
+		if ew.ContainerName != "" {
+			Expect(dep.Spec.Template.Spec.Containers[0].Name).To(Equal(ew.ContainerName))
+		}
+
+		if ew.ContainerImage != "" {
+			Expect(dep.Spec.Template.Spec.Containers[0].Image).To(Equal(ew.ContainerImage))
+		}
+
+		if ew.ContainterArgs != nil {
+			Expect(dep.Spec.Template.Spec.Containers[0].Args).To(Equal(ew.ContainterArgs))
+		}
+
+		hpa := &autoscalingv2beta2.HorizontalPodAutoscaler{}
+		By(fmt.Sprintf("%s workload HPA", ew.Name),
+			checkResource(hpa, expectedResource{
+				Name:      ew.Name,
+				Namespace: ew.Namespace, Missing: !ew.HPA,
+			}),
+		)
+		if ew.HPA {
+			Expect(hpa.Spec.ScaleTargetRef.Kind).Should(Equal("Deployment"))
+			Expect(hpa.Spec.ScaleTargetRef.Name).Should(Equal(ew.Name))
+		}
+
+		pdb := &policyv1beta1.PodDisruptionBudget{}
+		By(fmt.Sprintf("%s workload PDB", ew.Name),
+			checkResource(pdb, expectedResource{
+				Name:      ew.Name,
+				Namespace: ew.Namespace, Missing: !ew.PDB,
+			}),
+		)
+		if ew.PDB {
+			Expect(pdb.Spec.Selector.MatchLabels["deployment"]).Should(Equal(ew.Name))
+		}
+
+		pm := &monitoringv1.PodMonitor{}
+		By(fmt.Sprintf("%s workload PodMonitor", ew.Name),
+			checkResource(pm, expectedResource{
+				Name:      ew.Name,
+				Namespace: ew.Namespace, Missing: !ew.PodMonitor,
+			}),
+		)
+		if ew.PodMonitor {
+			Expect(pm.Spec.Selector.MatchLabels["deployment"]).Should(Equal(ew.Name))
+		}
+
+	}
+}
+
+type expectedResource struct {
+	Namespace string
+	Name      string
+	Missing   bool
+}
+
+func checkResource(r client.Object, er expectedResource) func() {
+
+	if er.Missing {
+		return func() {
+			By(fmt.Sprintf("%s object does NOT exist", er.Name))
+			Eventually(func() error {
+				return k8sClient.Get(context.Background(),
+					types.NamespacedName{Name: er.Name, Namespace: er.Namespace}, r,
+				)
+			}, timeout, poll).Should(HaveOccurred())
+		}
+	}
+
+	return func() {
+		By(fmt.Sprintf("%s object does exists", er.Name))
+		Eventually(func() error {
+			return k8sClient.Get(context.Background(),
+				types.NamespacedName{Name: er.Name, Namespace: er.Namespace}, r,
+			)
+		}, timeout, poll).ShouldNot(HaveOccurred())
+	}
+
+}
 
 // These tests use Ginkgo (BDD-style Go testing framework). Refer to
 // http://onsi.github.io/ginkgo/ to learn more about Ginkgo.
