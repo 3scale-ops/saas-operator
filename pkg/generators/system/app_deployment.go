@@ -2,37 +2,26 @@ package system
 
 import (
 	"fmt"
+	"strings"
 
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/marin3r"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
-	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
+	"github.com/3scale/saas-operator/pkg/resource_builders/marin3r"
+	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
 	"github.com/3scale/saas-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	"k8s.io/utils/pointer"
 )
 
-// Deployment returns a basereconciler.GeneratorFunction function that will return a Deployment
+// Deployment returns a function that will return a Deployment
 // resource when called
-func (gen *AppGenerator) Deployment() basereconciler.GeneratorFunction {
+func (gen *AppGenerator) deployment() func() *appsv1.Deployment {
 
-	return func() client.Object {
+	return func() *appsv1.Deployment {
 
 		dep := &appsv1.Deployment{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       "Deployment",
-				APIVersion: appsv1.SchemeGroupVersion.String(),
-			},
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      gen.GetComponent(),
-				Namespace: gen.Namespace,
-				Labels:    gen.GetLabels(),
-			},
 			Spec: appsv1.DeploymentSpec{
 				Replicas: gen.Spec.Replicas,
-				Selector: gen.Selector(),
 				Strategy: appsv1.DeploymentStrategy{
 					Type: appsv1.RollingUpdateDeploymentStrategyType,
 					RollingUpdate: &appsv1.RollingUpdateDeployment{
@@ -41,33 +30,30 @@ func (gen *AppGenerator) Deployment() basereconciler.GeneratorFunction {
 					},
 				},
 				Template: corev1.PodTemplateSpec{
-					ObjectMeta: metav1.ObjectMeta{
-						Labels: gen.LabelsWithSelector(),
-					},
 					Spec: corev1.PodSpec{
 						ImagePullSecrets: func() []corev1.LocalObjectReference {
-							if gen.ImageSpec.PullSecretName != nil {
-								return []corev1.LocalObjectReference{{Name: *gen.ImageSpec.PullSecretName}}
+							if gen.Image.PullSecretName != nil {
+								return []corev1.LocalObjectReference{{Name: *gen.Image.PullSecretName}}
 							}
 							return nil
 						}(),
 						InitContainers: []corev1.Container{
 							{
 								Name:  fmt.Sprintf("%s-k8s-deploy", gen.GetComponent()),
-								Image: fmt.Sprintf("%s:%s", *gen.ImageSpec.Name, *gen.ImageSpec.Tag),
+								Image: fmt.Sprintf("%s:%s", *gen.Image.Name, *gen.Image.Tag),
 								Args: []string{
 									"bundle", "exec", "rake", "k8s:deploy",
 								},
 								Env:                      pod.BuildEnvironment(gen.Options),
-								ImagePullPolicy:          *gen.ImageSpec.PullPolicy,
+								ImagePullPolicy:          *gen.Image.PullPolicy,
 								TerminationMessagePath:   corev1.TerminationMessagePathDefault,
 								TerminationMessagePolicy: corev1.TerminationMessageReadFile,
 							},
 						},
 						Containers: []corev1.Container{
 							{
-								Name:  gen.GetComponent(),
-								Image: fmt.Sprintf("%s:%s", *gen.ImageSpec.Name, *gen.ImageSpec.Tag),
+								Name:  strings.Join([]string{component, app}, "-"),
+								Image: fmt.Sprintf("%s:%s", *gen.Image.Name, *gen.Image.Tag),
 								Args: []string{
 									"env",
 									"PORT=3000",
@@ -87,12 +73,12 @@ func (gen *AppGenerator) Deployment() basereconciler.GeneratorFunction {
 								LivenessProbe: pod.TCPProbe(intstr.FromString("ui-api"), *gen.Spec.LivenessProbe),
 								ReadinessProbe: pod.HTTPProbeWithHeaders("/check.txt", intstr.FromString("ui-api"),
 									corev1.URISchemeHTTP, *gen.Spec.ReadinessProbe, map[string]string{"X-Forwarded-Proto": "https"}),
-								ImagePullPolicy:          *gen.ImageSpec.PullPolicy,
+								ImagePullPolicy:          *gen.Image.PullPolicy,
 								TerminationMessagePath:   corev1.TerminationMessagePathDefault,
 								TerminationMessagePolicy: corev1.TerminationMessageReadFile,
 							},
 						},
-						Affinity:    pod.Affinity(gen.Selector().MatchLabels, gen.Spec.NodeAffinity),
+						Affinity:    pod.Affinity(gen.GetSelector(), gen.Spec.NodeAffinity),
 						Tolerations: gen.Spec.Tolerations,
 					},
 				},
@@ -104,7 +90,8 @@ func (gen *AppGenerator) Deployment() basereconciler.GeneratorFunction {
 				Name: "system-config",
 				VolumeSource: corev1.VolumeSource{
 					Secret: &corev1.SecretVolumeSource{
-						SecretName: gen.ConfigFilesSecret,
+						DefaultMode: pointer.Int32Ptr(420),
+						SecretName:  gen.ConfigFilesSecret,
 					},
 				},
 			})

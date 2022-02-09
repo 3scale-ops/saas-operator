@@ -41,7 +41,6 @@ import (
 	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
 	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
-	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
 	basereconciler_v2 "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
 	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
@@ -118,16 +117,6 @@ func main() {
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), options)
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
-		os.Exit(1)
-	}
-
-	/* BASERECONCILER_V1 BASED CONTROLLERS*/
-
-	if err = (&controllers.SystemReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("System"), false),
-		Log:        ctrl.Log.WithName("controllers").WithName("System"),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "System")
 		os.Exit(1)
 	}
 
@@ -213,6 +202,14 @@ func main() {
 		Log:                ctrl.Log.WithName("controllers").WithName("Backend"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Backend")
+		os.Exit(1)
+	}
+
+	if err = (&controllers.SystemReconciler{
+		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("System"), false),
+		Log:                ctrl.Log.WithName("controllers").WithName("System"),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "System")
 		os.Exit(1)
 	}
 

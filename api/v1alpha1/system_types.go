@@ -41,6 +41,7 @@ var (
 	systemDefaultSSLCertsDir                   string           = "/etc/pki/tls/certs"
 	systemDefaultThreescaleProviderPlan        string           = "enterprise"
 	systemDefaultThreescaleSuperdomain         string           = "localhost"
+	systemDefaultRailsConsole                  bool             = false
 	systemDefaultRailsEnvironment              string           = "preview"
 	systemDefaultRailsLogLevel                 string           = "info"
 	systemDefaultConfigFilesSecret             string           = "system-config"
@@ -189,6 +190,16 @@ var (
 		SuccessThreshold:    pointer.Int32Ptr(1),
 		FailureThreshold:    pointer.Int32Ptr(5),
 	}
+	systemDefaultRailsConsoleResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
+		Requests: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("200m"),
+			corev1.ResourceMemory: resource.MustParse("1Gi"),
+		},
+		Limits: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("400m"),
+			corev1.ResourceMemory: resource.MustParse("2Gi"),
+		},
+	}
 )
 
 // SystemSpec defines the desired state of System
@@ -220,10 +231,18 @@ type SystemSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Sphinx *SystemSphinxSpec `json:"sphinx,omitempty"`
+	// Console specific configuration options
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Console *SystemRailsConsoleSpec `json:"console,omitempty"`
 	// Configures the Grafana Dashboard for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	GrafanaDashboard *GrafanaDashboardSpec `json:"grafanaDashboard,omitempty"`
+	// Configures twemproxy
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Twemproxy *TwemproxySpec `json:"twemproxy,omitempty"`
 }
 
 // Default implements defaulting for SystemSpec
@@ -256,6 +275,11 @@ func (spec *SystemSpec) Default() {
 		spec.Sphinx = &SystemSphinxSpec{}
 	}
 	spec.Sphinx.Default(spec.Image)
+
+	if spec.Console == nil {
+		spec.Console = &SystemRailsConsoleSpec{}
+	}
+	spec.Console.Default()
 }
 
 // SystemConfig holds configuration for SystemApp component
@@ -359,6 +383,31 @@ func (sc *SystemConfig) Default() {
 	sc.SSLCertsDir = stringOrDefault(sc.SSLCertsDir, pointer.StringPtr(systemDefaultSSLCertsDir))
 	sc.ThreescaleProviderPlan = stringOrDefault(sc.ThreescaleProviderPlan, pointer.StringPtr(systemDefaultThreescaleProviderPlan))
 	sc.ThreescaleSuperdomain = stringOrDefault(sc.ThreescaleSuperdomain, pointer.StringPtr(systemDefaultThreescaleSuperdomain))
+}
+
+// ResolveCanarySpec modifies the SystemSpec given the provided canary configuration
+func (spec *SystemSpec) ResolveCanarySpec(canary *Canary) (*SystemSpec, error) {
+	canarySpec := &SystemSpec{}
+	if err := canary.PatchSpec(spec, canarySpec); err != nil {
+		return nil, err
+	}
+
+	if canary.ImageName != nil {
+		canarySpec.Image.Name = canary.ImageName
+	}
+	if canary.ImageTag != nil {
+		canarySpec.Image.Tag = canary.ImageTag
+	}
+	canarySpec.App.Replicas = canary.Replicas
+	canarySpec.SidekiqDefault.Replicas = canary.Replicas
+	canarySpec.SidekiqLow.Replicas = canary.Replicas
+	canarySpec.SidekiqBilling.Replicas = canary.Replicas
+
+	// Call Default() on the resolved canary spec to apply
+	// defaulting to potentially added fields
+	canarySpec.Default()
+
+	return canarySpec, nil
 }
 
 // SystemRecaptchaSpec holds recaptcha configurations
@@ -478,6 +527,10 @@ type AssetsSpec struct {
 
 // SystemRailsSpec configures rails for system components
 type SystemRailsSpec struct {
+	// Rails Console
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Console *bool `json:"console,omitempty"`
 	// Rails environment
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -491,6 +544,7 @@ type SystemRailsSpec struct {
 
 // Default applies defaults for SystemRailsSpec
 func (srs *SystemRailsSpec) Default() {
+	srs.Console = boolOrDefault(srs.Console, pointer.BoolPtr(systemDefaultRailsConsole))
 	srs.Environment = stringOrDefault(srs.Environment, pointer.StringPtr(systemDefaultRailsEnvironment))
 	srs.LogLevel = stringOrDefault(srs.LogLevel, pointer.StringPtr(systemDefaultRailsLogLevel))
 }
@@ -531,18 +585,17 @@ type SystemAppSpec struct {
 	// If specified, the pod's tolerations.
 	// +optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
+	// Canary defines spec changes for the canary Deployment. If
+	// left unset the canary Deployment wil not be created.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Canary *Canary `json:"canary,omitempty"`
 }
 
 // Default implements defaulting for the system App component
 func (spec *SystemAppSpec) Default() {
 	spec.HPA = InitializeHorizontalPodAutoscalerSpec(spec.HPA, systemDefaultAppHPA)
-
-	if spec.HPA.IsDeactivated() {
-		spec.Replicas = intOrDefault(spec.Replicas, &systemDefaultAppReplicas)
-	} else {
-		spec.Replicas = nil
-	}
-
+	spec.Replicas = intOrDefault(spec.Replicas, &systemDefaultAppReplicas)
 	spec.PDB = InitializePodDisruptionBudgetSpec(spec.PDB, systemDefaultAppPDB)
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, systemDefaultAppResources)
 	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, systemDefaultAppLivenessProbe)
@@ -590,6 +643,11 @@ type SystemSidekiqSpec struct {
 	// If specified, the pod's tolerations.
 	// +optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
+	// Canary defines spec changes for the canary Deployment. If
+	// left unset the canary Deployment wil not be created.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Canary *Canary `json:"canary,omitempty"`
 }
 
 // SidekiqConfig configures app behavior for System Sidekiq
@@ -620,13 +678,7 @@ func (cfg *SidekiqConfig) Default(def defaultSidekiqConfig) {
 // Default implements defaulting for the system Sidekiq component
 func (spec *SystemSidekiqSpec) Default(sidekiqType systemSidekiqType) {
 	spec.HPA = InitializeHorizontalPodAutoscalerSpec(spec.HPA, systemDefaultSidekiqHPA)
-
-	if spec.HPA.IsDeactivated() {
-		spec.Replicas = intOrDefault(spec.Replicas, &systemDefaultSidekiqReplicas)
-	} else {
-		spec.Replicas = nil
-	}
-
+	spec.Replicas = intOrDefault(spec.Replicas, &systemDefaultSidekiqReplicas)
 	spec.PDB = InitializePodDisruptionBudgetSpec(spec.PDB, systemDefaultSidekiqPDB)
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, systemDefaultSidekiqResources)
 	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, systemDefaultSidekiqLivenessProbe)
@@ -759,6 +811,25 @@ func (tc *ThinkingSpec) Default() {
 		size := resource.MustParse(systemDefaultSphinxDatabaseStorageSize)
 		tc.DatabaseStorageSize = &size
 	}
+}
+
+// SystemRailsConsoleSpec configures the App component of System
+type SystemRailsConsoleSpec struct {
+	// Resource requirements for the component
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Resources *ResourceRequirementsSpec `json:"resources,omitempty"`
+	// Describes node affinity scheduling rules for the pod.
+	// +optional
+	NodeAffinity *corev1.NodeAffinity `json:"nodeAffinity,omitempty" protobuf:"bytes,1,opt,name=nodeAffinity"`
+	// If specified, the pod's tolerations.
+	// +optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
+}
+
+// Default implements defaulting for the system App component
+func (spec *SystemRailsConsoleSpec) Default() {
+	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, systemDefaultRailsConsoleResources)
 }
 
 // SystemStatus defines the observed state of System

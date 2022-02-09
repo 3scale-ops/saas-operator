@@ -67,6 +67,7 @@ func (dt DeploymentTemplate) ApplyTrafficSelector(tm TrafficManager) DeploymentT
 	return dt
 }
 
+// ServicesTemplate specifies a Services resource
 type ServiceTemplate struct {
 	basereconciler_resources.ServiceTemplate
 }

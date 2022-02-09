@@ -2,27 +2,24 @@ package system
 
 import (
 	"fmt"
+	"strings"
 
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
-	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
+	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
+	"github.com/3scale/saas-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/pointer"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // StatefulSet returns a basereconciler.GeneratorFunction function that will return
 // a StatefulSet resource when called
-func (gen *SphinxGenerator) StatefulSet() basereconciler.GeneratorFunction {
+func (gen *SphinxGenerator) statefulset() func() *appsv1.StatefulSet {
 
-	return func() client.Object {
+	return func() *appsv1.StatefulSet {
+
 		return &appsv1.StatefulSet{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       "StatefulSet",
-				APIVersion: appsv1.SchemeGroupVersion.String(),
-			},
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      gen.GetComponent(),
 				Namespace: gen.Namespace,
@@ -30,22 +27,26 @@ func (gen *SphinxGenerator) StatefulSet() basereconciler.GeneratorFunction {
 			},
 			Spec: appsv1.StatefulSetSpec{
 				Replicas: pointer.Int32Ptr(1),
-				Selector: gen.Selector(),
+				Selector: &metav1.LabelSelector{MatchLabels: gen.GetSelector()},
+				UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
+					Type: appsv1.RollingUpdateStatefulSetStrategyType,
+				},
+				PodManagementPolicy: appsv1.OrderedReadyPodManagement,
 				Template: corev1.PodTemplateSpec{
 					ObjectMeta: metav1.ObjectMeta{
-						Labels: gen.LabelsWithSelector(),
+						Labels: util.MergeMaps(map[string]string{}, gen.GetLabels(), gen.GetSelector()),
 					},
 					Spec: corev1.PodSpec{
 						ImagePullSecrets: func() []corev1.LocalObjectReference {
-							if gen.ImageSpec.PullSecretName != nil {
-								return []corev1.LocalObjectReference{{Name: *gen.ImageSpec.PullSecretName}}
+							if gen.Image.PullSecretName != nil {
+								return []corev1.LocalObjectReference{{Name: *gen.Image.PullSecretName}}
 							}
 							return nil
 						}(),
 						Containers: []corev1.Container{
 							{
-								Name:  gen.GetComponent(),
-								Image: fmt.Sprintf("%s:%s", *gen.ImageSpec.Name, *gen.ImageSpec.Tag),
+								Name:  strings.Join([]string{component, sphinx}, "-"),
+								Image: fmt.Sprintf("%s:%s", *gen.Image.Name, *gen.Image.Tag),
 								Args: []string{
 									"rake",
 									"openshift:thinking_sphinx:start",
@@ -57,7 +58,7 @@ func (gen *SphinxGenerator) StatefulSet() basereconciler.GeneratorFunction {
 								Resources:                corev1.ResourceRequirements(*gen.Spec.Resources),
 								LivenessProbe:            pod.TCPProbe(intstr.FromString("sphinx"), *gen.Spec.LivenessProbe),
 								ReadinessProbe:           pod.TCPProbe(intstr.FromString("sphinx"), *gen.Spec.ReadinessProbe),
-								ImagePullPolicy:          *gen.ImageSpec.PullPolicy,
+								ImagePullPolicy:          *gen.Image.PullPolicy,
 								TerminationMessagePath:   corev1.TerminationMessagePathDefault,
 								TerminationMessagePolicy: corev1.TerminationMessageReadFile,
 								VolumeMounts: []corev1.VolumeMount{{
@@ -66,7 +67,7 @@ func (gen *SphinxGenerator) StatefulSet() basereconciler.GeneratorFunction {
 								}},
 							},
 						},
-						Affinity:    pod.Affinity(gen.Selector().MatchLabels, gen.Spec.NodeAffinity),
+						Affinity:    pod.Affinity(gen.GetSelector(), gen.Spec.NodeAffinity),
 						Tolerations: gen.Spec.Tolerations,
 					},
 				},
@@ -77,6 +78,9 @@ func (gen *SphinxGenerator) StatefulSet() basereconciler.GeneratorFunction {
 					},
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "system-sphinx-database",
+					},
+					Status: corev1.PersistentVolumeClaimStatus{
+						Phase: corev1.ClaimPending,
 					},
 					Spec: corev1.PersistentVolumeClaimSpec{
 						AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},

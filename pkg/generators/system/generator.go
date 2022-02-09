@@ -1,98 +1,58 @@
 package system
 
 import (
+	"fmt"
 	"strings"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/grafanadashboard"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/hpa"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pdb"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/podmonitor"
 	"github.com/3scale/saas-operator/pkg/generators/system/config"
-	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
+	"github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
+	basereconciler_resources "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/resources"
+	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
+	"github.com/3scale/saas-operator/pkg/resource_builders/grafanadashboard"
+	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
+	"github.com/3scale/saas-operator/pkg/resource_builders/podmonitor"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/utils/pointer"
 )
 
 const (
 	component      string = "system"
 	app            string = "app"
+	console        string = "console"
+	sidekiq        string = "sidekiq"
 	sidekiqDefault string = "sidekiq-default"
 	sidekiqBilling string = "sidekiq-billing"
 	sidekiqLow     string = "sidekiq-low"
 	sphinx         string = "sphinx"
+	twemproxy      string = "twemproxy"
 )
 
 // Generator configures the generators for System
 type Generator struct {
-	generators.BaseOptions
+	generators.BaseOptionsV2
 	App                  AppGenerator
+	CanaryApp            *AppGenerator
 	SidekiqDefault       SidekiqGenerator
+	CanarySidekiqDefault *SidekiqGenerator
 	SidekiqBilling       SidekiqGenerator
+	CanarySidekiqBilling *SidekiqGenerator
 	SidekiqLow           SidekiqGenerator
+	CanarySidekiqLow     *SidekiqGenerator
 	Sphinx               SphinxGenerator
+	Console              ConsoleGenerator
 	GrafanaDashboardSpec saasv1alpha1.GrafanaDashboardSpec
 	ConfigFilesSecret    string
 	Options              config.Options
 }
 
-// GrafanaDashboard returns a basereconciler.GeneratorFunction
-func (gen *Generator) GrafanaDashboard() basereconciler.GeneratorFunction {
-	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return grafanadashboard.New(key, gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/system.json.gtpl")
-}
-
-// DatabaseSecretDefinition returns a basereconciler.GeneratorFunction
-func (gen *Generator) DatabaseSecretDefinition() basereconciler.GeneratorFunction {
-	return pod.GenerateSecretDefinitionFn("system-database", gen.GetNamespace(), gen.GetLabels(), gen.Options)
-}
-
-// RecaptchaSecretDefinition returns a basereconciler.GeneratorFunction
-func (gen *Generator) RecaptchaSecretDefinition() basereconciler.GeneratorFunction {
-	return pod.GenerateSecretDefinitionFn("system-recaptcha", gen.GetNamespace(), gen.GetLabels(), gen.Options)
-}
-
-// EventsHookSecretDefinition returns a basereconciler.GeneratorFunction
-func (gen *Generator) EventsHookSecretDefinition() basereconciler.GeneratorFunction {
-	return pod.GenerateSecretDefinitionFn("system-events-hook", gen.GetNamespace(), gen.GetLabels(), gen.Options)
-}
-
-// SMTPSecretDefinition returns a basereconciler.GeneratorFunction
-func (gen *Generator) SMTPSecretDefinition() basereconciler.GeneratorFunction {
-	return pod.GenerateSecretDefinitionFn("system-smtp", gen.GetNamespace(), gen.GetLabels(), gen.Options)
-}
-
-// MasterApicastSecretDefinition returns a basereconciler.GeneratorFunction
-func (gen *Generator) MasterApicastSecretDefinition() basereconciler.GeneratorFunction {
-	return pod.GenerateSecretDefinitionFn("system-master-apicast", gen.GetNamespace(), gen.GetLabels(), gen.Options)
-}
-
-// ZyncSecretDefinition returns a basereconciler.GeneratorFunction
-func (gen *Generator) ZyncSecretDefinition() basereconciler.GeneratorFunction {
-	return pod.GenerateSecretDefinitionFn("system-zync", gen.GetNamespace(), gen.GetLabels(), gen.Options)
-}
-
-// BackendSecretDefinition returns a basereconciler.GeneratorFunction
-func (gen *Generator) BackendSecretDefinition() basereconciler.GeneratorFunction {
-	return pod.GenerateSecretDefinitionFn("system-backend", gen.GetNamespace(), gen.GetLabels(), gen.Options)
-}
-
-// MultitenantAssetsSecretDefinition returns a basereconciler.GeneratorFunction
-func (gen *Generator) MultitenantAssetsSecretDefinition() basereconciler.GeneratorFunction {
-	return pod.GenerateSecretDefinitionFn("system-multitenant-assets-s3", gen.GetNamespace(), gen.GetLabels(), gen.Options)
-}
-
-// AppSecretDefinition returns a basereconciler.GeneratorFunction
-func (gen *Generator) AppSecretDefinition() basereconciler.GeneratorFunction {
-	return pod.GenerateSecretDefinitionFn("system-app", gen.GetNamespace(), gen.GetLabels(), gen.Options)
-}
-
 // NewGenerator returns a new Options struct
-func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) Generator {
-	return Generator{
-		BaseOptions: generators.BaseOptions{
+func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) (Generator, error) {
+
+	generator := Generator{
+		BaseOptionsV2: generators.BaseOptionsV2{
 			Component:    component,
 			InstanceName: instance,
 			Namespace:    namespace,
@@ -102,7 +62,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) Gene
 			},
 		},
 		App: AppGenerator{
-			BaseOptions: generators.BaseOptions{
+			BaseOptionsV2: generators.BaseOptionsV2{
 				Component:    strings.Join([]string{component, app}, "-"),
 				InstanceName: instance,
 				Namespace:    namespace,
@@ -114,11 +74,12 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) Gene
 			},
 			Spec:              *spec.App,
 			Options:           config.NewOptions(spec),
-			ImageSpec:         *spec.Image,
+			Image:             *spec.Image,
 			ConfigFilesSecret: *spec.Config.ConfigFilesSecret,
+			Traffic:           true,
 		},
 		SidekiqDefault: SidekiqGenerator{
-			BaseOptions: generators.BaseOptions{
+			BaseOptionsV2: generators.BaseOptionsV2{
 				Component:    strings.Join([]string{component, sidekiqDefault}, "-"),
 				InstanceName: instance,
 				Namespace:    namespace,
@@ -130,11 +91,11 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) Gene
 			},
 			Spec:              *spec.SidekiqDefault,
 			Options:           config.NewOptions(spec),
-			ImageSpec:         *spec.Image,
+			Image:             *spec.Image,
 			ConfigFilesSecret: *spec.Config.ConfigFilesSecret,
 		},
 		SidekiqBilling: SidekiqGenerator{
-			BaseOptions: generators.BaseOptions{
+			BaseOptionsV2: generators.BaseOptionsV2{
 				Component:    strings.Join([]string{component, sidekiqBilling}, "-"),
 				InstanceName: instance,
 				Namespace:    namespace,
@@ -146,11 +107,11 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) Gene
 			},
 			Spec:              *spec.SidekiqBilling,
 			Options:           config.NewOptions(spec),
-			ImageSpec:         *spec.Image,
+			Image:             *spec.Image,
 			ConfigFilesSecret: *spec.Config.ConfigFilesSecret,
 		},
 		SidekiqLow: SidekiqGenerator{
-			BaseOptions: generators.BaseOptions{
+			BaseOptionsV2: generators.BaseOptionsV2{
 				Component:    strings.Join([]string{component, sidekiqLow}, "-"),
 				InstanceName: instance,
 				Namespace:    namespace,
@@ -162,11 +123,11 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) Gene
 			},
 			Spec:              *spec.SidekiqLow,
 			Options:           config.NewOptions(spec),
-			ImageSpec:         *spec.Image,
+			Image:             *spec.Image,
 			ConfigFilesSecret: *spec.Config.ConfigFilesSecret,
 		},
 		Sphinx: SphinxGenerator{
-			BaseOptions: generators.BaseOptions{
+			BaseOptionsV2: generators.BaseOptionsV2{
 				Component:    strings.Join([]string{component, sphinx}, "-"),
 				InstanceName: instance,
 				Namespace:    namespace,
@@ -178,82 +139,343 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) Gene
 			},
 			Spec:                 *spec.Sphinx,
 			Options:              config.NewSphinxOptions(spec),
-			ImageSpec:            *spec.Sphinx.Image,
+			Image:                *spec.Sphinx.Image,
 			DatabasePort:         *spec.Sphinx.Config.Thinking.Port,
 			DatabasePath:         *spec.Sphinx.Config.Thinking.DatabasePath,
 			DatabaseStorageSize:  *spec.Sphinx.Config.Thinking.DatabaseStorageSize,
 			DatabaseStorageClass: spec.Sphinx.Config.Thinking.DatabaseStorageClass,
 		},
+		Console: ConsoleGenerator{
+			BaseOptionsV2: generators.BaseOptionsV2{
+				Component:    strings.Join([]string{component, console}, "-"),
+				InstanceName: instance,
+				Namespace:    namespace,
+				Labels: map[string]string{
+					"app":                          "3scale-api-management",
+					"threescale_component":         component,
+					"threescale_component_element": sphinx,
+				},
+			},
+			Spec:              *spec.Console,
+			Options:           config.NewOptions(spec),
+			Image:             *spec.Image,
+			ConfigFilesSecret: *spec.Config.ConfigFilesSecret,
+			Enabled:           *spec.Config.Rails.Console,
+		},
 		GrafanaDashboardSpec: *spec.GrafanaDashboard,
 		ConfigFilesSecret:    *spec.Config.ConfigFilesSecret,
 		Options:              config.NewOptions(spec),
 	}
+
+	if spec.App.Canary != nil {
+		canarySpec, err := spec.ResolveCanarySpec(spec.App.Canary)
+		if err != nil {
+			return Generator{}, err
+		}
+		generator.CanaryApp = &AppGenerator{
+			BaseOptionsV2: generators.BaseOptionsV2{
+				Component:    strings.Join([]string{component, app, "canary"}, "-"),
+				InstanceName: instance,
+				Namespace:    namespace,
+				Labels: map[string]string{
+					"app":                          "3scale-api-management",
+					"threescale_component":         component,
+					"threescale_component_element": app + "-canary",
+				},
+			},
+			Spec:              *canarySpec.App,
+			Image:             *canarySpec.Image,
+			Options:           config.NewOptions(*canarySpec),
+			ConfigFilesSecret: *canarySpec.Config.ConfigFilesSecret,
+			Traffic:           spec.App.Canary.SendTraffic,
+			TwemproxySpec:     canarySpec.Twemproxy,
+		}
+		// Disable PDB and HPA for the canary Deployment
+		generator.CanaryApp.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
+		generator.CanaryApp.Spec.PDB = &saasv1alpha1.PodDisruptionBudgetSpec{}
+	}
+
+	if spec.SidekiqDefault.Canary != nil {
+		canarySpec, err := spec.ResolveCanarySpec(spec.SidekiqDefault.Canary)
+		if err != nil {
+			return Generator{}, err
+		}
+		generator.CanarySidekiqDefault = &SidekiqGenerator{
+			BaseOptionsV2: generators.BaseOptionsV2{
+				Component:    strings.Join([]string{component, sidekiqDefault, "canary"}, "-"),
+				InstanceName: instance,
+				Namespace:    namespace,
+				Labels: map[string]string{
+					"app":                          "3scale-api-management",
+					"threescale_component":         component,
+					"threescale_component_element": sidekiqDefault + "-canary",
+				},
+			},
+			Spec:              *canarySpec.SidekiqDefault,
+			Image:             *canarySpec.Image,
+			Options:           config.NewOptions(*canarySpec),
+			ConfigFilesSecret: *canarySpec.Config.ConfigFilesSecret,
+			TwemproxySpec:     canarySpec.Twemproxy,
+		}
+		// Disable PDB and HPA for the canary Deployment
+		generator.CanarySidekiqDefault.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
+		generator.CanarySidekiqDefault.Spec.PDB = &saasv1alpha1.PodDisruptionBudgetSpec{}
+	}
+
+	if spec.SidekiqLow.Canary != nil {
+		canarySpec, err := spec.ResolveCanarySpec(spec.SidekiqLow.Canary)
+		if err != nil {
+			return Generator{}, err
+		}
+		generator.CanarySidekiqLow = &SidekiqGenerator{
+			BaseOptionsV2: generators.BaseOptionsV2{
+				Component:    strings.Join([]string{component, sidekiqLow, "canary"}, "-"),
+				InstanceName: instance,
+				Namespace:    namespace,
+				Labels: map[string]string{
+					"app":                          "3scale-api-management",
+					"threescale_component":         component,
+					"threescale_component_element": sidekiqLow + "-canary",
+				},
+			},
+			Spec:              *canarySpec.SidekiqLow,
+			Image:             *canarySpec.Image,
+			Options:           config.NewOptions(*canarySpec),
+			ConfigFilesSecret: *canarySpec.Config.ConfigFilesSecret,
+			TwemproxySpec:     canarySpec.Twemproxy,
+		}
+		// Disable PDB and HPA for the canary Deployment
+		generator.CanarySidekiqLow.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
+		generator.CanarySidekiqLow.Spec.PDB = &saasv1alpha1.PodDisruptionBudgetSpec{}
+	}
+
+	if spec.SidekiqBilling.Canary != nil {
+		canarySpec, err := spec.ResolveCanarySpec(spec.SidekiqBilling.Canary)
+		if err != nil {
+			return Generator{}, err
+		}
+		generator.CanarySidekiqBilling = &SidekiqGenerator{
+			BaseOptionsV2: generators.BaseOptionsV2{
+				Component:    strings.Join([]string{component, sidekiqBilling, "canary"}, "-"),
+				InstanceName: instance,
+				Namespace:    namespace,
+				Labels: map[string]string{
+					"app":                          "3scale-api-management",
+					"threescale_component":         component,
+					"threescale_component_element": sidekiqBilling + "-canary",
+				},
+			},
+			Spec:              *canarySpec.SidekiqBilling,
+			Image:             *canarySpec.Image,
+			Options:           config.NewOptions(*canarySpec),
+			ConfigFilesSecret: *canarySpec.Config.ConfigFilesSecret,
+			TwemproxySpec:     canarySpec.Twemproxy,
+		}
+		// Disable PDB and HPA for the canary Deployment
+		generator.CanarySidekiqBilling.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
+		generator.CanarySidekiqBilling.Spec.PDB = &saasv1alpha1.PodDisruptionBudgetSpec{}
+	}
+
+	return generator, nil
+}
+
+// GrafanaDashboard returns a basereconciler.GeneratorFunction
+func (gen *Generator) GrafanaDashboard() basereconciler_resources.GrafanaDashboardTemplate {
+	return basereconciler_resources.GrafanaDashboardTemplate{
+		Template: grafanadashboard.New(
+			gen.GetKey(), gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/system.json.gtpl",
+		),
+		IsEnabled: true,
+	}
+}
+
+func getSystemSecrets() []string {
+	return []string{
+		"system-app",
+		"system-backend",
+		"system-database",
+		"system-events-hook",
+		"system-master-apicast",
+		"system-multitenant-assets-s3",
+		"system-recaptcha",
+		"system-smtp",
+		"system-zync",
+	}
+}
+
+// Resources returns functions to generate all System's secret definitions resources
+func (gen *Generator) SecretDefinitions() []basereconciler.Resource {
+
+	resources := []basereconciler.Resource{}
+	for _, sd := range getSystemSecrets() {
+		resources = append(
+			resources,
+			basereconciler_resources.SecretDefinitionTemplate{
+				Template: pod.GenerateSecretDefinitionFn(
+					sd, gen.GetNamespace(), gen.GetLabels(), gen.Options,
+				), IsEnabled: true,
+			},
+		)
+	}
+
+	return resources
+}
+
+func getSystemSecretsRolloutTriggers() []basereconciler_resources.RolloutTrigger {
+
+	triggers := []basereconciler_resources.RolloutTrigger{}
+
+	for _, secret := range getSystemSecrets() {
+		triggers = append(
+			triggers,
+			basereconciler_resources.RolloutTrigger{
+				Name:       secret,
+				SecretName: pointer.String(secret),
+			},
+		)
+	}
+
+	return triggers
 }
 
 // AppGenerator has methods to generate resources for system-app
 type AppGenerator struct {
-	generators.BaseOptions
+	generators.BaseOptionsV2
 	Spec              saasv1alpha1.SystemAppSpec
 	Options           config.Options
-	ImageSpec         saasv1alpha1.ImageSpec
+	Image             saasv1alpha1.ImageSpec
 	ConfigFilesSecret string
+	Traffic           bool
+	TwemproxySpec     *saasv1alpha1.TwemproxySpec
 }
 
-// HPA returns a basereconciler.GeneratorFunction
-func (gen *AppGenerator) HPA() basereconciler.GeneratorFunction {
-	return hpa.New(gen.Key(), gen.GetLabels(), *gen.Spec.HPA)
+// Validate that AppGenerator implements workloads.DeploymentWorkloadWithTraffic interface
+var _ workloads.DeploymentWorkloadWithTraffic = &AppGenerator{}
+
+// Validate that AppGenerator implements workloads.TrafficManager interface
+var _ workloads.TrafficManager = &AppGenerator{}
+
+func (gen *AppGenerator) Services() []basereconciler_resources.ServiceTemplate {
+	return []basereconciler_resources.ServiceTemplate{
+		{Template: gen.service(), IsEnabled: true},
+	}
+}
+func (gen *AppGenerator) SendTraffic() bool { return gen.Traffic }
+func (gen *AppGenerator) TrafficSelector() map[string]string {
+	return map[string]string{
+		fmt.Sprintf("%s/traffic", saasv1alpha1.GroupVersion.Group): fmt.Sprintf("%s-%s", component, app),
+	}
 }
 
-// PDB returns a basereconciler.GeneratorFunction
-func (gen *AppGenerator) PDB() basereconciler.GeneratorFunction {
-	return pdb.New(gen.Key(), gen.GetLabels(), gen.Selector().MatchLabels, *gen.Spec.PDB)
+func (gen *AppGenerator) Deployment() basereconciler_resources.DeploymentTemplate {
+	return basereconciler_resources.DeploymentTemplate{
+		Template:        gen.deployment(),
+		RolloutTriggers: getSystemSecretsRolloutTriggers(),
+		EnforceReplicas: gen.Spec.HPA.IsDeactivated(),
+		IsEnabled:       true,
+	}
 }
 
-// PodMonitor returns a basereconciler.GeneratorFunction
-func (gen *AppGenerator) PodMonitor() basereconciler.GeneratorFunction {
-	return podmonitor.New(gen.Key(), gen.GetLabels(), gen.Selector().MatchLabels,
+func (gen *AppGenerator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {
+	return gen.Spec.HPA
+}
+
+func (gen *AppGenerator) PDBSpec() *saasv1alpha1.PodDisruptionBudgetSpec {
+	return gen.Spec.PDB
+}
+
+func (gen *AppGenerator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint {
+	return []monitoringv1.PodMetricsEndpoint{
 		podmonitor.PodMetricsEndpoint("/metrics", "metrics", 30),
 		podmonitor.PodMetricsEndpoint("/yabeda-metrics", "metrics", 30),
-	)
+	}
 }
+
+// Validate that SidekiqGenerator implements workloads.DeploymentWorkloadWithTraffic interface
+var _ workloads.DeploymentWorkload = &SidekiqGenerator{}
 
 // SidekiqGenerator has methods to generate resources for system-sidekiq
 type SidekiqGenerator struct {
-	generators.BaseOptions
+	generators.BaseOptionsV2
 	Spec              saasv1alpha1.SystemSidekiqSpec
 	Options           config.Options
-	ImageSpec         saasv1alpha1.ImageSpec
+	Image             saasv1alpha1.ImageSpec
 	ConfigFilesSecret string
+	TwemproxySpec     *saasv1alpha1.TwemproxySpec
 }
 
-// HPA returns a basereconciler.GeneratorFunction
-func (gen *SidekiqGenerator) HPA() basereconciler.GeneratorFunction {
-	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return hpa.New(key, gen.GetLabels(), *gen.Spec.HPA)
+func (gen *SidekiqGenerator) Deployment() basereconciler_resources.DeploymentTemplate {
+	return basereconciler_resources.DeploymentTemplate{
+		Template:        gen.deployment(),
+		RolloutTriggers: getSystemSecretsRolloutTriggers(),
+		EnforceReplicas: gen.Spec.HPA.IsDeactivated(),
+		IsEnabled:       true,
+	}
 }
 
-// PDB returns a basereconciler.GeneratorFunction
-func (gen *SidekiqGenerator) PDB() basereconciler.GeneratorFunction {
-	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return pdb.New(key, gen.GetLabels(), gen.Selector().MatchLabels, *gen.Spec.PDB)
+func (gen *SidekiqGenerator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {
+	return gen.Spec.HPA
 }
 
-// PodMonitor returns a basereconciler.GeneratorFunction
-func (gen *SidekiqGenerator) PodMonitor() basereconciler.GeneratorFunction {
-	key := types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace}
-	return podmonitor.New(key, gen.GetLabels(), gen.Selector().MatchLabels,
+func (gen *SidekiqGenerator) PDBSpec() *saasv1alpha1.PodDisruptionBudgetSpec {
+	return gen.Spec.PDB
+}
+
+func (gen *SidekiqGenerator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint {
+	return []monitoringv1.PodMetricsEndpoint{
 		podmonitor.PodMetricsEndpoint("/metrics", "metrics", 30),
-	)
+	}
 }
 
 // SphinxGenerator has methods to generate resources for system-sphinx
 type SphinxGenerator struct {
-	generators.BaseOptions
+	generators.BaseOptionsV2
 	Spec                 saasv1alpha1.SystemSphinxSpec
 	Options              config.SphinxOptions
-	ImageSpec            saasv1alpha1.ImageSpec
+	Image                saasv1alpha1.ImageSpec
 	DatabasePort         int32
 	DatabasePath         string
 	DatabaseStorageSize  resource.Quantity
 	DatabaseStorageClass *string
+}
+
+func (gen *SphinxGenerator) StatefulSetWithTraffic() []basereconciler.Resource {
+	return []basereconciler.Resource{
+		gen.StatefulSet(), gen.Service(),
+	}
+}
+
+func (gen *SphinxGenerator) StatefulSet() basereconciler_resources.StatefulSetTemplate {
+	return basereconciler_resources.StatefulSetTemplate{
+		Template: gen.statefulset(),
+		RolloutTriggers: []basereconciler_resources.RolloutTrigger{
+			{Name: "system-database", SecretName: pointer.String("system-database")},
+		},
+		IsEnabled: true,
+	}
+}
+
+func (gen *SphinxGenerator) Service() basereconciler_resources.ServiceTemplate {
+	return basereconciler_resources.ServiceTemplate{
+		Template:  gen.service(),
+		IsEnabled: true,
+	}
+}
+
+// ConsoleGenerator has methods to generate resources for system-sphinx
+type ConsoleGenerator struct {
+	generators.BaseOptionsV2
+	Spec              saasv1alpha1.SystemRailsConsoleSpec
+	Options           config.Options
+	Image             saasv1alpha1.ImageSpec
+	ConfigFilesSecret string
+	Enabled           bool
+}
+
+func (gen *ConsoleGenerator) StatefulSet() basereconciler_resources.StatefulSetTemplate {
+	return basereconciler_resources.StatefulSetTemplate{
+		Template:        gen.statefulset(),
+		RolloutTriggers: getSystemSecretsRolloutTriggers(),
+		IsEnabled:       gen.Enabled,
+	}
 }

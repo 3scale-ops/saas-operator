@@ -38,7 +38,6 @@ import (
 	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
 	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
-	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	// +kubebuilder:scaffold:imports
 )
@@ -51,7 +50,7 @@ var (
 	k8sClient     client.Client
 	testEnv       *envtest.Environment
 	nameGenerator namegenerator.Generator
-	timeout       time.Duration = 30 * time.Second
+	timeout       time.Duration = 45 * time.Second
 	poll          time.Duration = 5 * time.Second
 )
 
@@ -147,8 +146,8 @@ var _ = BeforeSuite(func() {
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&SystemReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("System"), false),
-		Log:        ctrl.Log.WithName("controllers").WithName("System"),
+		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("System"), false),
+		Log:                ctrl.Log.WithName("controllers").WithName("System"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
