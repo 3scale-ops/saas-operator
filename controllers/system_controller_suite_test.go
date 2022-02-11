@@ -147,7 +147,7 @@ var _ = Describe("System controller", func() {
 			Expect(dep.Spec.Template.Spec.Volumes[0].Secret.SecretName).To(Equal("system-config"))
 
 			svc := &corev1.Service{}
-			By("deploying the system-app statefulset",
+			By("deploying the system-app service",
 				checkResource(svc, expectedResource{
 					Name: "system-app", Namespace: namespace,
 				}),
@@ -360,14 +360,27 @@ var _ = Describe("System controller", func() {
 
 		When("updating a System resource with canary", func() {
 
+			// Resource Versions
+			rvs := make(map[string]string)
+
 			BeforeEach(func() {
 				Eventually(func() error {
-					err := k8sClient.Get(
+					system := &saasv1alpha1.System{}
+					if err := k8sClient.Get(
 						context.Background(),
 						types.NamespacedName{Name: "instance", Namespace: namespace},
 						system,
+					); err != nil {
+						return err
+					}
+
+					rvs["svc/system-app"] = getResourceVersion(
+						&corev1.Service{}, "system-app", namespace,
 					)
-					Expect(err).ToNot(HaveOccurred())
+					rvs["deployment/system-app"] = getResourceVersion(
+						&appsv1.Deployment{}, "system-app", namespace,
+					)
+
 					patch := client.MergeFrom(system.DeepCopy())
 					system.Spec.App = &saasv1alpha1.SystemAppSpec{
 						Canary: &saasv1alpha1.Canary{
@@ -416,6 +429,15 @@ var _ = Describe("System controller", func() {
 					),
 				)
 				Expect(dep.Spec.Template.Spec.Volumes[0].Secret.SecretName).To(Equal("system-config"))
+
+				svc := &corev1.Service{}
+				By("keeps the system-app service deployment label selector",
+					checkResource(svc, expectedResource{
+						Name: "system-app", Namespace: namespace,
+					}),
+				)
+				Expect(svc.Spec.Selector["deployment"]).To(Equal("system-app"))
+				Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("system-app"))
 
 				By("deploying a system-sidekiq-default-canary workload",
 					checkWorkloadResources(dep,
@@ -469,6 +491,46 @@ var _ = Describe("System controller", func() {
 
 			})
 
+			When("enabling canary traffic", func() {
+
+				BeforeEach(func() {
+					Eventually(func() error {
+						system := &saasv1alpha1.System{}
+						if err := k8sClient.Get(
+							context.Background(),
+							types.NamespacedName{Name: "instance", Namespace: namespace},
+							system,
+						); err != nil {
+							return err
+						}
+						rvs["svc/system-app"] = getResourceVersion(
+							&corev1.Service{}, "system-app", namespace,
+						)
+						patch := client.MergeFrom(system.DeepCopy())
+						system.Spec.App = &saasv1alpha1.SystemAppSpec{
+							Canary: &saasv1alpha1.Canary{
+								SendTraffic: *pointer.Bool(true),
+							},
+						}
+						return k8sClient.Patch(context.Background(), system, patch)
+					}, timeout, poll).ShouldNot(HaveOccurred())
+				})
+
+				It("updates the system-app service", func() {
+
+					svc := &corev1.Service{}
+					By("removing the system-app service deployment label selector",
+						checkResource(svc, expectedResource{
+							Name: "system-app", Namespace: namespace,
+							LastVersion: rvs["svc/system-app"],
+						}),
+					)
+					Expect(svc.Spec.Selector).NotTo(HaveKey("deployment"))
+					Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("system-app"))
+
+				})
+
+			})
 		})
 
 	})
