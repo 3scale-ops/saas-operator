@@ -285,7 +285,7 @@ func (gen *Generator) GrafanaDashboard() basereconciler_resources.GrafanaDashboa
 		Template: grafanadashboard.New(
 			gen.GetKey(), gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/system.json.gtpl",
 		),
-		IsEnabled: true,
+		IsEnabled: !gen.GrafanaDashboardSpec.IsDeactivated(),
 	}
 }
 
