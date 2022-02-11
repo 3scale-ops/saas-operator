@@ -227,7 +227,7 @@ var _ = Describe("System controller", func() {
 			)
 
 			svc := &corev1.Service{}
-			By("deploying the system-sphinx statefulset",
+			By("deploying the system-sphinx service",
 				checkResource(svc, expectedResource{
 					Name: "system-sphinx", Namespace: namespace,
 				}),
