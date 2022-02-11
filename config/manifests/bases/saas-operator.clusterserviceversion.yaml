@@ -2167,6 +2167,26 @@ spec:
       - description: Application specific configuration options
         displayName: App
         path: app
+      - description: Canary defines spec changes for the canary Deployment. If left
+          unset the canary Deployment wil not be created.
+        displayName: Canary
+        path: app.canary
+      - description: ImageName to use for the canary Deployment
+        displayName: Image Name
+        path: app.canary.imageName
+      - description: ImageTag to use for the canary Deployment
+        displayName: Image Tag
+        path: app.canary.imageTag
+      - description: Patches to apply for the canary Deployment. Patches are expected
+          to be JSON documents as an RFC 6902 patches.
+        displayName: Patches
+        path: app.canary.patches
+      - description: Number of replicas for the canary Deployment
+        displayName: Replicas
+        path: app.canary.replicas
+      - description: SendTraffic controls if traffic is sent to the canary
+        displayName: Send Traffic
+        path: app.canary.sendTraffic
       - description: Horizontal Pod Autoscaler for the component
         displayName: HPA
         path: app.hpa
@@ -2684,6 +2704,9 @@ spec:
       - description: Rails configuration options for system components
         displayName: Rails
         path: config.rails
+      - description: Rails Console
+        displayName: Console
+        path: config.rails.console
       - description: Rails environment
         displayName: Environment
         path: config.rails.environment
@@ -3018,6 +3041,22 @@ spec:
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.zyncAuthToken.override
+      - description: Console specific configuration options
+        displayName: Console
+        path: console
+      - description: Resource requirements for the component
+        displayName: Resources
+        path: console.resources
+      - description: 'Limits describes the maximum amount of compute resources allowed.
+          More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Limits
+        path: console.resources.limits
+      - description: 'Requests describes the minimum amount of compute resources required.
+          If Requests is omitted for a container, it defaults to Limits if that is
+          explicitly specified, otherwise to an implementation-defined value. More
+          info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Requests
+        path: console.resources.requests
       - description: Configures the Grafana Dashboard for the component
         displayName: Grafana Dashboard
         path: grafanaDashboard
@@ -3046,6 +3085,26 @@ spec:
       - description: Sidekiq Billing specific configuration options
         displayName: Sidekiq Billing
         path: sidekiqBilling
+      - description: Canary defines spec changes for the canary Deployment. If left
+          unset the canary Deployment wil not be created.
+        displayName: Canary
+        path: sidekiqBilling.canary
+      - description: ImageName to use for the canary Deployment
+        displayName: Image Name
+        path: sidekiqBilling.canary.imageName
+      - description: ImageTag to use for the canary Deployment
+        displayName: Image Tag
+        path: sidekiqBilling.canary.imageTag
+      - description: Patches to apply for the canary Deployment. Patches are expected
+          to be JSON documents as an RFC 6902 patches.
+        displayName: Patches
+        path: sidekiqBilling.canary.patches
+      - description: Number of replicas for the canary Deployment
+        displayName: Replicas
+        path: sidekiqBilling.canary.replicas
+      - description: SendTraffic controls if traffic is sent to the canary
+        displayName: Send Traffic
+        path: sidekiqBilling.canary.sendTraffic
       - description: Sidekiq specific configuration options for the component element
         displayName: Config
         path: sidekiqBilling.config
@@ -3196,6 +3255,26 @@ spec:
       - description: Sidekiq Default specific configuration options
         displayName: Sidekiq Default
         path: sidekiqDefault
+      - description: Canary defines spec changes for the canary Deployment. If left
+          unset the canary Deployment wil not be created.
+        displayName: Canary
+        path: sidekiqDefault.canary
+      - description: ImageName to use for the canary Deployment
+        displayName: Image Name
+        path: sidekiqDefault.canary.imageName
+      - description: ImageTag to use for the canary Deployment
+        displayName: Image Tag
+        path: sidekiqDefault.canary.imageTag
+      - description: Patches to apply for the canary Deployment. Patches are expected
+          to be JSON documents as an RFC 6902 patches.
+        displayName: Patches
+        path: sidekiqDefault.canary.patches
+      - description: Number of replicas for the canary Deployment
+        displayName: Replicas
+        path: sidekiqDefault.canary.replicas
+      - description: SendTraffic controls if traffic is sent to the canary
+        displayName: Send Traffic
+        path: sidekiqDefault.canary.sendTraffic
       - description: Sidekiq specific configuration options for the component element
         displayName: Config
         path: sidekiqDefault.config
@@ -3346,6 +3425,26 @@ spec:
       - description: Sidekiq Low specific configuration options
         displayName: Sidekiq Low
         path: sidekiqLow
+      - description: Canary defines spec changes for the canary Deployment. If left
+          unset the canary Deployment wil not be created.
+        displayName: Canary
+        path: sidekiqLow.canary
+      - description: ImageName to use for the canary Deployment
+        displayName: Image Name
+        path: sidekiqLow.canary.imageName
+      - description: ImageTag to use for the canary Deployment
+        displayName: Image Tag
+        path: sidekiqLow.canary.imageTag
+      - description: Patches to apply for the canary Deployment. Patches are expected
+          to be JSON documents as an RFC 6902 patches.
+        displayName: Patches
+        path: sidekiqLow.canary.patches
+      - description: Number of replicas for the canary Deployment
+        displayName: Replicas
+        path: sidekiqLow.canary.replicas
+      - description: SendTraffic controls if traffic is sent to the canary
+        displayName: Send Traffic
+        path: sidekiqLow.canary.sendTraffic
       - description: Sidekiq specific configuration options for the component element
         displayName: Config
         path: sidekiqLow.config
@@ -3602,6 +3701,97 @@ spec:
           info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
         displayName: Requests
         path: sphinx.resources.requests
+      - description: Configures twemproxy
+        displayName: Twemproxy
+        path: twemproxy
+      - description: Image specification for the component
+        displayName: Image
+        path: twemproxy.image
+      - description: Docker repository of the image
+        displayName: Name
+        path: twemproxy.image.name
+      - description: Pull policy for the image
+        displayName: Pull Policy
+        path: twemproxy.image.pullPolicy
+      - description: Name of the Secret that holds quay.io credentials to access the
+          image repository
+        displayName: Pull Secret Name
+        path: twemproxy.image.pullSecretName
+      - description: Image tag
+        displayName: Tag
+        path: twemproxy.image.tag
+      - description: Liveness probe for the component
+        displayName: Liveness Probe
+        path: twemproxy.livenessProbe
+      - description: Minimum consecutive failures for the probe to be considered failed
+          after having succeeded
+        displayName: Failure Threshold
+        path: twemproxy.livenessProbe.failureThreshold
+      - description: Number of seconds after the container has started before liveness
+          probes are initiated
+        displayName: Initial Delay Seconds
+        path: twemproxy.livenessProbe.initialDelaySeconds
+      - description: How often (in seconds) to perform the probe
+        displayName: Period Seconds
+        path: twemproxy.livenessProbe.periodSeconds
+      - description: Minimum consecutive successes for the probe to be considered
+          successful after having failed
+        displayName: Success Threshold
+        path: twemproxy.livenessProbe.successThreshold
+      - description: Number of seconds after which the probe times out
+        displayName: Timeout Seconds
+        path: twemproxy.livenessProbe.timeoutSeconds
+      - description: Options
+        displayName: Options
+        path: twemproxy.options
+      - description: 'Set logging level to N. (default: 5, min: 0, max: 11)'
+        displayName: Log Level
+        path: twemproxy.options.logLevel
+      - description: 'Set stats monitoring port to port.  (default: 22222)'
+        displayName: Metrics Port
+        path: twemproxy.options.metricsAddress
+      - description: 'Set stats aggregation interval in msec to interval.  (default:
+          30s)'
+        displayName: Stats Interval
+        path: twemproxy.options.statsInterval
+      - description: Readiness probe for the component
+        displayName: Readiness Probe
+        path: twemproxy.readinessProbe
+      - description: Minimum consecutive failures for the probe to be considered failed
+          after having succeeded
+        displayName: Failure Threshold
+        path: twemproxy.readinessProbe.failureThreshold
+      - description: Number of seconds after the container has started before liveness
+          probes are initiated
+        displayName: Initial Delay Seconds
+        path: twemproxy.readinessProbe.initialDelaySeconds
+      - description: How often (in seconds) to perform the probe
+        displayName: Period Seconds
+        path: twemproxy.readinessProbe.periodSeconds
+      - description: Minimum consecutive successes for the probe to be considered
+          successful after having failed
+        displayName: Success Threshold
+        path: twemproxy.readinessProbe.successThreshold
+      - description: Number of seconds after which the probe times out
+        displayName: Timeout Seconds
+        path: twemproxy.readinessProbe.timeoutSeconds
+      - description: Resource requirements for the component
+        displayName: Resources
+        path: twemproxy.resources
+      - description: 'Limits describes the maximum amount of compute resources allowed.
+          More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Limits
+        path: twemproxy.resources.limits
+      - description: 'Requests describes the minimum amount of compute resources required.
+          If Requests is omitted for a container, it defaults to Limits if that is
+          explicitly specified, otherwise to an implementation-defined value. More
+          info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Requests
+        path: twemproxy.resources.requests
+      - description: TwemproxyConfigRef is a reference to a TwemproxyConfig resource
+          in the same Namespace
+        displayName: Twemproxy Config Ref
+        path: twemproxy.twemproxyConfigRef
       version: v1alpha1
     - description: TwemproxyConfig is the Schema for the twemproxyconfigs API
       displayName: Twemproxy Config

@@ -21,7 +21,8 @@ import (
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators/system"
-	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
+	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
+	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -33,7 +34,7 @@ import (
 
 // SystemReconciler reconciles a System object
 type SystemReconciler struct {
-	basereconciler.Reconciler
+	workloads.WorkloadReconciler
 	Log logr.Logger
 }
 
@@ -63,110 +64,74 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	// Apply defaults for reconcile but do not store them in the API
 	instance.Default()
 
-	gen := system.NewGenerator(
+	gen, err := system.NewGenerator(
 		instance.GetName(),
 		instance.GetNamespace(),
 		instance.Spec,
 	)
-
-	// Calculate rollout triggers (app & sidekiqs)
-	secretDefinitionTriggers, err := r.TriggersFromSecretDefs(ctx,
-		gen.DatabaseSecretDefinition(),
-		gen.RecaptchaSecretDefinition(),
-		gen.EventsHookSecretDefinition(),
-		gen.SMTPSecretDefinition(),
-		gen.MasterApicastSecretDefinition(),
-		gen.ZyncSecretDefinition(),
-		gen.BackendSecretDefinition(),
-		gen.MultitenantAssetsSecretDefinition(),
-		gen.AppSecretDefinition(),
-	)
 	if err != nil {
-		return ctrl.Result{}, err
+		return r.ManageError(ctx, instance, err)
 	}
 
-	// Calculate rollout triggers (app & sidekiqs)
-	secretTriggers, err := r.TriggersFromSecret(ctx, gen.GetNamespace(),
-		gen.ConfigFilesSecret,
-	)
+	// Shared resources
+	resources := append(gen.SecretDefinitions(), gen.GrafanaDashboard())
+
+	// System APP
+	var app_resources []basereconciler.Resource
+	if instance.Spec.App.Canary != nil {
+		app_resources, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen.App, &gen.App, gen.CanaryApp)
+	} else {
+		app_resources, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen.App, &gen.App)
+	}
 	if err != nil {
-		return ctrl.Result{}, err
+		return r.ManageError(ctx, instance, err)
 	}
 
-	// Calculate rollout triggers (sphinx)
-	sphinxTriggers, err := r.TriggersFromSecretDefs(ctx,
-		gen.DatabaseSecretDefinition(),
-	)
-	if err != nil {
-		return ctrl.Result{}, err
+	resources = append(resources, app_resources...)
+
+	// Sidekiq Default resources
+	var sidekiq_default_resources []basereconciler.Resource
+	if instance.Spec.SidekiqDefault.Canary != nil {
+		sidekiq_default_resources, err = r.NewDeploymentWorkload(ctx, instance, r.GetScheme(), &gen.SidekiqDefault, gen.CanarySidekiqDefault)
+	} else {
+		sidekiq_default_resources, err = r.NewDeploymentWorkload(ctx, instance, r.GetScheme(), &gen.SidekiqDefault)
 	}
+	if err != nil {
+		return r.ManageError(ctx, instance, err)
+	}
+	resources = append(resources, sidekiq_default_resources...)
 
-	err = r.ReconcileOwnedResources(ctx, instance, basereconciler.ControlledResources{
-		Deployments: []basereconciler.Deployment{
-			{
-				Template:        gen.App.Deployment(),
-				RolloutTriggers: append(secretDefinitionTriggers, secretTriggers...),
-				HasHPA:          !instance.Spec.App.HPA.IsDeactivated(),
-			},
-			{
-				Template:        gen.SidekiqDefault.Deployment(),
-				RolloutTriggers: append(secretDefinitionTriggers, secretTriggers...),
-				HasHPA:          !instance.Spec.SidekiqDefault.HPA.IsDeactivated(),
-			},
-			{
-				Template:        gen.SidekiqBilling.Deployment(),
-				RolloutTriggers: append(secretDefinitionTriggers, secretTriggers...),
-				HasHPA:          !instance.Spec.SidekiqBilling.HPA.IsDeactivated(),
-			},
-			{
-				Template:        gen.SidekiqLow.Deployment(),
-				RolloutTriggers: append(secretDefinitionTriggers, secretTriggers...),
-				HasHPA:          !instance.Spec.SidekiqLow.HPA.IsDeactivated(),
-			},
-		},
-		StatefulSets: []basereconciler.StatefulSet{{
-			Template:        gen.Sphinx.StatefulSet(),
-			RolloutTriggers: sphinxTriggers,
-			Enabled:         true,
-		}},
-		SecretDefinitions: []basereconciler.SecretDefinition{
-			{Template: gen.DatabaseSecretDefinition(), Enabled: true},
-			{Template: gen.RecaptchaSecretDefinition(), Enabled: true},
-			{Template: gen.EventsHookSecretDefinition(), Enabled: true},
-			{Template: gen.SMTPSecretDefinition(), Enabled: true},
-			{Template: gen.MasterApicastSecretDefinition(), Enabled: true},
-			{Template: gen.ZyncSecretDefinition(), Enabled: true},
-			{Template: gen.BackendSecretDefinition(), Enabled: true},
-			{Template: gen.MultitenantAssetsSecretDefinition(), Enabled: true},
-			{Template: gen.AppSecretDefinition(), Enabled: true},
-		},
-		Services: []basereconciler.Service{
-			{Template: gen.App.Service(), Enabled: true},
-			{Template: gen.Sphinx.Service(), Enabled: true},
-		},
-		PodDisruptionBudgets: []basereconciler.PodDisruptionBudget{
-			{Template: gen.App.PDB(), Enabled: !instance.Spec.App.PDB.IsDeactivated()},
-			{Template: gen.SidekiqDefault.PDB(), Enabled: !instance.Spec.SidekiqDefault.PDB.IsDeactivated()},
-			{Template: gen.SidekiqBilling.PDB(), Enabled: !instance.Spec.SidekiqBilling.PDB.IsDeactivated()},
-			{Template: gen.SidekiqLow.PDB(), Enabled: !instance.Spec.SidekiqLow.PDB.IsDeactivated()},
-		},
-		HorizontalPodAutoscalers: []basereconciler.HorizontalPodAutoscaler{
-			{Template: gen.App.HPA(), Enabled: !instance.Spec.App.HPA.IsDeactivated()},
-			{Template: gen.SidekiqDefault.HPA(), Enabled: !instance.Spec.SidekiqDefault.HPA.IsDeactivated()},
-			{Template: gen.SidekiqBilling.HPA(), Enabled: !instance.Spec.SidekiqBilling.HPA.IsDeactivated()},
-			{Template: gen.SidekiqLow.HPA(), Enabled: !instance.Spec.SidekiqLow.HPA.IsDeactivated()},
-		},
-		PodMonitors: []basereconciler.PodMonitor{
-			{Template: gen.App.PodMonitor(), Enabled: true},
-			{Template: gen.SidekiqDefault.PodMonitor(), Enabled: true},
-			{Template: gen.SidekiqBilling.PodMonitor(), Enabled: true},
-			{Template: gen.SidekiqLow.PodMonitor(), Enabled: true},
-		},
-		GrafanaDashboards: []basereconciler.GrafanaDashboard{
-			{Template: gen.GrafanaDashboard(), Enabled: !instance.Spec.GrafanaDashboard.IsDeactivated()},
-		},
-	})
+	// Sidekiq Billing resources
+	var sidekiq_billing_resources []basereconciler.Resource
+	if instance.Spec.SidekiqBilling.Canary != nil {
+		sidekiq_billing_resources, err = r.NewDeploymentWorkload(ctx, instance, r.GetScheme(), &gen.SidekiqBilling, gen.CanarySidekiqBilling)
+	} else {
+		sidekiq_billing_resources, err = r.NewDeploymentWorkload(ctx, instance, r.GetScheme(), &gen.SidekiqBilling)
+	}
+	if err != nil {
+		return r.ManageError(ctx, instance, err)
+	}
+	resources = append(resources, sidekiq_billing_resources...)
 
+	// Sidekiq Low resources
+	var sidekiq_low_resources []basereconciler.Resource
+	if instance.Spec.SidekiqLow.Canary != nil {
+		sidekiq_low_resources, err = r.NewDeploymentWorkload(ctx, instance, r.GetScheme(), &gen.SidekiqLow, gen.CanarySidekiqLow)
+	} else {
+		sidekiq_low_resources, err = r.NewDeploymentWorkload(ctx, instance, r.GetScheme(), &gen.SidekiqLow)
+	}
+	if err != nil {
+		return r.ManageError(ctx, instance, err)
+	}
+	resources = append(resources, sidekiq_low_resources...)
+
+	// Sphinx resources
+	resources = append(resources, gen.Sphinx.StatefulSetWithTraffic()...)
+
+	// Console resources
+	resources = append(resources, gen.Console.StatefulSet())
+
+	err = r.ReconcileOwnedResources(ctx, instance, resources)
 	if err != nil {
 		log.Error(err, "unable to update owned resources")
 		return r.ManageError(ctx, instance, err)
