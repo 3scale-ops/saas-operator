@@ -132,7 +132,7 @@ var _ = Describe("System controller", func() {
 					expectedWorkload{
 						Name:          "system-app",
 						Namespace:     namespace,
-						Replicas:      1,
+						Replicas:      2,
 						ContainerName: "system-app",
 						ContainterArgs: []string{
 							"env", "PORT=3000", "container-entrypoint", "bundle", "exec",
@@ -164,7 +164,7 @@ var _ = Describe("System controller", func() {
 					expectedWorkload{
 						Name:          "system-sidekiq-default",
 						Namespace:     namespace,
-						Replicas:      1,
+						Replicas:      2,
 						ContainerName: "system-sidekiq",
 						ContainterArgs: []string{"sidekiq",
 							"--queue", "critical", "--queue", "backend_sync",
@@ -186,7 +186,7 @@ var _ = Describe("System controller", func() {
 					expectedWorkload{
 						Name:           "system-sidekiq-billing",
 						Namespace:      namespace,
-						Replicas:       1,
+						Replicas:       2,
 						ContainerName:  "system-sidekiq",
 						ContainterArgs: []string{"sidekiq", "--queue", "billing"},
 						PDB:            true,
@@ -203,7 +203,7 @@ var _ = Describe("System controller", func() {
 					expectedWorkload{
 						Name:           "system-sidekiq-low",
 						Namespace:      namespace,
-						Replicas:       1,
+						Replicas:       2,
 						ContainerName:  "system-sidekiq",
 						ContainterArgs: []string{"sidekiq", "--queue", "mailers", "--queue", "low"},
 						PDB:            true,
@@ -405,7 +405,7 @@ var _ = Describe("System controller", func() {
 						expectedWorkload{
 							Name:          "system-app-canary",
 							Namespace:     namespace,
-							Replicas:      1,
+							Replicas:      2,
 							ContainerName: "system-app",
 							ContainterArgs: []string{
 								"env", "PORT=3000", "container-entrypoint", "bundle", "exec",
@@ -422,7 +422,7 @@ var _ = Describe("System controller", func() {
 						expectedWorkload{
 							Name:          "system-sidekiq-default-canary",
 							Namespace:     namespace,
-							Replicas:      1,
+							Replicas:      2,
 							ContainerName: "system-sidekiq",
 							ContainterArgs: []string{"sidekiq",
 								"--queue", "critical", "--queue", "backend_sync",
@@ -442,7 +442,7 @@ var _ = Describe("System controller", func() {
 						expectedWorkload{
 							Name:           "system-sidekiq-billing-canary",
 							Namespace:      namespace,
-							Replicas:       1,
+							Replicas:       2,
 							ContainerName:  "system-sidekiq",
 							ContainterArgs: []string{"sidekiq", "--queue", "billing"},
 							PodMonitor:     true,
@@ -457,7 +457,7 @@ var _ = Describe("System controller", func() {
 						expectedWorkload{
 							Name:           "system-sidekiq-low-canary",
 							Namespace:      namespace,
-							Replicas:       1,
+							Replicas:       2,
 							ContainerName:  "system-sidekiq",
 							ContainterArgs: []string{"sidekiq", "--queue", "mailers", "--queue", "low"},
 							PodMonitor:     true,

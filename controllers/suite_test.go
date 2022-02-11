@@ -33,6 +33,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
+	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
@@ -51,7 +52,7 @@ import (
 type expectedWorkload struct {
 	Namespace      string
 	Name           string
-	Replicas       int
+	Replicas       int32
 	ContainerName  string
 	ContainerImage string
 	ContainterArgs []string
@@ -69,6 +70,8 @@ func checkWorkloadResources(dep *appsv1.Deployment, ew expectedWorkload) func() 
 				dep,
 			)
 		}, timeout, poll).ShouldNot(HaveOccurred())
+
+		Expect(dep.Spec.Replicas).To(Equal(pointer.Int32Ptr(ew.Replicas)))
 
 		if ew.ContainerName != "" {
 			Expect(dep.Spec.Template.Spec.Containers[0].Name).To(Equal(ew.ContainerName))
