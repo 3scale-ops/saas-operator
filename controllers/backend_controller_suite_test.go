@@ -8,11 +8,8 @@ import (
 	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
-	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
-	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/pointer"
@@ -43,7 +40,7 @@ var _ = Describe("Backend controller", func() {
 
 	})
 
-	Context("All defaults Backend resource", func() {
+	When("deploying a defaulted Backend instance", func() {
 
 		BeforeEach(func() {
 			By("creating an Backend simple resource")
@@ -93,421 +90,390 @@ var _ = Describe("Backend controller", func() {
 			Eventually(func() error {
 				return k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, backend)
 			}, timeout, poll).ShouldNot(HaveOccurred())
-		})
-
-		It("creates the required resources", func() {
 
 			Eventually(func() bool {
 				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, backend)
 				Expect(err).ToNot(HaveOccurred())
 				return len(backend.GetFinalizers()) > 0
 			}, timeout, poll).Should(BeTrue())
+		})
+
+		It("creates the required backend workload resources", func() {
 
 			dep := &appsv1.Deployment{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-listener", Namespace: namespace},
-					dep,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-worker", Namespace: namespace},
-					dep,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-cron", Namespace: namespace},
-					dep,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
+			By("deploying the backend-listener workload",
+				checkWorkloadResources(dep,
+					expectedWorkload{
+						Name:          "backend-listener",
+						Namespace:     namespace,
+						Replicas:      2,
+						ContainerName: "backend-listener",
+						ContainterArgs: []string{
+							"bin/3scale_backend", "start",
+							"-e", "production",
+							"-p", "3000",
+							"-x", "/dev/stdout",
+						},
+						PDB:        true,
+						HPA:        true,
+						PodMonitor: true,
+					},
+				),
+			)
 
 			svc := &corev1.Service{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-listener", Namespace: namespace},
-					svc,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-listener-internal", Namespace: namespace},
-					svc,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
+			By("deploying the backend-listener service",
+				checkResource(svc, expectedResource{
+					Name: "backend-listener", Namespace: namespace,
+				}),
+			)
+			Expect(svc.Spec.Selector["deployment"]).To(Equal("backend-listener"))
 
-			pm := &monitoringv1.PodMonitor{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-listener", Namespace: namespace},
-					pm,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-worker", Namespace: namespace},
-					pm,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
+			By("deploying the backend-listener-internal service",
+				checkResource(svc, expectedResource{
+					Name: "backend-listener-internal", Namespace: namespace,
+				}),
+			)
+			Expect(svc.Spec.Selector["deployment"]).To(Equal("backend-listener"))
 
-			hpa := &autoscalingv2beta2.HorizontalPodAutoscaler{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-listener", Namespace: namespace},
-					hpa,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-worker", Namespace: namespace},
-					hpa,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
+			By("deploying the backend-worker workload",
+				checkWorkloadResources(dep,
+					expectedWorkload{
+						Name:          "backend-worker",
+						Namespace:     namespace,
+						Replicas:      2,
+						ContainerName: "backend-worker",
+						ContainterArgs: []string{
+							"bin/3scale_backend_worker", "run",
+						},
+						PDB:        true,
+						HPA:        true,
+						PodMonitor: true,
+					},
+				),
+			)
 
-			pdb := &policyv1beta1.PodDisruptionBudget{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-listener", Namespace: namespace},
-					pdb,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-worker", Namespace: namespace},
-					pdb,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
+			By("deploying the backend-cron workload",
+				checkWorkloadResources(dep,
+					expectedWorkload{
+						Name:          "backend-cron",
+						Namespace:     namespace,
+						Replicas:      1,
+						ContainerName: "backend-cron",
+						ContainterArgs: []string{
+							"backend-cron",
+						},
+					},
+				),
+			)
 
-			sd := &secretsmanagerv1alpha1.SecretDefinition{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-internal-api", Namespace: namespace},
-					sd,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-system-events-hook", Namespace: namespace},
-					sd,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
+		})
+
+		It("creates the required backend shared resources", func() {
 
 			gd := &grafanav1alpha1.GrafanaDashboard{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend", Namespace: namespace},
-					gd,
+			By("deploying the backend grafana dashboard",
+				checkResource(gd, expectedResource{
+					Name: "backend", Namespace: namespace,
+				}),
+			)
+
+			for _, sdn := range []string{
+				"backend-internal-api",
+				"backend-system-events-hook",
+			} {
+				sd := &secretsmanagerv1alpha1.SecretDefinition{}
+				By("deploying the backend secret definitions",
+					checkResource(sd, expectedResource{Name: sdn, Namespace: namespace}),
 				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
+			}
+
 		})
 
-		It("updates the service with non default vaule", func() {
-			svc := &corev1.Service{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-listener", Namespace: namespace},
-					svc,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
+		When("updating a backend resource with some customizations", func() {
 
-			backend := &saasv1alpha1.Backend{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "instance", Namespace: namespace},
-					backend,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
+			rvs := make(map[string]string)
 
-			patch := client.MergeFrom(backend.DeepCopy())
-			backend.Spec.Listener.LoadBalancer = &saasv1alpha1.NLBLoadBalancerSpec{CrossZoneLoadBalancingEnabled: pointer.BoolPtr(false)}
-			err := k8sClient.Patch(context.Background(), backend, patch)
-			Expect(err).ToNot(HaveOccurred())
+			BeforeEach(func() {
+				Eventually(func() error {
 
-			Eventually(func() bool {
-				err := k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-listener", Namespace: namespace},
-					svc,
-				)
-				Expect(err).ToNot(HaveOccurred())
-				return svc.GetAnnotations()["service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled"] == "false"
-			}, timeout, poll).Should(BeTrue())
-		})
-	})
+					backend := &saasv1alpha1.Backend{}
+					if err := k8sClient.Get(
+						context.Background(),
+						types.NamespacedName{Name: "instance", Namespace: namespace},
+						backend,
+					); err != nil {
+						return err
+					}
 
-	Context("Backend resource with canary Deployment", func() {
+					rvs["svc/backend-listener"] = getResourceVersion(
+						&corev1.Service{}, "backend-listener", namespace,
+					)
+					rvs["deployment/backend-listener"] = getResourceVersion(
+						&appsv1.Deployment{}, "backend-listener", namespace,
+					)
+					rvs["deployment/backend-worker"] = getResourceVersion(
+						&appsv1.Deployment{}, "backend-worker", namespace,
+					)
+					rvs["deployment/backend-cron"] = getResourceVersion(
+						&appsv1.Deployment{}, "backend-cron", namespace,
+					)
 
-		BeforeEach(func() {
-			By("creating an Backend resource with canary configs")
-			backend = &saasv1alpha1.Backend{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "instance",
-					Namespace: namespace,
-				},
-				Spec: saasv1alpha1.BackendSpec{
-					Listener: saasv1alpha1.ListenerSpec{
-						Endpoint: saasv1alpha1.Endpoint{
-							DNS: []string{"backend-listener.example.com"},
+					patch := client.MergeFrom(backend.DeepCopy())
+					backend.Spec.Image = &saasv1alpha1.ImageSpec{
+						Name: pointer.StringPtr("newImage"),
+						Tag:  pointer.StringPtr("newTag"),
+					}
+					backend.Spec.Listener.Replicas = pointer.Int32(3)
+					backend.Spec.Listener.Config = &saasv1alpha1.ListenerConfig{
+						RedisAsync: pointer.BoolPtr(true),
+					}
+					backend.Spec.Worker = &saasv1alpha1.WorkerSpec{
+						Replicas: pointer.Int32(3),
+					}
+					backend.Spec.Cron = &saasv1alpha1.CronSpec{
+						Replicas: pointer.Int32(3),
+					}
+					backend.Spec.Listener.LoadBalancer = &saasv1alpha1.NLBLoadBalancerSpec{
+						CrossZoneLoadBalancingEnabled: pointer.BoolPtr(false),
+					}
+
+					return k8sClient.Patch(context.Background(), backend, patch)
+
+				}, timeout, poll).ShouldNot(HaveOccurred())
+			})
+
+			It("updates the backend-listener resources", func() {
+
+				dep := &appsv1.Deployment{}
+				By("updating the backend-listener workload",
+					checkWorkloadResources(dep,
+						expectedWorkload{
+							Name:           "backend-listener",
+							Namespace:      namespace,
+							Replicas:       2,
+							ContainerName:  "backend-listener",
+							ContainerImage: "newImage:newTag",
+							ContainterArgs: []string{
+								"bin/3scale_backend", "-s", "falcon", "start",
+								"-e", "production",
+								"-p", "3000",
+								"-x", "/dev/stdout",
+							},
+							PDB:         true,
+							HPA:         true,
+							PodMonitor:  true,
+							LastVersion: rvs["deployment/backend-listener"],
 						},
+					),
+				)
+
+				svc := &corev1.Service{}
+				By("updating backend-listener service",
+					checkResource(svc, expectedResource{
+						Name: "backend-listener", Namespace: namespace,
+						LastVersion: rvs["svc/backend-listener"],
+					}),
+				)
+				Expect(svc.Spec.Selector["deployment"]).To(Equal("backend-listener"))
+				Expect(svc.GetAnnotations()["service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled"]).To(Equal("false"))
+
+			})
+		})
+
+		When("updating a backend resource with canary", func() {
+
+			// Resource Versions
+			rvs := make(map[string]string)
+
+			BeforeEach(func() {
+				Eventually(func() error {
+
+					backend := &saasv1alpha1.Backend{}
+					if err := k8sClient.Get(
+						context.Background(),
+						types.NamespacedName{Name: "instance", Namespace: namespace},
+						backend,
+					); err != nil {
+						return err
+					}
+
+					rvs["svc/backend-listener"] = getResourceVersion(
+						&corev1.Service{}, "backend-listener", namespace,
+					)
+					rvs["deployment/backend-listener"] = getResourceVersion(
+						&appsv1.Deployment{}, "backend-listener", namespace,
+					)
+					rvs["deployment/backend-worker"] = getResourceVersion(
+						&appsv1.Deployment{}, "backend-worker", namespace,
+					)
+
+					patch := client.MergeFrom(backend.DeepCopy())
+					backend.Spec.Listener.Canary = &saasv1alpha1.Canary{
+						ImageName: pointer.StringPtr("newImage"),
+						ImageTag:  pointer.StringPtr("newTag"),
+					}
+					backend.Spec.Worker = &saasv1alpha1.WorkerSpec{
 						Canary: &saasv1alpha1.Canary{
 							ImageName: pointer.StringPtr("newImage"),
 							ImageTag:  pointer.StringPtr("newTag"),
-						},
-					},
-					Worker: &saasv1alpha1.WorkerSpec{
-						Canary: &saasv1alpha1.Canary{
 							Patches: []string{
 								`[{"op": "add", "path": "/config/rackEnv", "value": "test"}]`,
 								`[{"op": "replace", "path": "/config/redisStorageDSN", "value": "testDSN"}]`,
 							},
 						},
-					},
-					Config: saasv1alpha1.BackendConfig{
-						RedisStorageDSN: "storageDSN",
-						RedisQueuesDSN:  "queuesDSN",
-						SystemEventsHookURL: saasv1alpha1.SecretReference{
-							FromVault: &saasv1alpha1.VaultSecretReference{
-								Path: "some-path",
-								Key:  "some-key",
+					}
+					return k8sClient.Patch(context.Background(), backend, patch)
+
+				}, timeout, poll).ShouldNot(HaveOccurred())
+			})
+
+			It("creates the required cannary resources", func() {
+
+				dep := &appsv1.Deployment{}
+				By("deploying the backend-listener-canary workload",
+					checkWorkloadResources(dep,
+						expectedWorkload{
+							Name:           "backend-listener-canary",
+							Namespace:      namespace,
+							Replicas:       2,
+							ContainerName:  "backend-listener",
+							ContainerImage: "newImage:newTag",
+							ContainterArgs: []string{
+								"bin/3scale_backend", "start",
+								"-e", "production",
+								"-p", "3000",
+								"-x", "/dev/stdout",
 							},
+							PodMonitor:  true,
+							LastVersion: rvs["deployment/backend-listener"],
 						},
-						SystemEventsHookPassword: saasv1alpha1.SecretReference{
-							FromVault: &saasv1alpha1.VaultSecretReference{
-								Path: "some-path",
-								Key:  "some-key",
+					),
+				)
+
+				svc := &corev1.Service{}
+				By("keeps the backend-listener service deployment label selector",
+					checkResource(svc, expectedResource{
+						Name: "backend-listener", Namespace: namespace,
+					}),
+				)
+				Expect(svc.Spec.Selector["deployment"]).To(Equal("backend-listener"))
+				Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("backend-listener"))
+
+				By("keeps the backend-listener-internal service deployment label selector",
+					checkResource(svc, expectedResource{
+						Name: "backend-listener-internal", Namespace: namespace,
+					}),
+				)
+				Expect(svc.Spec.Selector["deployment"]).To(Equal("backend-listener"))
+				Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("backend-listener"))
+
+				By("deploying the backend-worker-canary workload",
+					checkWorkloadResources(dep,
+						expectedWorkload{
+							Name:           "backend-worker-canary",
+							Namespace:      namespace,
+							Replicas:       2,
+							ContainerName:  "backend-worker",
+							ContainerImage: "newImage:newTag",
+							ContainterArgs: []string{
+								"bin/3scale_backend_worker", "run",
 							},
+							PodMonitor: true,
 						},
-						InternalAPIUser: saasv1alpha1.SecretReference{
-							FromVault: &saasv1alpha1.VaultSecretReference{
-								Path: "some-path",
-								Key:  "some-key",
+					),
+				)
+				Expect(dep.Spec.Template.Spec.Containers[0].Env[0].Name).To(Equal("RACK_ENV"))
+				Expect(dep.Spec.Template.Spec.Containers[0].Env[0].Value).To(Equal("test"))
+				Expect(dep.Spec.Template.Spec.Containers[0].Env[1].Name).To(Equal("CONFIG_REDIS_PROXY"))
+				Expect(dep.Spec.Template.Spec.Containers[0].Env[1].Value).To(Equal("testDSN"))
+
+			})
+
+			Context("and enabling canary traffic", func() {
+
+				BeforeEach(func() {
+					Eventually(func() error {
+
+						backend := &saasv1alpha1.Backend{}
+						if err := k8sClient.Get(
+							context.Background(),
+							types.NamespacedName{Name: "instance", Namespace: namespace},
+							backend,
+						); err != nil {
+							return err
+						}
+
+						rvs["deployment/backend-listener-canary"] = getResourceVersion(
+							&appsv1.Deployment{}, "backend-listener-canary", namespace,
+						)
+						rvs["svc/backend-listener"] = getResourceVersion(
+							&corev1.Service{}, "backend-listener", namespace,
+						)
+						rvs["deployment/backend-worker-canary"] = getResourceVersion(
+							&appsv1.Deployment{}, "backend-worker-canary", namespace,
+						)
+
+						patch := client.MergeFrom(backend.DeepCopy())
+						backend.Spec.Listener.Replicas = pointer.Int32(3)
+						backend.Spec.Listener.Canary = &saasv1alpha1.Canary{
+							SendTraffic: *pointer.Bool(true),
+							Replicas:    pointer.Int32(3),
+						}
+						backend.Spec.Worker = &saasv1alpha1.WorkerSpec{
+							Replicas: pointer.Int32(3),
+						}
+						backend.Spec.Worker.Canary = &saasv1alpha1.Canary{
+							Replicas: pointer.Int32(3),
+						}
+						return k8sClient.Patch(context.Background(), backend, patch)
+
+					}, timeout, poll).ShouldNot(HaveOccurred())
+				})
+
+				It("updates the backend resources", func() {
+
+					dep := &appsv1.Deployment{}
+					By("scaling up the backend-listener-canary workload",
+						checkWorkloadResources(dep,
+							expectedWorkload{
+								Name:        "backend-listener-canary",
+								Namespace:   namespace,
+								Replicas:    3,
+								PodMonitor:  true,
+								LastVersion: rvs["deployment/backend-listener-canary"],
 							},
-						},
-						InternalAPIPassword: saasv1alpha1.SecretReference{
-							FromVault: &saasv1alpha1.VaultSecretReference{
-								Path: "some-path",
-								Key:  "some-key",
+						),
+					)
+					Expect(dep.Spec.Replicas).To(Equal(pointer.Int32(3)))
+
+					svc := &corev1.Service{}
+					By("removing the backend-listener service deployment label selector",
+						checkResource(svc, expectedResource{
+							Name: "backend-listener", Namespace: namespace,
+							LastVersion: rvs["svc/backend-listener"],
+						}),
+					)
+					Expect(svc.Spec.Selector).ToNot(HaveKey("deployment"))
+					Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("backend-listener"))
+
+					By("scaling up the backend-worker-canary workload",
+						checkWorkloadResources(&appsv1.Deployment{},
+							expectedWorkload{
+								Name:        "backend-worker-canary",
+								Namespace:   namespace,
+								Replicas:    3,
+								PodMonitor:  true,
+								LastVersion: rvs["deployment/backend-worker-canary"],
 							},
-						},
-					},
-				},
-			}
-			err := k8sClient.Create(context.Background(), backend)
-			Expect(err).ToNot(HaveOccurred())
-			Eventually(func() error {
-				return k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, backend)
-			}, timeout, poll).ShouldNot(HaveOccurred())
+						),
+					)
+
+				})
+
+			})
+
 		})
 
-		It("creates the required resources", func() {
-
-			Eventually(func() bool {
-				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, backend)
-				Expect(err).ToNot(HaveOccurred())
-				return len(backend.GetFinalizers()) > 0
-			}, timeout, poll).Should(BeTrue())
-
-			// Deployments
-			dep := &appsv1.Deployment{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-listener", Namespace: namespace},
-					dep,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-canary-listener", Namespace: namespace},
-					dep,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-			Expect(dep.Spec.Template.Spec.Containers[0].Image).To(Equal("newImage:newTag"))
-
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-worker", Namespace: namespace},
-					dep,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-canary-worker", Namespace: namespace},
-					dep,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-			Expect(dep.Spec.Template.Spec.Containers[0].Env[0].Name).To(Equal("RACK_ENV"))
-			Expect(dep.Spec.Template.Spec.Containers[0].Env[0].Value).To(Equal("test"))
-			Expect(dep.Spec.Template.Spec.Containers[0].Env[1].Name).To(Equal("CONFIG_REDIS_PROXY"))
-			Expect(dep.Spec.Template.Spec.Containers[0].Env[1].Value).To(Equal("testDSN"))
-
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-cron", Namespace: namespace},
-					dep,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-
-			// Services
-			svc := &corev1.Service{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-listener", Namespace: namespace},
-					svc,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-listener-internal", Namespace: namespace},
-					svc,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-
-			// PodMonitors
-			pm := &monitoringv1.PodMonitor{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-listener", Namespace: namespace},
-					pm,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-worker", Namespace: namespace},
-					pm,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-canary-listener", Namespace: namespace},
-					pm,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-canary-worker", Namespace: namespace},
-					pm,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-
-			// HPAs
-			hpa := &autoscalingv2beta2.HorizontalPodAutoscaler{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-listener", Namespace: namespace},
-					hpa,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-worker", Namespace: namespace},
-					hpa,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-canary-listener", Namespace: namespace},
-					hpa,
-				)
-			}, timeout, poll).Should(HaveOccurred())
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-canary-worker", Namespace: namespace},
-					hpa,
-				)
-			}, timeout, poll).Should(HaveOccurred())
-
-			// PDBs
-			pdb := &policyv1beta1.PodDisruptionBudget{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-listener", Namespace: namespace},
-					pdb,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-worker", Namespace: namespace},
-					pdb,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-canary-listener", Namespace: namespace},
-					pdb,
-				)
-			}, timeout, poll).Should(HaveOccurred())
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-canary-worker", Namespace: namespace},
-					pdb,
-				)
-			}, timeout, poll).Should(HaveOccurred())
-
-			// SecretDefinitions
-			sd := &secretsmanagerv1alpha1.SecretDefinition{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-internal-api", Namespace: namespace},
-					sd,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend-system-events-hook", Namespace: namespace},
-					sd,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-
-			// GrafanaDashboard
-			gd := &grafanav1alpha1.GrafanaDashboard{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "backend", Namespace: namespace},
-					gd,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-
-		})
 	})
 })
