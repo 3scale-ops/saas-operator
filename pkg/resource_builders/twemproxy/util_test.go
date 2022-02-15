@@ -7,7 +7,6 @@ import (
 	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/generators/backend/config"
 	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
 	"github.com/go-test/deep"
 	appsv1 "k8s.io/api/apps/v1"
@@ -85,7 +84,7 @@ func Test_addTwemproxySidecar(t *testing.T) {
 								},
 								{
 									Env: []corev1.EnvVar{
-										{Name: "TWEMPROXY_CONFIG_FILE", Value: config.TwemproxyConfigFile},
+										{Name: "TWEMPROXY_CONFIG_FILE", Value: TwemproxyConfigFile},
 										{Name: "TWEMPROXY_METRICS_ADDRESS", Value: ":5555"},
 										{Name: "TWEMPROXY_STATS_INTERVAL", Value: "20000"},
 										{Name: "TWEMPROXY_LOG_LEVEL", Value: "6"},
@@ -123,14 +122,14 @@ func Test_addTwemproxySidecar(t *testing.T) {
 									Lifecycle: &corev1.Lifecycle{
 										PreStop: &corev1.Handler{
 											Exec: &corev1.ExecAction{
-												Command: []string{"pre-stop", config.TwemproxyConfigFile},
+												Command: []string{"pre-stop", TwemproxyConfigFile},
 											},
 										},
 									},
 									VolumeMounts: []corev1.VolumeMount{
 										{
 											Name:      "twemproxy-config",
-											MountPath: filepath.Dir(config.TwemproxyConfigFile),
+											MountPath: filepath.Dir(TwemproxyConfigFile),
 										},
 									},
 								},
