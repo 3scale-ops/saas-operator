@@ -9,6 +9,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -212,8 +213,8 @@ var _ = Describe("Backend controller", func() {
 					rvs["deployment/backend-listener"] = getResourceVersion(
 						&appsv1.Deployment{}, "backend-listener", namespace,
 					)
-					rvs["deployment/backend-worker"] = getResourceVersion(
-						&appsv1.Deployment{}, "backend-worker", namespace,
+					rvs["hpa/backend-worker"] = getResourceVersion(
+						&autoscalingv2beta2.HorizontalPodAutoscaler{}, "backend-worker", namespace,
 					)
 					rvs["deployment/backend-cron"] = getResourceVersion(
 						&appsv1.Deployment{}, "backend-cron", namespace,
@@ -225,11 +226,14 @@ var _ = Describe("Backend controller", func() {
 						Tag:  pointer.StringPtr("newTag"),
 					}
 					backend.Spec.Listener.Replicas = pointer.Int32(3)
+					backend.Spec.Listener.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
 					backend.Spec.Listener.Config = &saasv1alpha1.ListenerConfig{
 						RedisAsync: pointer.BoolPtr(true),
 					}
 					backend.Spec.Worker = &saasv1alpha1.WorkerSpec{
-						Replicas: pointer.Int32(3),
+						HPA: &saasv1alpha1.HorizontalPodAutoscalerSpec{
+							MinReplicas: pointer.Int32(3),
+						},
 					}
 					backend.Spec.Cron = &saasv1alpha1.CronSpec{
 						Replicas: pointer.Int32(3),
@@ -251,7 +255,7 @@ var _ = Describe("Backend controller", func() {
 						expectedWorkload{
 							Name:           "backend-listener",
 							Namespace:      namespace,
-							Replicas:       2,
+							Replicas:       3,
 							ContainerName:  "backend-listener",
 							ContainerImage: "newImage:newTag",
 							ContainterArgs: []string{
@@ -261,7 +265,6 @@ var _ = Describe("Backend controller", func() {
 								"-x", "/dev/stdout",
 							},
 							PDB:         true,
-							HPA:         true,
 							PodMonitor:  true,
 							LastVersion: rvs["deployment/backend-listener"],
 						},
@@ -277,6 +280,31 @@ var _ = Describe("Backend controller", func() {
 				)
 				Expect(svc.Spec.Selector["deployment"]).To(Equal("backend-listener"))
 				Expect(svc.GetAnnotations()["service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled"]).To(Equal("false"))
+
+				hpa := &autoscalingv2beta2.HorizontalPodAutoscaler{}
+				By("updating the backend-worker workload",
+					checkResource(hpa,
+						expectedResource{
+							Name:        "backend-worker",
+							Namespace:   namespace,
+							LastVersion: rvs["hpa/backend-worker"],
+						},
+					),
+				)
+				Expect(hpa.Spec.MinReplicas).To(Equal(pointer.Int32(3)))
+
+				By("updating the backend-cron workload",
+					checkWorkloadResources(dep,
+						expectedWorkload{
+							Name:           "backend-cron",
+							Namespace:      namespace,
+							Replicas:       3,
+							ContainerName:  "backend-cron",
+							ContainerImage: "newImage:newTag",
+							LastVersion:    rvs["deployment/backend-cron"],
+						},
+					),
+				)
 
 			})
 		})
