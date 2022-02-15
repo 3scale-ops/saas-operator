@@ -1,4 +1,4 @@
-package backend
+package twemproxy
 
 import (
 	"path/filepath"
@@ -13,11 +13,12 @@ import (
 )
 
 const (
+	twemproxy                  = "twemproxy"
 	twemproxyPreStopScriptName = "pre-stop"
 	healthCommand              = "health"
 )
 
-func addTwemproxySidecar(dep appsv1.Deployment, spec *saasv1alpha1.TwemproxySpec) *appsv1.Deployment {
+func AddTwemproxySidecar(dep appsv1.Deployment, spec *saasv1alpha1.TwemproxySpec) *appsv1.Deployment {
 
 	// Labels to subscribe to the TwemproxyConfig sync events
 	dep.Spec.Template.ObjectMeta.Labels = util.MergeMaps(

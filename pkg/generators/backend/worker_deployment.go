@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
+	"github.com/3scale/saas-operator/pkg/resource_builders/twemproxy"
 	"github.com/3scale/saas-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -54,7 +55,7 @@ func (gen *WorkerGenerator) deployment() func() *appsv1.Deployment {
 		}
 
 		if gen.TwemproxySpec != nil {
-			dep = addTwemproxySidecar(*dep, gen.TwemproxySpec)
+			dep = twemproxy.AddTwemproxySidecar(*dep, gen.TwemproxySpec)
 		}
 
 		return dep

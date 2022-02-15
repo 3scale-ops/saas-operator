@@ -22,7 +22,6 @@ const (
 	listener  string = "listener"
 	worker    string = "worker"
 	cron      string = "cron"
-	twemproxy string = "twemproxy"
 )
 
 // Generator configures the generators for Backend
