@@ -475,5 +475,155 @@ var _ = Describe("Backend controller", func() {
 
 		})
 
+		When("updating a backend resource with twemproxyconfig", func() {
+
+			// Resource Versions
+			rvs := make(map[string]string)
+
+			BeforeEach(func() {
+				Eventually(func() error {
+
+					backend := &saasv1alpha1.Backend{}
+					if err := k8sClient.Get(
+						context.Background(),
+						types.NamespacedName{Name: "instance", Namespace: namespace},
+						backend,
+					); err != nil {
+						return err
+					}
+
+					rvs["deployment/backend-listener"] = getResourceVersion(
+						&appsv1.Deployment{}, "backend-listener", namespace,
+					)
+					rvs["deployment/backend-worker"] = getResourceVersion(
+						&appsv1.Deployment{}, "backend-worker", namespace,
+					)
+					rvs["deployment/backend-cron"] = getResourceVersion(
+						&appsv1.Deployment{}, "backend-cron", namespace,
+					)
+
+					patch := client.MergeFrom(backend.DeepCopy())
+					backend.Spec.Listener.Replicas = pointer.Int32(2)
+					backend.Spec.Listener.Canary = &saasv1alpha1.Canary{
+						Replicas: pointer.Int32(2),
+						Patches: []string{
+							`[{"op":"add","path":"/twemproxy","value":{"twemproxyConfigRef":"backend-canary-twemproxyconfig","options":{"logLevel":3}}}]`,
+						},
+					}
+					backend.Spec.Worker = &saasv1alpha1.WorkerSpec{
+						Replicas: pointer.Int32(2),
+					}
+					backend.Spec.Worker.Canary = &saasv1alpha1.Canary{
+						Replicas: pointer.Int32(2),
+						Patches: []string{
+							`[{"op":"add","path":"/twemproxy/options","value":{"logLevel":4}}]`,
+						},
+					}
+					backend.Spec.Twemproxy = &saasv1alpha1.TwemproxySpec{
+						TwemproxyConfigRef: "backend-twemproxyconfig",
+						Options: &saasv1alpha1.TwemproxyOptions{
+							LogLevel: pointer.Int32Ptr(2),
+						},
+					}
+
+					return k8sClient.Patch(context.Background(), backend, patch)
+
+				}, timeout, poll).ShouldNot(HaveOccurred())
+			})
+
+			It("updates the backend-listener resources", func() {
+
+				dep := &appsv1.Deployment{}
+				By("adding a twemproxy sidecar to the backend-listener workload",
+					checkWorkloadResources(dep,
+						expectedWorkload{
+							Name:        "backend-listener",
+							Namespace:   namespace,
+							Replicas:    2,
+							PDB:         true,
+							HPA:         true,
+							PodMonitor:  true,
+							LastVersion: rvs["deployment/backend-listener"],
+						},
+					),
+				)
+
+				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("twemproxy-config"))
+				Expect(dep.Spec.Template.Spec.Volumes[0].VolumeSource.ConfigMap.LocalObjectReference.Name).To(Equal("backend-twemproxyconfig"))
+				Expect(dep.Spec.Template.Spec.Containers[1].Name).To(Equal("twemproxy"))
+				Expect(dep.Spec.Template.Spec.Containers[1].VolumeMounts[0].Name).To(Equal("twemproxy-config"))
+
+				By("adding a twemproxy sidecar to the backend-listener-canary workload",
+					checkWorkloadResources(dep,
+						expectedWorkload{
+							Name:       "backend-listener-canary",
+							Replicas:   2,
+							Namespace:  namespace,
+							PodMonitor: true,
+						},
+					),
+				)
+
+				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("twemproxy-config"))
+				Expect(dep.Spec.Template.Spec.Volumes[0].VolumeSource.ConfigMap.LocalObjectReference.Name).To(Equal("backend-canary-twemproxyconfig"))
+				Expect(dep.Spec.Template.Spec.Containers[1].Name).To(Equal("twemproxy"))
+				Expect(dep.Spec.Template.Spec.Containers[1].VolumeMounts[0].Name).To(Equal("twemproxy-config"))
+				Expect(dep.Spec.Template.Spec.Containers[1].Env[3].Name).To(Equal("TWEMPROXY_LOG_LEVEL"))
+				Expect(dep.Spec.Template.Spec.Containers[1].Env[3].Value).To(Equal("3"))
+
+				By("adding a twemproxy sidecar to the backend-worker workload",
+					checkWorkloadResources(dep,
+						expectedWorkload{
+							Name:        "backend-worker",
+							Namespace:   namespace,
+							Replicas:    2,
+							PDB:         true,
+							HPA:         true,
+							PodMonitor:  true,
+							LastVersion: rvs["deployment/backend-worker"],
+						},
+					),
+				)
+
+				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("twemproxy-config"))
+				Expect(dep.Spec.Template.Spec.Volumes[0].VolumeSource.ConfigMap.LocalObjectReference.Name).To(Equal("backend-twemproxyconfig"))
+				Expect(dep.Spec.Template.Spec.Containers[1].Name).To(Equal("twemproxy"))
+				Expect(dep.Spec.Template.Spec.Containers[1].VolumeMounts[0].Name).To(Equal("twemproxy-config"))
+
+				By("adding a twemproxy sidecar to the backend-worker-canary workload",
+					checkWorkloadResources(dep,
+						expectedWorkload{
+							Name:       "backend-worker-canary",
+							Replicas:   2,
+							Namespace:  namespace,
+							PodMonitor: true,
+						},
+					),
+				)
+
+				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("twemproxy-config"))
+				Expect(dep.Spec.Template.Spec.Volumes[0].VolumeSource.ConfigMap.LocalObjectReference.Name).To(Equal("backend-twemproxyconfig"))
+				Expect(dep.Spec.Template.Spec.Containers[1].Name).To(Equal("twemproxy"))
+				Expect(dep.Spec.Template.Spec.Containers[1].VolumeMounts[0].Name).To(Equal("twemproxy-config"))
+				Expect(dep.Spec.Template.Spec.Containers[1].Env[3].Name).To(Equal("TWEMPROXY_LOG_LEVEL"))
+				Expect(dep.Spec.Template.Spec.Containers[1].Env[3].Value).To(Equal("4"))
+
+				By("not updating the backend-cron workload",
+					checkWorkloadResources(dep,
+						expectedWorkload{
+							Name:      "backend-cron",
+							Namespace: namespace,
+							Replicas:  1,
+						},
+					),
+				)
+
+				Expect(dep.GetResourceVersion()).To(Equal(rvs["deployment/backend-cron"]))
+				Expect(dep.Spec.Template.Spec.Containers).To(HaveLen(1))
+				Expect(dep.Spec.Template.Spec.Containers[0].Name).To(Equal("backend-cron"))
+
+			})
+		})
+
 	})
 })
