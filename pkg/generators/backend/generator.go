@@ -22,7 +22,6 @@ const (
 	listener  string = "listener"
 	worker    string = "worker"
 	cron      string = "cron"
-	twemproxy string = "twemproxy"
 )
 
 // Generator configures the generators for Backend
@@ -109,7 +108,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.BackendSpec) (Ge
 		}
 		generator.CanaryListener = &ListenerGenerator{
 			BaseOptionsV2: generators.BaseOptionsV2{
-				Component:    strings.Join([]string{component, "canary", listener}, "-"),
+				Component:    strings.Join([]string{component, listener, "canary"}, "-"),
 				InstanceName: instance,
 				Namespace:    namespace,
 				Labels: map[string]string{
@@ -136,7 +135,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.BackendSpec) (Ge
 		}
 		generator.CanaryWorker = &WorkerGenerator{
 			BaseOptionsV2: generators.BaseOptionsV2{
-				Component:    strings.Join([]string{component, "canary", worker}, "-"),
+				Component:    strings.Join([]string{component, worker, "canary"}, "-"),
 				InstanceName: instance,
 				Namespace:    namespace,
 				Labels: map[string]string{

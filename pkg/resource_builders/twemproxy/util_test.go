@@ -1,4 +1,4 @@
-package backend
+package twemproxy
 
 import (
 	"path/filepath"
@@ -154,7 +154,7 @@ func Test_addTwemproxySidecar(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := addTwemproxySidecar(tt.args.dep, tt.args.spec)
+			got := AddTwemproxySidecar(tt.args.dep, tt.args.spec)
 			if diff := deep.Equal(got, tt.want); len(diff) > 0 {
 				t.Errorf("addTwemproxySidecar() = diff %v", diff)
 			}
