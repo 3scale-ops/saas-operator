@@ -27,7 +27,6 @@ const (
 	sidekiqBilling string = "sidekiq-billing"
 	sidekiqLow     string = "sidekiq-low"
 	sphinx         string = "sphinx"
-	twemproxy      string = "twemproxy"
 )
 
 // Generator configures the generators for System
@@ -77,6 +76,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) (Gen
 			Image:             *spec.Image,
 			ConfigFilesSecret: *spec.Config.ConfigFilesSecret,
 			Traffic:           true,
+			TwemproxySpec:     spec.Twemproxy,
 		},
 		SidekiqDefault: SidekiqGenerator{
 			BaseOptionsV2: generators.BaseOptionsV2{
@@ -93,6 +93,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) (Gen
 			Options:           config.NewOptions(spec),
 			Image:             *spec.Image,
 			ConfigFilesSecret: *spec.Config.ConfigFilesSecret,
+			TwemproxySpec:     spec.Twemproxy,
 		},
 		SidekiqBilling: SidekiqGenerator{
 			BaseOptionsV2: generators.BaseOptionsV2{
@@ -109,6 +110,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) (Gen
 			Options:           config.NewOptions(spec),
 			Image:             *spec.Image,
 			ConfigFilesSecret: *spec.Config.ConfigFilesSecret,
+			TwemproxySpec:     spec.Twemproxy,
 		},
 		SidekiqLow: SidekiqGenerator{
 			BaseOptionsV2: generators.BaseOptionsV2{
@@ -125,6 +127,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) (Gen
 			Options:           config.NewOptions(spec),
 			Image:             *spec.Image,
 			ConfigFilesSecret: *spec.Config.ConfigFilesSecret,
+			TwemproxySpec:     spec.Twemproxy,
 		},
 		Sphinx: SphinxGenerator{
 			BaseOptionsV2: generators.BaseOptionsV2{

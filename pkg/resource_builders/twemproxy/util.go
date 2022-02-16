@@ -4,7 +4,6 @@ import (
 	"path/filepath"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/generators/backend/config"
 	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
 	"github.com/3scale/saas-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
@@ -30,7 +29,7 @@ func AddTwemproxySidecar(dep appsv1.Deployment, spec *saasv1alpha1.TwemproxySpec
 	// Twemproxy container
 	dep.Spec.Template.Spec.Containers = append(dep.Spec.Template.Spec.Containers,
 		corev1.Container{
-			Env:   pod.BuildEnvironment(config.NewTwemproxyOptions(*spec)),
+			Env:   pod.BuildEnvironment(NewTwemproxyOptions(*spec)),
 			Name:  twemproxy,
 			Image: pod.Image(*spec.Image),
 			Ports: pod.ContainerPorts(
@@ -46,14 +45,14 @@ func AddTwemproxySidecar(dep appsv1.Deployment, spec *saasv1alpha1.TwemproxySpec
 			Lifecycle: &corev1.Lifecycle{
 				PreStop: &corev1.Handler{
 					Exec: &corev1.ExecAction{
-						Command: []string{"pre-stop", config.TwemproxyConfigFile},
+						Command: []string{"pre-stop", TwemproxyConfigFile},
 					},
 				},
 			},
 			VolumeMounts: []corev1.VolumeMount{
 				{
 					Name:      twemproxy + "-config",
-					MountPath: filepath.Dir(config.TwemproxyConfigFile),
+					MountPath: filepath.Dir(TwemproxyConfigFile),
 				},
 			},
 		})
@@ -63,7 +62,8 @@ func AddTwemproxySidecar(dep appsv1.Deployment, spec *saasv1alpha1.TwemproxySpec
 	}
 
 	// Mount the TwemproxyConfig ConfigMap in the Pod
-	dep.Spec.Template.Spec.Volumes = append(dep.Spec.Template.Spec.Volumes,
+	dep.Spec.Template.Spec.Volumes = append(
+		dep.Spec.Template.Spec.Volumes,
 		corev1.Volume{
 			Name: twemproxy + "-config",
 			VolumeSource: corev1.VolumeSource{

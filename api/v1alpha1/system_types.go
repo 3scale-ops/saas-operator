@@ -280,6 +280,11 @@ func (spec *SystemSpec) Default() {
 		spec.Console = &SystemRailsConsoleSpec{}
 	}
 	spec.Console.Default()
+
+	if spec.Twemproxy != nil {
+		spec.Twemproxy.Default()
+	}
+
 }
 
 // SystemConfig holds configuration for SystemApp component

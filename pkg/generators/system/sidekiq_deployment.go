@@ -6,6 +6,7 @@ import (
 
 	"github.com/3scale/saas-operator/pkg/resource_builders/marin3r"
 	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
+	"github.com/3scale/saas-operator/pkg/resource_builders/twemproxy"
 	"github.com/3scale/saas-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -107,6 +108,10 @@ func (gen *SidekiqGenerator) deployment() func() *appsv1.Deployment {
 
 		if !gen.Spec.Marin3r.IsDeactivated() {
 			dep = marin3r.EnableSidecar(*dep, *gen.Spec.Marin3r)
+		}
+
+		if gen.TwemproxySpec != nil {
+			dep = twemproxy.AddTwemproxySidecar(*dep, gen.TwemproxySpec)
 		}
 
 		return dep
