@@ -533,7 +533,7 @@ var _ = Describe("System controller", func() {
 			})
 		})
 
-		When("updating a backend resource with twemproxyconfig", func() {
+		When("updating a system resource with twemproxyconfig", func() {
 
 			// Resource Versions
 			rvs := make(map[string]string)
