@@ -533,5 +533,234 @@ var _ = Describe("System controller", func() {
 			})
 		})
 
+		When("updating a backend resource with twemproxyconfig", func() {
+
+			// Resource Versions
+			rvs := make(map[string]string)
+
+			BeforeEach(func() {
+				Eventually(func() error {
+
+					system := &saasv1alpha1.System{}
+					if err := k8sClient.Get(
+						context.Background(),
+						types.NamespacedName{Name: "instance", Namespace: namespace},
+						system,
+					); err != nil {
+						return err
+					}
+
+					rvs["deployment/system-app"] = getResourceVersion(
+						&appsv1.Deployment{}, "system-app", namespace,
+					)
+					rvs["deployment/system-sidekiq-billing"] = getResourceVersion(
+						&appsv1.Deployment{}, "system-sidekiq-billing", namespace,
+					)
+					rvs["deployment/system-sidekiq-default"] = getResourceVersion(
+						&appsv1.Deployment{}, "system-sidekiq-default", namespace,
+					)
+					rvs["deployment/system-sidekiq-low"] = getResourceVersion(
+						&appsv1.Deployment{}, "system-sidekiq-low", namespace,
+					)
+
+					patch := client.MergeFrom(system.DeepCopy())
+
+					system.Spec.Twemproxy = &saasv1alpha1.TwemproxySpec{
+						TwemproxyConfigRef: "system-twemproxyconfig",
+						Options: &saasv1alpha1.TwemproxyOptions{
+							LogLevel: pointer.Int32Ptr(2),
+						},
+					}
+
+					system.Spec.App = &saasv1alpha1.SystemAppSpec{
+						Canary: &saasv1alpha1.Canary{
+							Replicas: pointer.Int32(2),
+							Patches: []string{
+								`[{"op":"add","path":"/twemproxy","value":{"twemproxyConfigRef":"system-canary-twemproxyconfig","options":{"logLevel":2}}}]`,
+							},
+						},
+					}
+
+					system.Spec.SidekiqBilling = &saasv1alpha1.SystemSidekiqSpec{
+						Canary: &saasv1alpha1.Canary{
+							Replicas: pointer.Int32(3),
+							Patches: []string{
+								`[{"op":"add","path":"/twemproxy","value":{"twemproxyConfigRef":"system-canary-twemproxyconfig","options":{"logLevel":3}}}]`,
+							},
+						},
+					}
+
+					system.Spec.SidekiqDefault = &saasv1alpha1.SystemSidekiqSpec{
+						Replicas: pointer.Int32(2),
+						Canary: &saasv1alpha1.Canary{
+							Replicas: pointer.Int32(4),
+							Patches: []string{
+								`[{"op":"add","path":"/twemproxy/options","value":{"logLevel":4}}]`,
+							},
+						},
+					}
+
+					system.Spec.SidekiqLow = &saasv1alpha1.SystemSidekiqSpec{
+						Replicas: pointer.Int32(2),
+						Canary: &saasv1alpha1.Canary{
+							Replicas: pointer.Int32(5),
+							Patches: []string{
+								`[{"op":"add","path":"/twemproxy/options","value":{"logLevel":5}}]`,
+							},
+						},
+					}
+
+					return k8sClient.Patch(context.Background(), system, patch)
+
+				}, timeout, poll).ShouldNot(HaveOccurred())
+			})
+
+			It("updates the system-app resources", func() {
+
+				dep := &appsv1.Deployment{}
+				By("adding a twemproxy sidecar to the system-app workload",
+					checkWorkloadResources(dep,
+						expectedWorkload{
+							Name:        "system-app",
+							Namespace:   namespace,
+							Replicas:    2,
+							PDB:         true,
+							HPA:         true,
+							PodMonitor:  true,
+							LastVersion: rvs["deployment/system-app"],
+						},
+					),
+				)
+				Expect(dep.Spec.Template.Spec.Volumes).To(HaveLen(2))
+				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-config"))
+				Expect(dep.Spec.Template.Spec.Volumes[0].VolumeSource.Secret.SecretName).To(Equal("system-config"))
+				Expect(dep.Spec.Template.Spec.Volumes[1].Name).To(Equal("twemproxy-config"))
+				Expect(dep.Spec.Template.Spec.Volumes[1].VolumeSource.ConfigMap.LocalObjectReference.Name).To(Equal("system-twemproxyconfig"))
+				Expect(dep.Spec.Template.Spec.Containers).To(HaveLen(2))
+				Expect(dep.Spec.Template.Spec.Containers[1].Name).To(Equal("twemproxy"))
+				Expect(dep.Spec.Template.Spec.Containers[1].VolumeMounts[0].Name).To(Equal("twemproxy-config"))
+
+				By("adding a twemproxy sidecar to the system-app-canary workload",
+					checkWorkloadResources(dep,
+						expectedWorkload{
+							Name:       "system-app-canary",
+							Replicas:   2,
+							Namespace:  namespace,
+							PodMonitor: true,
+						},
+					),
+				)
+				Expect(dep.Spec.Template.Spec.Volumes).To(HaveLen(2))
+				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-config"))
+				Expect(dep.Spec.Template.Spec.Volumes[0].VolumeSource.Secret.SecretName).To(Equal("system-config"))
+				Expect(dep.Spec.Template.Spec.Volumes[1].Name).To(Equal("twemproxy-config"))
+				Expect(dep.Spec.Template.Spec.Volumes[1].VolumeSource.ConfigMap.LocalObjectReference.Name).To(Equal("system-canary-twemproxyconfig"))
+				Expect(dep.Spec.Template.Spec.Containers).To(HaveLen(2))
+				Expect(dep.Spec.Template.Spec.Containers[1].Name).To(Equal("twemproxy"))
+				Expect(dep.Spec.Template.Spec.Containers[1].VolumeMounts[0].Name).To(Equal("twemproxy-config"))
+				Expect(dep.Spec.Template.Spec.Containers[1].Env[3].Name).To(Equal("TWEMPROXY_LOG_LEVEL"))
+				Expect(dep.Spec.Template.Spec.Containers[1].Env[3].Value).To(Equal("2"))
+
+				By("adding a twemproxy sidecar to the system-sidekiq-billing workload",
+					checkWorkloadResources(dep,
+						expectedWorkload{
+							Name:        "system-sidekiq-billing",
+							Namespace:   namespace,
+							Replicas:    2,
+							PDB:         true,
+							HPA:         true,
+							PodMonitor:  true,
+							LastVersion: rvs["deployment/system-sidekiq-billing"],
+						},
+					),
+				)
+				Expect(dep.Spec.Template.Spec.Volumes).To(HaveLen(3))
+				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
+				Expect(dep.Spec.Template.Spec.Volumes[0].VolumeSource.EmptyDir).ShouldNot(BeNil())
+				Expect(dep.Spec.Template.Spec.Volumes[1].Name).To(Equal("system-config"))
+				Expect(dep.Spec.Template.Spec.Volumes[1].VolumeSource.Secret.SecretName).To(Equal("system-config"))
+				Expect(dep.Spec.Template.Spec.Volumes[2].Name).To(Equal("twemproxy-config"))
+				Expect(dep.Spec.Template.Spec.Volumes[2].VolumeSource.ConfigMap.LocalObjectReference.Name).To(Equal("system-twemproxyconfig"))
+				Expect(dep.Spec.Template.Spec.Containers).To(HaveLen(2))
+				Expect(dep.Spec.Template.Spec.Containers[1].Name).To(Equal("twemproxy"))
+				Expect(dep.Spec.Template.Spec.Containers[1].VolumeMounts[0].Name).To(Equal("twemproxy-config"))
+				Expect(dep.Spec.Template.Spec.Containers[1].Env[3].Name).To(Equal("TWEMPROXY_LOG_LEVEL"))
+				Expect(dep.Spec.Template.Spec.Containers[1].Env[3].Value).To(Equal("2"))
+
+				By("adding a twemproxy sidecar to the system-sidekiq-billing-canary workload",
+					checkWorkloadResources(dep,
+						expectedWorkload{
+							Name:       "system-sidekiq-billing-canary",
+							Replicas:   3,
+							Namespace:  namespace,
+							PodMonitor: true,
+						},
+					),
+				)
+				Expect(dep.Spec.Template.Spec.Volumes).To(HaveLen(3))
+				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
+				Expect(dep.Spec.Template.Spec.Volumes[0].VolumeSource.EmptyDir).ShouldNot(BeNil())
+				Expect(dep.Spec.Template.Spec.Volumes[1].Name).To(Equal("system-config"))
+				Expect(dep.Spec.Template.Spec.Volumes[1].VolumeSource.Secret.SecretName).To(Equal("system-config"))
+				Expect(dep.Spec.Template.Spec.Volumes[2].Name).To(Equal("twemproxy-config"))
+				Expect(dep.Spec.Template.Spec.Volumes[2].VolumeSource.ConfigMap.LocalObjectReference.Name).To(Equal("system-canary-twemproxyconfig"))
+				Expect(dep.Spec.Template.Spec.Containers).To(HaveLen(2))
+				Expect(dep.Spec.Template.Spec.Containers[1].Name).To(Equal("twemproxy"))
+				Expect(dep.Spec.Template.Spec.Containers[1].VolumeMounts[0].Name).To(Equal("twemproxy-config"))
+				Expect(dep.Spec.Template.Spec.Containers[1].Env[3].Name).To(Equal("TWEMPROXY_LOG_LEVEL"))
+				Expect(dep.Spec.Template.Spec.Containers[1].Env[3].Value).To(Equal("3"))
+
+				By("adding a twemproxy sidecar to the system-sidekiq-low workload",
+					checkWorkloadResources(dep,
+						expectedWorkload{
+							Name:        "system-sidekiq-low",
+							Namespace:   namespace,
+							Replicas:    2,
+							PDB:         true,
+							HPA:         true,
+							PodMonitor:  true,
+							LastVersion: rvs["deployment/system-sidekiq-low"],
+						},
+					),
+				)
+				Expect(dep.Spec.Template.Spec.Volumes).To(HaveLen(3))
+				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
+				Expect(dep.Spec.Template.Spec.Volumes[0].VolumeSource.EmptyDir).ShouldNot(BeNil())
+				Expect(dep.Spec.Template.Spec.Volumes[1].Name).To(Equal("system-config"))
+				Expect(dep.Spec.Template.Spec.Volumes[1].VolumeSource.Secret.SecretName).To(Equal("system-config"))
+				Expect(dep.Spec.Template.Spec.Volumes[2].Name).To(Equal("twemproxy-config"))
+				Expect(dep.Spec.Template.Spec.Volumes[2].VolumeSource.ConfigMap.LocalObjectReference.Name).To(Equal("system-twemproxyconfig"))
+				Expect(dep.Spec.Template.Spec.Containers).To(HaveLen(2))
+				Expect(dep.Spec.Template.Spec.Containers[1].Name).To(Equal("twemproxy"))
+				Expect(dep.Spec.Template.Spec.Containers[1].VolumeMounts[0].Name).To(Equal("twemproxy-config"))
+				Expect(dep.Spec.Template.Spec.Containers[1].Env[3].Name).To(Equal("TWEMPROXY_LOG_LEVEL"))
+				Expect(dep.Spec.Template.Spec.Containers[1].Env[3].Value).To(Equal("2"))
+
+				By("adding a twemproxy sidecar to the system-sidekiq-low-canary workload",
+					checkWorkloadResources(dep,
+						expectedWorkload{
+							Name:       "system-sidekiq-low-canary",
+							Replicas:   5,
+							Namespace:  namespace,
+							PodMonitor: true,
+						},
+					),
+				)
+				Expect(dep.Spec.Template.Spec.Volumes).To(HaveLen(3))
+				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
+				Expect(dep.Spec.Template.Spec.Volumes[0].VolumeSource.EmptyDir).ShouldNot(BeNil())
+				Expect(dep.Spec.Template.Spec.Volumes[1].Name).To(Equal("system-config"))
+				Expect(dep.Spec.Template.Spec.Volumes[1].VolumeSource.Secret.SecretName).To(Equal("system-config"))
+				Expect(dep.Spec.Template.Spec.Volumes[2].Name).To(Equal("twemproxy-config"))
+				Expect(dep.Spec.Template.Spec.Volumes[2].VolumeSource.ConfigMap.LocalObjectReference.Name).To(Equal("system-twemproxyconfig"))
+				Expect(dep.Spec.Template.Spec.Containers).To(HaveLen(2))
+				Expect(dep.Spec.Template.Spec.Containers[1].Name).To(Equal("twemproxy"))
+				Expect(dep.Spec.Template.Spec.Containers[1].VolumeMounts[0].Name).To(Equal("twemproxy-config"))
+				Expect(dep.Spec.Template.Spec.Containers[1].Env[3].Name).To(Equal("TWEMPROXY_LOG_LEVEL"))
+				Expect(dep.Spec.Template.Spec.Containers[1].Env[3].Value).To(Equal("5"))
+
+			})
+		})
+
 	})
 })
