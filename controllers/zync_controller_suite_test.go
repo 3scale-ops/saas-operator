@@ -12,7 +12,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -27,7 +26,7 @@ var _ = Describe("Zync controller", func() {
 		namespace = "test-ns-" + nameGenerator.Generate()
 
 		// Add any setup steps that needs to be executed before each test
-		testNamespace := &v1.Namespace{
+		testNamespace := &corev1.Namespace{
 			TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "Namespace"},
 			ObjectMeta: metav1.ObjectMeta{Name: namespace},
 		}
@@ -35,7 +34,7 @@ var _ = Describe("Zync controller", func() {
 		err := k8sClient.Create(context.Background(), testNamespace)
 		Expect(err).ToNot(HaveOccurred())
 
-		n := &v1.Namespace{}
+		n := &corev1.Namespace{}
 		Eventually(func() error {
 			return k8sClient.Get(context.Background(), types.NamespacedName{Name: namespace}, n)
 		}, timeout, poll).ShouldNot(HaveOccurred())
