@@ -83,10 +83,7 @@ var _ = Describe("Apicast controller", func() {
 			Eventually(func() bool {
 				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, apicast)
 				Expect(err).ToNot(HaveOccurred())
-				if len(apicast.GetFinalizers()) > 0 {
-					return true
-				}
-				return false
+				return len(apicast.GetFinalizers()) > 0
 			}, timeout, poll).Should(BeTrue())
 
 			dep := &appsv1.Deployment{}
