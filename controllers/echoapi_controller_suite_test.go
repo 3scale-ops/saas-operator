@@ -6,13 +6,12 @@ import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
-	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
-	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/utils/pointer"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ = Describe("EchoAPI controller", func() {
@@ -39,7 +38,7 @@ var _ = Describe("EchoAPI controller", func() {
 
 	})
 
-	Context("All defaults EchoAPI resource", func() {
+	When("deploying a defaulted EchoAPI instance", func() {
 
 		BeforeEach(func() {
 			By("creating an EchoAPI simple resource")
@@ -61,59 +60,146 @@ var _ = Describe("EchoAPI controller", func() {
 			}, timeout, poll).ShouldNot(HaveOccurred())
 		})
 
-		It("creates the required resources", func() {
-
-			Eventually(func() bool {
-				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, echoapi)
-				Expect(err).ToNot(HaveOccurred())
-				return len(echoapi.GetFinalizers()) > 0
-			}, timeout, poll).Should(BeTrue())
+		It("creates the required EchoAPI resources", func() {
 
 			dep := &appsv1.Deployment{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "echo-api", Namespace: namespace},
-					dep,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
+			By("deploying an echo-api workload",
+				checkWorkloadResources(dep,
+					expectedWorkload{
+						Name:          "echo-api",
+						Namespace:     namespace,
+						Replicas:      2,
+						ContainerName: "echo-api",
+						PDB:           true,
+						HPA:           true,
+						PodMonitor:    true,
+					},
+				),
+			)
+			Expect(dep.Spec.Template.Spec.Volumes).To(HaveLen(0))
 
 			svc := &corev1.Service{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "echo-api", Namespace: namespace},
-					svc,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-
-			pm := &monitoringv1.PodMonitor{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "echo-api", Namespace: namespace},
-					pm,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-
-			hpa := &autoscalingv2beta2.HorizontalPodAutoscaler{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "echo-api", Namespace: namespace},
-					hpa,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-
-			pdb := &policyv1beta1.PodDisruptionBudget{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "echo-api", Namespace: namespace},
-					pdb,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
+			By("deploying an echo-api service",
+				checkResource(svc,
+					expectedResource{
+						Name:      "echo-api",
+						Namespace: namespace,
+					},
+				),
+			)
+			Expect(svc.Spec.Selector["deployment"]).To(Equal("echo-api"))
+			Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("echo-api"))
 
 		})
+
+		When("updating a EchoAPI resource with customizations", func() {
+
+			// Resource Versions
+			rvs := make(map[string]string)
+
+			BeforeEach(func() {
+				Eventually(func() error {
+
+					echoapi := &saasv1alpha1.EchoAPI{}
+					if err := k8sClient.Get(
+						context.Background(),
+						types.NamespacedName{Name: "instance", Namespace: namespace},
+						echoapi,
+					); err != nil {
+						return err
+					}
+
+					rvs["deployment/echoapi"] = getResourceVersion(
+						&appsv1.Deployment{}, "echo-api", namespace,
+					)
+
+					patch := client.MergeFrom(echoapi.DeepCopy())
+					echoapi.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{
+						MinReplicas: pointer.Int32(3),
+					}
+					echoapi.Spec.LivenessProbe = &saasv1alpha1.ProbeSpec{}
+					echoapi.Spec.ReadinessProbe = &saasv1alpha1.ProbeSpec{}
+
+					return k8sClient.Patch(context.Background(), echoapi, patch)
+
+				}, timeout, poll).ShouldNot(HaveOccurred())
+			})
+
+			It("removes EchoAPI disabled resources", func() {
+
+				dep := &appsv1.Deployment{}
+				By("updating the EchoAPI workload",
+					checkWorkloadResources(dep,
+						expectedWorkload{
+							Name:          "echo-api",
+							Namespace:     namespace,
+							Replicas:      3,
+							ContainerName: "echo-api",
+							PDB:           true,
+							HPA:           true,
+							PodMonitor:    true,
+							LastVersion:   rvs["deployment/echoapi"],
+						},
+					),
+				)
+				Expect(dep.Spec.Template.Spec.Containers[0].LivenessProbe).To(BeNil())
+				Expect(dep.Spec.Template.Spec.Containers[0].ReadinessProbe).To(BeNil())
+
+			})
+
+		})
+
+		When("removing the PDB and HPA from a EchoAPI instance", func() {
+
+			// Resource Versions
+			rvs := make(map[string]string)
+
+			BeforeEach(func() {
+				Eventually(func() error {
+
+					echoapi := &saasv1alpha1.EchoAPI{}
+					if err := k8sClient.Get(
+						context.Background(),
+						types.NamespacedName{Name: "instance", Namespace: namespace},
+						echoapi,
+					); err != nil {
+						return err
+					}
+
+					rvs["deployment/echoapi"] = getResourceVersion(
+						&appsv1.Deployment{}, "echo-api", namespace,
+					)
+					patch := client.MergeFrom(echoapi.DeepCopy())
+					echoapi.Spec.Replicas = pointer.Int32(0)
+					echoapi.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
+					echoapi.Spec.PDB = &saasv1alpha1.PodDisruptionBudgetSpec{}
+
+					return k8sClient.Patch(context.Background(), echoapi, patch)
+
+				}, timeout, poll).ShouldNot(HaveOccurred())
+			})
+
+			It("removes the EchoAPI disabled resources", func() {
+
+				dep := &appsv1.Deployment{}
+				By("updating the EchoAPI workload",
+					checkWorkloadResources(dep,
+						expectedWorkload{
+							Name:        "echo-api",
+							Namespace:   namespace,
+							Replicas:    0,
+							HPA:         false,
+							PDB:         false,
+							PodMonitor:  true,
+							LastVersion: rvs["deployment/echoapi"],
+						},
+					),
+				)
+
+			})
+
+		})
+
 	})
+
 })
