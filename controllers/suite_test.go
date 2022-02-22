@@ -54,6 +54,7 @@ type expectedWorkload struct {
 	Replicas       int32
 	ContainerName  string
 	ContainerImage string
+	ContainterCmd  []string
 	ContainterArgs []string
 	HPA            bool
 	PDB            bool
@@ -74,14 +75,16 @@ func checkWorkloadResources(dep *appsv1.Deployment, ew expectedWorkload) func() 
 			}),
 		)
 
-		Expect(dep.Spec.Replicas).To(Equal(pointer.Int32Ptr(ew.Replicas)))
-
 		if ew.ContainerName != "" {
 			Expect(dep.Spec.Template.Spec.Containers[0].Name).To(Equal(ew.ContainerName))
 		}
 
 		if ew.ContainerImage != "" {
 			Expect(dep.Spec.Template.Spec.Containers[0].Image).To(Equal(ew.ContainerImage))
+		}
+
+		if ew.ContainterCmd != nil {
+			Expect(dep.Spec.Template.Spec.Containers[0].Command).To(Equal(ew.ContainterCmd))
 		}
 
 		if ew.ContainterArgs != nil {
@@ -98,6 +101,9 @@ func checkWorkloadResources(dep *appsv1.Deployment, ew expectedWorkload) func() 
 		if ew.HPA {
 			Expect(hpa.Spec.ScaleTargetRef.Kind).Should(Equal("Deployment"))
 			Expect(hpa.Spec.ScaleTargetRef.Name).Should(Equal(ew.Name))
+			Expect(hpa.Spec.MinReplicas).Should(Equal(pointer.Int32Ptr(ew.Replicas)))
+		} else {
+			Expect(dep.Spec.Replicas).To(Equal(pointer.Int32Ptr(ew.Replicas)))
 		}
 
 		pdb := &policyv1beta1.PodDisruptionBudget{}
