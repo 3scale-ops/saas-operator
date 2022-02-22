@@ -75,8 +75,6 @@ func checkWorkloadResources(dep *appsv1.Deployment, ew expectedWorkload) func() 
 			}),
 		)
 
-		Expect(dep.Spec.Replicas).To(Equal(pointer.Int32Ptr(ew.Replicas)))
-
 		if ew.ContainerName != "" {
 			Expect(dep.Spec.Template.Spec.Containers[0].Name).To(Equal(ew.ContainerName))
 		}
@@ -103,6 +101,9 @@ func checkWorkloadResources(dep *appsv1.Deployment, ew expectedWorkload) func() 
 		if ew.HPA {
 			Expect(hpa.Spec.ScaleTargetRef.Kind).Should(Equal("Deployment"))
 			Expect(hpa.Spec.ScaleTargetRef.Name).Should(Equal(ew.Name))
+			Expect(hpa.Spec.MinReplicas).Should(Equal(pointer.Int32Ptr(ew.Replicas)))
+		} else {
+			Expect(dep.Spec.Replicas).To(Equal(pointer.Int32Ptr(ew.Replicas)))
 		}
 
 		pdb := &policyv1beta1.PodDisruptionBudget{}
