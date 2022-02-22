@@ -67,7 +67,10 @@ func (gen *Generator) Deployment() basereconciler_resources.DeploymentTemplate {
 	return basereconciler_resources.DeploymentTemplate{
 		Template: gen.deployment(),
 		RolloutTriggers: []basereconciler_resources.RolloutTrigger{
-			{Name: "mapping-service-system-master-access-token", SecretName: pointer.String("mapping-service-system-master-access-token")},
+			{
+				Name:       "mapping-service-system-master-access-token",
+				SecretName: pointer.String("mapping-service-system-master-access-token"),
+			},
 		},
 		EnforceReplicas: gen.Spec.HPA.IsDeactivated(),
 		IsEnabled:       true,

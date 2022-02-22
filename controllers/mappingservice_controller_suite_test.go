@@ -8,13 +8,12 @@ import (
 	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
-	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
-	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/utils/pointer"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ = Describe("MappingService controller", func() {
@@ -41,104 +40,243 @@ var _ = Describe("MappingService controller", func() {
 
 	})
 
-	Context("All defaults MappingService resource", func() {
+	When("deploying a defaulted MappingService instance", func() {
 
 		BeforeEach(func() {
-			By("creating an MappingService simple resource")
-			mappingservice = &saasv1alpha1.MappingService{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "instance",
-					Namespace: namespace,
-				},
-				Spec: saasv1alpha1.MappingServiceSpec{
-					Config: saasv1alpha1.MappingServiceConfig{
-						APIHost: "example.com",
-						SystemAdminToken: saasv1alpha1.SecretReference{
-							FromVault: &saasv1alpha1.VaultSecretReference{
-								Path: "some-path",
-								Key:  "some-key",
+
+			By("creating a MappingService simple resource", func() {
+				mappingservice = &saasv1alpha1.MappingService{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "instance",
+						Namespace: namespace,
+					},
+					Spec: saasv1alpha1.MappingServiceSpec{
+						Config: saasv1alpha1.MappingServiceConfig{
+							APIHost: "example.com",
+							SystemAdminToken: saasv1alpha1.SecretReference{
+								FromVault: &saasv1alpha1.VaultSecretReference{
+									Path: "some-path",
+									Key:  "some-key",
+								},
 							},
 						},
 					},
-				},
-			}
-			err := k8sClient.Create(context.Background(), mappingservice)
-			Expect(err).ToNot(HaveOccurred())
-			Eventually(func() error {
-				return k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, mappingservice)
-			}, timeout, poll).ShouldNot(HaveOccurred())
+				}
+				err := k8sClient.Create(context.Background(), mappingservice)
+				Expect(err).ToNot(HaveOccurred())
+				Eventually(func() error {
+					return k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, mappingservice)
+				}, timeout, poll).ShouldNot(HaveOccurred())
+			})
+
 		})
 
-		It("creates the required resources", func() {
-
-			Eventually(func() bool {
-				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, mappingservice)
-				Expect(err).ToNot(HaveOccurred())
-				return len(mappingservice.GetFinalizers()) > 0
-			}, timeout, poll).Should(BeTrue())
+		It("creates the required MappingService resources", func() {
 
 			dep := &appsv1.Deployment{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "mapping-service", Namespace: namespace},
-					dep,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-
-			sd := &secretsmanagerv1alpha1.SecretDefinition{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "mapping-service-system-master-access-token", Namespace: namespace},
-					sd,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
+			By("deploying a MappingService workload",
+				checkWorkloadResources(dep,
+					expectedWorkload{
+						Name:          "mapping-service",
+						Namespace:     namespace,
+						Replicas:      2,
+						ContainerName: "mapping-service",
+						PDB:           true,
+						HPA:           true,
+						PodMonitor:    true,
+					},
+				),
+			)
+			for _, env := range dep.Spec.Template.Spec.Containers[0].Env {
+				switch env.Name {
+				case "MASTER_ACCESS_TOKEN":
+					Expect(dep.Spec.Template.Spec.Containers[0].Env[0].ValueFrom.SecretKeyRef.LocalObjectReference.Name).To(Equal("mapping-service-system-master-access-token"))
+				case "API_HOST":
+					Expect(dep.Spec.Template.Spec.Containers[0].Env[1].Value).To(Equal("example.com"))
+				}
+			}
+			Expect(dep.Spec.Template.Spec.Volumes).To(HaveLen(0))
 
 			svc := &corev1.Service{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "mapping-service", Namespace: namespace},
-					svc,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
+			By("deploying a MappingService service",
+				checkResource(svc,
+					expectedResource{
+						Name:      "mapping-service",
+						Namespace: namespace,
+					},
+				),
+			)
+			Expect(svc.Spec.Selector["deployment"]).To(Equal("mapping-service"))
+			Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("mapping-service"))
 
-			pm := &monitoringv1.PodMonitor{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "mapping-service", Namespace: namespace},
-					pm,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
+			By("deploying the MappingService System Token secret definition",
+				checkResource(
+					&secretsmanagerv1alpha1.SecretDefinition{},
+					expectedResource{
+						Name:      "mapping-service-system-master-access-token",
+						Namespace: namespace,
+					},
+				),
+			)
 
-			hpa := &autoscalingv2beta2.HorizontalPodAutoscaler{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "mapping-service", Namespace: namespace},
-					hpa,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
+			By("deploying the MappingService grafana dashboard",
+				checkResource(
+					&grafanav1alpha1.GrafanaDashboard{},
+					expectedResource{
+						Name:      "mapping-service",
+						Namespace: namespace,
+					},
+				),
+			)
 
-			pdb := &policyv1beta1.PodDisruptionBudget{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "mapping-service", Namespace: namespace},
-					pdb,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-
-			gd := &grafanav1alpha1.GrafanaDashboard{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "mapping-service", Namespace: namespace},
-					gd,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
 		})
+
+		When("updating a MappingService resource with customizations", func() {
+
+			// Resource Versions
+			rvs := make(map[string]string)
+
+			BeforeEach(func() {
+				Eventually(func() error {
+
+					mappingservice := &saasv1alpha1.MappingService{}
+					if err := k8sClient.Get(
+						context.Background(),
+						types.NamespacedName{Name: "instance", Namespace: namespace},
+						mappingservice,
+					); err != nil {
+						return err
+					}
+
+					rvs["mapping-service"] = getResourceVersion(
+						mappingservice, "instance", namespace,
+					)
+					rvs["deployment/mappingservice"] = getResourceVersion(
+						&appsv1.Deployment{}, "mapping-service", namespace,
+					)
+
+					patch := client.MergeFrom(mappingservice.DeepCopy())
+					mappingservice.Spec.Config.APIHost = "updated-example.com"
+					mappingservice.Spec.Config.SystemAdminToken.FromVault.Path = "updated-path"
+					mappingservice.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{
+						MinReplicas: pointer.Int32(3),
+					}
+					mappingservice.Spec.LivenessProbe = &saasv1alpha1.ProbeSpec{}
+					mappingservice.Spec.ReadinessProbe = &saasv1alpha1.ProbeSpec{}
+					mappingservice.Spec.GrafanaDashboard = &saasv1alpha1.GrafanaDashboardSpec{}
+
+					return k8sClient.Patch(context.Background(), mappingservice, patch)
+
+				}, timeout, poll).ShouldNot(HaveOccurred())
+			})
+
+			It("updates the MappingService resources", func() {
+
+				dep := &appsv1.Deployment{}
+				By("updating the MappingService workload",
+					checkWorkloadResources(dep,
+						expectedWorkload{
+							Name:          "mapping-service",
+							Namespace:     namespace,
+							Replicas:      3,
+							ContainerName: "mapping-service",
+							PDB:           true,
+							HPA:           true,
+							PodMonitor:    true,
+							LastVersion:   rvs["deployment/mappingservice"],
+						},
+					),
+				)
+				for _, env := range dep.Spec.Template.Spec.Containers[0].Env {
+					switch env.Name {
+					case "MASTER_ACCESS_TOKEN":
+						Expect(dep.Spec.Template.Spec.Containers[0].Env[0].ValueFrom.SecretKeyRef.LocalObjectReference.Name).To(Equal("mapping-service-system-master-access-token"))
+					case "API_HOST":
+						Expect(dep.Spec.Template.Spec.Containers[0].Env[1].Value).To(Equal("updated-example.com"))
+					}
+				}
+				Expect(dep.Spec.Template.Spec.Containers[0].LivenessProbe).To(BeNil())
+				Expect(dep.Spec.Template.Spec.Containers[0].ReadinessProbe).To(BeNil())
+
+				sd := &secretsmanagerv1alpha1.SecretDefinition{}
+				By("updating the MappingService System Token secret definition",
+					checkResource(
+						sd,
+						expectedResource{
+							Name:      "mapping-service-system-master-access-token",
+							Namespace: namespace,
+						},
+					),
+				)
+				Expect(sd.Spec.KeysMap["MASTER_ACCESS_TOKEN"].Path).To(Equal("updated-path"))
+
+				By("ensuring the MappingService grafana dashboard is gone",
+					checkResource(
+						&grafanav1alpha1.GrafanaDashboard{},
+						expectedResource{
+							Name:      "mapping-service",
+							Namespace: namespace,
+							Missing:   true,
+						},
+					),
+				)
+
+			})
+
+		})
+
+		When("removing the PDB and HPA from a MappingService instance", func() {
+
+			// Resource Versions
+			rvs := make(map[string]string)
+
+			BeforeEach(func() {
+				Eventually(func() error {
+
+					mappingservice := &saasv1alpha1.MappingService{}
+					if err := k8sClient.Get(
+						context.Background(),
+						types.NamespacedName{Name: "instance", Namespace: namespace},
+						mappingservice,
+					); err != nil {
+						return err
+					}
+
+					rvs["deployment/mappingservice"] = getResourceVersion(
+						&appsv1.Deployment{}, "mapping-service", namespace,
+					)
+
+					patch := client.MergeFrom(mappingservice.DeepCopy())
+					mappingservice.Spec.Replicas = pointer.Int32(0)
+					mappingservice.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
+					mappingservice.Spec.PDB = &saasv1alpha1.PodDisruptionBudgetSpec{}
+
+					return k8sClient.Patch(context.Background(), mappingservice, patch)
+
+				}, timeout, poll).ShouldNot(HaveOccurred())
+			})
+
+			It("removes the MappingService disabled resources", func() {
+
+				dep := &appsv1.Deployment{}
+				By("updating the MappingService workload",
+					checkWorkloadResources(dep,
+						expectedWorkload{
+							Name:        "mapping-service",
+							Namespace:   namespace,
+							Replicas:    0,
+							HPA:         false,
+							PDB:         false,
+							PodMonitor:  true,
+							LastVersion: rvs["deployment/mappingservice"],
+						},
+					),
+				)
+
+			})
+
+		})
+
 	})
+
 })
