@@ -54,6 +54,7 @@ type expectedWorkload struct {
 	Replicas       int32
 	ContainerName  string
 	ContainerImage string
+	ContainterCmd  []string
 	ContainterArgs []string
 	HPA            bool
 	PDB            bool
@@ -82,6 +83,10 @@ func checkWorkloadResources(dep *appsv1.Deployment, ew expectedWorkload) func() 
 
 		if ew.ContainerImage != "" {
 			Expect(dep.Spec.Template.Spec.Containers[0].Image).To(Equal(ew.ContainerImage))
+		}
+
+		if ew.ContainterCmd != nil {
+			Expect(dep.Spec.Template.Spec.Containers[0].Command).To(Equal(ew.ContainterCmd))
 		}
 
 		if ew.ContainterArgs != nil {
