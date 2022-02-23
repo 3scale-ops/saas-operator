@@ -8,13 +8,12 @@ import (
 	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
-	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
-	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/utils/pointer"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ = Describe("Zync controller", func() {
@@ -41,7 +40,7 @@ var _ = Describe("Zync controller", func() {
 
 	})
 
-	Context("All defaults Zync resource", func() {
+	When("deploying a defaulted Zync instance", func() {
 
 		BeforeEach(func() {
 			By("creating a Zync simple resource")
@@ -80,104 +79,318 @@ var _ = Describe("Zync controller", func() {
 			}, timeout, poll).ShouldNot(HaveOccurred())
 		})
 
-		It("creates the required resources", func() {
-
-			Eventually(func() bool {
-				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, zync)
-				Expect(err).ToNot(HaveOccurred())
-				return len(zync.GetFinalizers()) > 0
-			}, timeout, poll).Should(BeTrue())
+		It("creates the required Zync resources", func() {
 
 			dep := &appsv1.Deployment{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "zync", Namespace: namespace},
-					dep,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "zync-que", Namespace: namespace},
-					dep,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
+			By("deploying a Zync workload",
+				checkWorkloadResources(dep,
+					expectedWorkload{
+						Name:          "zync",
+						Namespace:     namespace,
+						Replicas:      2,
+						ContainerName: "zync",
+						PDB:           true,
+						HPA:           true,
+						PodMonitor:    true,
+					},
+				),
+			)
+			for _, env := range dep.Spec.Template.Spec.Containers[0].Env {
+				switch env.Name {
+				case "RAILS_ENV":
+					Expect(env.Value).To(Equal("development"))
+				case "RAILS_MAX_THREADS":
+					Expect(env.Value).To(Equal("10"))
+				case "ZYNC_AUTHENTICATION_TOKEN":
+					Expect(env.ValueFrom.SecretKeyRef.LocalObjectReference.Name).To(Equal("zync"))
+				}
+			}
+			Expect(dep.Spec.Template.Spec.Volumes).To(HaveLen(0))
+			Expect(dep.Spec.Template.Spec.Containers[0].LivenessProbe).ToNot(BeNil())
+			Expect(dep.Spec.Template.Spec.Containers[0].ReadinessProbe).ToNot(BeNil())
+
+			By("deploying a Zync-Que workload",
+				checkWorkloadResources(dep,
+					expectedWorkload{
+						Name:          "zync-que",
+						Namespace:     namespace,
+						Replicas:      2,
+						ContainerName: "zync-que",
+						PDB:           true,
+						HPA:           true,
+						PodMonitor:    true,
+					},
+				),
+			)
+			for _, env := range dep.Spec.Template.Spec.Containers[0].Env {
+				switch env.Name {
+				case "RAILS_ENV":
+					Expect(env.Value).To(Equal("development"))
+				case "RAILS_LOG_LEVEL":
+					Expect(env.Value).To(Equal("info"))
+				case "ZYNC_AUTHENTICATION_TOKEN":
+					Expect(env.ValueFrom.SecretKeyRef.LocalObjectReference.Name).To(Equal("zync"))
+				}
+			}
+			Expect(dep.Spec.Template.Spec.Volumes).To(HaveLen(0))
+			Expect(dep.Spec.Template.Spec.Containers[0].LivenessProbe).ToNot(BeNil())
+			Expect(dep.Spec.Template.Spec.Containers[0].ReadinessProbe).ToNot(BeNil())
 
 			svc := &corev1.Service{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "zync", Namespace: namespace},
-					svc,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
+			By("deploying a Zync service",
+				checkResource(svc,
+					expectedResource{
+						Name:      "zync",
+						Namespace: namespace,
+					},
+				),
+			)
+			Expect(svc.Spec.Selector["deployment"]).To(Equal("zync"))
+			Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("zync"))
 
-			pm := &monitoringv1.PodMonitor{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "zync", Namespace: namespace},
-					pm,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "zync-que", Namespace: namespace},
-					pm,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
+			By("deploying the Zync secret definition",
+				checkResource(
+					&secretsmanagerv1alpha1.SecretDefinition{},
+					expectedResource{
+						Name:      "zync",
+						Namespace: namespace,
+					},
+				),
+			)
 
-			hpa := &autoscalingv2beta2.HorizontalPodAutoscaler{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "zync", Namespace: namespace},
-					hpa,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "zync-que", Namespace: namespace},
-					hpa,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
+			By("deploying the Zync grafana dashboard",
+				checkResource(
+					&grafanav1alpha1.GrafanaDashboard{},
+					expectedResource{
+						Name:      "zync",
+						Namespace: namespace,
+					},
+				),
+			)
 
-			pdb := &policyv1beta1.PodDisruptionBudget{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "zync", Namespace: namespace},
-					pdb,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "zync-que", Namespace: namespace},
-					pdb,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-
-			sd := &secretsmanagerv1alpha1.SecretDefinition{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "zync", Namespace: namespace},
-					sd,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-
-			gd := &grafanav1alpha1.GrafanaDashboard{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "zync", Namespace: namespace},
-					gd,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
 		})
+
+		When("updating a Zync resource with customizations", func() {
+
+			// Resource Versions
+			rvs := make(map[string]string)
+
+			BeforeEach(func() {
+				Eventually(func() error {
+
+					zync := &saasv1alpha1.Zync{}
+					if err := k8sClient.Get(
+						context.Background(),
+						types.NamespacedName{Name: "instance", Namespace: namespace},
+						zync,
+					); err != nil {
+						return err
+					}
+
+					rvs["deployment/zync"] = getResourceVersion(
+						&appsv1.Deployment{}, "zync", namespace,
+					)
+					rvs["deployment/zync-que"] = getResourceVersion(
+						&appsv1.Deployment{}, "zync-que", namespace,
+					)
+
+					patch := client.MergeFrom(zync.DeepCopy())
+					zync.Spec.API = &saasv1alpha1.APISpec{
+						HPA: &saasv1alpha1.HorizontalPodAutoscalerSpec{
+							MinReplicas: pointer.Int32(3),
+						},
+						LivenessProbe:  &saasv1alpha1.ProbeSpec{},
+						ReadinessProbe: &saasv1alpha1.ProbeSpec{},
+					}
+					zync.Spec.Que = &saasv1alpha1.QueSpec{
+						HPA: &saasv1alpha1.HorizontalPodAutoscalerSpec{
+							MinReplicas: pointer.Int32(3),
+						},
+						LivenessProbe:  &saasv1alpha1.ProbeSpec{},
+						ReadinessProbe: &saasv1alpha1.ProbeSpec{},
+					}
+					zync.Spec.Config.Rails = &saasv1alpha1.ZyncRailsSpec{
+						Environment: pointer.String("production"),
+						MaxThreads:  pointer.Int32(12),
+						LogLevel:    pointer.String("debug"),
+					}
+					zync.Spec.Config.DatabaseDSN.Override = pointer.String("updated-example.com")
+					zync.Spec.Config.SecretKeyBase.FromVault.Path = "updated-path"
+
+					zync.Spec.GrafanaDashboard = &saasv1alpha1.GrafanaDashboardSpec{}
+
+					return k8sClient.Patch(context.Background(), zync, patch)
+
+				}, timeout, poll).ShouldNot(HaveOccurred())
+			})
+
+			It("updates the Zync resources", func() {
+
+				dep := &appsv1.Deployment{}
+				By("updating the Zync workload",
+					checkWorkloadResources(dep,
+						expectedWorkload{
+							Name:          "zync",
+							Namespace:     namespace,
+							Replicas:      3,
+							ContainerName: "zync",
+							PDB:           true,
+							HPA:           true,
+							PodMonitor:    true,
+							LastVersion:   rvs["deployment/zync"],
+						},
+					),
+				)
+				for _, env := range dep.Spec.Template.Spec.Containers[0].Env {
+					switch env.Name {
+					case "RAILS_ENV":
+						Expect(env.Value).To(Equal("production"))
+					case "RAILS_MAX_THREADS":
+						Expect(env.Value).To(Equal("12"))
+					case "ZYNC_AUTHENTICATION_TOKEN":
+						Expect(env.ValueFrom.SecretKeyRef.LocalObjectReference.Name).To(Equal("zync"))
+					}
+				}
+				Expect(dep.Spec.Template.Spec.Containers[0].LivenessProbe).To(BeNil())
+				Expect(dep.Spec.Template.Spec.Containers[0].ReadinessProbe).To(BeNil())
+
+				By("updating the Zync-Que workload",
+					checkWorkloadResources(dep,
+						expectedWorkload{
+							Name:          "zync-que",
+							Namespace:     namespace,
+							Replicas:      3,
+							ContainerName: "zync-que",
+							ContainterCmd: []string{
+								"/usr/bin/bash",
+								"-c",
+								"bundle exec rake 'que[--worker-count 10]'",
+							},
+							PDB:         true,
+							HPA:         true,
+							PodMonitor:  true,
+							LastVersion: rvs["deployment/zync-que"],
+						},
+					),
+				)
+				for _, env := range dep.Spec.Template.Spec.Containers[0].Env {
+					switch env.Name {
+					case "RAILS_ENV":
+						Expect(env.Value).To(Equal("production"))
+					case "RAILS_LOG_LEVEL":
+						Expect(env.Value).To(Equal("debug"))
+					case "ZYNC_AUTHENTICATION_TOKEN":
+						Expect(env.ValueFrom.SecretKeyRef.LocalObjectReference.Name).To(Equal("zync"))
+					}
+				}
+				Expect(dep.Spec.Template.Spec.Containers[0].LivenessProbe).To(BeNil())
+				Expect(dep.Spec.Template.Spec.Containers[0].ReadinessProbe).To(BeNil())
+
+				sd := &secretsmanagerv1alpha1.SecretDefinition{}
+				By("updating the Zync secret definition",
+					checkResource(
+						sd,
+						expectedResource{
+							Name:      "zync",
+							Namespace: namespace,
+						},
+					),
+				)
+				Expect(sd.Spec.KeysMap["SECRET_KEY_BASE"].Path).To(Equal("updated-path"))
+
+				By("ensuring the Zync grafana dashboard is gone",
+					checkResource(
+						&grafanav1alpha1.GrafanaDashboard{},
+						expectedResource{
+							Name:      "zync",
+							Namespace: namespace,
+							Missing:   true,
+						},
+					),
+				)
+
+			})
+
+		})
+
+		When("removing the PDB and HPA from a Zync instance", func() {
+
+			// Resource Versions
+			rvs := make(map[string]string)
+
+			BeforeEach(func() {
+				Eventually(func() error {
+
+					zync := &saasv1alpha1.Zync{}
+					if err := k8sClient.Get(
+						context.Background(),
+						types.NamespacedName{Name: "instance", Namespace: namespace},
+						zync,
+					); err != nil {
+						return err
+					}
+
+					rvs["deployment/zync"] = getResourceVersion(
+						&appsv1.Deployment{}, "zync", namespace,
+					)
+					rvs["deployment/zync-que"] = getResourceVersion(
+						&appsv1.Deployment{}, "zync-que", namespace,
+					)
+					patch := client.MergeFrom(zync.DeepCopy())
+
+					zync.Spec.API = &saasv1alpha1.APISpec{
+						Replicas: pointer.Int32(0),
+						HPA:      &saasv1alpha1.HorizontalPodAutoscalerSpec{},
+						PDB:      &saasv1alpha1.PodDisruptionBudgetSpec{},
+					}
+
+					zync.Spec.Que = &saasv1alpha1.QueSpec{
+						Replicas: pointer.Int32(0),
+						HPA:      &saasv1alpha1.HorizontalPodAutoscalerSpec{},
+						PDB:      &saasv1alpha1.PodDisruptionBudgetSpec{},
+					}
+
+					return k8sClient.Patch(context.Background(), zync, patch)
+
+				}, timeout, poll).ShouldNot(HaveOccurred())
+			})
+
+			It("removes the Zync disabled resources", func() {
+
+				By("updating the Zync workload",
+					checkWorkloadResources(
+						&appsv1.Deployment{},
+						expectedWorkload{
+							Name:        "zync",
+							Namespace:   namespace,
+							Replicas:    0,
+							HPA:         false,
+							PDB:         false,
+							PodMonitor:  true,
+							LastVersion: rvs["deployment/zync"],
+						},
+					),
+				)
+
+				By("updating the Zync-Que workload",
+					checkWorkloadResources(
+						&appsv1.Deployment{},
+						expectedWorkload{
+							Name:        "zync-que",
+							Namespace:   namespace,
+							Replicas:    0,
+							HPA:         false,
+							PDB:         false,
+							PodMonitor:  true,
+							LastVersion: rvs["deployment/zync-que"],
+						},
+					),
+				)
+
+			})
+
+		})
+
 	})
+
 })
