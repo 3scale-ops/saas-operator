@@ -90,9 +90,9 @@ var _ = Describe("MappingService controller", func() {
 			for _, env := range dep.Spec.Template.Spec.Containers[0].Env {
 				switch env.Name {
 				case "MASTER_ACCESS_TOKEN":
-					Expect(dep.Spec.Template.Spec.Containers[0].Env[0].ValueFrom.SecretKeyRef.LocalObjectReference.Name).To(Equal("mapping-service-system-master-access-token"))
+					Expect(env.ValueFrom.SecretKeyRef.LocalObjectReference.Name).To(Equal("mapping-service-system-master-access-token"))
 				case "API_HOST":
-					Expect(dep.Spec.Template.Spec.Containers[0].Env[1].Value).To(Equal("example.com"))
+					Expect(env.Value).To(Equal("example.com"))
 				}
 			}
 			Expect(dep.Spec.Template.Spec.Volumes).To(HaveLen(0))
