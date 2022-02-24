@@ -313,83 +313,88 @@ var _ = Describe("Zync controller", func() {
 
 		})
 
-		When("removing the PDB and HPA from a Zync instance", func() {
+		// Disabled due to https://github.com/3scale-ops/saas-operator/issues/126
+		if flag_executeRemoveTests {
 
-			// Resource Versions
-			rvs := make(map[string]string)
+			When("removing the PDB and HPA from a Zync instance", func() {
 
-			BeforeEach(func() {
-				Eventually(func() error {
+				// Resource Versions
+				rvs := make(map[string]string)
 
-					zync := &saasv1alpha1.Zync{}
-					if err := k8sClient.Get(
-						context.Background(),
-						types.NamespacedName{Name: "instance", Namespace: namespace},
-						zync,
-					); err != nil {
-						return err
-					}
+				BeforeEach(func() {
+					Eventually(func() error {
 
-					rvs["deployment/zync"] = getResourceVersion(
-						&appsv1.Deployment{}, "zync", namespace,
+						zync := &saasv1alpha1.Zync{}
+						if err := k8sClient.Get(
+							context.Background(),
+							types.NamespacedName{Name: "instance", Namespace: namespace},
+							zync,
+						); err != nil {
+							return err
+						}
+
+						rvs["deployment/zync"] = getResourceVersion(
+							&appsv1.Deployment{}, "zync", namespace,
+						)
+						rvs["deployment/zync-que"] = getResourceVersion(
+							&appsv1.Deployment{}, "zync-que", namespace,
+						)
+						patch := client.MergeFrom(zync.DeepCopy())
+
+						zync.Spec.API = &saasv1alpha1.APISpec{
+							Replicas: pointer.Int32(0),
+							HPA:      &saasv1alpha1.HorizontalPodAutoscalerSpec{},
+							PDB:      &saasv1alpha1.PodDisruptionBudgetSpec{},
+						}
+
+						zync.Spec.Que = &saasv1alpha1.QueSpec{
+							Replicas: pointer.Int32(0),
+							HPA:      &saasv1alpha1.HorizontalPodAutoscalerSpec{},
+							PDB:      &saasv1alpha1.PodDisruptionBudgetSpec{},
+						}
+
+						return k8sClient.Patch(context.Background(), zync, patch)
+
+					}, timeout, poll).ShouldNot(HaveOccurred())
+				})
+
+				It("removes the Zync disabled resources", func() {
+
+					By("updating the Zync workload",
+						checkWorkloadResources(
+							&appsv1.Deployment{},
+							expectedWorkload{
+								Name:        "zync",
+								Namespace:   namespace,
+								Replicas:    0,
+								HPA:         false,
+								PDB:         false,
+								PodMonitor:  true,
+								LastVersion: rvs["deployment/zync"],
+							},
+						),
 					)
-					rvs["deployment/zync-que"] = getResourceVersion(
-						&appsv1.Deployment{}, "zync-que", namespace,
+
+					By("updating the Zync-Que workload",
+						checkWorkloadResources(
+							&appsv1.Deployment{},
+							expectedWorkload{
+								Name:        "zync-que",
+								Namespace:   namespace,
+								Replicas:    0,
+								HPA:         false,
+								PDB:         false,
+								PodMonitor:  true,
+								LastVersion: rvs["deployment/zync-que"],
+							},
+						),
 					)
-					patch := client.MergeFrom(zync.DeepCopy())
 
-					zync.Spec.API = &saasv1alpha1.APISpec{
-						Replicas: pointer.Int32(0),
-						HPA:      &saasv1alpha1.HorizontalPodAutoscalerSpec{},
-						PDB:      &saasv1alpha1.PodDisruptionBudgetSpec{},
-					}
+				})
 
-					zync.Spec.Que = &saasv1alpha1.QueSpec{
-						Replicas: pointer.Int32(0),
-						HPA:      &saasv1alpha1.HorizontalPodAutoscalerSpec{},
-						PDB:      &saasv1alpha1.PodDisruptionBudgetSpec{},
-					}
-
-					return k8sClient.Patch(context.Background(), zync, patch)
-
-				}, timeout, poll).ShouldNot(HaveOccurred())
 			})
 
-			It("removes the Zync disabled resources", func() {
-
-				By("updating the Zync workload",
-					checkWorkloadResources(
-						&appsv1.Deployment{},
-						expectedWorkload{
-							Name:        "zync",
-							Namespace:   namespace,
-							Replicas:    0,
-							HPA:         false,
-							PDB:         false,
-							PodMonitor:  true,
-							LastVersion: rvs["deployment/zync"],
-						},
-					),
-				)
-
-				By("updating the Zync-Que workload",
-					checkWorkloadResources(
-						&appsv1.Deployment{},
-						expectedWorkload{
-							Name:        "zync-que",
-							Namespace:   namespace,
-							Replicas:    0,
-							HPA:         false,
-							PDB:         false,
-							PodMonitor:  true,
-							LastVersion: rvs["deployment/zync-que"],
-						},
-					),
-				)
-
-			})
-
-		})
+		}
 
 	})
 

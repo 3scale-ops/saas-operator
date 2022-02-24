@@ -346,58 +346,62 @@ var _ = Describe("AutoSSL controller", func() {
 
 		})
 
-		When("removing the PDB and HPA from a AutoSSL instance", func() {
+		// Disabled due to https://github.com/3scale-ops/saas-operator/issues/126
+		if flag_executeRemoveTests {
 
-			// Resource Versions
-			rvs := make(map[string]string)
+			When("removing the PDB and HPA from a AutoSSL instance", func() {
 
-			BeforeEach(func() {
-				Eventually(func() error {
+				// Resource Versions
+				rvs := make(map[string]string)
 
-					autossl := &saasv1alpha1.AutoSSL{}
-					if err := k8sClient.Get(
-						context.Background(),
-						types.NamespacedName{Name: "instance", Namespace: namespace},
-						autossl,
-					); err != nil {
-						return err
-					}
+				BeforeEach(func() {
+					Eventually(func() error {
 
-					rvs["deployment/autossl"] = getResourceVersion(
-						&appsv1.Deployment{}, "autossl", namespace,
+						autossl := &saasv1alpha1.AutoSSL{}
+						if err := k8sClient.Get(
+							context.Background(),
+							types.NamespacedName{Name: "instance", Namespace: namespace},
+							autossl,
+						); err != nil {
+							return err
+						}
+
+						rvs["deployment/autossl"] = getResourceVersion(
+							&appsv1.Deployment{}, "autossl", namespace,
+						)
+
+						patch := client.MergeFrom(autossl.DeepCopy())
+						autossl.Spec.Replicas = pointer.Int32(0)
+						autossl.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
+						autossl.Spec.PDB = &saasv1alpha1.PodDisruptionBudgetSpec{}
+
+						return k8sClient.Patch(context.Background(), autossl, patch)
+
+					}, timeout, poll).ShouldNot(HaveOccurred())
+				})
+
+				It("removes the AutoSSL disabled resources", func() {
+
+					dep := &appsv1.Deployment{}
+					By("updating the AutoSSL workload",
+						checkWorkloadResources(dep,
+							expectedWorkload{
+								Name:        "autossl",
+								Namespace:   namespace,
+								Replicas:    0,
+								HPA:         false,
+								PDB:         false,
+								PodMonitor:  true,
+								LastVersion: rvs["deployment/autossl"],
+							},
+						),
 					)
 
-					patch := client.MergeFrom(autossl.DeepCopy())
-					autossl.Spec.Replicas = pointer.Int32(0)
-					autossl.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
-					autossl.Spec.PDB = &saasv1alpha1.PodDisruptionBudgetSpec{}
-
-					return k8sClient.Patch(context.Background(), autossl, patch)
-
-				}, timeout, poll).ShouldNot(HaveOccurred())
-			})
-
-			It("removes the AutoSSL disabled resources", func() {
-
-				dep := &appsv1.Deployment{}
-				By("updating the AutoSSL workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:        "autossl",
-							Namespace:   namespace,
-							Replicas:    0,
-							HPA:         false,
-							PDB:         false,
-							PodMonitor:  true,
-							LastVersion: rvs["deployment/autossl"],
-						},
-					),
-				)
+				})
 
 			})
 
-		})
-
+		}
 	})
 
 })

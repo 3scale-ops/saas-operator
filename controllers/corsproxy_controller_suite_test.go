@@ -202,57 +202,62 @@ var _ = Describe("CORSProxy controller", func() {
 
 		})
 
-		When("removing the PDB and HPA from a CORSProxy instance", func() {
+		// Disabled due to https://github.com/3scale-ops/saas-operator/issues/126
+		if flag_executeRemoveTests {
 
-			// Resource Versions
-			rvs := make(map[string]string)
+			When("removing the PDB and HPA from a CORSProxy instance", func() {
 
-			BeforeEach(func() {
-				Eventually(func() error {
+				// Resource Versions
+				rvs := make(map[string]string)
 
-					corsproxy := &saasv1alpha1.CORSProxy{}
-					if err := k8sClient.Get(
-						context.Background(),
-						types.NamespacedName{Name: "instance", Namespace: namespace},
-						corsproxy,
-					); err != nil {
-						return err
-					}
+				BeforeEach(func() {
+					Eventually(func() error {
 
-					rvs["deployment/corsproxy"] = getResourceVersion(
-						&appsv1.Deployment{}, "cors-proxy", namespace,
+						corsproxy := &saasv1alpha1.CORSProxy{}
+						if err := k8sClient.Get(
+							context.Background(),
+							types.NamespacedName{Name: "instance", Namespace: namespace},
+							corsproxy,
+						); err != nil {
+							return err
+						}
+
+						rvs["deployment/corsproxy"] = getResourceVersion(
+							&appsv1.Deployment{}, "cors-proxy", namespace,
+						)
+
+						patch := client.MergeFrom(corsproxy.DeepCopy())
+						corsproxy.Spec.Replicas = pointer.Int32(0)
+						corsproxy.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
+						corsproxy.Spec.PDB = &saasv1alpha1.PodDisruptionBudgetSpec{}
+
+						return k8sClient.Patch(context.Background(), corsproxy, patch)
+
+					}, timeout, poll).ShouldNot(HaveOccurred())
+				})
+
+				It("removes the CORSProxy disabled resources", func() {
+
+					dep := &appsv1.Deployment{}
+					By("updating the CORSProxy workload",
+						checkWorkloadResources(dep,
+							expectedWorkload{
+								Name:        "cors-proxy",
+								Namespace:   namespace,
+								Replicas:    0,
+								HPA:         false,
+								PDB:         false,
+								PodMonitor:  true,
+								LastVersion: rvs["deployment/corsproxy"],
+							},
+						),
 					)
 
-					patch := client.MergeFrom(corsproxy.DeepCopy())
-					corsproxy.Spec.Replicas = pointer.Int32(0)
-					corsproxy.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
-					corsproxy.Spec.PDB = &saasv1alpha1.PodDisruptionBudgetSpec{}
-
-					return k8sClient.Patch(context.Background(), corsproxy, patch)
-
-				}, timeout, poll).ShouldNot(HaveOccurred())
-			})
-
-			It("removes the CORSProxy disabled resources", func() {
-
-				dep := &appsv1.Deployment{}
-				By("updating the CORSProxy workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:        "cors-proxy",
-							Namespace:   namespace,
-							Replicas:    0,
-							HPA:         false,
-							PDB:         false,
-							PodMonitor:  true,
-							LastVersion: rvs["deployment/corsproxy"],
-						},
-					),
-				)
+				})
 
 			})
 
-		})
+		}
 
 	})
 

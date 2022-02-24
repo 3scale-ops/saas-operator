@@ -603,79 +603,83 @@ var _ = Describe("Apicast controller", func() {
 
 		})
 
-		When("removing the PDB and HPA from an Apicast instance", func() {
+		// Disabled due to https://github.com/3scale-ops/saas-operator/issues/126
+		if flag_executeRemoveTests {
 
-			// Resource Versions
-			rvs := make(map[string]string)
+			When("removing the PDB and HPA from an Apicast instance", func() {
 
-			BeforeEach(func() {
-				Eventually(func() error {
+				// Resource Versions
+				rvs := make(map[string]string)
 
-					apicast := &saasv1alpha1.Apicast{}
-					if err := k8sClient.Get(
-						context.Background(),
-						types.NamespacedName{Name: "instance", Namespace: namespace},
-						apicast,
-					); err != nil {
-						return err
-					}
+				BeforeEach(func() {
+					Eventually(func() error {
 
-					rvs["deployment/apicast-production"] = getResourceVersion(
-						&appsv1.Deployment{}, "apicast-production", namespace,
+						apicast := &saasv1alpha1.Apicast{}
+						if err := k8sClient.Get(
+							context.Background(),
+							types.NamespacedName{Name: "instance", Namespace: namespace},
+							apicast,
+						); err != nil {
+							return err
+						}
+
+						rvs["deployment/apicast-production"] = getResourceVersion(
+							&appsv1.Deployment{}, "apicast-production", namespace,
+						)
+						rvs["deployment/apicast-staging"] = getResourceVersion(
+							&appsv1.Deployment{}, "apicast-staging", namespace,
+						)
+
+						patch := client.MergeFrom(apicast.DeepCopy())
+
+						apicast.Spec.Production.Replicas = pointer.Int32(0)
+						apicast.Spec.Production.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
+						apicast.Spec.Production.PDB = &saasv1alpha1.PodDisruptionBudgetSpec{}
+
+						apicast.Spec.Staging.Replicas = pointer.Int32(0)
+						apicast.Spec.Staging.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
+						apicast.Spec.Staging.PDB = &saasv1alpha1.PodDisruptionBudgetSpec{}
+
+						return k8sClient.Patch(context.Background(), apicast, patch)
+
+					}, timeout, poll).ShouldNot(HaveOccurred())
+				})
+
+				It("removes the Apicast disabled resources", func() {
+
+					dep := &appsv1.Deployment{}
+					By("updating the Apicast Production workload",
+						checkWorkloadResources(dep,
+							expectedWorkload{
+								Name:        "apicast-production",
+								Namespace:   namespace,
+								Replicas:    0,
+								HPA:         false,
+								PDB:         false,
+								PodMonitor:  true,
+								LastVersion: rvs["deployment/apicast-production"],
+							},
+						),
 					)
-					rvs["deployment/apicast-staging"] = getResourceVersion(
-						&appsv1.Deployment{}, "apicast-staging", namespace,
+					By("updating the Apicast Staging workload",
+						checkWorkloadResources(dep,
+							expectedWorkload{
+								Name:        "apicast-staging",
+								Namespace:   namespace,
+								Replicas:    0,
+								HPA:         false,
+								PDB:         false,
+								PodMonitor:  true,
+								LastVersion: rvs["deployment/apicast-staging"],
+							},
+						),
 					)
 
-					patch := client.MergeFrom(apicast.DeepCopy())
+				})
 
-					apicast.Spec.Production.Replicas = pointer.Int32(0)
-					apicast.Spec.Production.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
-					apicast.Spec.Production.PDB = &saasv1alpha1.PodDisruptionBudgetSpec{}
-
-					apicast.Spec.Staging.Replicas = pointer.Int32(0)
-					apicast.Spec.Staging.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
-					apicast.Spec.Staging.PDB = &saasv1alpha1.PodDisruptionBudgetSpec{}
-
-					return k8sClient.Patch(context.Background(), apicast, patch)
-
-				}, timeout, poll).ShouldNot(HaveOccurred())
 			})
 
-			It("removes the Apicast disabled resources", func() {
-
-				dep := &appsv1.Deployment{}
-				By("updating the Apicast Production workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:        "apicast-production",
-							Namespace:   namespace,
-							Replicas:    0,
-							HPA:         false,
-							PDB:         false,
-							PodMonitor:  true,
-							LastVersion: rvs["deployment/apicast-production"],
-						},
-					),
-				)
-				By("updating the Apicast Staging workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:        "apicast-staging",
-							Namespace:   namespace,
-							Replicas:    0,
-							HPA:         false,
-							PDB:         false,
-							PodMonitor:  true,
-							LastVersion: rvs["deployment/apicast-staging"],
-						},
-					),
-				)
-
-			})
-
-		})
-
+		}
 	})
 
 })
