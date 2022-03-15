@@ -133,7 +133,10 @@ type CORSProxyConfig struct {
 }
 
 // Default sets default values for any value not specifically set in the CORSProxyConfig struct
-func (cfg *CORSProxyConfig) Default() {}
+func (cfg *CORSProxyConfig) Default() {
+	cfg.SystemDatabaseDSN.FromVault.SecretStoreRef = InitializeVaultSecretStoreReferenceSpec(cfg.SystemDatabaseDSN.FromVault.SecretStoreRef, defaultVaultSecretStoreReference)
+	cfg.SystemDatabaseDSN.FromVault.RefreshInterval = durationOrDefault(cfg.SystemDatabaseDSN.FromVault.RefreshInterval, &defaultVaultRefreshInterval)
+}
 
 // CORSProxyStatus defines the observed state of CORSProxy
 type CORSProxyStatus struct{}

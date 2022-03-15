@@ -2,10 +2,11 @@ package controllers
 
 import (
 	"context"
+	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
-	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
@@ -55,8 +56,9 @@ var _ = Describe("CORSProxy controller", func() {
 						Config: saasv1alpha1.CORSProxyConfig{
 							SystemDatabaseDSN: saasv1alpha1.SecretReference{
 								FromVault: &saasv1alpha1.VaultSecretReference{
-									Path: "some-path",
-									Key:  "some-key",
+									Path:            "secret/data/example/some-path",
+									Key:             "some-key",
+									RefreshInterval: &metav1.Duration{Duration: 1 * time.Second},
 								},
 							},
 						},
@@ -105,18 +107,28 @@ var _ = Describe("CORSProxy controller", func() {
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("cors-proxy"))
 			Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("cors-proxy"))
 
-			sd := &secretsmanagerv1alpha1.SecretDefinition{}
-			By("deploying the CORSProxy System Database secret definition",
+			es := &externalsecretsv1alpha1.ExternalSecret{}
+			By("deploying the CORSProxy System Database external secret",
 				checkResource(
-					sd,
+					es,
 					expectedResource{
 						Name:      "cors-proxy-system-database",
 						Namespace: namespace,
 					},
 				),
 			)
-			Expect(sd.Spec.KeysMap["DATABASE_URL"].Key).To(Equal("some-key"))
-			Expect(sd.Spec.KeysMap["DATABASE_URL"].Path).To(Equal("some-path"))
+
+			Expect(es.Spec.RefreshInterval.ToUnstructured()).To(Equal("1s"))
+			Expect(es.Spec.SecretStoreRef.Name).To(Equal("vault-mgmt"))
+			Expect(es.Spec.SecretStoreRef.Kind).To(Equal("ClusterSecretStore"))
+
+			for _, data := range es.Spec.Data {
+				switch data.SecretKey {
+				case "DATABASE_URL":
+					Expect(data.RemoteRef.Property).To(Equal("some-key"))
+					Expect(data.RemoteRef.Key).To(Equal("example/some-path"))
+				}
+			}
 
 			By("deploying the CORSProxy grafana dashboard",
 				checkResource(
