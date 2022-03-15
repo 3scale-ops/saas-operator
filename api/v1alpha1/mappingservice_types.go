@@ -155,7 +155,8 @@ type MappingServiceConfig struct {
 // Default sets default values for any value not specifically set in the MappingServiceConfig struct
 func (cfg *MappingServiceConfig) Default() {
 	cfg.LogLevel = stringOrDefault(cfg.LogLevel, pointer.StringPtr(mappingserviceDefaultLogLevel))
-
+	cfg.SystemAdminToken.FromVault.SecretStoreRef = InitializeVaultSecretStoreReferenceSpec(cfg.SystemAdminToken.FromVault.SecretStoreRef, defaultVaultSecretStoreReference)
+	cfg.SystemAdminToken.FromVault.RefreshInterval = durationOrDefault(cfg.SystemAdminToken.FromVault.RefreshInterval, &defaultVaultRefreshInterval)
 }
 
 // MappingServiceStatus defines the observed state of MappingService
