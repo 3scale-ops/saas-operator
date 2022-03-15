@@ -26,7 +26,8 @@ func GenerateExternalSecretFn(name, namespace, secretStoreName, secretStoreKind 
 					Kind: secretStoreKind,
 				},
 				Target: externalsecretsv1alpha1.ExternalSecretTarget{
-					Name: name,
+					Name:           name,
+					CreationPolicy: "Owner",
 				},
 				RefreshInterval: &refreshInterval,
 				Data:            keysSlice(name, opts),
