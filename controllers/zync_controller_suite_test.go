@@ -2,10 +2,11 @@ package controllers
 
 import (
 	"context"
+	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
-	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
@@ -53,20 +54,28 @@ var _ = Describe("Zync controller", func() {
 					Config: saasv1alpha1.ZyncConfig{
 						DatabaseDSN: saasv1alpha1.SecretReference{
 							FromVault: &saasv1alpha1.VaultSecretReference{
-								Path: "some-path",
-								Key:  "some-key",
+								Path: "some-path-db",
+								Key:  "some-key-db",
 							},
 						},
 						SecretKeyBase: saasv1alpha1.SecretReference{
 							FromVault: &saasv1alpha1.VaultSecretReference{
-								Path: "some-path",
-								Key:  "some-key",
+								Path: "some-path-base",
+								Key:  "some-key-base",
 							},
 						},
 						ZyncAuthToken: saasv1alpha1.SecretReference{
 							FromVault: &saasv1alpha1.VaultSecretReference{
-								Path: "some-path",
-								Key:  "some-key",
+								Path: "some-path-token",
+								Key:  "some-key-token",
+							},
+						},
+						Bugsnag: &saasv1alpha1.BugsnagSpec{
+							APIKey: saasv1alpha1.SecretReference{
+								FromVault: &saasv1alpha1.VaultSecretReference{
+									Path: "some-path-bugsnag",
+									Key:  "some-key-bugsnag",
+								},
 							},
 						},
 					},
@@ -148,15 +157,37 @@ var _ = Describe("Zync controller", func() {
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("zync"))
 			Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("zync"))
 
-			By("deploying the Zync secret definition",
+			es := &externalsecretsv1alpha1.ExternalSecret{}
+			By("deploying the Zync external secret",
 				checkResource(
-					&secretsmanagerv1alpha1.SecretDefinition{},
+					es,
 					expectedResource{
 						Name:      "zync",
 						Namespace: namespace,
 					},
 				),
 			)
+
+			Expect(es.Spec.RefreshInterval.ToUnstructured()).To(Equal("1m0s"))
+			Expect(es.Spec.SecretStoreRef.Name).To(Equal("vault-mgmt"))
+			Expect(es.Spec.SecretStoreRef.Kind).To(Equal("ClusterSecretStore"))
+
+			for _, data := range es.Spec.Data {
+				switch data.SecretKey {
+				case "DATABASE_URL":
+					Expect(data.RemoteRef.Property).To(Equal("some-key-db"))
+					Expect(data.RemoteRef.Key).To(Equal("some-path-db"))
+				case "SECRET_KEY_BASE":
+					Expect(data.RemoteRef.Property).To(Equal("some-key-base"))
+					Expect(data.RemoteRef.Key).To(Equal("some-path-base"))
+				case "ZYNC_AUTHENTICATION_TOKEN":
+					Expect(data.RemoteRef.Property).To(Equal("some-key-token"))
+					Expect(data.RemoteRef.Key).To(Equal("some-path-token"))
+				case "BUGSNAG_API_KEY":
+					Expect(data.RemoteRef.Property).To(Equal("some-key-bugsnag"))
+					Expect(data.RemoteRef.Key).To(Equal("some-path-bugsnag"))
+				}
+			}
 
 			By("deploying the Zync grafana dashboard",
 				checkResource(
@@ -214,8 +245,8 @@ var _ = Describe("Zync controller", func() {
 						MaxThreads:  pointer.Int32(12),
 						LogLevel:    pointer.String("debug"),
 					}
-					zync.Spec.Config.DatabaseDSN.Override = pointer.String("updated-example.com")
-					zync.Spec.Config.SecretKeyBase.FromVault.Path = "updated-path"
+					zync.Spec.Config.DatabaseDSN.FromVault.RefreshInterval = &metav1.Duration{Duration: 1 * time.Second}
+					zync.Spec.Config.SecretKeyBase.FromVault.Path = "secret/data/updated-path"
 
 					zync.Spec.GrafanaDashboard = &saasv1alpha1.GrafanaDashboardSpec{}
 
@@ -286,17 +317,25 @@ var _ = Describe("Zync controller", func() {
 				Expect(dep.Spec.Template.Spec.Containers[0].LivenessProbe).To(BeNil())
 				Expect(dep.Spec.Template.Spec.Containers[0].ReadinessProbe).To(BeNil())
 
-				sd := &secretsmanagerv1alpha1.SecretDefinition{}
-				By("updating the Zync secret definition",
+				es := &externalsecretsv1alpha1.ExternalSecret{}
+				By("updating the Zync external secret",
 					checkResource(
-						sd,
+						es,
 						expectedResource{
 							Name:      "zync",
 							Namespace: namespace,
 						},
 					),
 				)
-				Expect(sd.Spec.KeysMap["SECRET_KEY_BASE"].Path).To(Equal("updated-path"))
+
+				Expect(es.Spec.RefreshInterval.ToUnstructured()).To(Equal("1s"))
+
+				for _, data := range es.Spec.Data {
+					switch data.SecretKey {
+					case "SECRET_KEY_BASE":
+						Expect(data.RemoteRef.Key).To(Equal("updated-path"))
+					}
+				}
 
 				By("ensuring the Zync grafana dashboard is gone",
 					checkResource(

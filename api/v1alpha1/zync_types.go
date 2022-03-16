@@ -268,6 +268,8 @@ func (cfg *ZyncConfig) Default() {
 	if cfg.Bugsnag == nil {
 		cfg.Bugsnag = &zyncDefaultConfigBugsnagSpec
 	}
+	cfg.DatabaseDSN.FromVault.SecretStoreRef = InitializeVaultSecretStoreReferenceSpec(cfg.DatabaseDSN.FromVault.SecretStoreRef, defaultVaultSecretStoreReference)
+	cfg.DatabaseDSN.FromVault.RefreshInterval = durationOrDefault(cfg.DatabaseDSN.FromVault.RefreshInterval, &defaultVaultRefreshInterval)
 	cfg.Rails.Default()
 }
 
