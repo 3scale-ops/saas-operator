@@ -172,7 +172,7 @@ var _ = Describe("MappingService controller", func() {
 					patch := client.MergeFrom(mappingservice.DeepCopy())
 					mappingservice.Spec.Config.APIHost = "updated-example.com"
 					mappingservice.Spec.Config.SystemAdminToken.FromVault.Path = "secret/data/updated-path"
-					mappingservice.Spec.Config.SystemAdminToken.FromVault.RefreshInterval = &metav1.Duration{Duration: 1 * time.Second}
+					mappingservice.Spec.Config.ExternalSecret.RefreshInterval = &metav1.Duration{Duration: 1 * time.Second}
 					mappingservice.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{
 						MinReplicas: pointer.Int32(3),
 					}

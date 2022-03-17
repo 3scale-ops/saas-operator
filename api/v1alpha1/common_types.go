@@ -38,8 +38,8 @@ const (
 )
 
 var (
-	defaultVaultRefreshInterval      metav1.Duration                      = metav1.Duration{Duration: 60 * time.Second}
-	defaultVaultSecretStoreReference defaultVaultSecretStoreReferenceSpec = defaultVaultSecretStoreReferenceSpec{
+	defaultExternalSecretRefreshInterval      metav1.Duration                               = metav1.Duration{Duration: 60 * time.Second}
+	defaultExternalSecretSecretStoreReference defaultExternalSecretSecretStoreReferenceSpec = defaultExternalSecretSecretStoreReferenceSpec{
 		Name: pointer.StringPtr("vault-mgmt"),
 		Kind: pointer.StringPtr("ClusterSecretStore"),
 	}
@@ -581,6 +581,23 @@ func InitializeMarin3rSidecarSpec(spec *Marin3rSidecarSpec, def defaultMarin3rSi
 	return spec
 }
 
+// ExternalSecret is a reference to the ExternalSecret common configuration
+type ExternalSecret struct {
+	// SecretStoreRef defines which SecretStore to use when fetching the secret data
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	SecretStoreRef *ExternalSecretSecretStoreReferenceSpec `json:"secretStoreRef,omitempty"`
+	// RefreshInterval is the amount of time before the values reading again from the SecretStore provider (duration)
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	RefreshInterval *metav1.Duration `json:"refreshInterval,omitempty"`
+}
+
+func (spec *ExternalSecret) Default() {
+	spec.SecretStoreRef = InitializeExternalSecretSecretStoreReferenceSpec(spec.SecretStoreRef, defaultExternalSecretSecretStoreReference)
+	spec.RefreshInterval = durationOrDefault(spec.RefreshInterval, &defaultExternalSecretRefreshInterval)
+}
+
 // SecretReference is a reference to a secret stored in some secrets engine
 type SecretReference struct {
 	// VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
@@ -602,23 +619,13 @@ type VaultSecretReference struct {
 	// The Vault key of the secret
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Key string `json:"key"`
-	// The Vault secret store reference
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	SecretStoreRef *VaultSecretStoreReferenceSpec `json:"secretStoreRef,omitempty"`
-	// The Vault refresh interval of the secret (duration)
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	RefreshInterval *metav1.Duration `json:"refreshInterval,omitempty"`
 }
 
 func (spec *VaultSecretReference) Default() {
-	spec.SecretStoreRef = InitializeVaultSecretStoreReferenceSpec(spec.SecretStoreRef, defaultVaultSecretStoreReference)
-	spec.RefreshInterval = durationOrDefault(spec.RefreshInterval, &defaultVaultRefreshInterval)
 }
 
-// VaultSecretStoreReferenceSpec is a reference to a secret store
-type VaultSecretStoreReferenceSpec struct {
+// ExternalSecretSecretStoreReferenceSpec is a reference to a secret store
+type ExternalSecretSecretStoreReferenceSpec struct {
 	// The Vault secret store reference name
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -629,20 +636,20 @@ type VaultSecretStoreReferenceSpec struct {
 	Kind *string `json:"kind,omitempty"`
 }
 
-type defaultVaultSecretStoreReferenceSpec struct {
+type defaultExternalSecretSecretStoreReferenceSpec struct {
 	Name, Kind *string
 }
 
-// Default sets default values for any value not specifically set in the VaultSecretStoreReferenceSpec struct
-func (spec *VaultSecretStoreReferenceSpec) Default(def defaultVaultSecretStoreReferenceSpec) {
+// Default sets default values for any value not specifically set in the ExternalSecretSecretStoreReferenceSpec struct
+func (spec *ExternalSecretSecretStoreReferenceSpec) Default(def defaultExternalSecretSecretStoreReferenceSpec) {
 	spec.Name = stringOrDefault(spec.Name, def.Name)
 	spec.Kind = stringOrDefault(spec.Kind, def.Kind)
 }
 
-// InitializeVaultSecretStoreReferenceSpec initializes a VaultSecretStoreReferenceSpec struct
-func InitializeVaultSecretStoreReferenceSpec(spec *VaultSecretStoreReferenceSpec, def defaultVaultSecretStoreReferenceSpec) *VaultSecretStoreReferenceSpec {
+// InitializeExternalSecretSecretStoreReferenceSpec initializes a ExternalSecretSecretStoreReferenceSpec struct
+func InitializeExternalSecretSecretStoreReferenceSpec(spec *ExternalSecretSecretStoreReferenceSpec, def defaultExternalSecretSecretStoreReferenceSpec) *ExternalSecretSecretStoreReferenceSpec {
 	if spec == nil {
-		new := &VaultSecretStoreReferenceSpec{}
+		new := &ExternalSecretSecretStoreReferenceSpec{}
 		new.Default(def)
 		return new
 	}

@@ -92,7 +92,7 @@ func (gen *Generator) Resources() []basereconciler.Resource {
 		},
 		// ExternalSecret
 		basereconciler_resources.ExternalSecretTemplate{
-			Template:  pod.GenerateExternalSecretFn("zync", gen.GetNamespace(), *gen.Config.DatabaseDSN.FromVault.SecretStoreRef.Name, *gen.Config.DatabaseDSN.FromVault.SecretStoreRef.Kind, *gen.Config.DatabaseDSN.FromVault.RefreshInterval, gen.GetLabels(), gen.API.Options),
+			Template:  pod.GenerateExternalSecretFn("zync", gen.GetNamespace(), *gen.Config.ExternalSecret.SecretStoreRef.Name, *gen.Config.ExternalSecret.SecretStoreRef.Kind, *gen.Config.ExternalSecret.RefreshInterval, gen.GetLabels(), gen.API.Options),
 			IsEnabled: true,
 		},
 	}

@@ -546,20 +546,6 @@ spec:
                           path:
                             description: The Vault path where the secret is located
                             type: string
-                          refreshInterval:
-                            description: The Vault refresh interval of the secret
-                              (duration)
-                            type: string
-                          secretStoreRef:
-                            description: The Vault secret store reference
-                            properties:
-                              kind:
-                                description: The Vault secret store reference kind
-                                type: string
-                              name:
-                                description: The Vault secret store reference name
-                                type: string
-                            type: object
                         required:
                         - key
                         - path
@@ -586,22 +572,6 @@ spec:
                               path:
                                 description: The Vault path where the secret is located
                                 type: string
-                              refreshInterval:
-                                description: The Vault refresh interval of the secret
-                                  (duration)
-                                type: string
-                              secretStoreRef:
-                                description: The Vault secret store reference
-                                properties:
-                                  kind:
-                                    description: The Vault secret store reference
-                                      kind
-                                    type: string
-                                  name:
-                                    description: The Vault secret store reference
-                                      name
-                                    type: string
-                                type: object
                             required:
                             - key
                             - path
@@ -633,22 +603,6 @@ spec:
                               path:
                                 description: The Vault path where the secret is located
                                 type: string
-                              refreshInterval:
-                                description: The Vault refresh interval of the secret
-                                  (duration)
-                                type: string
-                              secretStoreRef:
-                                description: The Vault secret store reference
-                                properties:
-                                  kind:
-                                    description: The Vault secret store reference
-                                      kind
-                                    type: string
-                                  name:
-                                    description: The Vault secret store reference
-                                      name
-                                    type: string
-                                type: object
                             required:
                             - key
                             - path
@@ -684,22 +638,6 @@ spec:
                               path:
                                 description: The Vault path where the secret is located
                                 type: string
-                              refreshInterval:
-                                description: The Vault refresh interval of the secret
-                                  (duration)
-                                type: string
-                              secretStoreRef:
-                                description: The Vault secret store reference
-                                properties:
-                                  kind:
-                                    description: The Vault secret store reference
-                                      kind
-                                    type: string
-                                  name:
-                                    description: The Vault secret store reference
-                                      name
-                                    type: string
-                                type: object
                             required:
                             - key
                             - path
@@ -722,22 +660,6 @@ spec:
                               path:
                                 description: The Vault path where the secret is located
                                 type: string
-                              refreshInterval:
-                                description: The Vault refresh interval of the secret
-                                  (duration)
-                                type: string
-                              secretStoreRef:
-                                description: The Vault secret store reference
-                                properties:
-                                  kind:
-                                    description: The Vault secret store reference
-                                      kind
-                                    type: string
-                                  name:
-                                    description: The Vault secret store reference
-                                      name
-                                    type: string
-                                type: object
                             required:
                             - key
                             - path
@@ -776,22 +698,6 @@ spec:
                               path:
                                 description: The Vault path where the secret is located
                                 type: string
-                              refreshInterval:
-                                description: The Vault refresh interval of the secret
-                                  (duration)
-                                type: string
-                              secretStoreRef:
-                                description: The Vault secret store reference
-                                properties:
-                                  kind:
-                                    description: The Vault secret store reference
-                                      kind
-                                    type: string
-                                  name:
-                                    description: The Vault secret store reference
-                                      name
-                                    type: string
-                                type: object
                             required:
                             - key
                             - path
@@ -821,20 +727,6 @@ spec:
                           path:
                             description: The Vault path where the secret is located
                             type: string
-                          refreshInterval:
-                            description: The Vault refresh interval of the secret
-                              (duration)
-                            type: string
-                          secretStoreRef:
-                            description: The Vault secret store reference
-                            properties:
-                              kind:
-                                description: The Vault secret store reference kind
-                                type: string
-                              name:
-                                description: The Vault secret store reference name
-                                type: string
-                            type: object
                         required:
                         - key
                         - path
@@ -857,20 +749,6 @@ spec:
                           path:
                             description: The Vault path where the secret is located
                             type: string
-                          refreshInterval:
-                            description: The Vault refresh interval of the secret
-                              (duration)
-                            type: string
-                          secretStoreRef:
-                            description: The Vault secret store reference
-                            properties:
-                              kind:
-                                description: The Vault secret store reference kind
-                                type: string
-                              name:
-                                description: The Vault secret store reference name
-                                type: string
-                            type: object
                         required:
                         - key
                         - path
@@ -893,20 +771,6 @@ spec:
                           path:
                             description: The Vault path where the secret is located
                             type: string
-                          refreshInterval:
-                            description: The Vault refresh interval of the secret
-                              (duration)
-                            type: string
-                          secretStoreRef:
-                            description: The Vault secret store reference
-                            properties:
-                              kind:
-                                description: The Vault secret store reference kind
-                                type: string
-                              name:
-                                description: The Vault secret store reference name
-                                type: string
-                            type: object
                         required:
                         - key
                         - path
@@ -915,6 +779,25 @@ spec:
                         description: Override allows to directly specify a string
                           value.
                         type: string
+                    type: object
+                  externalSecret:
+                    description: External Secret common configuration
+                    properties:
+                      refreshInterval:
+                        description: RefreshInterval is the amount of time before
+                          the values reading again from the SecretStore provider (duration)
+                        type: string
+                      secretStoreRef:
+                        description: SecretStoreRef defines which SecretStore to use
+                          when fetching the secret data
+                        properties:
+                          kind:
+                            description: The Vault secret store reference kind
+                            type: string
+                          name:
+                            description: The Vault secret store reference name
+                            type: string
+                        type: object
                     type: object
                   forceSSL:
                     description: Enable (true) or disable (false) enforcing SSL
@@ -935,22 +818,6 @@ spec:
                               path:
                                 description: The Vault path where the secret is located
                                 type: string
-                              refreshInterval:
-                                description: The Vault refresh interval of the secret
-                                  (duration)
-                                type: string
-                              secretStoreRef:
-                                description: The Vault secret store reference
-                                properties:
-                                  kind:
-                                    description: The Vault secret store reference
-                                      kind
-                                    type: string
-                                  name:
-                                    description: The Vault secret store reference
-                                      name
-                                    type: string
-                                type: object
                             required:
                             - key
                             - path
@@ -973,22 +840,6 @@ spec:
                               path:
                                 description: The Vault path where the secret is located
                                 type: string
-                              refreshInterval:
-                                description: The Vault refresh interval of the secret
-                                  (duration)
-                                type: string
-                              secretStoreRef:
-                                description: The Vault secret store reference
-                                properties:
-                                  kind:
-                                    description: The Vault secret store reference
-                                      kind
-                                    type: string
-                                  name:
-                                    description: The Vault secret store reference
-                                      name
-                                    type: string
-                                type: object
                             required:
                             - key
                             - path
@@ -1015,20 +866,6 @@ spec:
                           path:
                             description: The Vault path where the secret is located
                             type: string
-                          refreshInterval:
-                            description: The Vault refresh interval of the secret
-                              (duration)
-                            type: string
-                          secretStoreRef:
-                            description: The Vault secret store reference
-                            properties:
-                              kind:
-                                description: The Vault secret store reference kind
-                                type: string
-                              name:
-                                description: The Vault secret store reference name
-                                type: string
-                            type: object
                         required:
                         - key
                         - path
@@ -1078,22 +915,6 @@ spec:
                               path:
                                 description: The Vault path where the secret is located
                                 type: string
-                              refreshInterval:
-                                description: The Vault refresh interval of the secret
-                                  (duration)
-                                type: string
-                              secretStoreRef:
-                                description: The Vault secret store reference
-                                properties:
-                                  kind:
-                                    description: The Vault secret store reference
-                                      kind
-                                    type: string
-                                  name:
-                                    description: The Vault secret store reference
-                                      name
-                                    type: string
-                                type: object
                             required:
                             - key
                             - path
@@ -1116,22 +937,6 @@ spec:
                               path:
                                 description: The Vault path where the secret is located
                                 type: string
-                              refreshInterval:
-                                description: The Vault refresh interval of the secret
-                                  (duration)
-                                type: string
-                              secretStoreRef:
-                                description: The Vault secret store reference
-                                properties:
-                                  kind:
-                                    description: The Vault secret store reference
-                                      kind
-                                    type: string
-                                  name:
-                                    description: The Vault secret store reference
-                                      name
-                                    type: string
-                                type: object
                             required:
                             - key
                             - path
@@ -1161,22 +966,6 @@ spec:
                               path:
                                 description: The Vault path where the secret is located
                                 type: string
-                              refreshInterval:
-                                description: The Vault refresh interval of the secret
-                                  (duration)
-                                type: string
-                              secretStoreRef:
-                                description: The Vault secret store reference
-                                properties:
-                                  kind:
-                                    description: The Vault secret store reference
-                                      kind
-                                    type: string
-                                  name:
-                                    description: The Vault secret store reference
-                                      name
-                                    type: string
-                                type: object
                             required:
                             - key
                             - path
@@ -1199,22 +988,6 @@ spec:
                               path:
                                 description: The Vault path where the secret is located
                                 type: string
-                              refreshInterval:
-                                description: The Vault refresh interval of the secret
-                                  (duration)
-                                type: string
-                              secretStoreRef:
-                                description: The Vault secret store reference
-                                properties:
-                                  kind:
-                                    description: The Vault secret store reference
-                                      kind
-                                    type: string
-                                  name:
-                                    description: The Vault secret store reference
-                                      name
-                                    type: string
-                                type: object
                             required:
                             - key
                             - path
@@ -1253,20 +1026,6 @@ spec:
                           path:
                             description: The Vault path where the secret is located
                             type: string
-                          refreshInterval:
-                            description: The Vault refresh interval of the secret
-                              (duration)
-                            type: string
-                          secretStoreRef:
-                            description: The Vault secret store reference
-                            properties:
-                              kind:
-                                description: The Vault secret store reference kind
-                                type: string
-                              name:
-                                description: The Vault secret store reference name
-                                type: string
-                            type: object
                         required:
                         - key
                         - path
@@ -1292,22 +1051,6 @@ spec:
                               path:
                                 description: The Vault path where the secret is located
                                 type: string
-                              refreshInterval:
-                                description: The Vault refresh interval of the secret
-                                  (duration)
-                                type: string
-                              secretStoreRef:
-                                description: The Vault secret store reference
-                                properties:
-                                  kind:
-                                    description: The Vault secret store reference
-                                      kind
-                                    type: string
-                                  name:
-                                    description: The Vault secret store reference
-                                      name
-                                    type: string
-                                type: object
                             required:
                             - key
                             - path
@@ -1333,22 +1076,6 @@ spec:
                               path:
                                 description: The Vault path where the secret is located
                                 type: string
-                              refreshInterval:
-                                description: The Vault refresh interval of the secret
-                                  (duration)
-                                type: string
-                              secretStoreRef:
-                                description: The Vault secret store reference
-                                properties:
-                                  kind:
-                                    description: The Vault secret store reference
-                                      kind
-                                    type: string
-                                  name:
-                                    description: The Vault secret store reference
-                                      name
-                                    type: string
-                                type: object
                             required:
                             - key
                             - path
@@ -1388,22 +1115,6 @@ spec:
                               path:
                                 description: The Vault path where the secret is located
                                 type: string
-                              refreshInterval:
-                                description: The Vault refresh interval of the secret
-                                  (duration)
-                                type: string
-                              secretStoreRef:
-                                description: The Vault secret store reference
-                                properties:
-                                  kind:
-                                    description: The Vault secret store reference
-                                      kind
-                                    type: string
-                                  name:
-                                    description: The Vault secret store reference
-                                      name
-                                    type: string
-                                type: object
                             required:
                             - key
                             - path
@@ -1433,22 +1144,6 @@ spec:
                               path:
                                 description: The Vault path where the secret is located
                                 type: string
-                              refreshInterval:
-                                description: The Vault refresh interval of the secret
-                                  (duration)
-                                type: string
-                              secretStoreRef:
-                                description: The Vault secret store reference
-                                properties:
-                                  kind:
-                                    description: The Vault secret store reference
-                                      kind
-                                    type: string
-                                  name:
-                                    description: The Vault secret store reference
-                                      name
-                                    type: string
-                                type: object
                             required:
                             - key
                             - path
@@ -1489,20 +1184,6 @@ spec:
                           path:
                             description: The Vault path where the secret is located
                             type: string
-                          refreshInterval:
-                            description: The Vault refresh interval of the secret
-                              (duration)
-                            type: string
-                          secretStoreRef:
-                            description: The Vault secret store reference
-                            properties:
-                              kind:
-                                description: The Vault secret store reference kind
-                                type: string
-                              name:
-                                description: The Vault secret store reference name
-                                type: string
-                            type: object
                         required:
                         - key
                         - path

@@ -315,11 +315,9 @@ var _ = Describe("Backend controller", func() {
 					backend.Spec.Listener.LoadBalancer = &saasv1alpha1.NLBLoadBalancerSpec{
 						CrossZoneLoadBalancingEnabled: pointer.BoolPtr(false),
 					}
-					backend.Spec.Config.InternalAPIUser.FromVault.RefreshInterval = &metav1.Duration{Duration: 1 * time.Second}
+					backend.Spec.Config.ExternalSecret.RefreshInterval = &metav1.Duration{Duration: 1 * time.Second}
 					backend.Spec.Config.InternalAPIUser.FromVault.Path = "secret/data/updated-path-api"
-					backend.Spec.Config.SystemEventsHookPassword.FromVault.RefreshInterval = &metav1.Duration{Duration: 2 * time.Second}
 					backend.Spec.Config.SystemEventsHookPassword.FromVault.Path = "secret/data/updated-path-hook"
-					backend.Spec.Config.ErrorMonitoringKey.FromVault.RefreshInterval = &metav1.Duration{Duration: 3 * time.Second}
 					backend.Spec.Config.ErrorMonitoringKey.FromVault.Path = "secret/data/updated-path-error"
 					return k8sClient.Patch(context.Background(), backend, patch)
 
@@ -416,7 +414,7 @@ var _ = Describe("Backend controller", func() {
 					),
 				)
 
-				Expect(esHook.Spec.RefreshInterval.ToUnstructured()).To(Equal("2s"))
+				Expect(esHook.Spec.RefreshInterval.ToUnstructured()).To(Equal("1s"))
 
 				for _, data := range esHook.Spec.Data {
 					switch data.SecretKey {
@@ -436,7 +434,7 @@ var _ = Describe("Backend controller", func() {
 					),
 				)
 
-				Expect(esError.Spec.RefreshInterval.ToUnstructured()).To(Equal("3s"))
+				Expect(esError.Spec.RefreshInterval.ToUnstructured()).To(Equal("1s"))
 
 				for _, data := range esError.Spec.Data {
 					switch data.SecretKey {

@@ -380,6 +380,10 @@ type BackendConfig struct {
 	// Redis Queues DSN
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	RedisQueuesDSN string `json:"redisQueuesDSN"`
+	// External Secret common configuration
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ExternalSecret ExternalSecret `json:"externalSecret,omitempty"`
 	// A reference to the secret holding the backend-system-events-hook URL
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	SystemEventsHookURL SecretReference `json:"systemEventsHookURL"`
@@ -406,12 +410,8 @@ type BackendConfig struct {
 func (cfg *BackendConfig) Default() {
 	cfg.RackEnv = stringOrDefault(cfg.RackEnv, pointer.StringPtr(backendDefaultConfigRackEnv))
 	cfg.MasterServiceID = intOrDefault(cfg.MasterServiceID, pointer.Int32Ptr(backendDefaultConfigMasterServiceID))
-	cfg.SystemEventsHookPassword.FromVault.SecretStoreRef = InitializeVaultSecretStoreReferenceSpec(cfg.SystemEventsHookPassword.FromVault.SecretStoreRef, defaultVaultSecretStoreReference)
-	cfg.SystemEventsHookPassword.FromVault.RefreshInterval = durationOrDefault(cfg.SystemEventsHookPassword.FromVault.RefreshInterval, &defaultVaultRefreshInterval)
-	cfg.InternalAPIUser.FromVault.SecretStoreRef = InitializeVaultSecretStoreReferenceSpec(cfg.InternalAPIUser.FromVault.SecretStoreRef, defaultVaultSecretStoreReference)
-	cfg.InternalAPIUser.FromVault.RefreshInterval = durationOrDefault(cfg.InternalAPIUser.FromVault.RefreshInterval, &defaultVaultRefreshInterval)
-	cfg.ErrorMonitoringKey.FromVault.SecretStoreRef = InitializeVaultSecretStoreReferenceSpec(cfg.ErrorMonitoringKey.FromVault.SecretStoreRef, defaultVaultSecretStoreReference)
-	cfg.ErrorMonitoringKey.FromVault.RefreshInterval = durationOrDefault(cfg.ErrorMonitoringKey.FromVault.RefreshInterval, &defaultVaultRefreshInterval)
+	cfg.ExternalSecret.SecretStoreRef = InitializeExternalSecretSecretStoreReferenceSpec(cfg.ExternalSecret.SecretStoreRef, defaultExternalSecretSecretStoreReference)
+	cfg.ExternalSecret.RefreshInterval = durationOrDefault(cfg.ExternalSecret.RefreshInterval, &defaultExternalSecretRefreshInterval)
 }
 
 // ListenerConfig configures app behavior for Backend Listener

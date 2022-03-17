@@ -317,7 +317,7 @@ func (gen *Generator) ExternalSecrets() []basereconciler.Resource {
 			resources,
 			basereconciler_resources.ExternalSecretTemplate{
 				Template: pod.GenerateExternalSecretFn(
-					es, gen.GetNamespace(), *gen.Config.DatabaseDSN.FromVault.SecretStoreRef.Name, *gen.Config.DatabaseDSN.FromVault.SecretStoreRef.Kind, *gen.Config.DatabaseDSN.FromVault.RefreshInterval, gen.GetLabels(), gen.Options,
+					es, gen.GetNamespace(), *gen.Config.ExternalSecret.SecretStoreRef.Name, *gen.Config.ExternalSecret.SecretStoreRef.Kind, *gen.Config.ExternalSecret.RefreshInterval, gen.GetLabels(), gen.Options,
 				), IsEnabled: true,
 			},
 		)

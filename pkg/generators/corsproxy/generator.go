@@ -97,7 +97,7 @@ func (gen *Generator) GrafanaDashboard() basereconciler_resources.GrafanaDashboa
 
 func (gen *Generator) ExternalSecret() basereconciler_resources.ExternalSecretTemplate {
 	return basereconciler_resources.ExternalSecretTemplate{
-		Template:  pod.GenerateExternalSecretFn("cors-proxy-system-database", gen.GetNamespace(), *gen.Spec.Config.SystemDatabaseDSN.FromVault.SecretStoreRef.Name, *gen.Spec.Config.SystemDatabaseDSN.FromVault.SecretStoreRef.Kind, *gen.Spec.Config.SystemDatabaseDSN.FromVault.RefreshInterval, gen.GetLabels(), gen.Options),
+		Template:  pod.GenerateExternalSecretFn("cors-proxy-system-database", gen.GetNamespace(), *gen.Spec.Config.ExternalSecret.SecretStoreRef.Name, *gen.Spec.Config.ExternalSecret.SecretStoreRef.Kind, *gen.Spec.Config.ExternalSecret.RefreshInterval, gen.GetLabels(), gen.Options),
 		IsEnabled: true,
 	}
 }

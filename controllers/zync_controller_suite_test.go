@@ -245,7 +245,7 @@ var _ = Describe("Zync controller", func() {
 						MaxThreads:  pointer.Int32(12),
 						LogLevel:    pointer.String("debug"),
 					}
-					zync.Spec.Config.DatabaseDSN.FromVault.RefreshInterval = &metav1.Duration{Duration: 1 * time.Second}
+					zync.Spec.Config.ExternalSecret.RefreshInterval = &metav1.Duration{Duration: 1 * time.Second}
 					zync.Spec.Config.SecretKeyBase.FromVault.Path = "secret/data/updated-path"
 
 					zync.Spec.GrafanaDashboard = &saasv1alpha1.GrafanaDashboardSpec{}

@@ -1509,28 +1509,28 @@ func TestCanary_CanarySpec(t *testing.T) {
 	}
 }
 
-func TestVaultSecretStoreReferenceSpec_Default(t *testing.T) {
+func TestExternalSecretSecretStoreReferenceSpec_Default(t *testing.T) {
 	type fields struct {
 		Name *string
 		Kind *string
 	}
 	type args struct {
-		def defaultVaultSecretStoreReferenceSpec
+		def defaultExternalSecretSecretStoreReferenceSpec
 	}
 	tests := []struct {
 		name   string
 		fields fields
 		args   args
-		want   *VaultSecretStoreReferenceSpec
+		want   *ExternalSecretSecretStoreReferenceSpec
 	}{
 		{
 			name:   "Sets defaults",
 			fields: fields{},
-			args: args{def: defaultVaultSecretStoreReferenceSpec{
+			args: args{def: defaultExternalSecretSecretStoreReferenceSpec{
 				Name: pointer.StringPtr("vault-mgmt"),
 				Kind: pointer.StringPtr("ClusterSecretStore"),
 			}},
-			want: &VaultSecretStoreReferenceSpec{
+			want: &ExternalSecretSecretStoreReferenceSpec{
 				Name: pointer.StringPtr("vault-mgmt"),
 				Kind: pointer.StringPtr("ClusterSecretStore"),
 			},
@@ -1540,11 +1540,11 @@ func TestVaultSecretStoreReferenceSpec_Default(t *testing.T) {
 			fields: fields{
 				Name: pointer.StringPtr("other-vault"),
 			},
-			args: args{def: defaultVaultSecretStoreReferenceSpec{
+			args: args{def: defaultExternalSecretSecretStoreReferenceSpec{
 				Name: pointer.StringPtr("vault-mgmt"),
 				Kind: pointer.StringPtr("ClusterSecretStore"),
 			}},
-			want: &VaultSecretStoreReferenceSpec{
+			want: &ExternalSecretSecretStoreReferenceSpec{
 				Name: pointer.StringPtr("other-vault"),
 				Kind: pointer.StringPtr("ClusterSecretStore"),
 			},
@@ -1552,13 +1552,13 @@ func TestVaultSecretStoreReferenceSpec_Default(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			spec := &VaultSecretStoreReferenceSpec{
+			spec := &ExternalSecretSecretStoreReferenceSpec{
 				Name: tt.fields.Name,
 				Kind: tt.fields.Kind,
 			}
 			spec.Default(tt.args.def)
 			if !reflect.DeepEqual(spec, tt.want) {
-				t.Errorf("VaultSecretStoreReferenceSpec_Default() = %v, want %v", *spec, *tt.want)
+				t.Errorf("ExternalSecretSecretStoreReferenceSpec_Default() = %v, want %v", *spec, *tt.want)
 			}
 		})
 	}
@@ -1566,35 +1566,35 @@ func TestVaultSecretStoreReferenceSpec_Default(t *testing.T) {
 
 func TestInitializeVaultSecretStoreReferenceSpec(t *testing.T) {
 	type args struct {
-		spec *VaultSecretStoreReferenceSpec
-		def  defaultVaultSecretStoreReferenceSpec
+		spec *ExternalSecretSecretStoreReferenceSpec
+		def  defaultExternalSecretSecretStoreReferenceSpec
 	}
 	tests := []struct {
 		name string
 		args args
-		want *VaultSecretStoreReferenceSpec
+		want *ExternalSecretSecretStoreReferenceSpec
 	}{
 		{
 			name: "Initializes the struct with appropriate defaults if nil",
-			args: args{nil, defaultVaultSecretStoreReferenceSpec{
+			args: args{nil, defaultExternalSecretSecretStoreReferenceSpec{
 				Name: pointer.StringPtr("vault-mgmt"),
 				Kind: pointer.StringPtr("ClusterSecretStore"),
 			}},
-			want: &VaultSecretStoreReferenceSpec{
+			want: &ExternalSecretSecretStoreReferenceSpec{
 				Name: pointer.StringPtr("vault-mgmt"),
 				Kind: pointer.StringPtr("ClusterSecretStore"),
 			},
 		},
 		{
 			name: "Deactivated",
-			args: args{&VaultSecretStoreReferenceSpec{}, defaultVaultSecretStoreReferenceSpec{}},
-			want: &VaultSecretStoreReferenceSpec{},
+			args: args{&ExternalSecretSecretStoreReferenceSpec{}, defaultExternalSecretSecretStoreReferenceSpec{}},
+			want: &ExternalSecretSecretStoreReferenceSpec{},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := InitializeVaultSecretStoreReferenceSpec(tt.args.spec, tt.args.def); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("InitializeVaultSecretStoreReferenceSpec() = %v, want %v", got, tt.want)
+			if got := InitializeExternalSecretSecretStoreReferenceSpec(tt.args.spec, tt.args.def); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("InitializeExternalSecretSecretStoreReferenceSpec() = %v, want %v", got, tt.want)
 			}
 		})
 	}

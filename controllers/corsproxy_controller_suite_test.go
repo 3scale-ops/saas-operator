@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
@@ -56,9 +55,8 @@ var _ = Describe("CORSProxy controller", func() {
 						Config: saasv1alpha1.CORSProxyConfig{
 							SystemDatabaseDSN: saasv1alpha1.SecretReference{
 								FromVault: &saasv1alpha1.VaultSecretReference{
-									Path:            "secret/data/example/some-path",
-									Key:             "some-key",
-									RefreshInterval: &metav1.Duration{Duration: 1 * time.Second},
+									Path: "secret/data/example/some-path",
+									Key:  "some-key",
 								},
 							},
 						},
@@ -118,7 +116,7 @@ var _ = Describe("CORSProxy controller", func() {
 				),
 			)
 
-			Expect(es.Spec.RefreshInterval.ToUnstructured()).To(Equal("1s"))
+			Expect(es.Spec.RefreshInterval.ToUnstructured()).To(Equal("1m0s"))
 			Expect(es.Spec.SecretStoreRef.Name).To(Equal("vault-mgmt"))
 			Expect(es.Spec.SecretStoreRef.Kind).To(Equal("ClusterSecretStore"))
 
