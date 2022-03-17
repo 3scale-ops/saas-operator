@@ -4,8 +4,8 @@ import (
 	"context"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
-	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
@@ -52,7 +52,12 @@ var _ = Describe("System controller", func() {
 				},
 				Spec: saasv1alpha1.SystemSpec{
 					Config: saasv1alpha1.SystemConfig{
-						DatabaseDSN:        saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
+						DatabaseDSN: saasv1alpha1.SecretReference{
+							FromVault: &saasv1alpha1.VaultSecretReference{
+								Path: "some-path",
+								Key:  "some-key",
+							},
+						},
 						EventsSharedSecret: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 						Recaptcha: saasv1alpha1.SystemRecaptchaSpec{
 							PublicKey:  saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
@@ -244,7 +249,7 @@ var _ = Describe("System controller", func() {
 				}),
 			)
 
-			for _, sdn := range []string{
+			for _, esn := range []string{
 				"system-database",
 				"system-recaptcha",
 				"system-events-hook",
@@ -255,10 +260,11 @@ var _ = Describe("System controller", func() {
 				"system-multitenant-assets-s3",
 				"system-app",
 			} {
-				sd := &secretsmanagerv1alpha1.SecretDefinition{}
-				By("deploying the system secret definition",
-					checkResource(sd, expectedResource{
-						Name: sdn, Namespace: namespace,
+				es := &externalsecretsv1alpha1.ExternalSecret{}
+
+				By("deploying the system external secret",
+					checkResource(es, expectedResource{
+						Name: esn, Namespace: namespace,
 					}),
 				)
 			}

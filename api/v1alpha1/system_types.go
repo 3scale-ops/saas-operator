@@ -388,6 +388,8 @@ func (sc *SystemConfig) Default() {
 	sc.SSLCertsDir = stringOrDefault(sc.SSLCertsDir, pointer.StringPtr(systemDefaultSSLCertsDir))
 	sc.ThreescaleProviderPlan = stringOrDefault(sc.ThreescaleProviderPlan, pointer.StringPtr(systemDefaultThreescaleProviderPlan))
 	sc.ThreescaleSuperdomain = stringOrDefault(sc.ThreescaleSuperdomain, pointer.StringPtr(systemDefaultThreescaleSuperdomain))
+	sc.DatabaseDSN.FromVault.SecretStoreRef = InitializeVaultSecretStoreReferenceSpec(sc.DatabaseDSN.FromVault.SecretStoreRef, defaultVaultSecretStoreReference)
+	sc.DatabaseDSN.FromVault.RefreshInterval = durationOrDefault(sc.DatabaseDSN.FromVault.RefreshInterval, &defaultVaultRefreshInterval)
 }
 
 // ResolveCanarySpec modifies the SystemSpec given the provided canary configuration
