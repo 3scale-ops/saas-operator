@@ -165,17 +165,17 @@ func (gen *Generator) Resources() []basereconciler.Resource {
 			Template:  grafanadashboard.New(gen.GetKey(), gen.GetLabels(), gen.grafanaDashboardSpec, "dashboards/backend.json.gtpl"),
 			IsEnabled: !gen.grafanaDashboardSpec.IsDeactivated(),
 		},
-		// SecretDefinitions
-		basereconciler_resources.SecretDefinitionTemplate{
-			Template:  pod.GenerateSecretDefinitionFn("backend-system-events-hook", gen.GetNamespace(), gen.GetLabels(), gen.Worker.Options),
+		// ExternalSecrets
+		basereconciler_resources.ExternalSecretTemplate{
+			Template:  pod.GenerateExternalSecretFn("backend-system-events-hook", gen.GetNamespace(), *gen.config.SystemEventsHookPassword.FromVault.SecretStoreRef.Name, *gen.config.SystemEventsHookPassword.FromVault.SecretStoreRef.Kind, *gen.config.SystemEventsHookPassword.FromVault.RefreshInterval, gen.GetLabels(), gen.Worker.Options),
 			IsEnabled: true,
 		},
-		basereconciler_resources.SecretDefinitionTemplate{
-			Template:  pod.GenerateSecretDefinitionFn("backend-internal-api", gen.GetNamespace(), gen.GetLabels(), gen.Listener.Options),
+		basereconciler_resources.ExternalSecretTemplate{
+			Template:  pod.GenerateExternalSecretFn("backend-internal-api", gen.GetNamespace(), *gen.config.InternalAPIUser.FromVault.SecretStoreRef.Name, *gen.config.InternalAPIUser.FromVault.SecretStoreRef.Kind, *gen.config.InternalAPIUser.FromVault.RefreshInterval, gen.GetLabels(), gen.Listener.Options),
 			IsEnabled: true,
 		},
-		basereconciler_resources.SecretDefinitionTemplate{
-			Template:  pod.GenerateSecretDefinitionFn("backend-error-monitoring", gen.GetNamespace(), gen.GetLabels(), gen.Listener.Options),
+		basereconciler_resources.ExternalSecretTemplate{
+			Template:  pod.GenerateExternalSecretFn("backend-error-monitoring", gen.GetNamespace(), *gen.config.ErrorMonitoringKey.FromVault.SecretStoreRef.Name, *gen.config.ErrorMonitoringKey.FromVault.SecretStoreRef.Kind, *gen.config.ErrorMonitoringKey.FromVault.RefreshInterval, gen.GetLabels(), gen.Listener.Options),
 			IsEnabled: gen.config.ErrorMonitoringKey != nil,
 		},
 	}

@@ -2,10 +2,11 @@ package controllers
 
 import (
 	"context"
+	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
-	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
@@ -57,30 +58,37 @@ var _ = Describe("Backend controller", func() {
 						},
 					},
 					Config: saasv1alpha1.BackendConfig{
-						RedisStorageDSN: "storageDSN",
-						RedisQueuesDSN:  "queuesDSN",
-						SystemEventsHookURL: saasv1alpha1.SecretReference{
-							FromVault: &saasv1alpha1.VaultSecretReference{
-								Path: "some-path",
-								Key:  "some-key",
-							},
-						},
+						RedisStorageDSN:     "storageDSN",
+						RedisQueuesDSN:      "queuesDSN",
+						SystemEventsHookURL: saasv1alpha1.SecretReference{Override: pointer.StringPtr("system-app")},
 						SystemEventsHookPassword: saasv1alpha1.SecretReference{
 							FromVault: &saasv1alpha1.VaultSecretReference{
-								Path: "some-path",
-								Key:  "some-key",
+								Path: "some-path-hook-password",
+								Key:  "some-key-hook-password",
 							},
 						},
 						InternalAPIUser: saasv1alpha1.SecretReference{
 							FromVault: &saasv1alpha1.VaultSecretReference{
-								Path: "some-path",
-								Key:  "some-key",
+								Path: "some-path-api-user",
+								Key:  "some-key-api-user",
 							},
 						},
 						InternalAPIPassword: saasv1alpha1.SecretReference{
 							FromVault: &saasv1alpha1.VaultSecretReference{
-								Path: "some-path",
-								Key:  "some-key",
+								Path: "some-path-api-password",
+								Key:  "some-key-api-password",
+							},
+						},
+						ErrorMonitoringKey: &saasv1alpha1.SecretReference{
+							FromVault: &saasv1alpha1.VaultSecretReference{
+								Path: "some-path-error-key",
+								Key:  "some-key-error-key",
+							},
+						},
+						ErrorMonitoringService: &saasv1alpha1.SecretReference{
+							FromVault: &saasv1alpha1.VaultSecretReference{
+								Path: "some-path-error-service",
+								Key:  "some-key-error-service",
 							},
 						},
 					},
@@ -153,6 +161,8 @@ var _ = Describe("Backend controller", func() {
 					},
 				),
 			)
+			Expect(dep.Spec.Template.Spec.Containers[0].Env[12].Name).To(Equal("CONFIG_EVENTS_HOOK"))
+			Expect(dep.Spec.Template.Spec.Containers[0].Env[12].Value).To(Equal("system-app"))
 
 			By("deploying the backend-cron workload",
 				checkWorkloadResources(dep,
@@ -179,16 +189,80 @@ var _ = Describe("Backend controller", func() {
 				}),
 			)
 
-			for _, sdn := range []string{
-				"backend-internal-api",
-				"backend-system-events-hook",
-			} {
-				sd := &secretsmanagerv1alpha1.SecretDefinition{}
-				By("deploying the backend secret definitions",
-					checkResource(sd, expectedResource{Name: sdn, Namespace: namespace}),
-				)
+			esApi := &externalsecretsv1alpha1.ExternalSecret{}
+			By("deploying the backend-internal-api external secret",
+				checkResource(
+					esApi,
+					expectedResource{
+						Name:      "backend-internal-api",
+						Namespace: namespace,
+					},
+				),
+			)
+
+			Expect(esApi.Spec.RefreshInterval.ToUnstructured()).To(Equal("1m0s"))
+			Expect(esApi.Spec.SecretStoreRef.Name).To(Equal("vault-mgmt"))
+			Expect(esApi.Spec.SecretStoreRef.Kind).To(Equal("ClusterSecretStore"))
+
+			for _, data := range esApi.Spec.Data {
+				switch data.SecretKey {
+				case "CONFIG_INTERNAL_API_USER":
+					Expect(data.RemoteRef.Property).To(Equal("some-key-api-user"))
+					Expect(data.RemoteRef.Key).To(Equal("some-path-api-user"))
+				case "CONFIG_INTERNAL_API_PASSWORD":
+					Expect(data.RemoteRef.Property).To(Equal("some-key-api-password"))
+					Expect(data.RemoteRef.Key).To(Equal("some-path-api-password"))
+				}
 			}
 
+			esHook := &externalsecretsv1alpha1.ExternalSecret{}
+			By("deploying the backend-system-events-hook external secret",
+				checkResource(
+					esHook,
+					expectedResource{
+						Name:      "backend-system-events-hook",
+						Namespace: namespace,
+					},
+				),
+			)
+
+			Expect(esHook.Spec.RefreshInterval.ToUnstructured()).To(Equal("1m0s"))
+			Expect(esHook.Spec.SecretStoreRef.Name).To(Equal("vault-mgmt"))
+			Expect(esHook.Spec.SecretStoreRef.Kind).To(Equal("ClusterSecretStore"))
+
+			for _, data := range esHook.Spec.Data {
+				switch data.SecretKey {
+				case "CONFIG_EVENTS_HOOK_SHARED_SECRET":
+					Expect(data.RemoteRef.Property).To(Equal("some-key-hook-password"))
+					Expect(data.RemoteRef.Key).To(Equal("some-path-hook-password"))
+				}
+
+				esError := &externalsecretsv1alpha1.ExternalSecret{}
+				By("deploying the backend-error-monitoring external secret",
+					checkResource(
+						esError,
+						expectedResource{
+							Name:      "backend-error-monitoring",
+							Namespace: namespace,
+						},
+					),
+				)
+
+				Expect(esError.Spec.RefreshInterval.ToUnstructured()).To(Equal("1m0s"))
+				Expect(esError.Spec.SecretStoreRef.Name).To(Equal("vault-mgmt"))
+				Expect(esError.Spec.SecretStoreRef.Kind).To(Equal("ClusterSecretStore"))
+
+				for _, data := range esError.Spec.Data {
+					switch data.SecretKey {
+					case "CONFIG_HOPTOAD_API_KEY":
+						Expect(data.RemoteRef.Property).To(Equal("some-key-error-key"))
+						Expect(data.RemoteRef.Key).To(Equal("some-path-error-key"))
+					case "CONFIG_HOPTOAD_SERVICE":
+						Expect(data.RemoteRef.Property).To(Equal("some-key-error-service"))
+						Expect(data.RemoteRef.Key).To(Equal("some-path-error-service"))
+					}
+				}
+			}
 		})
 
 		When("updating a backend resource with some customizations", func() {
@@ -241,7 +315,12 @@ var _ = Describe("Backend controller", func() {
 					backend.Spec.Listener.LoadBalancer = &saasv1alpha1.NLBLoadBalancerSpec{
 						CrossZoneLoadBalancingEnabled: pointer.BoolPtr(false),
 					}
-
+					backend.Spec.Config.InternalAPIUser.FromVault.RefreshInterval = &metav1.Duration{Duration: 1 * time.Second}
+					backend.Spec.Config.InternalAPIUser.FromVault.Path = "secret/data/updated-path-api"
+					backend.Spec.Config.SystemEventsHookPassword.FromVault.RefreshInterval = &metav1.Duration{Duration: 2 * time.Second}
+					backend.Spec.Config.SystemEventsHookPassword.FromVault.Path = "secret/data/updated-path-hook"
+					backend.Spec.Config.ErrorMonitoringKey.FromVault.RefreshInterval = &metav1.Duration{Duration: 3 * time.Second}
+					backend.Spec.Config.ErrorMonitoringKey.FromVault.Path = "secret/data/updated-path-error"
 					return k8sClient.Patch(context.Background(), backend, patch)
 
 				}, timeout, poll).ShouldNot(HaveOccurred())
@@ -306,6 +385,65 @@ var _ = Describe("Backend controller", func() {
 					),
 				)
 
+				esApi := &externalsecretsv1alpha1.ExternalSecret{}
+				By("updating the backend-internal-api external secret",
+					checkResource(
+						esApi,
+						expectedResource{
+							Name:      "backend-internal-api",
+							Namespace: namespace,
+						},
+					),
+				)
+
+				Expect(esApi.Spec.RefreshInterval.ToUnstructured()).To(Equal("1s"))
+
+				for _, data := range esApi.Spec.Data {
+					switch data.SecretKey {
+					case "CONFIG_INTERNAL_API_USER":
+						Expect(data.RemoteRef.Key).To(Equal("updated-path-api"))
+					}
+				}
+
+				esHook := &externalsecretsv1alpha1.ExternalSecret{}
+				By("updating the backend-system-events-hook external secret",
+					checkResource(
+						esHook,
+						expectedResource{
+							Name:      "backend-system-events-hook",
+							Namespace: namespace,
+						},
+					),
+				)
+
+				Expect(esHook.Spec.RefreshInterval.ToUnstructured()).To(Equal("2s"))
+
+				for _, data := range esHook.Spec.Data {
+					switch data.SecretKey {
+					case "CONFIG_EVENTS_HOOK_SHARED_SECRET":
+						Expect(data.RemoteRef.Key).To(Equal("updated-path-hook"))
+					}
+				}
+
+				esError := &externalsecretsv1alpha1.ExternalSecret{}
+				By("updating the backend-error-monitoring external secret",
+					checkResource(
+						esError,
+						expectedResource{
+							Name:      "backend-error-monitoring",
+							Namespace: namespace,
+						},
+					),
+				)
+
+				Expect(esError.Spec.RefreshInterval.ToUnstructured()).To(Equal("3s"))
+
+				for _, data := range esError.Spec.Data {
+					switch data.SecretKey {
+					case "CONFIG_HOPTOAD_API_KEY":
+						Expect(data.RemoteRef.Key).To(Equal("updated-path-error"))
+					}
+				}
 			})
 		})
 

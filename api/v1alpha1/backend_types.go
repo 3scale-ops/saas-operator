@@ -406,6 +406,12 @@ type BackendConfig struct {
 func (cfg *BackendConfig) Default() {
 	cfg.RackEnv = stringOrDefault(cfg.RackEnv, pointer.StringPtr(backendDefaultConfigRackEnv))
 	cfg.MasterServiceID = intOrDefault(cfg.MasterServiceID, pointer.Int32Ptr(backendDefaultConfigMasterServiceID))
+	cfg.SystemEventsHookPassword.FromVault.SecretStoreRef = InitializeVaultSecretStoreReferenceSpec(cfg.SystemEventsHookPassword.FromVault.SecretStoreRef, defaultVaultSecretStoreReference)
+	cfg.SystemEventsHookPassword.FromVault.RefreshInterval = durationOrDefault(cfg.SystemEventsHookPassword.FromVault.RefreshInterval, &defaultVaultRefreshInterval)
+	cfg.InternalAPIUser.FromVault.SecretStoreRef = InitializeVaultSecretStoreReferenceSpec(cfg.InternalAPIUser.FromVault.SecretStoreRef, defaultVaultSecretStoreReference)
+	cfg.InternalAPIUser.FromVault.RefreshInterval = durationOrDefault(cfg.InternalAPIUser.FromVault.RefreshInterval, &defaultVaultRefreshInterval)
+	cfg.ErrorMonitoringKey.FromVault.SecretStoreRef = InitializeVaultSecretStoreReferenceSpec(cfg.ErrorMonitoringKey.FromVault.SecretStoreRef, defaultVaultSecretStoreReference)
+	cfg.ErrorMonitoringKey.FromVault.RefreshInterval = durationOrDefault(cfg.ErrorMonitoringKey.FromVault.RefreshInterval, &defaultVaultRefreshInterval)
 }
 
 // ListenerConfig configures app behavior for Backend Listener
