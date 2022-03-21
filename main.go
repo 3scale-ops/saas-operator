@@ -44,6 +44,7 @@ import (
 	basereconciler_v2 "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
 	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
+	"github.com/3scale/saas-operator/pkg/util"
 	"github.com/3scale/saas-operator/pkg/version"
 	// +kubebuilder:scaffold:imports
 )
@@ -90,6 +91,12 @@ func main() {
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
 	printVersion()
+
+	if err := (&util.ProfilerConfig{
+		Log: ctrl.Log.WithName("profiler"),
+	}).Setup(); err != nil {
+		setupLog.Error(err, "unable to start the Profiler")
+	}
 
 	watchNamespace, err := getWatchNamespace()
 	if err != nil {
