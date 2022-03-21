@@ -331,6 +331,7 @@ BackendConfig configures app behavior for Backend
 | *`masterServiceID`* __integer__ | Master service account ID in Porta
 | *`redisStorageDSN`* __string__ | Redis Storage DSN
 | *`redisQueuesDSN`* __string__ | Redis Queues DSN
+| *`externalSecret`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-externalsecret[$$ExternalSecret$$]__ | External Secret common configuration
 | *`systemEventsHookURL`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the backend-system-events-hook URL
 | *`systemEventsHookPassword`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the backend-system-events-hook password
 | *`internalAPIUser`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the backend-internal-api user
@@ -436,6 +437,7 @@ CORSProxyConfig defines configuration options for the component
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
+| *`externalSecret`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-externalsecret[$$ExternalSecret$$]__ | External Secret common configuration
 | *`systemDatabaseDSN`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | System database connection string
 |===
 
@@ -620,6 +622,46 @@ Endpoint sets the external endpoint for the component
 |===
 | Field | Description
 | *`dns`* __string array__ | The list of dns records that will point to the component
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-externalsecret"]
+==== ExternalSecret 
+
+ExternalSecret is a reference to the ExternalSecret common configuration
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backendconfig[$$BackendConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyconfig[$$CORSProxyConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingserviceconfig[$$MappingServiceConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncconfig[$$ZyncConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`secretStoreRef`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-externalsecretsecretstorereferencespec[$$ExternalSecretSecretStoreReferenceSpec$$]__ | SecretStoreRef defines which SecretStore to use when fetching the secret data
+| *`refreshInterval`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#duration-v1-meta[$$Duration$$]__ | RefreshInterval is the amount of time before the values reading again from the SecretStore provider (duration)
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-externalsecretsecretstorereferencespec"]
+==== ExternalSecretSecretStoreReferenceSpec 
+
+ExternalSecretSecretStoreReferenceSpec is a reference to a secret store
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-externalsecret[$$ExternalSecret$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`name`* __string__ | The Vault secret store reference name
+| *`kind`* __string__ | The Vault secret store reference kind
 |===
 
 
@@ -839,6 +881,7 @@ MappingServiceConfig configures app behavior for MappingService
 | *`apiHost`* __string__ | System endpoint to fetch proxy configs from
 | *`previewBaseDomain`* __string__ | Base domain to replace the proxy configs base domain
 | *`logLevel`* __string__ | Openresty log level
+| *`externalSecret`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-externalsecret[$$ExternalSecret$$]__ | External Secret common configuration
 | *`systemAdminToken`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the system admin token
 |===
 
@@ -1548,6 +1591,7 @@ SystemConfig holds configuration for SystemApp component
 | *`threescaleProviderPlan`* __string__ | 3scale provider plan
 | *`threescaleSuperdomain`* __string__ | 3scale superdomain
 | *`configFilesSecret`* __string__ | Secret containging system configuration files to be mounted in the pods
+| *`externalSecret`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-externalsecret[$$ExternalSecret$$]__ | External Secret common configuration
 | *`databaseDSN`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | DSN of system's main database
 | *`eventsSharedSecret`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | EventsSharedSecret
 | *`recaptcha`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemrecaptchaspec[$$SystemRecaptchaSpec$$]__ | Holds recaptcha configuration options
@@ -1896,26 +1940,6 @@ VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
 | Field | Description
 | *`path`* __string__ | The Vault path where the secret is located
 | *`key`* __string__ | The Vault key of the secret
-| *`secretStoreRef`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-vaultsecretstorereferencespec[$$VaultSecretStoreReferenceSpec$$]__ | The Vault secret store reference
-| *`refreshInterval`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#duration-v1-meta[$$Duration$$]__ | The Vault refresh interval of the secret (duration)
-|===
-
-
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-vaultsecretstorereferencespec"]
-==== VaultSecretStoreReferenceSpec 
-
-VaultSecretStoreReferenceSpec is a reference to a secret store
-
-.Appears In:
-****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-vaultsecretreference[$$VaultSecretReference$$]
-****
-
-[cols="25a,75a", options="header"]
-|===
-| Field | Description
-| *`name`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-string[$$string$$]__ | The Vault secret store reference name
-| *`kind`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-string[$$string$$]__ | The Vault secret store reference kind
 |===
 
 
@@ -1999,6 +2023,7 @@ ZyncConfig configures app behavior for Zync
 |===
 | Field | Description
 | *`rails`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncrailsspec[$$ZyncRailsSpec$$]__ | Rails configuration options for zync components
+| *`externalSecret`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-externalsecret[$$ExternalSecret$$]__ | External Secret common configuration
 | *`databaseDSN`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the database DSN
 | *`secretKeyBase`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the secret-key-base
 | *`zyncAuthToken`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the zync authentication token

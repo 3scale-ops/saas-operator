@@ -5,7 +5,6 @@ import (
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
-	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/test/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/util"
 	. "github.com/onsi/ginkgo"
@@ -84,15 +83,6 @@ var _ = Describe("Test controller", func() {
 					context.Background(),
 					types.NamespacedName{Name: "service", Namespace: namespace},
 					svc,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-
-			sd := &secretsmanagerv1alpha1.SecretDefinition{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "secret", Namespace: namespace},
-					sd,
 				)
 			}, timeout, poll).ShouldNot(HaveOccurred())
 
@@ -197,15 +187,6 @@ var _ = Describe("Test controller", func() {
 				)
 			}, timeout, poll).ShouldNot(HaveOccurred())
 
-			sd := &secretsmanagerv1alpha1.SecretDefinition{}
-			Eventually(func() error {
-				return k8sClient.Get(
-					context.Background(),
-					types.NamespacedName{Name: "secret", Namespace: namespace},
-					sd,
-				)
-			}, timeout, poll).ShouldNot(HaveOccurred())
-
 			es := &externalsecretsv1alpha1.ExternalSecret{}
 			Eventually(func() error {
 				return k8sClient.Get(
@@ -232,8 +213,6 @@ var _ = Describe("Test controller", func() {
 				types.NamespacedName{Name: "deployment", Namespace: namespace}, &appsv1.Deployment{})).To(HaveOccurred())
 			Expect(k8sClient.Get(context.Background(),
 				types.NamespacedName{Name: "service", Namespace: namespace}, &corev1.Service{})).To(HaveOccurred())
-			Expect(k8sClient.Get(context.Background(),
-				types.NamespacedName{Name: "secret-definition", Namespace: namespace}, &secretsmanagerv1alpha1.SecretDefinition{})).To(HaveOccurred())
 			Expect(k8sClient.Get(context.Background(),
 				types.NamespacedName{Name: "external-secret", Namespace: namespace}, &externalsecretsv1alpha1.ExternalSecret{})).To(HaveOccurred())
 		})
