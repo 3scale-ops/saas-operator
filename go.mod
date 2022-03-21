@@ -11,6 +11,7 @@ require (
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/go-test/deep v1.0.8
 	github.com/goombaio/namegenerator v0.0.0-20181006234301-989e774b106e
+	github.com/kelseyhightower/envconfig v1.4.0 // indirect
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.16.0
 	github.com/openshift/api v3.9.0+incompatible
