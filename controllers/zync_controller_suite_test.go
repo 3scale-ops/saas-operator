@@ -224,6 +224,9 @@ var _ = Describe("Zync controller", func() {
 					rvs["deployment/zync-que"] = getResourceVersion(
 						&appsv1.Deployment{}, "zync-que", namespace,
 					)
+					rvs["externalsecret/zync"] = getResourceVersion(
+						&externalsecretsv1alpha1.ExternalSecret{}, "zync", namespace,
+					)
 
 					patch := client.MergeFrom(zync.DeepCopy())
 					zync.Spec.API = &saasv1alpha1.APISpec{
@@ -246,6 +249,10 @@ var _ = Describe("Zync controller", func() {
 						LogLevel:    pointer.String("debug"),
 					}
 					zync.Spec.Config.ExternalSecret.RefreshInterval = &metav1.Duration{Duration: 1 * time.Second}
+					zync.Spec.Config.ExternalSecret.SecretStoreRef = &saasv1alpha1.ExternalSecretSecretStoreReferenceSpec{
+						Name: pointer.StringPtr("other-store"),
+						Kind: pointer.StringPtr("SecretStore"),
+					}
 					zync.Spec.Config.SecretKeyBase.FromVault.Path = "secret/data/updated-path"
 
 					zync.Spec.GrafanaDashboard = &saasv1alpha1.GrafanaDashboardSpec{}
@@ -322,13 +329,16 @@ var _ = Describe("Zync controller", func() {
 					checkResource(
 						es,
 						expectedResource{
-							Name:      "zync",
-							Namespace: namespace,
+							Name:        "zync",
+							Namespace:   namespace,
+							LastVersion: rvs["externalsecret/zync"],
 						},
 					),
 				)
 
 				Expect(es.Spec.RefreshInterval.ToUnstructured()).To(Equal("1s"))
+				Expect(es.Spec.SecretStoreRef.Name).To(Equal("other-store"))
+				Expect(es.Spec.SecretStoreRef.Kind).To(Equal("SecretStore"))
 
 				for _, data := range es.Spec.Data {
 					switch data.SecretKey {

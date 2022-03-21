@@ -168,11 +168,19 @@ var _ = Describe("MappingService controller", func() {
 					rvs["deployment/mappingservice"] = getResourceVersion(
 						&appsv1.Deployment{}, "mapping-service", namespace,
 					)
+					rvs["externalsecret/mapping-service-system-master-access-token"] = getResourceVersion(
+						&externalsecretsv1alpha1.ExternalSecret{}, "mapping-service-system-master-access-token", namespace,
+					)
 
 					patch := client.MergeFrom(mappingservice.DeepCopy())
 					mappingservice.Spec.Config.APIHost = "updated-example.com"
-					mappingservice.Spec.Config.SystemAdminToken.FromVault.Path = "secret/data/updated-path"
+
 					mappingservice.Spec.Config.ExternalSecret.RefreshInterval = &metav1.Duration{Duration: 1 * time.Second}
+					mappingservice.Spec.Config.ExternalSecret.SecretStoreRef = &saasv1alpha1.ExternalSecretSecretStoreReferenceSpec{
+						Name: pointer.StringPtr("other-store"),
+						Kind: pointer.StringPtr("SecretStore"),
+					}
+					mappingservice.Spec.Config.SystemAdminToken.FromVault.Path = "secret/data/updated-path"
 					mappingservice.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{
 						MinReplicas: pointer.Int32(3),
 					}
@@ -218,13 +226,16 @@ var _ = Describe("MappingService controller", func() {
 					checkResource(
 						es,
 						expectedResource{
-							Name:      "mapping-service-system-master-access-token",
-							Namespace: namespace,
+							Name:        "mapping-service-system-master-access-token",
+							Namespace:   namespace,
+							LastVersion: rvs["externalsecret/mapping-service-system-master-access-token"],
 						},
 					),
 				)
 
 				Expect(es.Spec.RefreshInterval.ToUnstructured()).To(Equal("1s"))
+				Expect(es.Spec.SecretStoreRef.Name).To(Equal("other-store"))
+				Expect(es.Spec.SecretStoreRef.Kind).To(Equal("SecretStore"))
 
 				for _, data := range es.Spec.Data {
 					switch data.SecretKey {

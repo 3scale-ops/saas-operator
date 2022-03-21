@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
@@ -55,7 +56,7 @@ var _ = Describe("CORSProxy controller", func() {
 						Config: saasv1alpha1.CORSProxyConfig{
 							SystemDatabaseDSN: saasv1alpha1.SecretReference{
 								FromVault: &saasv1alpha1.VaultSecretReference{
-									Path: "secret/data/example/some-path",
+									Path: "some-path",
 									Key:  "some-key",
 								},
 							},
@@ -124,7 +125,7 @@ var _ = Describe("CORSProxy controller", func() {
 				switch data.SecretKey {
 				case "DATABASE_URL":
 					Expect(data.RemoteRef.Property).To(Equal("some-key"))
-					Expect(data.RemoteRef.Key).To(Equal("example/some-path"))
+					Expect(data.RemoteRef.Key).To(Equal("some-path"))
 				}
 			}
 
@@ -163,6 +164,9 @@ var _ = Describe("CORSProxy controller", func() {
 					rvs["deployment/corsproxy"] = getResourceVersion(
 						&appsv1.Deployment{}, "cors-proxy", namespace,
 					)
+					rvs["externalsecret/cors-proxy-system-database"] = getResourceVersion(
+						&externalsecretsv1alpha1.ExternalSecret{}, "cors-proxy-system-database", namespace,
+					)
 
 					patch := client.MergeFrom(corsproxy.DeepCopy())
 					corsproxy.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{
@@ -170,6 +174,12 @@ var _ = Describe("CORSProxy controller", func() {
 					}
 					corsproxy.Spec.LivenessProbe = &saasv1alpha1.ProbeSpec{}
 					corsproxy.Spec.ReadinessProbe = &saasv1alpha1.ProbeSpec{}
+					corsproxy.Spec.Config.ExternalSecret.RefreshInterval = &metav1.Duration{Duration: 1 * time.Second}
+					corsproxy.Spec.Config.ExternalSecret.SecretStoreRef = &saasv1alpha1.ExternalSecretSecretStoreReferenceSpec{
+						Name: pointer.StringPtr("other-store"),
+						Kind: pointer.StringPtr("SecretStore"),
+					}
+					corsproxy.Spec.Config.SystemDatabaseDSN.FromVault.Path = "secret/data/updated-path"
 					corsproxy.Spec.GrafanaDashboard = &saasv1alpha1.GrafanaDashboardSpec{}
 
 					return k8sClient.Patch(context.Background(), corsproxy, patch)
@@ -196,6 +206,29 @@ var _ = Describe("CORSProxy controller", func() {
 				)
 				Expect(dep.Spec.Template.Spec.Containers[0].LivenessProbe).To(BeNil())
 				Expect(dep.Spec.Template.Spec.Containers[0].ReadinessProbe).To(BeNil())
+
+				es := &externalsecretsv1alpha1.ExternalSecret{}
+				By("updating the CORSProxy System Database external secret",
+					checkResource(
+						es,
+						expectedResource{
+							Name:        "cors-proxy-system-database",
+							Namespace:   namespace,
+							LastVersion: rvs["externalsecret/cors-proxy-system-database"],
+						},
+					),
+				)
+
+				Expect(es.Spec.RefreshInterval.ToUnstructured()).To(Equal("1s"))
+				Expect(es.Spec.SecretStoreRef.Name).To(Equal("other-store"))
+				Expect(es.Spec.SecretStoreRef.Kind).To(Equal("SecretStore"))
+
+				for _, data := range es.Spec.Data {
+					switch data.SecretKey {
+					case "DATABASE_URL":
+						Expect(data.RemoteRef.Key).To(Equal("updated-path"))
+					}
+				}
 
 				By("ensuring the CORSProxy grafana dashboard is gone",
 					checkResource(

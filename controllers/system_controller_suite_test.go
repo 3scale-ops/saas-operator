@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
@@ -54,8 +55,8 @@ var _ = Describe("System controller", func() {
 					Config: saasv1alpha1.SystemConfig{
 						DatabaseDSN: saasv1alpha1.SecretReference{
 							FromVault: &saasv1alpha1.VaultSecretReference{
-								Path: "some-path",
-								Key:  "some-key",
+								Path: "some-path-db",
+								Key:  "some-key-db",
 							},
 						},
 						EventsSharedSecret: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
@@ -269,6 +270,28 @@ var _ = Describe("System controller", func() {
 				)
 			}
 
+			es := &externalsecretsv1alpha1.ExternalSecret{}
+			By("deploying the system-database external secret with specific configuration",
+				checkResource(
+					es,
+					expectedResource{
+						Name:      "system-database",
+						Namespace: namespace,
+					},
+				),
+			)
+
+			Expect(es.Spec.RefreshInterval.ToUnstructured()).To(Equal("1m0s"))
+			Expect(es.Spec.SecretStoreRef.Name).To(Equal("vault-mgmt"))
+			Expect(es.Spec.SecretStoreRef.Kind).To(Equal("ClusterSecretStore"))
+
+			for _, data := range es.Spec.Data {
+				switch data.SecretKey {
+				case "DATABASE_URL":
+					Expect(data.RemoteRef.Property).To(Equal("some-key-db"))
+					Expect(data.RemoteRef.Key).To(Equal("some-path-db"))
+				}
+			}
 		})
 
 		It("doesn't creates the non-default resources", func() {
@@ -767,5 +790,66 @@ var _ = Describe("System controller", func() {
 			})
 		})
 
+		When("updating system secret properties", func() {
+
+			// Resource Versions
+			rvs := make(map[string]string)
+
+			BeforeEach(func() {
+				Eventually(func() error {
+
+					system := &saasv1alpha1.System{}
+					if err := k8sClient.Get(
+						context.Background(),
+						types.NamespacedName{Name: "instance", Namespace: namespace},
+						system,
+					); err != nil {
+						return err
+					}
+
+					rvs["externalsecret/system-database"] = getResourceVersion(
+						&externalsecretsv1alpha1.ExternalSecret{}, "system-database", namespace,
+					)
+
+					patch := client.MergeFrom(system.DeepCopy())
+
+					system.Spec.Config.ExternalSecret.RefreshInterval = &metav1.Duration{Duration: 1 * time.Second}
+					system.Spec.Config.ExternalSecret.SecretStoreRef = &saasv1alpha1.ExternalSecretSecretStoreReferenceSpec{
+						Name: pointer.StringPtr("other-store"),
+						Kind: pointer.StringPtr("SecretStore"),
+					}
+					system.Spec.Config.DatabaseDSN.FromVault.Path = "secret/data/updated-path"
+
+					return k8sClient.Patch(context.Background(), system, patch)
+
+				}, timeout, poll).ShouldNot(HaveOccurred())
+			})
+
+			It("updates the system secret properties", func() {
+
+				es := &externalsecretsv1alpha1.ExternalSecret{}
+				By("updating the system-database external secret",
+					checkResource(
+						es,
+						expectedResource{
+							Name:        "system-database",
+							Namespace:   namespace,
+							LastVersion: rvs["externalsecret/system-database"],
+						},
+					),
+				)
+
+				Expect(es.Spec.RefreshInterval.ToUnstructured()).To(Equal("1s"))
+				Expect(es.Spec.SecretStoreRef.Name).To(Equal("other-store"))
+				Expect(es.Spec.SecretStoreRef.Kind).To(Equal("SecretStore"))
+
+				for _, data := range es.Spec.Data {
+					switch data.SecretKey {
+					case "DATABASE_URL":
+						Expect(data.RemoteRef.Key).To(Equal("updated-path"))
+					}
+				}
+			})
+		})
 	})
 })

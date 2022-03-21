@@ -293,6 +293,15 @@ var _ = Describe("Backend controller", func() {
 					rvs["deployment/backend-cron"] = getResourceVersion(
 						&appsv1.Deployment{}, "backend-cron", namespace,
 					)
+					rvs["externalsecret/backend-internal-api"] = getResourceVersion(
+						&externalsecretsv1alpha1.ExternalSecret{}, "backend-internal-api", namespace,
+					)
+					rvs["externalsecret/backend-system-events-hook"] = getResourceVersion(
+						&externalsecretsv1alpha1.ExternalSecret{}, "backend-system-events-hook", namespace,
+					)
+					rvs["externalsecret/backend-error-monitoring"] = getResourceVersion(
+						&externalsecretsv1alpha1.ExternalSecret{}, "backend-error-monitoring", namespace,
+					)
 
 					patch := client.MergeFrom(backend.DeepCopy())
 					backend.Spec.Image = &saasv1alpha1.ImageSpec{
@@ -316,6 +325,10 @@ var _ = Describe("Backend controller", func() {
 						CrossZoneLoadBalancingEnabled: pointer.BoolPtr(false),
 					}
 					backend.Spec.Config.ExternalSecret.RefreshInterval = &metav1.Duration{Duration: 1 * time.Second}
+					backend.Spec.Config.ExternalSecret.SecretStoreRef = &saasv1alpha1.ExternalSecretSecretStoreReferenceSpec{
+						Name: pointer.StringPtr("other-store"),
+						Kind: pointer.StringPtr("SecretStore"),
+					}
 					backend.Spec.Config.InternalAPIUser.FromVault.Path = "secret/data/updated-path-api"
 					backend.Spec.Config.SystemEventsHookPassword.FromVault.Path = "secret/data/updated-path-hook"
 					backend.Spec.Config.ErrorMonitoringKey.FromVault.Path = "secret/data/updated-path-error"
@@ -388,13 +401,16 @@ var _ = Describe("Backend controller", func() {
 					checkResource(
 						esApi,
 						expectedResource{
-							Name:      "backend-internal-api",
-							Namespace: namespace,
+							Name:        "backend-internal-api",
+							Namespace:   namespace,
+							LastVersion: rvs["externalsecret/backend-internal-api"],
 						},
 					),
 				)
 
 				Expect(esApi.Spec.RefreshInterval.ToUnstructured()).To(Equal("1s"))
+				Expect(esApi.Spec.SecretStoreRef.Name).To(Equal("other-store"))
+				Expect(esApi.Spec.SecretStoreRef.Kind).To(Equal("SecretStore"))
 
 				for _, data := range esApi.Spec.Data {
 					switch data.SecretKey {
@@ -408,13 +424,16 @@ var _ = Describe("Backend controller", func() {
 					checkResource(
 						esHook,
 						expectedResource{
-							Name:      "backend-system-events-hook",
-							Namespace: namespace,
+							Name:        "backend-system-events-hook",
+							Namespace:   namespace,
+							LastVersion: rvs["externalsecret/backend-system-events-hook"],
 						},
 					),
 				)
 
 				Expect(esHook.Spec.RefreshInterval.ToUnstructured()).To(Equal("1s"))
+				Expect(esHook.Spec.SecretStoreRef.Name).To(Equal("other-store"))
+				Expect(esHook.Spec.SecretStoreRef.Kind).To(Equal("SecretStore"))
 
 				for _, data := range esHook.Spec.Data {
 					switch data.SecretKey {
@@ -428,13 +447,16 @@ var _ = Describe("Backend controller", func() {
 					checkResource(
 						esError,
 						expectedResource{
-							Name:      "backend-error-monitoring",
-							Namespace: namespace,
+							Name:        "backend-error-monitoring",
+							Namespace:   namespace,
+							LastVersion: rvs["backend-error-monitoring"],
 						},
 					),
 				)
 
 				Expect(esError.Spec.RefreshInterval.ToUnstructured()).To(Equal("1s"))
+				Expect(esError.Spec.SecretStoreRef.Name).To(Equal("other-store"))
+				Expect(esError.Spec.SecretStoreRef.Kind).To(Equal("SecretStore"))
 
 				for _, data := range esError.Spec.Data {
 					switch data.SecretKey {
