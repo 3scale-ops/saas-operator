@@ -2,10 +2,11 @@ package controllers
 
 import (
 	"context"
+	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
-	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
@@ -109,15 +110,28 @@ var _ = Describe("MappingService controller", func() {
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("mapping-service"))
 			Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("mapping-service"))
 
-			By("deploying the MappingService System Token secret definition",
+			es := &externalsecretsv1alpha1.ExternalSecret{}
+			By("deploying the MappingService System Token external secret",
 				checkResource(
-					&secretsmanagerv1alpha1.SecretDefinition{},
+					es,
 					expectedResource{
 						Name:      "mapping-service-system-master-access-token",
 						Namespace: namespace,
 					},
 				),
 			)
+
+			Expect(es.Spec.RefreshInterval.ToUnstructured()).To(Equal("1m0s"))
+			Expect(es.Spec.SecretStoreRef.Name).To(Equal("vault-mgmt"))
+			Expect(es.Spec.SecretStoreRef.Kind).To(Equal("ClusterSecretStore"))
+
+			for _, data := range es.Spec.Data {
+				switch data.SecretKey {
+				case "MASTER_ACCESS_TOKEN":
+					Expect(data.RemoteRef.Property).To(Equal("some-key"))
+					Expect(data.RemoteRef.Key).To(Equal("some-path"))
+				}
+			}
 
 			By("deploying the MappingService grafana dashboard",
 				checkResource(
@@ -154,10 +168,19 @@ var _ = Describe("MappingService controller", func() {
 					rvs["deployment/mappingservice"] = getResourceVersion(
 						&appsv1.Deployment{}, "mapping-service", namespace,
 					)
+					rvs["externalsecret/mapping-service-system-master-access-token"] = getResourceVersion(
+						&externalsecretsv1alpha1.ExternalSecret{}, "mapping-service-system-master-access-token", namespace,
+					)
 
 					patch := client.MergeFrom(mappingservice.DeepCopy())
 					mappingservice.Spec.Config.APIHost = "updated-example.com"
-					mappingservice.Spec.Config.SystemAdminToken.FromVault.Path = "updated-path"
+
+					mappingservice.Spec.Config.ExternalSecret.RefreshInterval = &metav1.Duration{Duration: 1 * time.Second}
+					mappingservice.Spec.Config.ExternalSecret.SecretStoreRef = &saasv1alpha1.ExternalSecretSecretStoreReferenceSpec{
+						Name: pointer.StringPtr("other-store"),
+						Kind: pointer.StringPtr("SecretStore"),
+					}
+					mappingservice.Spec.Config.SystemAdminToken.FromVault.Path = "secret/data/updated-path"
 					mappingservice.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{
 						MinReplicas: pointer.Int32(3),
 					}
@@ -198,17 +221,28 @@ var _ = Describe("MappingService controller", func() {
 				Expect(dep.Spec.Template.Spec.Containers[0].LivenessProbe).To(BeNil())
 				Expect(dep.Spec.Template.Spec.Containers[0].ReadinessProbe).To(BeNil())
 
-				sd := &secretsmanagerv1alpha1.SecretDefinition{}
-				By("updating the MappingService System Token secret definition",
+				es := &externalsecretsv1alpha1.ExternalSecret{}
+				By("updating the MappingService System Token external secret",
 					checkResource(
-						sd,
+						es,
 						expectedResource{
-							Name:      "mapping-service-system-master-access-token",
-							Namespace: namespace,
+							Name:        "mapping-service-system-master-access-token",
+							Namespace:   namespace,
+							LastVersion: rvs["externalsecret/mapping-service-system-master-access-token"],
 						},
 					),
 				)
-				Expect(sd.Spec.KeysMap["MASTER_ACCESS_TOKEN"].Path).To(Equal("updated-path"))
+
+				Expect(es.Spec.RefreshInterval.ToUnstructured()).To(Equal("1s"))
+				Expect(es.Spec.SecretStoreRef.Name).To(Equal("other-store"))
+				Expect(es.Spec.SecretStoreRef.Kind).To(Equal("SecretStore"))
+
+				for _, data := range es.Spec.Data {
+					switch data.SecretKey {
+					case "MASTER_ACCESS_TOKEN":
+						Expect(data.RemoteRef.Key).To(Equal("updated-path"))
+					}
+				}
 
 				By("ensuring the MappingService grafana dashboard is gone",
 					checkResource(

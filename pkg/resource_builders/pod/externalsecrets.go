@@ -3,6 +3,7 @@ package pod
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -25,7 +26,8 @@ func GenerateExternalSecretFn(name, namespace, secretStoreName, secretStoreKind 
 					Kind: secretStoreKind,
 				},
 				Target: externalsecretsv1alpha1.ExternalSecretTarget{
-					Name: name,
+					Name:           name,
+					CreationPolicy: "Owner",
 				},
 				RefreshInterval: &refreshInterval,
 				Data:            keysSlice(name, opts),
@@ -79,7 +81,7 @@ func keysSlice(name string, opts interface{}) []externalsecretsv1alpha1.External
 		s = append(s, externalsecretsv1alpha1.ExternalSecretData{
 			SecretKey: keyName,
 			RemoteRef: externalsecretsv1alpha1.ExternalSecretDataRemoteRef{
-				Key:      secretValue.Value.FromVault.Path,
+				Key:      strings.TrimPrefix(secretValue.Value.FromVault.Path, "secret/data/"),
 				Property: secretValue.Value.FromVault.Key,
 			},
 		})

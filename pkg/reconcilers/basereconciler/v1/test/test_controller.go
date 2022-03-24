@@ -22,7 +22,6 @@ import (
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
-	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/marin3r"
 	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
 	"github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1/test/api/v1alpha1"
@@ -58,7 +57,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		return *result, err
 	}
 
-	triggers, err := r.TriggersFromSecretDefs(ctx, secretDefinition(req.Namespace))
+	triggers, err := r.TriggersFromExternalSecrets(ctx, externalSecret(req.Namespace))
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -68,10 +67,6 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 			Template:        deployment(req.Namespace, instance.Spec.Marin3r),
 			RolloutTriggers: triggers,
 			HasHPA:          false,
-		}},
-		SecretDefinitions: []basereconciler.SecretDefinition{{
-			Template: secretDefinition(req.Namespace),
-			Enabled:  true,
 		}},
 		ExternalSecrets: []basereconciler.ExternalSecret{{
 			Template: externalSecret(req.Namespace),
@@ -177,29 +172,6 @@ func service(namespace string, annotations map[string]string) basereconciler.Gen
 				Ports: []corev1.ServicePort{{
 					Name: "port", Port: 80, TargetPort: intstr.FromInt(80), Protocol: corev1.ProtocolTCP}},
 				Selector: map[string]string{"selector": "deployment"},
-			},
-		}
-	}
-}
-
-func secretDefinition(namespace string) basereconciler.GeneratorFunction {
-
-	return func() client.Object {
-		return &secretsmanagerv1alpha1.SecretDefinition{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       "SecretDefinition",
-				APIVersion: secretsmanagerv1alpha1.GroupVersion.String(),
-			},
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "secret",
-				Namespace: namespace,
-			},
-			Spec: secretsmanagerv1alpha1.SecretDefinitionSpec{
-				Name: "secret",
-				Type: "opaque",
-				KeysMap: map[string]secretsmanagerv1alpha1.DataSource{
-					"KEY": {Key: "vault-key", Path: "vault-path"},
-				},
 			},
 		}
 	}

@@ -63,7 +63,7 @@ func TestGenerateExternalSecretFn(t *testing.T) {
 						Name: "vault-mgmt",
 						Kind: "ClusterSecretStore",
 					},
-					Target:          externalsecretsv1alpha1.ExternalSecretTarget{Name: "my-secret"},
+					Target:          externalsecretsv1alpha1.ExternalSecretTarget{Name: "my-secret", CreationPolicy: "Owner"},
 					RefreshInterval: &metav1.Duration{Duration: 120 * time.Second},
 					Data: []externalsecretsv1alpha1.ExternalSecretData{
 						{
@@ -119,7 +119,7 @@ func TestGenerateExternalSecretFn(t *testing.T) {
 						Name: "vault-mgmt",
 						Kind: "ClusterSecretStore",
 					},
-					Target:          externalsecretsv1alpha1.ExternalSecretTarget{Name: "other-secret"},
+					Target:          externalsecretsv1alpha1.ExternalSecretTarget{Name: "other-secret", CreationPolicy: "Owner"},
 					RefreshInterval: &metav1.Duration{Duration: 120 * time.Second},
 					Data: []externalsecretsv1alpha1.ExternalSecretData{
 						{

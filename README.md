@@ -23,7 +23,7 @@ A Kubernetes Operator based on the Operator SDK to manage 3scale SaaS (hosted ve
 
 * [prometheus-operator](https://github.com/coreos/prometheus-operator) v0.17.0+
 * [grafana-operator](https://github.com/integr8ly/grafana-operator) v3.0.0+
-* [secrets-manager](https://github.com/tuenti/secrets-manager) v1.0.2+
+* [External-secrets-operator](https://github.com/external-secrets/external-secrets) v0.4.4+
 * [marin3r](https://github.com/3scale/marin3r) v0.7.0+
 * [aws-nlb-helper-operator](https://github.com/3scale/aws-nlb-helper-operator) v0.2.0+
 

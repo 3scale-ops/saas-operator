@@ -98,9 +98,9 @@ func (gen *Generator) GrafanaDashboard() basereconciler_resources.GrafanaDashboa
 	}
 }
 
-func (gen *Generator) SecretDefinition() basereconciler_resources.SecretDefinitionTemplate {
-	return basereconciler_resources.SecretDefinitionTemplate{
-		Template:  pod.GenerateSecretDefinitionFn("mapping-service-system-master-access-token", gen.GetNamespace(), gen.GetLabels(), gen.Options),
+func (gen *Generator) ExternalSecret() basereconciler_resources.ExternalSecretTemplate {
+	return basereconciler_resources.ExternalSecretTemplate{
+		Template:  pod.GenerateExternalSecretFn("mapping-service-system-master-access-token", gen.GetNamespace(), *gen.Spec.Config.ExternalSecret.SecretStoreRef.Name, *gen.Spec.Config.ExternalSecret.SecretStoreRef.Kind, *gen.Spec.Config.ExternalSecret.RefreshInterval, gen.GetLabels(), gen.Options),
 		IsEnabled: true,
 	}
 }

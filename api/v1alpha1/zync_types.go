@@ -245,6 +245,10 @@ type ZyncConfig struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Rails *ZyncRailsSpec `json:"rails,omitempty"`
+	// External Secret common configuration
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ExternalSecret ExternalSecret `json:"externalSecret,omitempty"`
 	// A reference to the secret holding the database DSN
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	DatabaseDSN SecretReference `json:"databaseDSN"`
@@ -268,6 +272,8 @@ func (cfg *ZyncConfig) Default() {
 	if cfg.Bugsnag == nil {
 		cfg.Bugsnag = &zyncDefaultConfigBugsnagSpec
 	}
+	cfg.ExternalSecret.SecretStoreRef = InitializeExternalSecretSecretStoreReferenceSpec(cfg.ExternalSecret.SecretStoreRef, defaultExternalSecretSecretStoreReference)
+	cfg.ExternalSecret.RefreshInterval = durationOrDefault(cfg.ExternalSecret.RefreshInterval, &defaultExternalSecretRefreshInterval)
 	cfg.Rails.Default()
 }
 

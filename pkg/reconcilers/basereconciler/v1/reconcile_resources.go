@@ -8,7 +8,6 @@ import (
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
-	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/redhat-cop/operator-utils/pkg/util/lockedresourcecontroller/lockedpatch"
 	appsv1 "k8s.io/api/apps/v1"
@@ -24,7 +23,6 @@ import (
 type ControlledResources struct {
 	Deployments              []Deployment
 	StatefulSets             []StatefulSet
-	SecretDefinitions        []SecretDefinition
 	ExternalSecrets          []ExternalSecret
 	Services                 []Service
 	PodDisruptionBudgets     []PodDisruptionBudget
@@ -37,7 +35,6 @@ type ControlledResources struct {
 func (cm *ControlledResources) Add(resources *ControlledResources) *ControlledResources {
 	cm.Deployments = append(cm.Deployments, resources.Deployments...)
 	cm.StatefulSets = append(cm.StatefulSets, resources.StatefulSets...)
-	cm.SecretDefinitions = append(cm.SecretDefinitions, resources.SecretDefinitions...)
 	cm.Services = append(cm.Services, resources.Services...)
 	cm.PodDisruptionBudgets = append(cm.PodDisruptionBudgets, resources.PodDisruptionBudgets...)
 	cm.HorizontalPodAutoscalers = append(cm.HorizontalPodAutoscalers, resources.HorizontalPodAutoscalers...)
@@ -93,23 +90,6 @@ func NewRolloutTrigger(name string, o client.Object) RolloutTrigger {
 	default:
 		panic("unsupported rollout trigger")
 	}
-}
-
-// TriggersFromSecretDefs generates a list of RolloutTrigger from the given SecretDefinition generator functions
-func (r *Reconciler) TriggersFromSecretDefs(ctx context.Context, sd ...GeneratorFunction) ([]RolloutTrigger, error) {
-
-	triggers := []RolloutTrigger{}
-
-	for _, secretDef := range sd {
-		sd := secretDef().(*secretsmanagerv1alpha1.SecretDefinition)
-		strgs, err := r.TriggersFromSecret(ctx, sd.GetNamespace(), sd.GetName())
-		if err != nil {
-			return nil, err
-		}
-		triggers = append(triggers, strgs...)
-	}
-
-	return triggers, nil
 }
 
 // TriggersFromExternalSecrets generates a list of RolloutTrigger from the given ExternalSecret generator functions
@@ -169,12 +149,6 @@ type StatefulSet struct {
 	Template        GeneratorFunction
 	RolloutTriggers []RolloutTrigger
 	Enabled         bool
-}
-
-// SecretDefinition specifies a SecretDefinition resource
-type SecretDefinition struct {
-	Template GeneratorFunction
-	Enabled  bool
 }
 
 // ExternalSecret specifies a ExternalSecret resource
@@ -327,16 +301,6 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 			resources = append(resources,
 				LockedResource{
 					GeneratorFn:  r.StatefulSetWithRolloutTriggers(ss.Template, ss.RolloutTriggers),
-					ExcludePaths: DefaultExcludedPaths,
-				})
-		}
-	}
-
-	for _, sd := range crs.SecretDefinitions {
-		if sd.Enabled {
-			resources = append(resources,
-				LockedResource{
-					GeneratorFn:  sd.Template,
 					ExcludePaths: DefaultExcludedPaths,
 				})
 		}

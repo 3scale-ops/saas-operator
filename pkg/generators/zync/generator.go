@@ -90,9 +90,9 @@ func (gen *Generator) Resources() []basereconciler.Resource {
 			Template:  grafanadashboard.New(gen.GetKey(), gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/zync.json.gtpl"),
 			IsEnabled: !gen.GrafanaDashboardSpec.IsDeactivated(),
 		},
-		// SecretDefinition
-		basereconciler_resources.SecretDefinitionTemplate{
-			Template:  pod.GenerateSecretDefinitionFn("zync", gen.GetNamespace(), gen.GetLabels(), gen.API.Options),
+		// ExternalSecret
+		basereconciler_resources.ExternalSecretTemplate{
+			Template:  pod.GenerateExternalSecretFn("zync", gen.GetNamespace(), *gen.Config.ExternalSecret.SecretStoreRef.Name, *gen.Config.ExternalSecret.SecretStoreRef.Kind, *gen.Config.ExternalSecret.RefreshInterval, gen.GetLabels(), gen.API.Options),
 			IsEnabled: true,
 		},
 	}

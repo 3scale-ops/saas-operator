@@ -380,6 +380,10 @@ type BackendConfig struct {
 	// Redis Queues DSN
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	RedisQueuesDSN string `json:"redisQueuesDSN"`
+	// External Secret common configuration
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ExternalSecret ExternalSecret `json:"externalSecret,omitempty"`
 	// A reference to the secret holding the backend-system-events-hook URL
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	SystemEventsHookURL SecretReference `json:"systemEventsHookURL"`
@@ -406,6 +410,8 @@ type BackendConfig struct {
 func (cfg *BackendConfig) Default() {
 	cfg.RackEnv = stringOrDefault(cfg.RackEnv, pointer.StringPtr(backendDefaultConfigRackEnv))
 	cfg.MasterServiceID = intOrDefault(cfg.MasterServiceID, pointer.Int32Ptr(backendDefaultConfigMasterServiceID))
+	cfg.ExternalSecret.SecretStoreRef = InitializeExternalSecretSecretStoreReferenceSpec(cfg.ExternalSecret.SecretStoreRef, defaultExternalSecretSecretStoreReference)
+	cfg.ExternalSecret.RefreshInterval = durationOrDefault(cfg.ExternalSecret.RefreshInterval, &defaultExternalSecretRefreshInterval)
 }
 
 // ListenerConfig configures app behavior for Backend Listener

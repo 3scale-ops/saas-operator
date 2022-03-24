@@ -42,6 +42,7 @@ type Generator struct {
 	CanarySidekiqLow     *SidekiqGenerator
 	Sphinx               SphinxGenerator
 	Console              ConsoleGenerator
+	Config               saasv1alpha1.SystemConfig
 	GrafanaDashboardSpec saasv1alpha1.GrafanaDashboardSpec
 	ConfigFilesSecret    string
 	Options              config.Options
@@ -166,6 +167,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) (Gen
 			Enabled:           *spec.Config.Rails.Console,
 		},
 		GrafanaDashboardSpec: *spec.GrafanaDashboard,
+		Config:               spec.Config,
 		ConfigFilesSecret:    *spec.Config.ConfigFilesSecret,
 		Options:              config.NewOptions(spec),
 	}
@@ -306,16 +308,16 @@ func getSystemSecrets() []string {
 	}
 }
 
-// Resources returns functions to generate all System's secret definitions resources
-func (gen *Generator) SecretDefinitions() []basereconciler.Resource {
+// Resources returns functions to generate all System's external secrets resources
+func (gen *Generator) ExternalSecrets() []basereconciler.Resource {
 
 	resources := []basereconciler.Resource{}
-	for _, sd := range getSystemSecrets() {
+	for _, es := range getSystemSecrets() {
 		resources = append(
 			resources,
-			basereconciler_resources.SecretDefinitionTemplate{
-				Template: pod.GenerateSecretDefinitionFn(
-					sd, gen.GetNamespace(), gen.GetLabels(), gen.Options,
+			basereconciler_resources.ExternalSecretTemplate{
+				Template: pod.GenerateExternalSecretFn(
+					es, gen.GetNamespace(), *gen.Config.ExternalSecret.SecretStoreRef.Name, *gen.Config.ExternalSecret.SecretStoreRef.Kind, *gen.Config.ExternalSecret.RefreshInterval, gen.GetLabels(), gen.Options,
 				), IsEnabled: true,
 			},
 		)

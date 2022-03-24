@@ -127,13 +127,20 @@ func (spec *CORSProxySpec) Default() {
 
 // CORSProxyConfig defines configuration options for the component
 type CORSProxyConfig struct {
+	// External Secret common configuration
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ExternalSecret ExternalSecret `json:"externalSecret,omitempty"`
 	// System database connection string
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	SystemDatabaseDSN SecretReference `json:"systemDatabaseDSN"`
 }
 
 // Default sets default values for any value not specifically set in the CORSProxyConfig struct
-func (cfg *CORSProxyConfig) Default() {}
+func (cfg *CORSProxyConfig) Default() {
+	cfg.ExternalSecret.SecretStoreRef = InitializeExternalSecretSecretStoreReferenceSpec(cfg.ExternalSecret.SecretStoreRef, defaultExternalSecretSecretStoreReference)
+	cfg.ExternalSecret.RefreshInterval = durationOrDefault(cfg.ExternalSecret.RefreshInterval, &defaultExternalSecretRefreshInterval)
+}
 
 // CORSProxyStatus defines the observed state of CORSProxy
 type CORSProxyStatus struct{}

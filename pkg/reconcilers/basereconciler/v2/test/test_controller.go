@@ -22,7 +22,6 @@ import (
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
-	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators/common_blocks/marin3r"
 	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
 	"github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/resources"
@@ -67,10 +66,6 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 			}},
 			EnforceReplicas: true,
 			IsEnabled:       true,
-		},
-		resources.SecretDefinitionTemplate{
-			Template:  secretDefinition(req.Namespace),
-			IsEnabled: true,
 		},
 		resources.ExternalSecretTemplate{
 			Template:  externalSecret(req.Namespace),
@@ -152,25 +147,6 @@ func service(namespace string, annotations map[string]string) func() *corev1.Ser
 				Ports: []corev1.ServicePort{{
 					Name: "port", Port: 80, TargetPort: intstr.FromInt(80), Protocol: corev1.ProtocolTCP}},
 				Selector: map[string]string{"selector": "deployment"},
-			},
-		}
-	}
-}
-
-func secretDefinition(namespace string) func() *secretsmanagerv1alpha1.SecretDefinition {
-
-	return func() *secretsmanagerv1alpha1.SecretDefinition {
-		return &secretsmanagerv1alpha1.SecretDefinition{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "secret",
-				Namespace: namespace,
-			},
-			Spec: secretsmanagerv1alpha1.SecretDefinitionSpec{
-				Name: "secret",
-				Type: "opaque",
-				KeysMap: map[string]secretsmanagerv1alpha1.DataSource{
-					"KEY": {Key: "vault-key", Path: "vault-path"},
-				},
 			},
 		}
 	}

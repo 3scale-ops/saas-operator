@@ -147,6 +147,10 @@ type MappingServiceConfig struct {
 	// +kubebuiler:validation:Enum=debug;info;notice;warn;error;crit;alert;emerg
 	// +optional
 	LogLevel *string `json:"logLevel,omitempty"`
+	// External Secret common configuration
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ExternalSecret ExternalSecret `json:"externalSecret,omitempty"`
 	// A reference to the secret holding the system admin token
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	SystemAdminToken SecretReference `json:"systemAdminToken"`
@@ -155,7 +159,8 @@ type MappingServiceConfig struct {
 // Default sets default values for any value not specifically set in the MappingServiceConfig struct
 func (cfg *MappingServiceConfig) Default() {
 	cfg.LogLevel = stringOrDefault(cfg.LogLevel, pointer.StringPtr(mappingserviceDefaultLogLevel))
-
+	cfg.ExternalSecret.SecretStoreRef = InitializeExternalSecretSecretStoreReferenceSpec(cfg.ExternalSecret.SecretStoreRef, defaultExternalSecretSecretStoreReference)
+	cfg.ExternalSecret.RefreshInterval = durationOrDefault(cfg.ExternalSecret.RefreshInterval, &defaultExternalSecretRefreshInterval)
 }
 
 // MappingServiceStatus defines the observed state of MappingService

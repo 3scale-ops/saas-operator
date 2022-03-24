@@ -5,7 +5,6 @@ import (
 
 	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
-	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
@@ -13,25 +12,6 @@ import (
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
-
-var _ basereconciler.Resource = SecretDefinitionTemplate{}
-
-// SecretDefinition specifies a SecretDefinition resource
-type SecretDefinitionTemplate struct {
-	Template  func() *secretsmanagerv1alpha1.SecretDefinition
-	IsEnabled bool
-}
-
-func (sdt SecretDefinitionTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
-
-	sd := sdt.Template()
-	sd.GetObjectKind().SetGroupVersionKind(secretsmanagerv1alpha1.GroupVersion.WithKind("SecretDefinition"))
-	return sd.DeepCopy(), DefaultExcludedPaths, nil
-}
-
-func (sdt SecretDefinitionTemplate) Enabled() bool {
-	return sdt.IsEnabled
-}
 
 var _ basereconciler.Resource = ExternalSecretTemplate{}
 

@@ -40,7 +40,6 @@ import (
 	"github.com/3scale/saas-operator/controllers"
 	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
-	secretsmanagerv1alpha1 "github.com/3scale/saas-operator/pkg/apis/secrets-manager/v1alpha1"
 	basereconciler_v2 "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
 	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
@@ -68,7 +67,6 @@ func init() {
 	utilruntime.Must(saasv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(monitoringv1.AddToScheme(scheme))
 	utilruntime.Must(grafanav1alpha1.AddToScheme(scheme))
-	utilruntime.Must(secretsmanagerv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(externalsecretsv1alpha1.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 }

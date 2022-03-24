@@ -570,7 +570,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/3scale/saas-operator
     support: Red Hat
-  name: saas-operator.v0.13.1-alpha.3
+  name: saas-operator.v0.13.1-alpha.4
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -1272,18 +1272,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.errorMonitoringKey.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.errorMonitoringKey.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.errorMonitoringKey.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.errorMonitoringKey.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.errorMonitoringKey.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.errorMonitoringKey.override
@@ -1301,21 +1289,26 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.errorMonitoringService.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.errorMonitoringService.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.errorMonitoringService.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.errorMonitoringService.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.errorMonitoringService.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.errorMonitoringService.override
+      - description: External Secret common configuration
+        displayName: External Secret
+        path: config.externalSecret
+      - description: RefreshInterval is the amount of time before the values reading
+          again from the SecretStore provider (duration)
+        displayName: Refresh Interval
+        path: config.externalSecret.refreshInterval
+      - description: SecretStoreRef defines which SecretStore to use when fetching
+          the secret data
+        displayName: Secret Store Ref
+        path: config.externalSecret.secretStoreRef
+      - description: The Vault secret store reference kind
+        displayName: Kind
+        path: config.externalSecret.secretStoreRef.kind
+      - description: The Vault secret store reference name
+        displayName: Name
+        path: config.externalSecret.secretStoreRef.name
       - description: A reference to the secret holding the backend-internal-api password
         displayName: Internal APIPassword
         path: config.internalAPIPassword
@@ -1329,18 +1322,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.internalAPIPassword.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.internalAPIPassword.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.internalAPIPassword.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.internalAPIPassword.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.internalAPIPassword.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.internalAPIPassword.override
@@ -1357,18 +1338,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.internalAPIUser.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.internalAPIUser.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.internalAPIUser.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.internalAPIUser.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.internalAPIUser.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.internalAPIUser.override
@@ -1398,18 +1367,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.systemEventsHookPassword.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.systemEventsHookPassword.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.systemEventsHookPassword.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.systemEventsHookPassword.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.systemEventsHookPassword.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.systemEventsHookPassword.override
@@ -1427,18 +1384,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.systemEventsHookURL.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.systemEventsHookURL.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.systemEventsHookURL.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.systemEventsHookURL.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.systemEventsHookURL.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.systemEventsHookURL.override
@@ -1924,6 +1869,23 @@ spec:
       - description: Application specific configuration options for the component
         displayName: Config
         path: config
+      - description: External Secret common configuration
+        displayName: External Secret
+        path: config.externalSecret
+      - description: RefreshInterval is the amount of time before the values reading
+          again from the SecretStore provider (duration)
+        displayName: Refresh Interval
+        path: config.externalSecret.refreshInterval
+      - description: SecretStoreRef defines which SecretStore to use when fetching
+          the secret data
+        displayName: Secret Store Ref
+        path: config.externalSecret.secretStoreRef
+      - description: The Vault secret store reference kind
+        displayName: Kind
+        path: config.externalSecret.secretStoreRef.kind
+      - description: The Vault secret store reference name
+        displayName: Name
+        path: config.externalSecret.secretStoreRef.name
       - description: System database connection string
         displayName: System Database DSN
         path: config.systemDatabaseDSN
@@ -1937,18 +1899,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.systemDatabaseDSN.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.systemDatabaseDSN.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.systemDatabaseDSN.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.systemDatabaseDSN.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.systemDatabaseDSN.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.systemDatabaseDSN.override
@@ -2261,6 +2211,23 @@ spec:
       - description: System endpoint to fetch proxy configs from
         displayName: APIHost
         path: config.apiHost
+      - description: External Secret common configuration
+        displayName: External Secret
+        path: config.externalSecret
+      - description: RefreshInterval is the amount of time before the values reading
+          again from the SecretStore provider (duration)
+        displayName: Refresh Interval
+        path: config.externalSecret.refreshInterval
+      - description: SecretStoreRef defines which SecretStore to use when fetching
+          the secret data
+        displayName: Secret Store Ref
+        path: config.externalSecret.secretStoreRef
+      - description: The Vault secret store reference kind
+        displayName: Kind
+        path: config.externalSecret.secretStoreRef.kind
+      - description: The Vault secret store reference name
+        displayName: Name
+        path: config.externalSecret.secretStoreRef.name
       - description: Openresty log level
         displayName: Log Level
         path: config.logLevel
@@ -2280,18 +2247,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.systemAdminToken.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.systemAdminToken.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.systemAdminToken.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.systemAdminToken.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.systemAdminToken.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.systemAdminToken.override
@@ -2764,18 +2719,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.accessCode.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.accessCode.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.accessCode.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.accessCode.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.accessCode.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.accessCode.override
@@ -2792,18 +2735,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.assets.accessKey.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.assets.accessKey.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.assets.accessKey.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.assets.accessKey.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.assets.accessKey.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.assets.accessKey.override
@@ -2829,18 +2760,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.assets.secretKey.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.assets.secretKey.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.assets.secretKey.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.assets.secretKey.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.assets.secretKey.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.assets.secretKey.override
@@ -2863,18 +2782,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.backend.internalAPIPassword.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.backend.internalAPIPassword.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.backend.internalAPIPassword.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.backend.internalAPIPassword.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.backend.internalAPIPassword.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.backend.internalAPIPassword.override
@@ -2891,18 +2798,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.backend.internalAPIUser.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.backend.internalAPIUser.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.backend.internalAPIUser.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.backend.internalAPIUser.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.backend.internalAPIUser.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.backend.internalAPIUser.override
@@ -2928,18 +2823,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.bugsnag.apiKey.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.bugsnag.apiKey.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.bugsnag.apiKey.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.bugsnag.apiKey.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.bugsnag.apiKey.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.bugsnag.apiKey.override
@@ -2960,18 +2843,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.databaseDSN.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.databaseDSN.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.databaseDSN.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.databaseDSN.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.databaseDSN.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.databaseDSN.override
@@ -2988,18 +2859,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.databaseSecret.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.databaseSecret.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.databaseSecret.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.databaseSecret.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.databaseSecret.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.databaseSecret.override
@@ -3016,21 +2875,26 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.eventsSharedSecret.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.eventsSharedSecret.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.eventsSharedSecret.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.eventsSharedSecret.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.eventsSharedSecret.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.eventsSharedSecret.override
+      - description: External Secret common configuration
+        displayName: External Secret
+        path: config.externalSecret
+      - description: RefreshInterval is the amount of time before the values reading
+          again from the SecretStore provider (duration)
+        displayName: Refresh Interval
+        path: config.externalSecret.refreshInterval
+      - description: SecretStoreRef defines which SecretStore to use when fetching
+          the secret data
+        displayName: Secret Store Ref
+        path: config.externalSecret.secretStoreRef
+      - description: The Vault secret store reference kind
+        displayName: Kind
+        path: config.externalSecret.secretStoreRef.kind
+      - description: The Vault secret store reference name
+        displayName: Name
+        path: config.externalSecret.secretStoreRef.name
       - description: Enable (true) or disable (false) enforcing SSL
         displayName: Force SSL
         path: config.forceSSL
@@ -3050,18 +2914,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.github.clientID.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.github.clientID.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.github.clientID.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.github.clientID.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.github.clientID.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.github.clientID.override
@@ -3078,18 +2930,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.github.clientSecret.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.github.clientSecret.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.github.clientSecret.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.github.clientSecret.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.github.clientSecret.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.github.clientSecret.override
@@ -3106,18 +2946,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.mappingServiceAccessToken.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.mappingServiceAccessToken.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.mappingServiceAccessToken.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.mappingServiceAccessToken.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.mappingServiceAccessToken.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.mappingServiceAccessToken.override
@@ -3152,18 +2980,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.recaptcha.privateKey.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.recaptcha.privateKey.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.recaptcha.privateKey.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.recaptcha.privateKey.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.recaptcha.privateKey.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.recaptcha.privateKey.override
@@ -3180,18 +2996,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.recaptcha.publicKey.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.recaptcha.publicKey.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.recaptcha.publicKey.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.recaptcha.publicKey.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.recaptcha.publicKey.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.recaptcha.publicKey.override
@@ -3211,18 +3015,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.redhatCustomerPortal.clientID.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.redhatCustomerPortal.clientID.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.redhatCustomerPortal.clientID.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.redhatCustomerPortal.clientID.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.redhatCustomerPortal.clientID.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.redhatCustomerPortal.clientID.override
@@ -3239,18 +3031,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.redhatCustomerPortal.clientSecret.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.redhatCustomerPortal.clientSecret.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.redhatCustomerPortal.clientSecret.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.redhatCustomerPortal.clientSecret.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.redhatCustomerPortal.clientSecret.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.redhatCustomerPortal.clientSecret.override
@@ -3276,18 +3056,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.secretKeyBase.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.secretKeyBase.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.secretKeyBase.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.secretKeyBase.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.secretKeyBase.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.secretKeyBase.override
@@ -3307,18 +3075,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.segment.deletionToken.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.segment.deletionToken.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.segment.deletionToken.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.segment.deletionToken.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.segment.deletionToken.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.segment.deletionToken.override
@@ -3338,18 +3094,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.segment.writeKey.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.segment.writeKey.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.segment.writeKey.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.segment.writeKey.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.segment.writeKey.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.segment.writeKey.override
@@ -3378,18 +3122,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.smtp.password.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.smtp.password.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.smtp.password.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.smtp.password.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.smtp.password.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.smtp.password.override
@@ -3412,18 +3144,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.smtp.user.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.smtp.user.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.smtp.user.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.smtp.user.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.smtp.user.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.smtp.user.override
@@ -3449,18 +3169,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.zyncAuthToken.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.zyncAuthToken.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.zyncAuthToken.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.zyncAuthToken.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.zyncAuthToken.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.zyncAuthToken.override
@@ -4387,18 +4095,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.bugsnag.apiKey.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.bugsnag.apiKey.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.bugsnag.apiKey.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.bugsnag.apiKey.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.bugsnag.apiKey.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.bugsnag.apiKey.override
@@ -4415,21 +4111,26 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.databaseDSN.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.databaseDSN.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.databaseDSN.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.databaseDSN.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.databaseDSN.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.databaseDSN.override
+      - description: External Secret common configuration
+        displayName: External Secret
+        path: config.externalSecret
+      - description: RefreshInterval is the amount of time before the values reading
+          again from the SecretStore provider (duration)
+        displayName: Refresh Interval
+        path: config.externalSecret.refreshInterval
+      - description: SecretStoreRef defines which SecretStore to use when fetching
+          the secret data
+        displayName: Secret Store Ref
+        path: config.externalSecret.secretStoreRef
+      - description: The Vault secret store reference kind
+        displayName: Kind
+        path: config.externalSecret.secretStoreRef.kind
+      - description: The Vault secret store reference name
+        displayName: Name
+        path: config.externalSecret.secretStoreRef.name
       - description: Rails configuration options for zync components
         displayName: Rails
         path: config.rails
@@ -4455,18 +4156,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.secretKeyBase.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.secretKeyBase.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.secretKeyBase.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.secretKeyBase.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.secretKeyBase.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.secretKeyBase.override
@@ -4483,18 +4172,6 @@ spec:
       - description: The Vault path where the secret is located
         displayName: Path
         path: config.zyncAuthToken.fromVault.path
-      - description: The Vault refresh interval of the secret (duration)
-        displayName: Refresh Interval
-        path: config.zyncAuthToken.fromVault.refreshInterval
-      - description: The Vault secret store reference
-        displayName: Secret Store Ref
-        path: config.zyncAuthToken.fromVault.secretStoreRef
-      - description: The Vault secret store reference kind
-        displayName: Kind
-        path: config.zyncAuthToken.fromVault.secretStoreRef.kind
-      - description: The Vault secret store reference name
-        displayName: Name
-        path: config.zyncAuthToken.fromVault.secretStoreRef.name
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.zyncAuthToken.override
@@ -4680,7 +4357,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/3scale/saas-operator:v0.13.1-alpha.3
+                image: quay.io/3scale/saas-operator:v0.13.1-alpha.4
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -4813,6 +4490,18 @@ spec:
           - ""
           resources:
           - services
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - external-secrets.io
+          resources:
+          - externalsecrets
           verbs:
           - create
           - delete
@@ -5143,18 +4832,6 @@ spec:
           - get
           - patch
           - update
-        - apiGroups:
-          - secrets-manager.tuenti.io
-          resources:
-          - secretdefinitions
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
         serviceAccountName: saas-operator-controller-manager
     strategy: deployment
   installModes:
@@ -5182,4 +4859,4 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
-  version: 0.13.1-alpha.3
+  version: 0.13.1-alpha.4
