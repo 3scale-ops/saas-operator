@@ -40,7 +40,7 @@ import (
 	"github.com/3scale/saas-operator/controllers"
 	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
-	basereconciler_v2 "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
+	"github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
 	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	"github.com/3scale/saas-operator/pkg/util"
@@ -128,7 +128,7 @@ func main() {
 	/* BASERECONCILER_V2 BASED CONTROLLERS*/
 
 	if err = (&controllers.SentinelReconciler{
-		Reconciler:     basereconciler_v2.NewFromManager(mgr, mgr.GetEventRecorderFor("Sentinel"), false),
+		Reconciler:     basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("Sentinel"), false),
 		SentinelEvents: threads.NewManager(),
 		Metrics:        threads.NewManager(),
 		Log:            ctrl.Log.WithName("controllers").WithName("Sentinel"),
@@ -137,14 +137,14 @@ func main() {
 		os.Exit(1)
 	}
 	if err = (&controllers.RedisShardReconciler{
-		Reconciler: basereconciler_v2.NewFromManager(mgr, mgr.GetEventRecorderFor("RedisShard"), false),
+		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("RedisShard"), false),
 		Log:        ctrl.Log.WithName("controllers").WithName("RedisShard"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "RedisShard")
 		os.Exit(1)
 	}
 	if err = (&controllers.TwemproxyConfigReconciler{
-		Reconciler:     basereconciler_v2.NewFromManager(mgr, mgr.GetEventRecorderFor("TwemproxyConfig"), false),
+		Reconciler:     basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("TwemproxyConfig"), false),
 		SentinelEvents: threads.NewManager(),
 		Log:            ctrl.Log.WithName("controllers").WithName("TwemproxyConfig"),
 	}).SetupWithManager(mgr); err != nil {
