@@ -88,12 +88,20 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	// Create the redis-sentinel server pool
 	sentinelPool, err := redis.NewSentinelPool(ctx, r.GetClient(),
 		types.NamespacedName{Name: gen.GetComponent(), Namespace: gen.GetNamespace()}, int(*instance.Spec.Replicas))
+
+	// Close Redis clients
+	defer sentinelPool.Cleanup(log)
+
 	if err != nil {
 		return r.ManageError(ctx, instance, err)
 	}
 
 	// Create the ShardedCluster objects that represents the redis servers to be monitored by sentinel
 	shardedCluster, err := redis.NewShardedCluster(ctx, instance.Spec.Config.MonitoredShards, log)
+
+	// Close Redis clients
+	defer shardedCluster.Cleanup(log)
+
 	if err != nil {
 		return r.ManageError(ctx, instance, err)
 	}

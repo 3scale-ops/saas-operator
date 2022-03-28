@@ -99,6 +99,7 @@ func (gen *Generator) getMonitoredMasters(ctx context.Context, log logr.Logger) 
 
 	for _, uri := range gen.Spec.SentinelURIs {
 		sentinel, err := redis.NewSentinelServerFromConnectionString("sentinel", uri)
+		defer sentinel.Cleanup(log)
 		if err != nil {
 			return nil, err
 		}
@@ -129,6 +130,7 @@ func (gen *Generator) getMonitoredReadWriteSlavesWithFallbackToMasters(ctx conte
 
 	for _, uri := range gen.Spec.SentinelURIs {
 		sentinel, err := redis.NewSentinelServerFromConnectionString("sentinel", uri)
+		defer sentinel.Cleanup(log)
 		if err != nil {
 			return nil, err
 		}
