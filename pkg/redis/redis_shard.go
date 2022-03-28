@@ -51,6 +51,20 @@ func NewRedisServerFromConnectionString(name, connectionString string) (*RedisSe
 	return &RedisServer{Name: name, Host: crud.GetIP(), Port: crud.GetPort(), CRUD: crud, ReadOnly: false, Role: client.Unknown}, nil
 }
 
+// Cleanup closes all Redis clients opened during the RedisServer object creation
+func (srv *RedisServer) Cleanup(log logr.Logger) error {
+	log.V(2).Info("[@redis-server-cleanup] closing client",
+		"server", srv.Name, "host", srv.Host,
+	)
+	if err := srv.CRUD.CloseClient(); err != nil {
+		log.Error(err, "[@redis-server-cleanup] error closing server client",
+			"server", srv.Name, "host", srv.Host,
+		)
+		return err
+	}
+	return nil
+}
+
 // Discover returns the Role and the IsReadOnly flag for a given
 // redis Server
 func (srv *RedisServer) Discover(ctx context.Context) error {
@@ -178,6 +192,26 @@ func (s *Shard) Init(ctx context.Context, masterIndex int32, log logr.Logger) ([
 	return changed, nil
 }
 
+// Cleanup closes all Redis clients opened during the Shard object creation
+func (s *Shard) Cleanup(log logr.Logger) []error {
+
+	if s == nil {
+		return nil
+	}
+
+	log.V(1).Info("[@redis-shard-cleanup] closing redis shard clients",
+		"shard", s.Name,
+	)
+	var closeErrors []error
+	for _, server := range s.Servers {
+		if err := server.Cleanup(log); err != nil {
+			closeErrors = append(closeErrors, err)
+		}
+	}
+
+	return closeErrors
+}
+
 // ShardedCluster represents a sharded redis cluster, composed by several Shards
 type ShardedCluster []Shard
 
@@ -196,6 +230,17 @@ func NewShardedCluster(ctx context.Context, serverList map[string][]string, log 
 	}
 
 	return sc, nil
+}
+
+// Cleanup closes all Redis clients opened during the ShardedCluster object creation
+func (sc ShardedCluster) Cleanup(log logr.Logger) []error {
+	var cleanupErrors []error
+	for _, shard := range sc {
+		if err := shard.Cleanup(log); err != nil {
+			cleanupErrors = append(cleanupErrors, err...)
+		}
+	}
+	return cleanupErrors
 }
 
 func (sc ShardedCluster) Discover(ctx context.Context, log logr.Logger) error {
