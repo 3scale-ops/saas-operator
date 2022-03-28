@@ -113,7 +113,7 @@ build: generate fmt vet assets ## Build manager binary.
 	go build -o bin/manager main.go
 
 run: manifests generate fmt vet assets ## Run a controller from your host.
-	go run ./main.go
+	LOG_MODE="development" go run ./main.go
 
 docker-build: ## Build docker image with the manager.
 	docker build -t ${IMG} .
