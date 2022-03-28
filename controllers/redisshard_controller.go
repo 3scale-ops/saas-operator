@@ -77,6 +77,10 @@ func (r *RedisShardReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	shard, result, err := r.setRedisRoles(ctx, types.NamespacedName{Name: req.Name, Namespace: req.Namespace},
 		*instance.Spec.MasterIndex, *instance.Spec.SlaveCount+1, gen.ServiceName(), log)
+
+	// Close Redis clients
+	defer shard.Cleanup(log)
+
 	if result != nil || err != nil {
 		return *result, err
 	}
