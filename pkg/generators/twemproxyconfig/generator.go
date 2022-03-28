@@ -9,6 +9,7 @@ import (
 	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
 	basereconciler_resources "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/resources"
 	"github.com/3scale/saas-operator/pkg/redis"
+	"github.com/go-logr/logr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -25,7 +26,7 @@ type Generator struct {
 }
 
 // NewGenerator returns a new Options struct
-func NewGenerator(ctx context.Context, instance *saasv1alpha1.TwemproxyConfig, cl client.Client) (Generator, error) {
+func NewGenerator(ctx context.Context, instance *saasv1alpha1.TwemproxyConfig, cl client.Client, log logr.Logger) (Generator, error) {
 
 	gen := Generator{
 		BaseOptionsV2: generators.BaseOptionsV2{
@@ -48,7 +49,9 @@ func NewGenerator(ctx context.Context, instance *saasv1alpha1.TwemproxyConfig, c
 		}
 	}
 
-	gen.masterTargets, err = gen.getMonitoredMasters(ctx)
+	gen.masterTargets, err = gen.getMonitoredMasters(
+		ctx, log.WithName("masterTargets"),
+	)
 	if err != nil {
 		return Generator{}, err
 	}
@@ -61,7 +64,9 @@ func NewGenerator(ctx context.Context, instance *saasv1alpha1.TwemproxyConfig, c
 		}
 	}
 	if discoverSlavesRW {
-		gen.slaverwTargets, err = gen.getMonitoredReadWriteSlavesWithFallbackToMasters(ctx)
+		gen.slaverwTargets, err = gen.getMonitoredReadWriteSlavesWithFallbackToMasters(
+			ctx, log.WithName("slaverwTargets"),
+		)
 		if err != nil {
 			return Generator{}, err
 		}
@@ -88,7 +93,7 @@ func discoverSentinels(ctx context.Context, cl client.Client, namespace string) 
 	return uris, nil
 }
 
-func (gen *Generator) getMonitoredMasters(ctx context.Context) (map[string]TwemproxyServer, error) {
+func (gen *Generator) getMonitoredMasters(ctx context.Context, log logr.Logger) (map[string]TwemproxyServer, error) {
 
 	spool := make(redis.SentinelPool, 0, len(gen.Spec.SentinelURIs))
 
@@ -118,7 +123,7 @@ func (gen *Generator) getMonitoredMasters(ctx context.Context) (map[string]Twemp
 	return m, nil
 }
 
-func (gen *Generator) getMonitoredReadWriteSlavesWithFallbackToMasters(ctx context.Context) (map[string]TwemproxyServer, error) {
+func (gen *Generator) getMonitoredReadWriteSlavesWithFallbackToMasters(ctx context.Context, log logr.Logger) (map[string]TwemproxyServer, error) {
 
 	spool := make(redis.SentinelPool, 0, len(gen.Spec.SentinelURIs))
 

@@ -70,7 +70,10 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	instance.Default()
 
 	// Generate the ConfigMap
-	gen, err := twemproxyconfig.NewGenerator(ctx, instance, r.GetClient())
+	gen, err := twemproxyconfig.NewGenerator(
+		ctx, instance, r.GetClient(), log.WithName("generator"),
+	)
+
 	if err != nil {
 		return r.ManageError(ctx, instance, err)
 	}
