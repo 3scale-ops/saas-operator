@@ -17,7 +17,7 @@ type Logger struct {
 }
 
 type LogConfig struct {
-	LogMode      string `envconfig:"LOG_MODE"`
+	LogMode      string `envconfig:"LOG_MODE" default:"production"`
 	LogEncoding  string `envconfig:"LOG_ENCODING"`
 	LogLevel     string `envconfig:"LOG_LEVEL"`
 	LogVerbosity int8   `envconfig:"LOG_VERBOSITY" default:"0"`
@@ -32,19 +32,26 @@ func (l Logger) New() logr.Logger {
 	}
 
 	opts := zap.Options{}
+	encoderConfig := zapcore.EncoderConfig{}
 
 	// Development configures the logger to use a Zap development config
 	// (stacktraces on warnings, no sampling), otherwise a Zap production
 	// config will be used (stacktraces on errors, sampling).
-	opts.Development = (l.cfg.LogMode != "production")
+	if l.cfg.LogMode == "production" {
+		opts.Development = false
+		encoderConfig = uzap.NewProductionEncoderConfig()
+	} else {
+		opts.Development = true
+		encoderConfig = uzap.NewDevelopmentEncoderConfig()
+	}
 
 	// Encoder configures how Zap will encode the output.  Defaults to
 	// console when Development is true and JSON otherwise
 	switch string(l.cfg.LogEncoding) {
 	case "json", "JSON":
-		opts.Encoder = zapcore.NewJSONEncoder(uzap.NewDevelopmentEncoderConfig())
+		opts.Encoder = zapcore.NewJSONEncoder(encoderConfig)
 	case "console", "CONSOLE":
-		opts.Encoder = zapcore.NewConsoleEncoder(uzap.NewDevelopmentEncoderConfig())
+		opts.Encoder = zapcore.NewConsoleEncoder(encoderConfig)
 	}
 
 	// Log level
