@@ -44,6 +44,4 @@ More information in [zapcore#Level](https://pkg.go.dev/go.uber.org/zap@v1.21.0/z
 
 ### LOG_VERBOSITY
 
-If `LOG_LEVEL` is set to `debug`, via `LOG_LEVEL` or with `LOG_MODDE` set to `development`, allows increasing the log verbosity.
-
-Allows values from 1 to 10.
+When set, enforces `debug` mode with the defined verbosity, from 1 to 10.
