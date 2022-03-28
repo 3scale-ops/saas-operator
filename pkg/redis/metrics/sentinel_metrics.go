@@ -141,6 +141,7 @@ func (smg *SentinelMetricsGatherer) Start(parentCtx context.Context, l logr.Logg
 
 			case <-ctx.Done():
 				log.Info("shutting down sentinel metrics gatherer")
+				smg.sentinel.Cleanup(log)
 				smg.started = false
 				return
 			}

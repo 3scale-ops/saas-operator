@@ -11,6 +11,7 @@ import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/redis/crud"
 	"github.com/3scale/saas-operator/pkg/util"
+	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -167,6 +168,20 @@ func (ss *SentinelServer) Monitor(ctx context.Context, shards ShardedCluster) ([
 	return changed, nil
 }
 
+// Cleanup closes all Redis clients opened during the SentinelServer object creation
+func (ss *SentinelServer) Cleanup(log logr.Logger) error {
+	log.V(2).Info("[@sentinel-server-cleanup] closing client",
+		"server", ss.Name, "host", ss.IP,
+	)
+	if err := ss.CRUD.CloseClient(); err != nil {
+		log.Error(err, "[@sentinel-server-cleanup] error closing server client",
+			"server", ss.Name, "host", ss.IP,
+		)
+		return err
+	}
+	return nil
+}
+
 // SentinelPool represents a pool of SentinelServers that monitor the same
 // group of redis shards
 type SentinelPool []SentinelServer
@@ -191,6 +206,18 @@ func NewSentinelPool(ctx context.Context, cl client.Client, key types.Namespaced
 		spool[i] = *ss
 	}
 	return spool, nil
+}
+
+// Cleanup closes all Redis clients opened during the SentinelPool object creation
+func (sp SentinelPool) Cleanup(log logr.Logger) []error {
+	log.V(1).Info("[@sentinel-pool-cleanup] closing clients")
+	var closeErrors []error
+	for _, ss := range sp {
+		if err := ss.Cleanup(log); err != nil {
+			closeErrors = append(closeErrors, err)
+		}
+	}
+	return closeErrors
 }
 
 // IsMonitoringShards checks whether or all the shards in the passed list are being monitored by all
