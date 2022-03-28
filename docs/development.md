@@ -55,3 +55,35 @@ export KUBECONFIG=$PWD/kubeconfig
 # install operator CRDs
 make kind-deploy
 ```
+
+## Debugging the operator
+
+In [3scale-ops/saas-operator#180](https://github.com/3scale-ops/saas-operator/pull/180),
+the support for `pprof` was added and now can be set by the `PROFILER_*` environment variables.
+
+| Variable              | Format | Default | Information                                    |
+| --------------------- | ------ | ------- | ---------------------------------------------- |
+| PROFILER_ENABLE       | bool   | false   | Enables or disables the pprof profiler service |
+| PROFILER_BIND_ADDRESS | string | 0.0.0.0 | Listen address for the pprof http server       |
+| PROFILER_BIND_ORT     | string | 6060    | Listen port for the pprof http server          |
+
+Once the operator is started with the profiler enabled, it can be acccessed on the `:6060` port.
+If the operator is running in a remote cluster, use the port forwared kubectl tool:
+
+`oc port-forward $(oc get pods -o name -l  control-plane=controller-manager) 6060:6060`
+
+```
+❯ oc port-forward $(oc get pods -o name -l  control-plane=controller-manager) 6060:6060
+Forwarding from 127.0.0.1:6060 -> 6060
+Forwarding from [::1]:6060 -> 6060
+Handling connection for 6060
+Handling connection for 6060
+Handling connection for 6060
+
+```
+
+Once is up, you can connect to the profile via HTTP: http://localhost:6060/debug/pprof/
+
+[![pprof](pprof.png)](http://localhost:6060/debug/pprof/)
+
+More information about how to use `pprof` at https://github.com/google/pprof
