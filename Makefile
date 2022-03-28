@@ -3,7 +3,7 @@
 # To re-generate a bundle for another specific version without changing the standard setup, you can:
 # - use the VERSION as arg of the bundle target (e.g make bundle VERSION=0.0.2)
 # - use environment variables to overwrite this value (e.g export VERSION=0.0.2)
-VERSION ?= 0.13.1-alpha.4
+VERSION ?= 0.13.1-alpha.5
 
 # CHANNELS define the bundle channels used in the bundle.
 # Add a new line here if you would like to change its default config. (E.g CHANNELS = "candidate,fast,stable")
@@ -113,7 +113,7 @@ build: generate fmt vet assets ## Build manager binary.
 	go build -o bin/manager main.go
 
 run: manifests generate fmt vet assets ## Run a controller from your host.
-	go run ./main.go
+	LOG_MODE="development" go run ./main.go
 
 docker-build: ## Build docker image with the manager.
 	docker build -t ${IMG} .
