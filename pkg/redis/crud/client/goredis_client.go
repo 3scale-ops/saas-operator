@@ -34,6 +34,25 @@ func NewFromOptions(opt *redis.Options) *GoRedisClient {
 	}
 }
 
+func (c *GoRedisClient) CloseRedis() error {
+	return c.redis.Close()
+}
+
+func (c *GoRedisClient) CloseSentinel() error {
+	return c.sentinel.Close()
+}
+
+func (c *GoRedisClient) Close() error {
+	var firstErr error
+	if err := c.CloseRedis(); err != nil {
+		firstErr = err
+	}
+	if err := c.CloseSentinel(); err != nil && firstErr == nil {
+		firstErr = err
+	}
+	return firstErr
+}
+
 func (c *GoRedisClient) SentinelMaster(ctx context.Context, shard string) (*SentinelMasterCmdResult, error) {
 
 	result := &SentinelMasterCmdResult{}
