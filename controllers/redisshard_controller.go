@@ -116,13 +116,13 @@ func (r *RedisShardReconciler) setRedisRoles(ctx context.Context, key types.Name
 
 	shard, err := redis.NewShard(key.Name, redisURLs)
 	if err != nil {
-		return nil, &ctrl.Result{}, err
+		return shard, &ctrl.Result{}, err
 	}
 
 	_, err = shard.Init(ctx, masterIndex, log)
 	if err != nil {
 		log.Info("waiting for redis shard init")
-		return nil, &ctrl.Result{Requeue: true, RequeueAfter: 10 * time.Second}, nil
+		return shard, &ctrl.Result{Requeue: true, RequeueAfter: 10 * time.Second}, nil
 	}
 
 	return shard, nil, nil
