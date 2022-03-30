@@ -9,6 +9,9 @@
       "program": "${workspaceFolder}/main.go",
       "env": {
         "WATCH_NAMESPACE": "default",
+        "PROFILER_ENABLE": "true",
+        "LOG_MODE": "development",
+        "LOG_VERBOSITY": "10",
         "KUBECONFIG":"${workspaceFolder}/kubeconfig"
       },
       "args": []
