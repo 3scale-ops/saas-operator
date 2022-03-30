@@ -194,11 +194,6 @@ func (s *Shard) Init(ctx context.Context, masterIndex int32, log logr.Logger) ([
 
 // Cleanup closes all Redis clients opened during the Shard object creation
 func (s *Shard) Cleanup(log logr.Logger) []error {
-
-	if s == nil {
-		return nil
-	}
-
 	log.V(1).Info("[@redis-shard-cleanup] closing redis shard clients",
 		"shard", s.Name,
 	)
