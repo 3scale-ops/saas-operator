@@ -54,14 +54,17 @@ func (l Logger) New() logr.Logger {
 		opts.Encoder = zapcore.NewConsoleEncoder(encoderConfig)
 	}
 
-	// Log level
-	lvl := zapcore.Level(l.cfg.LogVerbosity)
-	if err := lvl.UnmarshalText([]byte(l.cfg.LogLevel)); err != nil && l.cfg.LogLevel != "" {
-		fmt.Fprint(os.Stderr, err.Error())
+	// Log level configures the zap log level, from `info` to `fatal`
+	if l.cfg.LogLevel != "" {
+		lvl := zapcore.Level(0)
+		if err := lvl.UnmarshalText([]byte(l.cfg.LogLevel)); err != nil {
+			fmt.Fprint(os.Stderr, err.Error())
+		}
+		opts.Level = lvl
 	}
 
-	// Level configures the verbosity of the logging when level is Debug
-	if lvl.Get() == zapcore.DebugLevel && l.cfg.LogVerbosity > 0 {
+	// Level enforces debug verbosity for logs when level is LOG_VERBOSITY is set
+	if l.cfg.LogVerbosity > 0 {
 		opts.Level = zapcore.Level(0 - l.cfg.LogVerbosity)
 	}
 

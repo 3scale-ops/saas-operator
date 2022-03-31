@@ -28,6 +28,7 @@ type Client interface {
 	RedisRole(context.Context) (interface{}, error)
 	RedisConfigGet(context.Context, string) ([]interface{}, error)
 	RedisSlaveOf(context.Context, string, string) error
+	Close() error
 }
 
 // check that GoRedisClient implements Client interface
@@ -53,6 +54,10 @@ func NewRedisCRUDFromConnectionString(connectionString string) (*CRUD, error) {
 		Port:   parts[1],
 		Client: client.NewFromOptions(opt),
 	}, nil
+}
+
+func (crud *CRUD) CloseClient() error {
+	return crud.Client.Close()
 }
 
 func NewFakeCRUD(responses ...client.FakeResponse) *CRUD {

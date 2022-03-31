@@ -570,7 +570,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/3scale/saas-operator
     support: Red Hat
-  name: saas-operator.v0.13.1-alpha.5
+  name: saas-operator.v0.13.1-alpha.7
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -4357,7 +4357,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/3scale/saas-operator:v0.13.1-alpha.5
+                image: quay.io/3scale/saas-operator:v0.13.1-alpha.7
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -4859,4 +4859,4 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
-  version: 0.13.1-alpha.5
+  version: 0.13.1-alpha.7

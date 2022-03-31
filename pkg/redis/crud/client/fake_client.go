@@ -69,3 +69,7 @@ func (fc *FakeClient) pop() (fakeRsp FakeResponse) {
 	fakeRsp, fc.Responses = fc.Responses[0], fc.Responses[1:]
 	return fakeRsp
 }
+
+func (fc *FakeClient) Close() error {
+	return nil
+}

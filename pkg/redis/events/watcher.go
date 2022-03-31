@@ -73,6 +73,10 @@ func (sew *SentinelEventWatcher) SetChannel(ch chan event.GenericEvent) {
 	sew.eventsCh = ch
 }
 
+func (sew *SentinelEventWatcher) Cleanup() error {
+	return sew.sentinel.CRUD.CloseClient()
+}
+
 //Start starts metrics gatherer for sentinel
 func (sew *SentinelEventWatcher) Start(parentCtx context.Context, l logr.Logger) error {
 	log := l.WithValues("sentinel", sew.SentinelURI)
@@ -113,6 +117,7 @@ func (sew *SentinelEventWatcher) Start(parentCtx context.Context, l logr.Logger)
 
 			case <-ctx.Done():
 				log.Info("shutting down event watcher")
+				sew.sentinel.Cleanup(log)
 				sew.started = false
 				return
 			}
