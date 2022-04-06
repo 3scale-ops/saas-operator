@@ -2,13 +2,10 @@ package events
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
 	"github.com/3scale/saas-operator/pkg/redis"
 	"github.com/go-logr/logr"
-	goredis "github.com/go-redis/redis/v8"
 	"github.com/prometheus/client_golang/prometheus"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -112,10 +109,20 @@ func (sew *SentinelEventWatcher) Start(parentCtx context.Context, l logr.Logger)
 			case msg := <-ch:
 				log.V(1).Info("received event from sentinel", "event", msg.String())
 				sew.eventsCh <- event.GenericEvent{Object: sew.Instance}
-				if sew.ExportMetrics {
-					if err := sew.metricsFromEvent(msg); err != nil {
-						log.V(1).Error(err, "unable to fetch metrics from event")
+				rem, err := NewRedisEventMessage(msg)
+				if err == nil {
+					log.V(3).Info("redis event message parsed",
+						"event", rem.event,
+						"target-type", rem.target.role, "target-name", rem.target.name,
+						"target-ip", rem.target.ip, "target-port", rem.target.port,
+						"master-type", rem.master.role, "master-name", rem.master.name,
+						"master-ip", rem.master.ip, "master-port", rem.target.port,
+					)
+					if sew.ExportMetrics {
+						sew.metricsFromEvent(rem)
 					}
+				} else {
+					log.Error(err, "invalid event message")
 				}
 
 			case <-ctx.Done():
@@ -136,36 +143,25 @@ func (fw *SentinelEventWatcher) Stop() {
 	fw.cancel()
 }
 
-func (smg *SentinelEventWatcher) metricsFromEvent(msg *goredis.Message) error {
-	payload := strings.Split(msg.Payload, " ")
-	switch msg.Channel {
+func (smg *SentinelEventWatcher) metricsFromEvent(rem RedisEventMessage) {
+	switch rem.event {
 	case "+switch-master":
-		if len(payload) < 1 {
-			return fmt.Errorf("invalid payload for %s event: %s", msg.Channel, msg.Payload)
-		}
 		switchMasterCount.With(
 			prometheus.Labels{
-				"sentinel": smg.SentinelURI, "shard": payload[0],
+				"sentinel": smg.SentinelURI, "shard": rem.target.name,
 			},
 		).Add(1)
 	case "-failover-abort-no-good-slave":
-		if len(payload) < 2 {
-			return fmt.Errorf("invalid payload for %s event: %s", msg.Channel, msg.Payload)
-		}
 		failoverAbortNoGoodSlaveCount.With(
 			prometheus.Labels{
-				"sentinel": smg.SentinelURI, "shard": payload[1],
+				"sentinel": smg.SentinelURI, "shard": rem.target.name,
 			},
 		).Add(1)
 	case "+sdown":
-		if len(payload) < 5 {
-			return fmt.Errorf("invalid payload for %s event: %s", msg.Channel, msg.Payload)
-		}
 		sdownCount.With(
 			prometheus.Labels{
-				"sentinel": smg.SentinelURI, "shard": payload[5], "role": payload[0], "server": payload[1],
+				"sentinel": smg.SentinelURI, "shard": rem.master.name, "role": rem.target.role, "server": rem.target.ip,
 			},
 		).Add(1)
 	}
-	return nil
 }
