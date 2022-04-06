@@ -101,7 +101,7 @@ func NewShard(name string, connectionStrings []string) (*Shard, error) {
 	for i, cs := range connectionStrings {
 		rs, err := NewRedisServerFromConnectionString(cs, cs)
 		if err != nil {
-			return nil, err
+			return shard, err
 		}
 		servers[i] = *rs
 	}
