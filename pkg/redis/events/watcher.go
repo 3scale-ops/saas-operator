@@ -2,6 +2,7 @@ package events
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
@@ -112,7 +113,9 @@ func (sew *SentinelEventWatcher) Start(parentCtx context.Context, l logr.Logger)
 				log.V(1).Info("received event from sentinel", "event", msg.String())
 				sew.eventsCh <- event.GenericEvent{Object: sew.Instance}
 				if sew.ExportMetrics {
-					sew.metricsFromEvent(msg)
+					if err := sew.metricsFromEvent(msg); err != nil {
+						log.V(1).Error(err, "unable to fetch metrics from event")
+					}
 				}
 
 			case <-ctx.Done():
@@ -133,18 +136,36 @@ func (fw *SentinelEventWatcher) Stop() {
 	fw.cancel()
 }
 
-func (smg *SentinelEventWatcher) metricsFromEvent(msg *goredis.Message) {
-
+func (smg *SentinelEventWatcher) metricsFromEvent(msg *goredis.Message) error {
+	payload := strings.Split(msg.Payload, " ")
 	switch msg.Channel {
 	case "+switch-master":
-		shard := strings.Split(msg.Payload, " ")[0]
-		switchMasterCount.With(prometheus.Labels{"sentinel": smg.SentinelURI, "shard": shard}).Add(1)
+		if len(payload) < 1 {
+			return fmt.Errorf("invalid payload for %s event: %s", msg.Channel, msg.Payload)
+		}
+		switchMasterCount.With(
+			prometheus.Labels{
+				"sentinel": smg.SentinelURI, "shard": payload[0],
+			},
+		).Add(1)
 	case "-failover-abort-no-good-slave":
-		shard := strings.Split(msg.Payload, " ")[1]
-		failoverAbortNoGoodSlaveCount.With(prometheus.Labels{"sentinel": smg.SentinelURI, "shard": shard}).Add(1)
+		if len(payload) < 2 {
+			return fmt.Errorf("invalid payload for %s event: %s", msg.Channel, msg.Payload)
+		}
+		failoverAbortNoGoodSlaveCount.With(
+			prometheus.Labels{
+				"sentinel": smg.SentinelURI, "shard": payload[1],
+			},
+		).Add(1)
 	case "+sdown":
-		parts := strings.Split(msg.Payload, " ")
-		sdownCount.With(prometheus.Labels{
-			"sentinel": smg.SentinelURI, "shard": parts[5], "role": parts[0], "server": parts[1]}).Add(1)
+		if len(payload) < 5 {
+			return fmt.Errorf("invalid payload for %s event: %s", msg.Channel, msg.Payload)
+		}
+		sdownCount.With(
+			prometheus.Labels{
+				"sentinel": smg.SentinelURI, "shard": payload[5], "role": payload[0], "server": payload[1],
+			},
+		).Add(1)
 	}
+	return nil
 }
