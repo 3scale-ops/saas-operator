@@ -101,7 +101,11 @@ func (rem *RedisEventMessage) parseInstanceDetailsPayload(payload []string) erro
 		port: payload[3],
 	}
 
-	if len(payload) == 8 {
+	if rem.target.role != "master" && len(payload) < 8 {
+		return fmt.Errorf("invalid payload for non-master instance event: %s", payload)
+	}
+
+	if len(payload) == 8 && payload[4] == "@" {
 		rem.master = RedisInstanceDetails{
 			role: "master",
 			name: payload[5],
