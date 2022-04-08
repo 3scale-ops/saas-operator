@@ -1,28 +1,39 @@
+/*
+Copyright 2021.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package v1alpha1
 
 import (
 	"fmt"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strings"
-)
 
-const GrafanaDataSourceKind = "GrafanaDataSource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
 // GrafanaDataSourceSpec defines the desired state of GrafanaDataSource
-// +k8s:openapi-gen=true
 type GrafanaDataSourceSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
-	// Add custom validation using kubebuilder tags: https://book.kubebuilder.io/beyond_basics/generating_crd.html
 	Datasources []GrafanaDataSourceFields `json:"datasources"`
 	Name        string                    `json:"name"`
 }
 
-// GrafanaDataSourceStatus defines the observed state of GrafanaDataSource
-// +k8s:openapi-gen=true
+// GrafanaDatasourceStatus defines the observed state of GrafanaDatasource
+
 type GrafanaDataSourceStatus struct {
 	Phase   StatusPhase `json:"phase"`
 	Message string      `json:"message"`
@@ -30,8 +41,10 @@ type GrafanaDataSourceStatus struct {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+
 // GrafanaDataSource is the Schema for the grafanadatasources API
-// +k8s:openapi-gen=true
 type GrafanaDataSource struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -43,6 +56,7 @@ type GrafanaDataSource struct {
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // GrafanaDataSourceList contains a list of GrafanaDataSource
+// +kubebuilder:object:root=true
 type GrafanaDataSourceList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
@@ -52,9 +66,10 @@ type GrafanaDataSourceList struct {
 type GrafanaDataSourceFields struct {
 	Name              string                          `json:"name"`
 	Type              string                          `json:"type"`
-	Access            string                          `json:"access"`
+	Uid               string                          `json:"uid,omitempty"`
+	Access            string                          `json:"access,omitempty"`
 	OrgId             int                             `json:"orgId,omitempty"`
-	Url               string                          `json:"url"`
+	Url               string                          `json:"url,omitempty"`
 	Password          string                          `json:"password,omitempty"`
 	User              string                          `json:"user,omitempty"`
 	Database          string                          `json:"database,omitempty"`
@@ -69,15 +84,16 @@ type GrafanaDataSourceFields struct {
 	Editable          bool                            `json:"editable,omitempty"`
 }
 
-// The most common json options
+// GrafanaDataSourceJsonData contains the most common json options
 // See https://grafana.com/docs/administration/provisioning/#datasources
 type GrafanaDataSourceJsonData struct {
+	OauthPassThru           bool   `json:"oauthPassThru,omitempty"`
 	TlsAuth                 bool   `json:"tlsAuth,omitempty"`
 	TlsAuthWithCACert       bool   `json:"tlsAuthWithCACert,omitempty"`
 	TlsSkipVerify           bool   `json:"tlsSkipVerify,omitempty"`
 	GraphiteVersion         string `json:"graphiteVersion,omitempty"`
 	TimeInterval            string `json:"timeInterval,omitempty"`
-	EsVersion               int    `json:"esVersion,omitempty"`
+	EsVersion               string `json:"esVersion,omitempty"`
 	TimeField               string `json:"timeField,omitempty"`
 	Interval                string `json:"interval,omitempty"`
 	LogMessageField         string `json:"logMessageField,omitempty"`
@@ -95,9 +111,9 @@ type GrafanaDataSourceJsonData struct {
 	MaxOpenConns            int    `json:"maxOpenConns,omitempty"`
 	MaxIdleConns            int    `json:"maxIdleConns,omitempty"`
 	ConnMaxLifetime         int    `json:"connMaxLifetime,omitempty"`
-	//  Useful fields for clickhouse datasource
-	//  See https://github.com/Vertamedia/clickhouse-grafana/tree/master/dist/README.md#configure-the-datasource-with-provisioning
-	//  See https://github.com/Vertamedia/clickhouse-grafana/tree/master/src/datasource.ts#L44
+	// Useful fields for clickhouse datasource
+	// See https://github.com/Vertamedia/clickhouse-grafana/tree/master/dist/README.md#configure-the-datasource-with-provisioning
+	// See https://github.com/Vertamedia/clickhouse-grafana/tree/master/src/datasource.ts#L44
 	AddCorsHeader               bool   `json:"addCorsHeader,omitempty"`
 	DefaultDatabase             string `json:"defaultDatabase,omitempty"`
 	UsePOST                     bool   `json:"usePOST,omitempty"`
@@ -124,21 +140,94 @@ type GrafanaDataSourceJsonData struct {
 	AppInsightsAppId             string `json:"appInsightsAppId,omitempty"`
 	AzureLogAnalyticsSameAs      string `json:"azureLogAnalyticsSameAs,omitempty"`
 	ClientId                     string `json:"clientId,omitempty"`
+	ClusterURL                   string `json:"clusterUrl,omitempty"`
 	CloudName                    string `json:"cloudName,omitempty"`
 	LogAnalyticsDefaultWorkspace string `json:"logAnalyticsDefaultWorkspace,omitempty"`
 	LogAnalyticsClientId         string `json:"logAnalyticsClientId,omitempty"`
 	LogAnalyticsSubscriptionId   string `json:"logAnalyticsSubscriptionId,omitempty"`
 	LogAnalyticsTenantId         string `json:"logAnalyticsTenantId,omitempty"`
-	SubscriptionId               string `json:"subscriptionI,omitempty"`
+	SubscriptionId               string `json:"subscriptionId,omitempty"`
 	TenantId                     string `json:"tenantId,omitempty"`
 	// Fields for InfluxDB data sources
 	HTTPMode      string `json:"httpMode,omitempty"`
 	Version       string `json:"version,omitempty"`
 	Organization  string `json:"organization,omitempty"`
 	DefaultBucket string `json:"defaultBucket,omitempty"`
+	// Fields for Loki data sources
+	MaxLines      int                                  `json:"maxLines,omitempty"`
+	DerivedFields []GrafanaDataSourceJsonDerivedFields `json:"derivedFields,omitempty"`
+	// Fields for Prometheus data sources
+	CustomQueryParameters       string                                             `json:"customQueryParameters,omitempty"`
+	HTTPMethod                  string                                             `json:"httpMethod,omitempty"`
+	ExemplarTraceIdDestinations []GrafanaDataSourceJsonExemplarTraceIdDestinations `json:"exemplarTraceIdDestinations,omitempty"`
+	// Fields for tracing data sources
+	TracesToLogs GrafanaDataSourceJsonTracesToLogs `json:"tracesToLogs,omitempty"`
+	ServiceMap   GrafanaDataSourceJsonServiceMap   `json:"serviceMap,omitempty"`
+	NodeGraph    GrafanaDatasourceJsonNodeGraph    `json:"nodeGraph,omitempty"`
+	Search       GrafanaDataSourceJsonSearch       `json:"search,omitempty"`
+	// Fields for Github data sources
+	GithubUrl string `json:"githubUrl,omitempty"`
+	// Fields for Alertmanager data sources
+	Implementation string `json:"implementation,omitempty"`
+	// Fields for AWS Prometheus data sources
+	SigV4Auth          bool   `json:"sigV4Auth,omitempty"`
+	SigV4AuthType      string `json:"sigV4AuthType,omitempty"`
+	SigV4ExternalId    string `json:"sigV4ExternalId,omitempty"`
+	SigV4AssumeRoleArn string `json:"sigV4AssumeRoleArn,omitempty"`
+	SigV4Region        string `json:"sigV4Region,omitempty"`
+	SigV4Profile       string `json:"sigV4Profile,omitempty"`
+	// Fields for Instana data sources
+	// See https://github.com/instana/instana-grafana-datasource/blob/main/provisioning/datasources/datasource.yml
+	Url               string `json:"url,omitempty"`
+	ApiToken          string `json:"apiToken,omitempty"`
+	UseProxy          bool   `json:"useProxy,omitempty"`
+	ShowOffline       bool   `json:"showOffline,omitempty"`
+	AllowInfraExplore bool   `json:"allowInfraExplore,omitempty"`
+	// Extra field for MySQL data source
+	Timezone string `json:"timezone,omitempty"`
+	// Fields for Grafana Clickhouse data sources
+	Server   string `json:"server,omitempty"`
+	Port     int    `json:"port,omitempty"`
+	Username string `json:"username,omitempty"`
 }
 
-// The most common secure json options
+type GrafanaDataSourceJsonDerivedFields struct {
+	DatasourceUid string `json:"datasourceUid,omitempty"`
+	MatcherRegex  string `json:"matcherRegex,omitempty"`
+	Name          string `json:"name,omitempty"`
+	Url           string `json:"url,omitempty"`
+}
+
+type GrafanaDataSourceJsonExemplarTraceIdDestinations struct {
+	DatasourceUid   string `json:"datasourceUid,omitempty"`
+	Name            string `json:"name,omitempty"`
+	Url             string `json:"url,omitempty"`
+	UrlDisplayLabel string `json:"urlDisplayLabel,omitempty"`
+}
+
+type GrafanaDataSourceJsonTracesToLogs struct {
+	DatasourceUid      string   `json:"datasourceUid,omitempty"`
+	SpanEndTimeShift   string   `json:"spanEndTimeShift,omitempty"`
+	SpanStartTimeShift string   `json:"spanStartTimeShift,omitempty"`
+	Tags               []string `json:"tags,omitempty"`
+	FilterBySpanId     bool     `json:"filterBySpanID,omitempty"`
+	FilterByTraceID    bool     `json:"filterByTraceID,omitempty"`
+	LokiSearch         bool     `json:"lokiSearch,omitempty"`
+}
+
+type GrafanaDataSourceJsonServiceMap struct {
+	DatasourceUid string `json:"datasourceUid,omitempty"`
+}
+
+type GrafanaDataSourceJsonSearch struct {
+	Hide bool `json:"hide,omitempty"`
+}
+
+type GrafanaDatasourceJsonNodeGraph struct {
+	Enabled bool `json:"enabled,omitempty"`
+}
+
+// GrafanaDataSourceSecureJsonData contains the most common secure json options
 // See https://grafana.com/docs/administration/provisioning/#datasources
 type GrafanaDataSourceSecureJsonData struct {
 	TlsCaCert         string `json:"tlsCACert,omitempty"`
@@ -167,13 +256,18 @@ type GrafanaDataSourceSecureJsonData struct {
 	LogAnalyticsClientSecret string `json:"logAnalyticsClientSecret,omitempty"`
 	// Fields for InfluxDB data sources
 	Token string `json:"token,omitempty"`
+	// Fields for Github data sources
+	AccessToken string `json:"accessToken,omitempty"`
+	// Fields for AWS data sources
+	SigV4AccessKey string `json:"sigV4AccessKey,omitempty"`
+	SigV4SecretKey string `json:"sigV4SecretKey,omitempty"`
 }
 
 func init() {
 	SchemeBuilder.Register(&GrafanaDataSource{}, &GrafanaDataSourceList{})
 }
 
-// return a unique per namespaec key of the datasource
+// Filename returns a unique per namespace key of the datasource
 func (ds *GrafanaDataSource) Filename() string {
 	return fmt.Sprintf("%v_%v.yaml", ds.Namespace, strings.ToLower(ds.Name))
 }
