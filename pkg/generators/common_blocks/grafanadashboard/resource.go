@@ -27,7 +27,7 @@ func New(key types.NamespacedName, labels map[string]string, cfg saasv1alpha1.Gr
 		return &grafanav1alpha1.GrafanaDashboard{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "GrafanaDashboard",
-				APIVersion: grafanav1alpha1.SchemeGroupVersion.String(),
+				APIVersion: grafanav1alpha1.GroupVersion.String(),
 			},
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      key.Name,
