@@ -34,19 +34,21 @@ func NewRedisEventMessage(msg *goredis.Message) (RedisEventMessage, error) {
 
 func (rem *RedisEventMessage) parsePayload(payload []string) error {
 	switch rem.event {
-	case "+ilt", "-tilt":
-		return rem.parseTiltPayload(payload)
+	case "+tilt", "-tilt":
+		return rem.parseEmptyPayload(payload)
 	case "+switch-master":
 		return rem.parseSwitchPayload(payload)
 	default:
 		return rem.parseInstanceDetailsPayload(payload)
 	}
 }
-func (rem *RedisEventMessage) parseTiltPayload(payload []string) error {
 
-	if len(payload) > 0 {
-		return fmt.Errorf("payload for tilt events should be empty")
+func (rem *RedisEventMessage) parseEmptyPayload(payload []string) error {
+	if len(payload) > 0 && payload[0] != "" {
+		return fmt.Errorf("payload should be empty")
 	}
+	return nil
+}
 
 	rem.master = RedisInstanceDetails{}
 	rem.target = RedisInstanceDetails{}
