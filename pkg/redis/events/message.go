@@ -61,11 +61,7 @@ func (rem *RedisEventMessage) parseSwitchPayload(payload []string) error {
 	// <master name> <oldip> <oldport> <newip> <newport>
 	// https://redis.io/docs/manual/sentinel/
 
-	if len(payload) == 0 {
-		return fmt.Errorf("empty payload for switch event")
-	}
-
-	if len(payload) < 5 {
+	if len(payload) != 5 {
 		return fmt.Errorf("invalid payload for switch event: %s", payload)
 	}
 
