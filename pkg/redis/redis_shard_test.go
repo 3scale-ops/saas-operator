@@ -261,7 +261,9 @@ func TestNewShard(t *testing.T) {
 				name:              "test",
 				connectionStrings: []string{"redis://127.0.0.1:1000", "127.0.0.1:2000", "redis://127.0.0.1:3000"},
 			},
-			want:    nil,
+			want: &Shard{
+				Name: "test",
+			},
 			wantErr: true,
 		},
 	}

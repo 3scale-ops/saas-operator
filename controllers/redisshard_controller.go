@@ -108,7 +108,7 @@ func (r *RedisShardReconciler) setRedisRoles(ctx context.Context, key types.Name
 		key := types.NamespacedName{Name: fmt.Sprintf("%s-%d", serviceName, i), Namespace: key.Namespace}
 		err := r.GetClient().Get(ctx, key, pod)
 		if err != nil {
-			return nil, &ctrl.Result{}, err
+			return &redis.Shard{Name: key.Name}, &ctrl.Result{}, err
 		}
 
 		redisURLs[i] = fmt.Sprintf("redis://%s:%d", pod.Status.PodIP, 6379)
