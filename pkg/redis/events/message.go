@@ -90,12 +90,8 @@ func (rem *RedisEventMessage) parseInstanceDetailsPayload(payload []string) erro
 	// and is only specified if the instance is not a master itself.
 	// https://redis.io/docs/manual/sentinel/
 
-	if len(payload) == 0 {
-		return fmt.Errorf("empty payload for intance event")
-	}
-
 	if len(payload) < 4 {
-		return fmt.Errorf("invalid payload for instance event: %s", payload)
+		return fmt.Errorf("invalid payload for instance details event: %s", payload)
 	}
 
 	rem.target = RedisInstanceDetails{
