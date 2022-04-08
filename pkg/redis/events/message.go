@@ -30,6 +30,13 @@ func NewRedisEventMessage(msg *goredis.Message) (RedisEventMessage, error) {
 	if rem.event == "" {
 		return RedisEventMessage{}, fmt.Errorf("emtpy event name")
 	}
+
+	if err := rem.parsePayload(strings.Split(msg.Payload, " ")); err != nil {
+		return RedisEventMessage{}, err
+	}
+
+	return rem, nil
+
 }
 
 func (rem *RedisEventMessage) parsePayload(payload []string) error {
