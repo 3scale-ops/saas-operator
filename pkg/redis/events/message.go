@@ -26,8 +26,10 @@ func NewRedisEventMessage(msg *goredis.Message) (RedisEventMessage, error) {
 		target: RedisInstanceDetails{},
 		master: RedisInstanceDetails{},
 	}
-	err := rem.parsePayload(strings.Split(msg.Payload, " "))
-	return rem, err
+
+	if rem.event == "" {
+		return RedisEventMessage{}, fmt.Errorf("emtpy event name")
+	}
 }
 
 func (rem *RedisEventMessage) parsePayload(payload []string) error {
