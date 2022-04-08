@@ -1,8 +1,6 @@
 package grafanadashboard
 
 import (
-	"fmt"
-
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/assets"
@@ -39,7 +37,6 @@ func New(key types.NamespacedName, labels map[string]string, cfg saasv1alpha1.Gr
 				}(),
 			},
 			Spec: grafanav1alpha1.GrafanaDashboardSpec{
-				Name: fmt.Sprintf("%s/%s.json", key.Namespace, key.Name),
 				Json: assets.TemplateAsset(template, data),
 			},
 		}
