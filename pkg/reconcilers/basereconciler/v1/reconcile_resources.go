@@ -7,7 +7,7 @@ import (
 	"reflect"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
+	externalsecretsv1beta1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1beta1"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/redhat-cop/operator-utils/pkg/util/lockedresourcecontroller/lockedpatch"
 	appsv1 "k8s.io/api/apps/v1"
@@ -98,7 +98,7 @@ func (r *Reconciler) TriggersFromExternalSecrets(ctx context.Context, es ...Gene
 	triggers := []RolloutTrigger{}
 
 	for _, externalSecret := range es {
-		es := externalSecret().(*externalsecretsv1alpha1.ExternalSecret)
+		es := externalSecret().(*externalsecretsv1beta1.ExternalSecret)
 		strgs, err := r.TriggersFromSecret(ctx, es.GetNamespace(), es.GetName())
 		if err != nil {
 			return nil, err

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
+	externalsecretsv1beta1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1beta1"
 	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -15,22 +15,22 @@ func GenerateExternalSecretFn(name, namespace, secretStoreName, secretStoreKind 
 	opts interface{}) basereconciler.GeneratorFunction {
 
 	return func() client.Object {
-		return &externalsecretsv1alpha1.ExternalSecret{
+		return &externalsecretsv1beta1.ExternalSecret{
 			TypeMeta: metav1.TypeMeta{
-				Kind:       externalsecretsv1alpha1.ExtSecretKind,
-				APIVersion: externalsecretsv1alpha1.ExtSecretGroupVersionKind.GroupVersion().String(),
+				Kind:       externalsecretsv1beta1.ExtSecretKind,
+				APIVersion: externalsecretsv1beta1.ExtSecretGroupVersionKind.GroupVersion().String(),
 			},
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: namespace,
 				Labels:    labels,
 			},
-			Spec: externalsecretsv1alpha1.ExternalSecretSpec{
-				SecretStoreRef: externalsecretsv1alpha1.SecretStoreRef{
+			Spec: externalsecretsv1beta1.ExternalSecretSpec{
+				SecretStoreRef: externalsecretsv1beta1.SecretStoreRef{
 					Name: secretStoreName,
 					Kind: secretStoreKind,
 				},
-				Target: externalsecretsv1alpha1.ExternalSecretTarget{
+				Target: externalsecretsv1beta1.ExternalSecretTarget{
 					Name: name,
 				},
 				RefreshInterval: &refreshInterval,
@@ -40,9 +40,9 @@ func GenerateExternalSecretFn(name, namespace, secretStoreName, secretStoreKind 
 	}
 }
 
-func keysSlice(name string, opts interface{}) []externalsecretsv1alpha1.ExternalSecretData {
+func keysSlice(name string, opts interface{}) []externalsecretsv1beta1.ExternalSecretData {
 
-	s := []externalsecretsv1alpha1.ExternalSecretData{}
+	s := []externalsecretsv1beta1.ExternalSecretData{}
 
 	t := reflect.TypeOf(opts)
 
@@ -82,9 +82,9 @@ func keysSlice(name string, opts interface{}) []externalsecretsv1alpha1.External
 			continue
 		}
 
-		s = append(s, externalsecretsv1alpha1.ExternalSecretData{
+		s = append(s, externalsecretsv1beta1.ExternalSecretData{
 			SecretKey: keyName,
-			RemoteRef: externalsecretsv1alpha1.ExternalSecretDataRemoteRef{
+			RemoteRef: externalsecretsv1beta1.ExternalSecretDataRemoteRef{
 				Key:      secretValue.Value.FromVault.Path,
 				Property: secretValue.Value.FromVault.Key,
 			},
