@@ -5,7 +5,7 @@ import (
 	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
+	externalsecretsv1beta1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -157,7 +157,7 @@ var _ = Describe("Zync controller", func() {
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("zync"))
 			Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("zync"))
 
-			es := &externalsecretsv1alpha1.ExternalSecret{}
+			es := &externalsecretsv1beta1.ExternalSecret{}
 			By("deploying the Zync external secret",
 				checkResource(
 					es,
@@ -225,7 +225,7 @@ var _ = Describe("Zync controller", func() {
 						&appsv1.Deployment{}, "zync-que", namespace,
 					)
 					rvs["externalsecret/zync"] = getResourceVersion(
-						&externalsecretsv1alpha1.ExternalSecret{}, "zync", namespace,
+						&externalsecretsv1beta1.ExternalSecret{}, "zync", namespace,
 					)
 
 					patch := client.MergeFrom(zync.DeepCopy())
@@ -324,7 +324,7 @@ var _ = Describe("Zync controller", func() {
 				Expect(dep.Spec.Template.Spec.Containers[0].LivenessProbe).To(BeNil())
 				Expect(dep.Spec.Template.Spec.Containers[0].ReadinessProbe).To(BeNil())
 
-				es := &externalsecretsv1alpha1.ExternalSecret{}
+				es := &externalsecretsv1beta1.ExternalSecret{}
 				By("updating the Zync external secret",
 					checkResource(
 						es,
