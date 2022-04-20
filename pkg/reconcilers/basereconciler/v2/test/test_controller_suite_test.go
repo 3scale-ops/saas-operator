@@ -4,7 +4,7 @@ import (
 	"context"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
+	externalsecretsv1beta1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1beta1"
 	"github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/test/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/util"
 	. "github.com/onsi/ginkgo"
@@ -86,7 +86,7 @@ var _ = Describe("Test controller", func() {
 				)
 			}, timeout, poll).ShouldNot(HaveOccurred())
 
-			es := &externalsecretsv1alpha1.ExternalSecret{}
+			es := &externalsecretsv1beta1.ExternalSecret{}
 			Eventually(func() error {
 				return k8sClient.Get(
 					context.Background(),
@@ -187,7 +187,7 @@ var _ = Describe("Test controller", func() {
 				)
 			}, timeout, poll).ShouldNot(HaveOccurred())
 
-			es := &externalsecretsv1alpha1.ExternalSecret{}
+			es := &externalsecretsv1beta1.ExternalSecret{}
 			Eventually(func() error {
 				return k8sClient.Get(
 					context.Background(),
@@ -214,7 +214,7 @@ var _ = Describe("Test controller", func() {
 			Expect(k8sClient.Get(context.Background(),
 				types.NamespacedName{Name: "service", Namespace: namespace}, &corev1.Service{})).To(HaveOccurred())
 			Expect(k8sClient.Get(context.Background(),
-				types.NamespacedName{Name: "external-secret", Namespace: namespace}, &externalsecretsv1alpha1.ExternalSecret{})).To(HaveOccurred())
+				types.NamespacedName{Name: "external-secret", Namespace: namespace}, &externalsecretsv1beta1.ExternalSecret{})).To(HaveOccurred())
 		})
 
 		It("updates service annotations", func() {

@@ -3,7 +3,7 @@ package resources
 import (
 	"context"
 
-	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
+	externalsecretsv1beta1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
 	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
@@ -17,14 +17,14 @@ var _ basereconciler.Resource = ExternalSecretTemplate{}
 
 // ExternalSecretTemplate specifies a ExternalSecret resource
 type ExternalSecretTemplate struct {
-	Template  func() *externalsecretsv1alpha1.ExternalSecret
+	Template  func() *externalsecretsv1beta1.ExternalSecret
 	IsEnabled bool
 }
 
 func (est ExternalSecretTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
 
 	es := est.Template()
-	es.GetObjectKind().SetGroupVersionKind(externalsecretsv1alpha1.SchemeGroupVersion.WithKind(externalsecretsv1alpha1.ExtSecretKind))
+	es.GetObjectKind().SetGroupVersionKind(externalsecretsv1beta1.SchemeGroupVersion.WithKind(externalsecretsv1beta1.ExtSecretKind))
 	return es.DeepCopy(), DefaultExcludedPaths, nil
 }
 
