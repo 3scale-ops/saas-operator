@@ -5,29 +5,30 @@ import (
 	"reflect"
 	"strings"
 
-	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
+	externalsecretsv1beta1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // GenerateExternalSecretFn generates a ExternalSecret
 func GenerateExternalSecretFn(name, namespace, secretStoreName, secretStoreKind string, refreshInterval metav1.Duration, labels map[string]string,
-	opts interface{}) func() *externalsecretsv1alpha1.ExternalSecret {
+	opts interface{}) func() *externalsecretsv1beta1.ExternalSecret {
 
-	return func() *externalsecretsv1alpha1.ExternalSecret {
-		return &externalsecretsv1alpha1.ExternalSecret{
+	return func() *externalsecretsv1beta1.ExternalSecret {
+		return &externalsecretsv1beta1.ExternalSecret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: namespace,
 				Labels:    labels,
 			},
-			Spec: externalsecretsv1alpha1.ExternalSecretSpec{
-				SecretStoreRef: externalsecretsv1alpha1.SecretStoreRef{
+			Spec: externalsecretsv1beta1.ExternalSecretSpec{
+				SecretStoreRef: externalsecretsv1beta1.SecretStoreRef{
 					Name: secretStoreName,
 					Kind: secretStoreKind,
 				},
-				Target: externalsecretsv1alpha1.ExternalSecretTarget{
+				Target: externalsecretsv1beta1.ExternalSecretTarget{
 					Name:           name,
 					CreationPolicy: "Owner",
+					DeletionPolicy: "Retain",
 				},
 				RefreshInterval: &refreshInterval,
 				Data:            keysSlice(name, opts),
@@ -36,9 +37,9 @@ func GenerateExternalSecretFn(name, namespace, secretStoreName, secretStoreKind 
 	}
 }
 
-func keysSlice(name string, opts interface{}) []externalsecretsv1alpha1.ExternalSecretData {
+func keysSlice(name string, opts interface{}) []externalsecretsv1beta1.ExternalSecretData {
 
-	s := []externalsecretsv1alpha1.ExternalSecretData{}
+	s := []externalsecretsv1beta1.ExternalSecretData{}
 
 	t := reflect.TypeOf(opts)
 
@@ -78,11 +79,12 @@ func keysSlice(name string, opts interface{}) []externalsecretsv1alpha1.External
 			continue
 		}
 
-		s = append(s, externalsecretsv1alpha1.ExternalSecretData{
+		s = append(s, externalsecretsv1beta1.ExternalSecretData{
 			SecretKey: keyName,
-			RemoteRef: externalsecretsv1alpha1.ExternalSecretDataRemoteRef{
-				Key:      strings.TrimPrefix(secretValue.Value.FromVault.Path, "secret/data/"),
-				Property: secretValue.Value.FromVault.Key,
+			RemoteRef: externalsecretsv1beta1.ExternalSecretDataRemoteRef{
+				Key:                strings.TrimPrefix(secretValue.Value.FromVault.Path, "secret/data/"),
+				Property:           secretValue.Value.FromVault.Key,
+				ConversionStrategy: "Default",
 			},
 		})
 	}
