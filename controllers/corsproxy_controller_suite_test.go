@@ -5,7 +5,7 @@ import (
 	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
+	externalsecretsv1beta1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -106,7 +106,7 @@ var _ = Describe("CORSProxy controller", func() {
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("cors-proxy"))
 			Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("cors-proxy"))
 
-			es := &externalsecretsv1alpha1.ExternalSecret{}
+			es := &externalsecretsv1beta1.ExternalSecret{}
 			By("deploying the CORSProxy System Database external secret",
 				checkResource(
 					es,
@@ -165,7 +165,7 @@ var _ = Describe("CORSProxy controller", func() {
 						&appsv1.Deployment{}, "cors-proxy", namespace,
 					)
 					rvs["externalsecret/cors-proxy-system-database"] = getResourceVersion(
-						&externalsecretsv1alpha1.ExternalSecret{}, "cors-proxy-system-database", namespace,
+						&externalsecretsv1beta1.ExternalSecret{}, "cors-proxy-system-database", namespace,
 					)
 
 					patch := client.MergeFrom(corsproxy.DeepCopy())
@@ -207,7 +207,7 @@ var _ = Describe("CORSProxy controller", func() {
 				Expect(dep.Spec.Template.Spec.Containers[0].LivenessProbe).To(BeNil())
 				Expect(dep.Spec.Template.Spec.Containers[0].ReadinessProbe).To(BeNil())
 
-				es := &externalsecretsv1alpha1.ExternalSecret{}
+				es := &externalsecretsv1beta1.ExternalSecret{}
 				By("updating the CORSProxy System Database external secret",
 					checkResource(
 						es,

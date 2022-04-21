@@ -5,7 +5,7 @@ import (
 	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
+	externalsecretsv1beta1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -189,7 +189,7 @@ var _ = Describe("Backend controller", func() {
 				}),
 			)
 
-			esApi := &externalsecretsv1alpha1.ExternalSecret{}
+			esApi := &externalsecretsv1beta1.ExternalSecret{}
 			By("deploying the backend-internal-api external secret",
 				checkResource(
 					esApi,
@@ -215,7 +215,7 @@ var _ = Describe("Backend controller", func() {
 				}
 			}
 
-			esHook := &externalsecretsv1alpha1.ExternalSecret{}
+			esHook := &externalsecretsv1beta1.ExternalSecret{}
 			By("deploying the backend-system-events-hook external secret",
 				checkResource(
 					esHook,
@@ -237,7 +237,7 @@ var _ = Describe("Backend controller", func() {
 					Expect(data.RemoteRef.Key).To(Equal("some-path-hook-password"))
 				}
 
-				esError := &externalsecretsv1alpha1.ExternalSecret{}
+				esError := &externalsecretsv1beta1.ExternalSecret{}
 				By("deploying the backend-error-monitoring external secret",
 					checkResource(
 						esError,
@@ -294,13 +294,13 @@ var _ = Describe("Backend controller", func() {
 						&appsv1.Deployment{}, "backend-cron", namespace,
 					)
 					rvs["externalsecret/backend-internal-api"] = getResourceVersion(
-						&externalsecretsv1alpha1.ExternalSecret{}, "backend-internal-api", namespace,
+						&externalsecretsv1beta1.ExternalSecret{}, "backend-internal-api", namespace,
 					)
 					rvs["externalsecret/backend-system-events-hook"] = getResourceVersion(
-						&externalsecretsv1alpha1.ExternalSecret{}, "backend-system-events-hook", namespace,
+						&externalsecretsv1beta1.ExternalSecret{}, "backend-system-events-hook", namespace,
 					)
 					rvs["externalsecret/backend-error-monitoring"] = getResourceVersion(
-						&externalsecretsv1alpha1.ExternalSecret{}, "backend-error-monitoring", namespace,
+						&externalsecretsv1beta1.ExternalSecret{}, "backend-error-monitoring", namespace,
 					)
 
 					patch := client.MergeFrom(backend.DeepCopy())
@@ -396,7 +396,7 @@ var _ = Describe("Backend controller", func() {
 					),
 				)
 
-				esApi := &externalsecretsv1alpha1.ExternalSecret{}
+				esApi := &externalsecretsv1beta1.ExternalSecret{}
 				By("updating the backend-internal-api external secret",
 					checkResource(
 						esApi,
@@ -419,7 +419,7 @@ var _ = Describe("Backend controller", func() {
 					}
 				}
 
-				esHook := &externalsecretsv1alpha1.ExternalSecret{}
+				esHook := &externalsecretsv1beta1.ExternalSecret{}
 				By("updating the backend-system-events-hook external secret",
 					checkResource(
 						esHook,
@@ -442,7 +442,7 @@ var _ = Describe("Backend controller", func() {
 					}
 				}
 
-				esError := &externalsecretsv1alpha1.ExternalSecret{}
+				esError := &externalsecretsv1beta1.ExternalSecret{}
 				By("updating the backend-error-monitoring external secret",
 					checkResource(
 						esError,

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
+	externalsecretsv1beta1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -261,7 +261,7 @@ var _ = Describe("System controller", func() {
 				"system-multitenant-assets-s3",
 				"system-app",
 			} {
-				es := &externalsecretsv1alpha1.ExternalSecret{}
+				es := &externalsecretsv1beta1.ExternalSecret{}
 
 				By("deploying the system external secret",
 					checkResource(es, expectedResource{
@@ -270,7 +270,7 @@ var _ = Describe("System controller", func() {
 				)
 			}
 
-			es := &externalsecretsv1alpha1.ExternalSecret{}
+			es := &externalsecretsv1beta1.ExternalSecret{}
 			By("deploying the system-database external secret with specific configuration",
 				checkResource(
 					es,
@@ -808,7 +808,7 @@ var _ = Describe("System controller", func() {
 					}
 
 					rvs["externalsecret/system-database"] = getResourceVersion(
-						&externalsecretsv1alpha1.ExternalSecret{}, "system-database", namespace,
+						&externalsecretsv1beta1.ExternalSecret{}, "system-database", namespace,
 					)
 
 					patch := client.MergeFrom(system.DeepCopy())
@@ -827,7 +827,7 @@ var _ = Describe("System controller", func() {
 
 			It("updates the system secret properties", func() {
 
-				es := &externalsecretsv1alpha1.ExternalSecret{}
+				es := &externalsecretsv1beta1.ExternalSecret{}
 				By("updating the system-database external secret",
 					checkResource(
 						es,

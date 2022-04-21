@@ -2,9 +2,7 @@
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-
     http://www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -12,7 +10,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1beta1
 
 import (
 	corev1 "k8s.io/api/core/v1"
@@ -31,17 +29,45 @@ type SecretStoreRef struct {
 }
 
 // ExternalSecretCreationPolicy defines rules on how to create the resulting Secret.
+// +kubebuilder:validation:Enum=Owner;Orphan;Merge;None
 type ExternalSecretCreationPolicy string
 
 const (
 	// Owner creates the Secret and sets .metadata.ownerReferences to the ExternalSecret resource.
-	Owner ExternalSecretCreationPolicy = "Owner"
+	CreatePolicyOwner ExternalSecretCreationPolicy = "Owner"
+
+	// Orphan creates the Secret and does not set the ownerReference.
+	// I.e. it will be orphaned after the deletion of the ExternalSecret.
+	CreatePolicyOrphan ExternalSecretCreationPolicy = "Orphan"
 
 	// Merge does not create the Secret, but merges the data fields to the Secret.
-	Merge ExternalSecretCreationPolicy = "Merge"
+	CreatePolicyMerge ExternalSecretCreationPolicy = "Merge"
 
 	// None does not create a Secret (future use with injector).
-	None ExternalSecretCreationPolicy = "None"
+	CreatePolicyNone ExternalSecretCreationPolicy = "None"
+)
+
+// ExternalSecretDeletionPolicy defines rules on how to delete the resulting Secret.
+// +kubebuilder:validation:Enum=Delete;Merge;Retain
+type ExternalSecretDeletionPolicy string
+
+const (
+	// Delete deletes the secret if all provider secrets are deleted.
+	// If a secret gets deleted on the provider side and is not accessible
+	// anymore this is not considered an error and the ExternalSecret
+	// does not go into SecretSyncedError status.
+	DeletionPolicyDelete ExternalSecretDeletionPolicy = "Delete"
+
+	// Merge removes keys in the secret, but not the secret itself.
+	// If a secret gets deleted on the provider side and is not accessible
+	// anymore this is not considered an error and the ExternalSecret
+	// does not go into SecretSyncedError status.
+	DeletionPolicyMerge ExternalSecretDeletionPolicy = "Merge"
+
+	// Retain will retain the secret if all provider secrets have been deleted.
+	// If a provider secret does not exist the ExternalSecret gets into the
+	// SecretSyncedError status.
+	DeletionPolicyRetain ExternalSecretDeletionPolicy = "Retain"
 )
 
 // ExternalSecretTemplateMetadata defines metadata fields for the Secret blueprint.
@@ -59,6 +85,12 @@ type ExternalSecretTemplate struct {
 	// +optional
 	Type corev1.SecretType `json:"type,omitempty"`
 
+	// EngineVersion specifies the template engine version
+	// that should be used to compile/execute the
+	// template specified in .data and .templateFrom[].
+	// +kubebuilder:default="v2"
+
+	EngineVersion TemplateEngineVersion `json:"engineVersion,omitempty"`
 	// +optional
 	Metadata ExternalSecretTemplateMetadata `json:"metadata,omitempty"`
 
@@ -68,6 +100,13 @@ type ExternalSecretTemplate struct {
 	// +optional
 	TemplateFrom []TemplateFrom `json:"templateFrom,omitempty"`
 }
+
+type TemplateEngineVersion string
+
+const (
+	TemplateEngineV1 TemplateEngineVersion = "v1"
+	TemplateEngineV2 TemplateEngineVersion = "v2"
+)
 
 // +kubebuilder:validation:MinProperties=1
 // +kubebuilder:validation:MaxProperties=1
@@ -99,7 +138,11 @@ type ExternalSecretTarget struct {
 	// +optional
 	// +kubebuilder:default="Owner"
 	CreationPolicy ExternalSecretCreationPolicy `json:"creationPolicy,omitempty"`
-
+	// DeletionPolicy defines rules on how to delete the resulting Secret
+	// Defaults to 'Retain'
+	// +optional
+	// +kubebuilder:default="Retain"
+	DeletionPolicy ExternalSecretDeletionPolicy `json:"deletionPolicy,omitempty"`
 	// Template defines a blueprint for the created Secret resource.
 	// +optional
 	Template *ExternalSecretTemplate `json:"template,omitempty"`
@@ -128,6 +171,52 @@ type ExternalSecretDataRemoteRef struct {
 	// +optional
 	// Used to select a specific property of the Provider value (if a map), if supported
 	Property string `json:"property,omitempty"`
+
+	// +optional
+	// Used to define a conversion Strategy
+	// +kubebuilder:default="Default"
+	ConversionStrategy ExternalSecretConversionStrategy `json:"conversionStrategy,omitempty"`
+}
+
+type ExternalSecretConversionStrategy string
+
+const (
+	ExternalSecretConversionDefault ExternalSecretConversionStrategy = "Default"
+	ExternalSecretConversionUnicode ExternalSecretConversionStrategy = "Unicode"
+)
+
+// +kubebuilder:validation:MinProperties=1
+// +kubebuilder:validation:MaxProperties=1
+type ExternalSecretDataFromRemoteRef struct {
+	// Used to extract multiple key/value pairs from one secret
+	// +optional
+	Extract *ExternalSecretDataRemoteRef `json:"extract,omitempty"`
+	// Used to find secrets based on tags or regular expressions
+	// +optional
+	Find *ExternalSecretFind `json:"find,omitempty"`
+}
+
+type ExternalSecretFind struct {
+	// A root path to start the find operations.
+	// +optional
+	Path *string `json:"path,omitempty"`
+	// Finds secrets based on the name.
+	// +optional
+	Name *FindName `json:"name,omitempty"`
+
+	// Find secrets based on tags.
+	// +optional
+	Tags map[string]string `json:"tags,omitempty"`
+	// +optional
+	// Used to define a conversion Strategy
+	// +kubebuilder:default="Default"
+	ConversionStrategy ExternalSecretConversionStrategy `json:"conversionStrategy,omitempty"`
+}
+
+type FindName struct {
+	// Finds secrets base
+	// +optional
+	RegExp string `json:"regexp,omitempty"`
 }
 
 // ExternalSecretSpec defines the desired state of ExternalSecret.
@@ -149,7 +238,7 @@ type ExternalSecretSpec struct {
 	// DataFrom is used to fetch all properties from a specific Provider data
 	// If multiple entries are specified, the Secret keys are merged in the specified order
 	// +optional
-	DataFrom []ExternalSecretDataRemoteRef `json:"dataFrom,omitempty"`
+	DataFrom []ExternalSecretDataFromRemoteRef `json:"dataFrom,omitempty"`
 }
 
 type ExternalSecretConditionType string
@@ -180,6 +269,13 @@ const (
 	ConditionReasonSecretSyncedError = "SecretSyncedError"
 	// ConditionReasonSecretDeleted indicates that the secret has been deleted.
 	ConditionReasonSecretDeleted = "SecretDeleted"
+
+	ReasonInvalidStoreRef      = "InvalidStoreRef"
+	ReasonUnavailableStore     = "UnavailableStore"
+	ReasonProviderClientConfig = "InvalidProviderClientConfig"
+	ReasonUpdateFailed         = "UpdateFailed"
+	ReasonUpdated              = "Updated"
+	ReasonDeleted              = "Deleted"
 )
 
 type ExternalSecretStatus struct {
@@ -196,7 +292,7 @@ type ExternalSecretStatus struct {
 }
 
 // +kubebuilder:object:root=true
-
+// +kubebuilder:storageversion
 // ExternalSecret is the Schema for the external-secrets API.
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Namespaced,categories={externalsecrets},shortName=es

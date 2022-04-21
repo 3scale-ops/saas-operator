@@ -5,7 +5,7 @@ import (
 	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
+	externalsecretsv1beta1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -110,7 +110,7 @@ var _ = Describe("MappingService controller", func() {
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("mapping-service"))
 			Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("mapping-service"))
 
-			es := &externalsecretsv1alpha1.ExternalSecret{}
+			es := &externalsecretsv1beta1.ExternalSecret{}
 			By("deploying the MappingService System Token external secret",
 				checkResource(
 					es,
@@ -169,7 +169,7 @@ var _ = Describe("MappingService controller", func() {
 						&appsv1.Deployment{}, "mapping-service", namespace,
 					)
 					rvs["externalsecret/mapping-service-system-master-access-token"] = getResourceVersion(
-						&externalsecretsv1alpha1.ExternalSecret{}, "mapping-service-system-master-access-token", namespace,
+						&externalsecretsv1beta1.ExternalSecret{}, "mapping-service-system-master-access-token", namespace,
 					)
 
 					patch := client.MergeFrom(mappingservice.DeepCopy())
@@ -221,7 +221,7 @@ var _ = Describe("MappingService controller", func() {
 				Expect(dep.Spec.Template.Spec.Containers[0].LivenessProbe).To(BeNil())
 				Expect(dep.Spec.Template.Spec.Containers[0].ReadinessProbe).To(BeNil())
 
-				es := &externalsecretsv1alpha1.ExternalSecret{}
+				es := &externalsecretsv1beta1.ExternalSecret{}
 				By("updating the MappingService System Token external secret",
 					checkResource(
 						es,

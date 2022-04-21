@@ -6,7 +6,7 @@ import (
 	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	externalsecretsv1alpha1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1alpha1"
+	externalsecretsv1beta1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1beta1"
 	"github.com/go-test/deep"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/pointer"
@@ -25,7 +25,7 @@ func TestGenerateExternalSecretFn(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want *externalsecretsv1alpha1.ExternalSecret
+		want *externalsecretsv1beta1.ExternalSecret
 	}{
 		{
 			name: "Generates a new ExternalSecret from an Options struct",
@@ -52,34 +52,34 @@ func TestGenerateExternalSecretFn(t *testing.T) {
 						FromVault: &saasv1alpha1.VaultSecretReference{Key: "key3", Path: "path3"}}},
 				},
 			},
-			want: &externalsecretsv1alpha1.ExternalSecret{
+			want: &externalsecretsv1beta1.ExternalSecret{
 				TypeMeta: metav1.TypeMeta{
-					Kind:       externalsecretsv1alpha1.ExtSecretKind,
-					APIVersion: externalsecretsv1alpha1.ExtSecretGroupVersionKind.GroupVersion().String(),
+					Kind:       externalsecretsv1beta1.ExtSecretKind,
+					APIVersion: externalsecretsv1beta1.ExtSecretGroupVersionKind.GroupVersion().String(),
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "my-secret",
 					Namespace: "test",
 					Labels:    map[string]string{},
 				},
-				Spec: externalsecretsv1alpha1.ExternalSecretSpec{
-					SecretStoreRef: externalsecretsv1alpha1.SecretStoreRef{
+				Spec: externalsecretsv1beta1.ExternalSecretSpec{
+					SecretStoreRef: externalsecretsv1beta1.SecretStoreRef{
 						Name: "vault-mgmt",
 						Kind: "ClusterSecretStore",
 					},
-					Target:          externalsecretsv1alpha1.ExternalSecretTarget{Name: "my-secret"},
+					Target:          externalsecretsv1beta1.ExternalSecretTarget{Name: "my-secret"},
 					RefreshInterval: &metav1.Duration{Duration: 120 * time.Second},
-					Data: []externalsecretsv1alpha1.ExternalSecretData{
+					Data: []externalsecretsv1beta1.ExternalSecretData{
 						{
 							SecretKey: "OPTION2",
-							RemoteRef: externalsecretsv1alpha1.ExternalSecretDataRemoteRef{
+							RemoteRef: externalsecretsv1beta1.ExternalSecretDataRemoteRef{
 								Key:      "path2",
 								Property: "key2",
 							},
 						},
 						{
 							SecretKey: "OPTION3",
-							RemoteRef: externalsecretsv1alpha1.ExternalSecretDataRemoteRef{
+							RemoteRef: externalsecretsv1beta1.ExternalSecretDataRemoteRef{
 								Key:      "path3",
 								Property: "key3",
 							},
@@ -112,27 +112,27 @@ func TestGenerateExternalSecretFn(t *testing.T) {
 						FromVault: &saasv1alpha1.VaultSecretReference{Key: "key4", Path: "path4"}}},
 				},
 			},
-			want: &externalsecretsv1alpha1.ExternalSecret{
+			want: &externalsecretsv1beta1.ExternalSecret{
 				TypeMeta: metav1.TypeMeta{
-					Kind:       externalsecretsv1alpha1.ExtSecretKind,
-					APIVersion: externalsecretsv1alpha1.ExtSecretGroupVersionKind.GroupVersion().String(),
+					Kind:       externalsecretsv1beta1.ExtSecretKind,
+					APIVersion: externalsecretsv1beta1.ExtSecretGroupVersionKind.GroupVersion().String(),
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "other-secret",
 					Namespace: "test",
 					Labels:    map[string]string{},
 				},
-				Spec: externalsecretsv1alpha1.ExternalSecretSpec{
-					SecretStoreRef: externalsecretsv1alpha1.SecretStoreRef{
+				Spec: externalsecretsv1beta1.ExternalSecretSpec{
+					SecretStoreRef: externalsecretsv1beta1.SecretStoreRef{
 						Name: "vault-mgmt",
 						Kind: "ClusterSecretStore",
 					},
-					Target:          externalsecretsv1alpha1.ExternalSecretTarget{Name: "other-secret"},
+					Target:          externalsecretsv1beta1.ExternalSecretTarget{Name: "other-secret"},
 					RefreshInterval: &metav1.Duration{Duration: 120 * time.Second},
-					Data: []externalsecretsv1alpha1.ExternalSecretData{
+					Data: []externalsecretsv1beta1.ExternalSecretData{
 						{
 							SecretKey: "OPTION4",
-							RemoteRef: externalsecretsv1alpha1.ExternalSecretDataRemoteRef{
+							RemoteRef: externalsecretsv1beta1.ExternalSecretDataRemoteRef{
 								Key:      "path4",
 								Property: "key4",
 							},
@@ -160,7 +160,7 @@ func Test_keysSlice(t *testing.T) {
 	tests := []struct {
 		name      string
 		args      args
-		want      []externalsecretsv1alpha1.ExternalSecretData
+		want      []externalsecretsv1beta1.ExternalSecretData
 		wantPanic bool
 	}{
 		{
@@ -182,17 +182,17 @@ func Test_keysSlice(t *testing.T) {
 						FromVault: &saasv1alpha1.VaultSecretReference{Key: "key4", Path: "path4"}}},
 				},
 			},
-			want: []externalsecretsv1alpha1.ExternalSecretData{
+			want: []externalsecretsv1beta1.ExternalSecretData{
 				{
 					SecretKey: "OPTION2",
-					RemoteRef: externalsecretsv1alpha1.ExternalSecretDataRemoteRef{
+					RemoteRef: externalsecretsv1beta1.ExternalSecretDataRemoteRef{
 						Key:      "path2",
 						Property: "key2",
 					},
 				},
 				{
 					SecretKey: "OPTION3",
-					RemoteRef: externalsecretsv1alpha1.ExternalSecretDataRemoteRef{
+					RemoteRef: externalsecretsv1beta1.ExternalSecretDataRemoteRef{
 						Key:      "path3",
 						Property: "key3",
 					},
@@ -219,10 +219,10 @@ func Test_keysSlice(t *testing.T) {
 						FromVault: &saasv1alpha1.VaultSecretReference{Key: "key4", Path: "path4"}}},
 				},
 			},
-			want: []externalsecretsv1alpha1.ExternalSecretData{
+			want: []externalsecretsv1beta1.ExternalSecretData{
 				{
 					SecretKey: "OPTION2",
-					RemoteRef: externalsecretsv1alpha1.ExternalSecretDataRemoteRef{
+					RemoteRef: externalsecretsv1beta1.ExternalSecretDataRemoteRef{
 						Key:      "path2",
 						Property: "key2",
 					},
@@ -240,7 +240,7 @@ func Test_keysSlice(t *testing.T) {
 					Option1: &ClearTextValue{Value: "xxxx"},
 				},
 			},
-			want:      []externalsecretsv1alpha1.ExternalSecretData{},
+			want:      []externalsecretsv1beta1.ExternalSecretData{},
 			wantPanic: true,
 		},
 		{
@@ -253,7 +253,7 @@ func Test_keysSlice(t *testing.T) {
 					Option1: &SecretValue{Value: saasv1alpha1.SecretReference{}},
 				},
 			},
-			want:      []externalsecretsv1alpha1.ExternalSecretData{},
+			want:      []externalsecretsv1beta1.ExternalSecretData{},
 			wantPanic: true,
 		},
 	}
