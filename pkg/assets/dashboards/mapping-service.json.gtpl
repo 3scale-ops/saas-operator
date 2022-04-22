@@ -1534,7 +1534,7 @@
                     "step": 10
                 },
                 {
-                    "expr": "sum(kube_pod_container_resource_requests_cpu_cores{namespace=~'$namespace', pod=~'mapping-service.*'}) by (pod)",
+                    "expr": "sum(kube_pod_container_resource_requests{unit='core',namespace=~'$namespace', pod=~'mapping-service.*'}) by (pod)",
                     "format": "table",
                     "instant": true,
                     "intervalFactor": 2,
@@ -1543,7 +1543,7 @@
                     "step": 10
                 },
                 {
-                    "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{namespace=~'$namespace', pod=~'mapping-service.*'}) by (pod) / sum(kube_pod_container_resource_requests_cpu_cores{namespace=~'$namespace', pod=~'mapping-service-.*'}) by (pod)",
+                    "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{namespace=~'$namespace', pod=~'mapping-service.*'}) by (pod) / sum(kube_pod_container_resource_requests{unit='core',namespace=~'$namespace', pod=~'mapping-service-.*'}) by (pod)",
                     "format": "table",
                     "instant": true,
                     "intervalFactor": 2,
@@ -1552,7 +1552,7 @@
                     "step": 10
                 },
                 {
-                    "expr": "sum(kube_pod_container_resource_limits_cpu_cores{namespace=~'$namespace', pod=~'mapping-service.*'}) by (pod)",
+                    "expr": "sum(kube_pod_container_resource_limits{unit='core',namespace=~'$namespace', pod=~'mapping-service.*'}) by (pod)",
                     "format": "table",
                     "instant": true,
                     "intervalFactor": 2,
@@ -1561,7 +1561,7 @@
                     "step": 10
                 },
                 {
-                    "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{namespace=~'$namespace', pod=~'mapping-service.*'}) by (pod) / sum(kube_pod_container_resource_limits_cpu_cores{namespace=~'$namespace', pod=~'mapping-service-.*'}) by (pod)",
+                    "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{namespace=~'$namespace', pod=~'mapping-service.*'}) by (pod) / sum(kube_pod_container_resource_limits{unit='core',namespace=~'$namespace', pod=~'mapping-service-.*'}) by (pod)",
                     "format": "table",
                     "instant": true,
                     "intervalFactor": 2,
@@ -1882,7 +1882,7 @@
                     "step": 10
                 },
                 {
-                    "expr": "sum(kube_pod_container_resource_requests_memory_bytes{namespace=~'$namespace', pod=~'mapping-service.*'}) by (pod)",
+                    "expr": "sum(kube_pod_container_resource_requests{unit='byte',namespace=~'$namespace', pod=~'mapping-service.*'}) by (pod)",
                     "format": "table",
                     "instant": true,
                     "intervalFactor": 2,
@@ -1891,7 +1891,7 @@
                     "step": 10
                 },
                 {
-                    "expr": "sum(container_memory_working_set_bytes{namespace=~'$namespace', pod=~'mapping-service.*', container!=''}) by (pod) / sum(kube_pod_container_resource_requests_memory_bytes{namespace=~'$namespace', pod=~'mapping-service-.*'}) by (pod)",
+                    "expr": "sum(container_memory_working_set_bytes{namespace=~'$namespace', pod=~'mapping-service.*', container!=''}) by (pod) / sum(kube_pod_container_resource_requests{unit='byte',namespace=~'$namespace', pod=~'mapping-service-.*'}) by (pod)",
                     "format": "table",
                     "instant": true,
                     "intervalFactor": 2,
@@ -1900,7 +1900,7 @@
                     "step": 10
                 },
                 {
-                    "expr": "sum(kube_pod_container_resource_limits_memory_bytes{namespace=~'$namespace', pod=~'mapping-service.*'}) by (pod)",
+                    "expr": "sum(kube_pod_container_resource_limits{unit='byte',namespace=~'$namespace', pod=~'mapping-service.*'}) by (pod)",
                     "format": "table",
                     "instant": true,
                     "intervalFactor": 2,
@@ -1909,7 +1909,7 @@
                     "step": 10
                 },
                 {
-                    "expr": "sum(container_memory_working_set_bytes{namespace=~'$namespace', pod=~'mapping-service.*', container!=''}) by (pod) / sum(kube_pod_container_resource_limits_memory_bytes{namespace=~'$namespace', pod=~'mapping-service-.*'}) by (pod)",
+                    "expr": "sum(container_memory_working_set_bytes{namespace=~'$namespace', pod=~'mapping-service.*', container!=''}) by (pod) / sum(kube_pod_container_resource_limits{unit='byte',namespace=~'$namespace', pod=~'mapping-service-.*'}) by (pod)",
                     "format": "table",
                     "instant": true,
                     "intervalFactor": 2,
