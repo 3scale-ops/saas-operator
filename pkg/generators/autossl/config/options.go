@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/generators/common_blocks/pod"
+	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
 )
 
 const (
