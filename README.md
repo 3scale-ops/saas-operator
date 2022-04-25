@@ -44,6 +44,9 @@ A Kubernetes Operator based on the Operator SDK to manage 3scale SaaS (hosted ve
 * [MappingService Custom Resource Reference](docs/api-reference/reference.asciidoc#k8s-api-github-com-3scale-saas-operator-api-v1alpha1-mappingservice)
 * [System Custom Resource Reference](docs/api-reference/reference.asciidoc#k8s-api-github-com-3scale-saas-operator-api-v1alpha1-system)
 * [Zync Custom Resource Reference](docs/api-reference/reference.asciidoc#k8s-api-github-com-3scale-saas-operator-api-v1alpha1-zync)
+* [Sentinel Custom Resource Reference](docs/api-reference/reference.asciidoc#k8s-api-github-com-3scale-saas-operator-api-v1alpha1-sentinel)
+* [TwemproxyConfig Custom Resource Reference](docs/api-reference/reference.asciidoc#k8s-api-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfig)
+* [RedisShard Custom Resource Reference (testing purpose only)](docs/api-reference/reference.asciidoc#k8s-api-github-com-3scale-saas-operator-api-v1alpha1-redisshard)
 
 ## License
 
