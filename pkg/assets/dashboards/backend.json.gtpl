@@ -2437,7 +2437,7 @@
       "reverseYBuckets": false,
       "targets": [
         {
-          "expr": "sum(rate(apisonator_listener_internal_api_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"services\"}[1m])) by (le)",
+          "expr": "sum(rate(apisonator_listener_internal_api_response_times_seconds_bucket{namespace=\"$namespace\",request_type=\"services\",pod=~\".*canary.*\"}[1m])) by (le)",
           "format": "heatmap",
           "interval": "1m",
           "intervalFactor": 10,
