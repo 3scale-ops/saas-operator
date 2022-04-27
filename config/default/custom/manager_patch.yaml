@@ -15,6 +15,7 @@ spec:
                   fieldPath: metadata.annotations['olm.targetNamespaces']
           args:
             - operator
+            - --metrics-bind-address=:8080"
             - --leader-elect
           resources:
             limits:

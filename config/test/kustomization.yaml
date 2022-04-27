@@ -5,6 +5,7 @@ resources:
 - ../default
 - external-apis/grafanadashboards.integreatly.org.yaml
 - external-apis/podmonitors.monitoring.coreos.com.yaml
+- external-apis/servicemonitors.monitoring.coreos.com.yaml
 - external-apis/externalsecrets.external-secrets.io.yaml
 patches:
   - target:
