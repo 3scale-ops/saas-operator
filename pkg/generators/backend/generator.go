@@ -222,10 +222,14 @@ func (gen *ListenerGenerator) PDBSpec() *saasv1alpha1.PodDisruptionBudgetSpec {
 	return gen.ListenerSpec.PDB
 }
 func (gen *ListenerGenerator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint {
-	return []monitoringv1.PodMetricsEndpoint{
+	pmes := []monitoringv1.PodMetricsEndpoint{
 		podmonitor.PodMetricsEndpoint("/metrics", "metrics", 30),
 		podmonitor.PodMetricsEndpoint("/stats/prometheus", "envoy-metrics", 60),
 	}
+	if gen.TwemproxySpec != nil {
+		pmes = append(pmes, podmonitor.PodMetricsEndpoint("/metrics", "twem-metrics", 30))
+	}
+	return pmes
 }
 func (gen *ListenerGenerator) Services() []basereconciler_resources.ServiceTemplate {
 	return []basereconciler_resources.ServiceTemplate{
@@ -275,9 +279,13 @@ func (gen *WorkerGenerator) PDBSpec() *saasv1alpha1.PodDisruptionBudgetSpec {
 	return gen.WorkerSpec.PDB
 }
 func (gen *WorkerGenerator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint {
-	return []monitoringv1.PodMetricsEndpoint{
+	pmes := []monitoringv1.PodMetricsEndpoint{
 		podmonitor.PodMetricsEndpoint("/metrics", "metrics", 30),
 	}
+	if gen.TwemproxySpec != nil {
+		pmes = append(pmes, podmonitor.PodMetricsEndpoint("/metrics", "twem-metrics", 30))
+	}
+	return pmes
 }
 
 // CronGenerator has methods to generate resources for a
