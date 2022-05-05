@@ -43,6 +43,8 @@ import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	externalsecretsv1beta1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
+	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
+	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	// +kubebuilder:scaffold:imports
 )
@@ -290,6 +292,14 @@ var _ = BeforeSuite(func() {
 	err = (&BackendReconciler{
 		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("Backend"), false),
 		Log:                ctrl.Log.WithName("controllers").WithName("Backend"),
+	}).SetupWithManager(mgr)
+	Expect(err).ToNot(HaveOccurred())
+
+	err = (&SentinelReconciler{
+		Reconciler:     basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("Sentinel"), false),
+		SentinelEvents: threads.NewManager(),
+		Metrics:        threads.NewManager(),
+		Log:            ctrl.Log.WithName("controllers").WithName("Sentinel"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
