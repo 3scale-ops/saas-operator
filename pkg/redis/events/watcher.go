@@ -36,7 +36,7 @@ var (
 			Namespace: "saas_redis_sentinel",
 			Help:      "+sdown (https://redis.io/topics/sentinel#sentinel-api)",
 		},
-		[]string{"sentinel", "shard", "server", "role"},
+		[]string{"sentinel", "shard", "redis_server", "role"},
 	)
 )
 
@@ -160,7 +160,7 @@ func (smg *SentinelEventWatcher) metricsFromEvent(rem RedisEventMessage) {
 	case "+sdown":
 		sdownCount.With(
 			prometheus.Labels{
-				"sentinel": smg.SentinelURI, "shard": rem.master.name, "role": rem.target.role, "server": rem.target.ip,
+				"sentinel": smg.SentinelURI, "shard": rem.master.name, "role": rem.target.role, "redis_server": rem.target.ip,
 			},
 		).Add(1)
 	}

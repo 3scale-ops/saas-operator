@@ -6,6 +6,7 @@ import (
 	"github.com/3scale/saas-operator/pkg/generators/sentinel/config"
 	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
 	basereconciler_resources "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/resources"
+	"github.com/3scale/saas-operator/pkg/resource_builders/grafanadashboard"
 	"github.com/3scale/saas-operator/pkg/resource_builders/pdb"
 )
 
@@ -65,4 +66,11 @@ func (gen *Generator) Resources() []basereconciler.Resource {
 	}
 
 	return resources
+}
+
+func (gen *Generator) GrafanaDashboard() basereconciler_resources.GrafanaDashboardTemplate {
+	return basereconciler_resources.GrafanaDashboardTemplate{
+		Template:  grafanadashboard.New(gen.GetKey(), gen.GetLabels(), *gen.Spec.GrafanaDashboard, "dashboards/redis-sentinel.json.gtpl"),
+		IsEnabled: !gen.Spec.GrafanaDashboard.IsDeactivated(),
+	}
 }
