@@ -80,7 +80,13 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		instance.Spec,
 	)
 
-	if err := r.ReconcileOwnedResources(ctx, instance, gen.Resources()); err != nil {
+	resources := []basereconciler.Resource{
+		gen.GrafanaDashboard(),
+	}
+
+	resources = append(gen.Resources(), resources...)
+
+	if err := r.ReconcileOwnedResources(ctx, instance, resources); err != nil {
 		log.Error(err, "unable to update owned resources")
 		return r.ManageError(ctx, instance, err)
 	}
