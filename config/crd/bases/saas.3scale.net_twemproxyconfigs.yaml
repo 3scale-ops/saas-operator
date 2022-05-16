@@ -36,6 +36,18 @@ spec:
           spec:
             description: TwemproxyConfigSpec defines the desired state of TwemproxyConfig
             properties:
+              grafanaDashboard:
+                description: Configures the Grafana Dashboard for the component
+                properties:
+                  selectorKey:
+                    description: Label key used by grafana-operator for dashboard
+                      discovery
+                    type: string
+                  selectorValue:
+                    description: Label value used by grafana-operator for dashboard
+                      discovery
+                    type: string
+                type: object
               reconcileServerPools:
                 description: ReconcileServerPools is a flag that allows to deactivate
                   the reconcile of the contents of the managed ConfigMap. This is
