@@ -295,6 +295,12 @@ var _ = BeforeSuite(func() {
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
+	err = (&RedisShardReconciler{
+		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("RedisShard"), false),
+		Log:        ctrl.Log.WithName("controllers").WithName("RedisShard"),
+	}).SetupWithManager(mgr)
+	Expect(err).ToNot(HaveOccurred())
+
 	err = (&SentinelReconciler{
 		Reconciler:     basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("Sentinel"), false),
 		SentinelEvents: threads.NewManager(),
