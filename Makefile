@@ -136,7 +136,6 @@ deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config.
 	$(KUSTOMIZE) build config/default | kubectl delete -f -
 
-
 CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
 	$(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@v0.6.1)
@@ -245,7 +244,7 @@ catalog-retag-latest:
 
 kind-create: export KUBECONFIG = $(PWD)/kubeconfig
 kind-create: docker-build kind ## Runs a k8s kind cluster with a local registry in "localhost:5000" and ports 1080 and 1443 exposed to the host
-	$(KIND) create cluster --wait 5m --image kindest/node:v1.20.7
+	$(KIND) create cluster --wait 5m --image kindest/node:v1.20.7 || true
 
 kind-delete: ## Deletes the kind cluster and the registry
 kind-delete: kind
@@ -253,6 +252,10 @@ kind-delete: kind
 
 kind-deploy: export KUBECONFIG = $(PWD)/kubeconfig
 kind-deploy: manifests kustomize ## Deploy operator to the Kind K8s cluster
+	kubectl apply -f config/test/external-apis/ && \
+		find config/test/external-apis/ -name '*yaml' -type f \
+            | sed -n 's/.*\/\(.*\).yaml/\1/p' \
+            | xargs -n1 kubectl wait --for condition=established --timeout=60s crd
 	$(KIND) load docker-image $(IMG)
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/test | kubectl apply -f -
@@ -270,6 +273,33 @@ kind-undeploy: ## Undeploy controller from the Kind K8s cluster
 KIND = $(shell pwd)/bin/kind
 kind: ## Download kind locally if necessary
 	$(call go-get-tool,$(KIND),sigs.k8s.io/kind@v0.11.1)
+
+##@ E2E Testing
+
+OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
+ARCH := $(shell uname -m | sed 's/x86_64/amd64/')
+
+# Download kuttl locally if necessary for e2e tests
+KUTTL_RELEASE = 0.12.1
+KUTTL = $(shell pwd)/bin/kuttl-v$(KUTTL_RELEASE)
+KUTTL_DL_URL = https://github.com/kudobuilder/kuttl/releases/download/v$(KUTTL_RELEASE)/kubectl-kuttl_$(KUTTL_RELEASE)_$(OS)_x86_64
+kuttl:
+ifeq (,$(wildcard $(KUTTL)))
+ifeq (,$(shell which $(KUTTL) 2>/dev/null))
+	@{ \
+	set -e ;\
+	mkdir -p $(shell pwd)/bin ;\
+	curl -sL -o $(KUTTL) $(KUTTL_DL_URL) ;\
+	chmod +x $(KUTTL) ;\
+	}
+else
+KUTTL = $(shell which $(KUTTL))
+endif
+endif
+
+test-e2e: export KUBECONFIG = ${PWD}/kubeconfig
+test-e2e: kuttl kind-create kind-deploy ## Run kuttl e2e tests in the k8s kind cluster
+	$(KUTTL) test
 
 ##@ Other
 
