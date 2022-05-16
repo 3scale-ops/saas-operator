@@ -5326,7 +5326,7 @@
       }
     }
   ],
-  "refresh": 10s,
+  "refresh": "10s",
   "schemaVersion": 27,
   "style": "dark",
   "tags": [
