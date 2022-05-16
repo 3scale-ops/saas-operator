@@ -28,6 +28,11 @@ import (
 var (
 	TwemproxyPodSyncLabelKey   string = fmt.Sprintf("%s/twemproxyconfig.sync", GroupVersion.Group)
 	TwemproxySyncAnnotationKey string = fmt.Sprintf("%s/twemproxyconfig.configmap-hash", GroupVersion.Group)
+
+	twemproxyDefaultGrafanaDashboard defaultGrafanaDashboardSpec = defaultGrafanaDashboardSpec{
+		SelectorKey:   pointer.StringPtr("monitoring-key"),
+		SelectorValue: pointer.StringPtr("middleware"),
+	}
 )
 
 // TwemproxyConfigSpec defines the desired state of TwemproxyConfig
@@ -47,6 +52,10 @@ type TwemproxyConfigSpec struct {
 	// are changed, even if they are manually changed.
 	// This switch defaults to "true".
 	ReconcileServerPools *bool `json:"reconcileServerPools,omitempty"`
+	// Configures the Grafana Dashboard for the component
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	GrafanaDashboard *GrafanaDashboardSpec `json:"grafanaDashboard,omitempty"`
 }
 
 func (spec *TwemproxyConfigSpec) Default() {
@@ -56,6 +65,7 @@ func (spec *TwemproxyConfigSpec) Default() {
 	if spec.ReconcileServerPools == nil {
 		spec.ReconcileServerPools = pointer.Bool(true)
 	}
+	spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(spec.GrafanaDashboard, twemproxyDefaultGrafanaDashboard)
 }
 
 type TwemproxyServerPool struct {

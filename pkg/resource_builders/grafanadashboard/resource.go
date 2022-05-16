@@ -14,12 +14,6 @@ func New(key types.NamespacedName, labels map[string]string, cfg saasv1alpha1.Gr
 	template string) func() *grafanav1alpha1.GrafanaDashboard {
 
 	return func() *grafanav1alpha1.GrafanaDashboard {
-		data := &struct {
-			Namespace string
-		}{
-			key.Namespace,
-		}
-
 		return &grafanav1alpha1.GrafanaDashboard{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "GrafanaDashboard",
@@ -35,7 +29,7 @@ func New(key types.NamespacedName, labels map[string]string, cfg saasv1alpha1.Gr
 				}(),
 			},
 			Spec: grafanav1alpha1.GrafanaDashboardSpec{
-				Json: assets.TemplateAsset(template, data),
+				Json: assets.TemplateAsset(template, key),
 			},
 		}
 	}

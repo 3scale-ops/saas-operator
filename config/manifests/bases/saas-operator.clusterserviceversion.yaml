@@ -3506,6 +3506,15 @@ spec:
       kind: TwemproxyConfig
       name: twemproxyconfigs.saas.3scale.net
       specDescriptors:
+      - description: Configures the Grafana Dashboard for the component
+        displayName: Grafana Dashboard
+        path: grafanaDashboard
+      - description: Label key used by grafana-operator for dashboard discovery
+        displayName: Selector Key
+        path: grafanaDashboard.selectorKey
+      - description: Label value used by grafana-operator for dashboard discovery
+        displayName: Selector Value
+        path: grafanaDashboard.selectorValue
       - description: SentinelURI is the redis URI of sentinel. This is required as
           TewmproxyConfig will obtain the info about available redis servers from
           sentinel.

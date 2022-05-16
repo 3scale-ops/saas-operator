@@ -9,7 +9,9 @@ import (
 	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
 	basereconciler_resources "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/resources"
 	"github.com/3scale/saas-operator/pkg/redis"
+	"github.com/3scale/saas-operator/pkg/resource_builders/grafanadashboard"
 	"github.com/go-logr/logr"
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -171,5 +173,15 @@ func (gen *Generator) ConfigMap() basereconciler.Resource {
 	return basereconciler_resources.ConfigMapTemplate{
 		Template:  gen.configMap(true),
 		IsEnabled: true,
+	}
+}
+
+func (gen *Generator) GrafanaDashboard() basereconciler_resources.GrafanaDashboardTemplate {
+	return basereconciler_resources.GrafanaDashboardTemplate{
+		Template: grafanadashboard.New(types.NamespacedName{
+			Name:      fmt.Sprintf("%s-%s", gen.InstanceName, gen.Component),
+			Namespace: gen.Namespace,
+		}, gen.GetLabels(), *gen.Spec.GrafanaDashboard, "dashboards/twemproxy.json.gtpl"),
+		IsEnabled: !gen.Spec.GrafanaDashboard.IsDeactivated(),
 	}
 }

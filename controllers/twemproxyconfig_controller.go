@@ -52,6 +52,7 @@ type TwemproxyConfigReconciler struct {
 // +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=twemproxyconfigs/finalizers,verbs=update
 // +kubebuilder:rbac:groups="core",namespace=placeholder,resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="core",namespace=placeholder,resources=pods,verbs=list;patch
+// +kubebuilder:rbac:groups="integreatly.org",namespace=placeholder,resources=grafanadashboards,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -106,6 +107,12 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		})
 	}
 	r.SentinelEvents.ReconcileThreads(ctx, instance, eventWatchers, log.WithName("event-watcher"))
+
+	if err := r.ReconcileOwnedResources(
+		ctx, instance, []basereconciler.Resource{gen.GrafanaDashboard()},
+	); err != nil {
+		r.ManageError(ctx, instance, err)
+	}
 
 	// Reconcile periodically in case some event is lost ...
 	return ctrl.Result{RequeueAfter: 30 * time.Second}, nil
