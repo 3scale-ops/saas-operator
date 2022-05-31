@@ -5,7 +5,6 @@ import (
 
 	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
@@ -15,9 +14,9 @@ type WorkloadReconciler struct {
 }
 
 // NewFromManager constructs a new Reconciler from the given manager
-func NewFromManager(mgr manager.Manager, recorder record.EventRecorder, clusterWatchers bool) WorkloadReconciler {
+func NewFromManager(mgr manager.Manager, recorderName string, clusterWatchers bool) WorkloadReconciler {
 	return WorkloadReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr, recorder, clusterWatchers),
+		Reconciler: basereconciler.NewFromManager(mgr, recorderName, clusterWatchers),
 	}
 }
 

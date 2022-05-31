@@ -12,7 +12,6 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -32,9 +31,9 @@ type Reconciler struct {
 }
 
 // NewFromManager constructs a new Reconciler from the given manager
-func NewFromManager(mgr manager.Manager, recorder record.EventRecorder, clusterWatchers bool) Reconciler {
+func NewFromManager(mgr manager.Manager, recorderName string, clusterWatchers bool) Reconciler {
 	return Reconciler{
-		EnforcingReconciler: lockedresourcecontroller.NewFromManager(mgr, recorder, clusterWatchers),
+		EnforcingReconciler: lockedresourcecontroller.NewFromManager(mgr, recorderName, clusterWatchers, false),
 	}
 }
 
