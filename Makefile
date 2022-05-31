@@ -317,7 +317,7 @@ $(shell pwd)/bin:
 	mkdir -p $(shell pwd)/bin
 
 .PHONY: operator-sdk
-OPERATOR_SDK_RELEASE = v1.13.1
+OPERATOR_SDK_RELEASE = v1.15.0
 OPERATOR_SDK = bin/operator-sdk-$(OPERATOR_SDK_RELEASE)
 operator-sdk: ## Download operator-sdk locally if necessary.
 ifeq (,$(wildcard $(OPERATOR_SDK)))
