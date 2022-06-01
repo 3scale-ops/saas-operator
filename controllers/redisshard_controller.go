@@ -96,6 +96,7 @@ func (r *RedisShardReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 func (r *RedisShardReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&saasv1alpha1.RedisShard{}).
+		Owns(&corev1.Service{}).
 		Watches(&source.Channel{Source: r.GetStatusChangeChannel()}, &handler.EnqueueRequestForObject{}).
 		Complete(r)
 }

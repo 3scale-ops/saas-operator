@@ -6,12 +6,14 @@ import (
 
 	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ basereconciler.Resource = ServiceTemplate{}
+var _ basereconciler.ResourceWithCustomReconciler = ServiceTemplate{}
 
 type ServiceTemplate struct {
 	Template  func() *corev1.Service
@@ -32,6 +34,55 @@ func (st ServiceTemplate) Build(ctx context.Context, cl client.Client) (client.O
 
 func (dt ServiceTemplate) Enabled() bool {
 	return dt.IsEnabled
+}
+
+func (st ServiceTemplate) ResourceReconciler(ctx context.Context, cl client.Client, obj client.Object) error {
+	needsUpdate := false
+	desired := obj.(*corev1.Service)
+
+	instance := &corev1.Service{}
+	err := cl.Get(ctx, types.NamespacedName{Name: desired.GetName(), Namespace: desired.GetNamespace()}, instance)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			err = cl.Create(ctx, desired)
+			if err != nil {
+				return fmt.Errorf("unable to create object: " + err.Error())
+			}
+			return nil
+		}
+		return err
+	}
+
+	/* Reconcile metadata */
+	if !equality.Semantic.DeepEqual(instance.GetAnnotations(), desired.GetAnnotations()) {
+		instance.ObjectMeta.Annotations = desired.GetAnnotations()
+		needsUpdate = true
+	}
+	if !equality.Semantic.DeepEqual(instance.GetLabels(), desired.GetLabels()) {
+		instance.ObjectMeta.Labels = desired.GetLabels()
+		needsUpdate = true
+	}
+
+	/* Reconcile the ports */
+	if !equality.Semantic.DeepEqual(instance.Spec.Ports, desired.Spec.Ports) {
+		instance.Spec.Ports = desired.Spec.Ports
+		needsUpdate = true
+	}
+
+	/* Reconcile label selector */
+	if !equality.Semantic.DeepEqual(instance.Spec.Selector, desired.Spec.Selector) {
+		instance.Spec.Selector = desired.Spec.Selector
+		needsUpdate = true
+	}
+
+	if needsUpdate {
+		err := cl.Update(ctx, instance)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func populateServiceSpecRuntimeValues(ctx context.Context, cl client.Client, svc *corev1.Service) error {

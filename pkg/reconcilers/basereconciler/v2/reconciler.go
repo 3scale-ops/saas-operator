@@ -25,6 +25,11 @@ type Resource interface {
 	Enabled() bool
 }
 
+type ResourceWithCustomReconciler interface {
+	Resource
+	ResourceReconciler(context.Context, client.Client, client.Object) error
+}
+
 // Reconciler computes a list of resources that it needs to keep in place
 type Reconciler struct {
 	lockedresourcecontroller.EnforcingReconciler
@@ -119,6 +124,7 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 	for _, res := range resources {
 
 		if res.Enabled() {
+
 			object, exclude, err := res.Build(ctx, r.GetClient())
 			if err != nil {
 				return err
@@ -128,15 +134,26 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 				return err
 			}
 
-			u, err := runtime.DefaultUnstructuredConverter.ToUnstructured(object)
-			if err != nil {
-				return err
+			// If the resource implements a custom reconciler, call it and
+			// avoid the generic resource processing using operator-utils
+			if custom, ok := res.(ResourceWithCustomReconciler); ok {
+				if err := custom.ResourceReconciler(ctx, r.GetClient(), object); err != nil {
+					return err
+				}
+
+			} else {
+
+				u, err := runtime.DefaultUnstructuredConverter.ToUnstructured(object)
+				if err != nil {
+					return err
+				}
+
+				lr = append(lr, lockedresource.LockedResource{
+					Unstructured:  unstructured.Unstructured{Object: u},
+					ExcludedPaths: exclude,
+				})
 			}
 
-			lr = append(lr, lockedresource.LockedResource{
-				Unstructured:  unstructured.Unstructured{Object: u},
-				ExcludedPaths: exclude,
-			})
 		}
 	}
 

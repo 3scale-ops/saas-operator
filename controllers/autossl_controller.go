@@ -25,6 +25,7 @@ import (
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	"github.com/go-logr/logr"
 	"github.com/redhat-cop/operator-utils/pkg/util"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
@@ -102,6 +103,7 @@ func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 func (r *AutoSSLReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&saasv1alpha1.AutoSSL{}, builder.WithPredicates(util.ResourceGenerationOrFinalizerChangedPredicate{})).
+		Owns(&corev1.Service{}).
 		Watches(&source.Channel{Source: r.GetStatusChangeChannel()}, &handler.EnqueueRequestForObject{}).
 		Complete(r)
 }

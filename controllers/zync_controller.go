@@ -103,6 +103,7 @@ func (r *ZyncReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 func (r *ZyncReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&saasv1alpha1.Zync{}, builder.WithPredicates(util.ResourceGenerationOrFinalizerChangedPredicate{})).
+		Owns(&corev1.Service{}).
 		Watches(&source.Channel{Source: r.GetStatusChangeChannel()}, &handler.EnqueueRequestForObject{}).
 		Watches(&source.Kind{Type: &corev1.Secret{TypeMeta: metav1.TypeMeta{Kind: "Secret"}}},
 			r.SecretEventHandler(&saasv1alpha1.ZyncList{}, r.Log)).

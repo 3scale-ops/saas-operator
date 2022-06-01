@@ -194,6 +194,7 @@ func (r *SentinelReconciler) reconcileStatus(ctx context.Context, instance *saas
 func (r *SentinelReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&saasv1alpha1.Sentinel{}).
+		Owns(&corev1.Service{}).
 		Watches(&source.Channel{Source: r.GetStatusChangeChannel()}, &handler.EnqueueRequestForObject{}).
 		Watches(&source.Channel{Source: r.SentinelEvents.GetChannel()}, &handler.EnqueueRequestForObject{}).
 		Complete(r)
