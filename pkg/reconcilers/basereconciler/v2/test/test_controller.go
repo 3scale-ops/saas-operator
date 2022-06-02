@@ -35,6 +35,7 @@ import (
 	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
@@ -48,11 +49,12 @@ type Reconciler struct {
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	log := r.Log.WithValues("name", req.Name, "namespace", req.Namespace)
+	logger := r.Log.WithValues("name", req.Name, "namespace", req.Namespace)
+	ctx = log.IntoContext(ctx, logger)
 
 	instance := &v1alpha1.Test{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx, key, instance, "finalizer.example.com", []func(){}, log)
+	result, err := r.GetInstance(ctx, key, instance, "finalizer.example.com", []func(){})
 	if result != nil || err != nil {
 		return *result, err
 	}
@@ -78,7 +80,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	})
 
 	if err != nil {
-		log.Error(err, "unable to reconcile owned resources")
+		logger.Error(err, "unable to reconcile owned resources")
 		return r.ManageError(ctx, instance, err)
 	}
 

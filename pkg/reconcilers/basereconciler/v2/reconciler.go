@@ -16,6 +16,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
@@ -45,7 +46,9 @@ func NewFromManager(mgr manager.Manager, recorderName string, clusterWatchers bo
 // GetInstance tries to retrieve the custom resource instance and perform some standard
 // tasks like initialization and cleanup when required.
 func (r *Reconciler) GetInstance(ctx context.Context, key types.NamespacedName,
-	instance client.Object, finalizer string, cleanupFns []func(), log logr.Logger) (*ctrl.Result, error) {
+	instance client.Object, finalizer string, cleanupFns []func()) (*ctrl.Result, error) {
+	logger := log.FromContext(ctx)
+
 	err := r.GetClient().Get(ctx, key, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -59,16 +62,16 @@ func (r *Reconciler) GetInstance(ctx context.Context, key types.NamespacedName,
 		if !util.HasFinalizer(instance, finalizer) {
 			return &ctrl.Result{}, nil
 		}
-		err := r.ManageCleanUpLogic(instance, cleanupFns, log)
+		err := r.ManageCleanUpLogic(instance, cleanupFns, logger)
 		if err != nil {
-			log.Error(err, "unable to delete instance")
+			logger.Error(err, "unable to delete instance")
 			result, err := r.ManageError(ctx, instance, err)
 			return &result, err
 		}
 		util.RemoveFinalizer(instance, finalizer)
 		err = r.GetClient().Update(ctx, instance)
 		if err != nil {
-			log.Error(err, "unable to update instance")
+			logger.Error(err, "unable to update instance")
 			result, err := r.ManageError(ctx, instance, err)
 			return &result, err
 		}
@@ -78,7 +81,7 @@ func (r *Reconciler) GetInstance(ctx context.Context, key types.NamespacedName,
 	if ok := r.IsInitialized(instance, finalizer); !ok {
 		err := r.GetClient().Update(ctx, instance)
 		if err != nil {
-			log.Error(err, "unable to initialize instance")
+			logger.Error(err, "unable to initialize instance")
 			result, err := r.ManageError(ctx, instance, err)
 			return &result, err
 		}
