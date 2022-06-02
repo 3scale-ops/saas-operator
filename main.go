@@ -124,7 +124,7 @@ func main() {
 	/* BASERECONCILER_V2 BASED CONTROLLERS*/
 
 	if err = (&controllers.SentinelReconciler{
-		Reconciler:     basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("Sentinel"), false),
+		Reconciler:     basereconciler.NewFromManager(mgr, "Sentinel", false),
 		SentinelEvents: threads.NewManager(),
 		Metrics:        threads.NewManager(),
 		Log:            ctrl.Log.WithName("controllers").WithName("Sentinel"),
@@ -133,14 +133,14 @@ func main() {
 		os.Exit(1)
 	}
 	if err = (&controllers.RedisShardReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("RedisShard"), false),
+		Reconciler: basereconciler.NewFromManager(mgr, "RedisShard", false),
 		Log:        ctrl.Log.WithName("controllers").WithName("RedisShard"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "RedisShard")
 		os.Exit(1)
 	}
 	if err = (&controllers.TwemproxyConfigReconciler{
-		Reconciler:     basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("TwemproxyConfig"), false),
+		Reconciler:     basereconciler.NewFromManager(mgr, "TwemproxyConfig", false),
 		SentinelEvents: threads.NewManager(),
 		Log:            ctrl.Log.WithName("controllers").WithName("TwemproxyConfig"),
 	}).SetupWithManager(mgr); err != nil {
@@ -151,7 +151,7 @@ func main() {
 	/* WORKLOADS RECONCILER BASED CONTROLLERS*/
 
 	if err = (&controllers.ApicastReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("Apicast"), false),
+		WorkloadReconciler: workloads.NewFromManager(mgr, "Apicast", false),
 		Log:                ctrl.Log.WithName("controllers").WithName("Apicast"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Apicast")
@@ -159,7 +159,7 @@ func main() {
 	}
 
 	if err = (&controllers.ZyncReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("Zync"), false),
+		WorkloadReconciler: workloads.NewFromManager(mgr, "Zync", false),
 		Log:                ctrl.Log.WithName("controllers").WithName("Zync"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Zync")
@@ -167,7 +167,7 @@ func main() {
 	}
 
 	if err = (&controllers.MappingServiceReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("MappingService"), false),
+		WorkloadReconciler: workloads.NewFromManager(mgr, "MappingService", false),
 		Log:                ctrl.Log.WithName("controllers").WithName("MappingService"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "MappingService")
@@ -175,7 +175,7 @@ func main() {
 	}
 
 	if err = (&controllers.CORSProxyReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("CORSProxy"), false),
+		WorkloadReconciler: workloads.NewFromManager(mgr, "CORSProxy", false),
 		Log:                ctrl.Log.WithName("controllers").WithName("CORSProxy"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "CORSProxy")
@@ -183,7 +183,7 @@ func main() {
 	}
 
 	if err = (&controllers.AutoSSLReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("AutoSSL"), false),
+		WorkloadReconciler: workloads.NewFromManager(mgr, "AutoSSL", false),
 		Log:                ctrl.Log.WithName("controllers").WithName("AutoSSL"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "AutoSSL")
@@ -191,7 +191,7 @@ func main() {
 	}
 
 	if err = (&controllers.EchoAPIReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("EchoAPI"), false),
+		WorkloadReconciler: workloads.NewFromManager(mgr, "EchoAPI", false),
 		Log:                ctrl.Log.WithName("controllers").WithName("EchoAPI"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "EchoAPI")
@@ -199,7 +199,7 @@ func main() {
 	}
 
 	if err = (&controllers.BackendReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("Backend"), false),
+		WorkloadReconciler: workloads.NewFromManager(mgr, "Backend", false),
 		Log:                ctrl.Log.WithName("controllers").WithName("Backend"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Backend")
@@ -207,7 +207,7 @@ func main() {
 	}
 
 	if err = (&controllers.SystemReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("System"), false),
+		WorkloadReconciler: workloads.NewFromManager(mgr, "System", false),
 		Log:                ctrl.Log.WithName("controllers").WithName("System"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "System")

@@ -260,49 +260,49 @@ var _ = BeforeSuite(func() {
 
 	// Add controllers for testing
 	err = (&AutoSSLReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("AutoSSL"), false),
+		WorkloadReconciler: workloads.NewFromManager(mgr, "AutoSSL", false),
 		Log:                ctrl.Log.WithName("controllers").WithName("AutoSSL"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&ApicastReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("Apicast"), false),
+		WorkloadReconciler: workloads.NewFromManager(mgr, "Apicast", false),
 		Log:                ctrl.Log.WithName("controllers").WithName("Apicast"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&EchoAPIReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("EchoAPI"), false),
+		WorkloadReconciler: workloads.NewFromManager(mgr, "EchoAPI", false),
 		Log:                ctrl.Log.WithName("controllers").WithName("EchoAPI"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&MappingServiceReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("MappingService"), false),
+		WorkloadReconciler: workloads.NewFromManager(mgr, "MappingService", false),
 		Log:                ctrl.Log.WithName("controllers").WithName("MappingService"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&CORSProxyReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("CORSProxy"), false),
+		WorkloadReconciler: workloads.NewFromManager(mgr, "CORSProxy", false),
 		Log:                ctrl.Log.WithName("controllers").WithName("CORSProxy"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&BackendReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("Backend"), false),
+		WorkloadReconciler: workloads.NewFromManager(mgr, "Backend", false),
 		Log:                ctrl.Log.WithName("controllers").WithName("Backend"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&RedisShardReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("RedisShard"), false),
+		Reconciler: basereconciler.NewFromManager(mgr, "RedisShard", false),
 		Log:        ctrl.Log.WithName("controllers").WithName("RedisShard"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&SentinelReconciler{
-		Reconciler:     basereconciler.NewFromManager(mgr, mgr.GetEventRecorderFor("Sentinel"), false),
+		Reconciler:     basereconciler.NewFromManager(mgr, "Sentinel", false),
 		SentinelEvents: threads.NewManager(),
 		Metrics:        threads.NewManager(),
 		Log:            ctrl.Log.WithName("controllers").WithName("Sentinel"),
@@ -310,13 +310,13 @@ var _ = BeforeSuite(func() {
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&SystemReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("System"), false),
+		WorkloadReconciler: workloads.NewFromManager(mgr, "System", false),
 		Log:                ctrl.Log.WithName("controllers").WithName("System"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&ZyncReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, mgr.GetEventRecorderFor("Zync"), false),
+		WorkloadReconciler: workloads.NewFromManager(mgr, "Zync", false),
 		Log:                ctrl.Log.WithName("controllers").WithName("Zync"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())

@@ -40,6 +40,7 @@ IMG ?= $(IMAGE_TAG_BASE):v$(VERSION)
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
+# Upgrade this to the k8s version of our clusters
 ENVTEST_K8S_VERSION = 1.20
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -316,7 +317,7 @@ $(shell pwd)/bin:
 	mkdir -p $(shell pwd)/bin
 
 .PHONY: operator-sdk
-OPERATOR_SDK_RELEASE = v1.13.1
+OPERATOR_SDK_RELEASE = v1.15.0
 OPERATOR_SDK = bin/operator-sdk-$(OPERATOR_SDK_RELEASE)
 operator-sdk: ## Download operator-sdk locally if necessary.
 ifeq (,$(wildcard $(OPERATOR_SDK)))

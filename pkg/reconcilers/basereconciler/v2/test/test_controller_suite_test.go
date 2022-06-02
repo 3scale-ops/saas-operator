@@ -212,8 +212,6 @@ var _ = Describe("Test controller", func() {
 			Expect(k8sClient.Get(context.Background(),
 				types.NamespacedName{Name: "deployment", Namespace: namespace}, &appsv1.Deployment{})).To(HaveOccurred())
 			Expect(k8sClient.Get(context.Background(),
-				types.NamespacedName{Name: "service", Namespace: namespace}, &corev1.Service{})).To(HaveOccurred())
-			Expect(k8sClient.Get(context.Background(),
 				types.NamespacedName{Name: "external-secret", Namespace: namespace}, &externalsecretsv1beta1.ExternalSecret{})).To(HaveOccurred())
 		})
 
