@@ -697,6 +697,7 @@ GrafanaDashboardSpec configures the Grafana Dashboard for the component
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelspec[$$SentinelSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfigspec[$$TwemproxyConfigSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]
 ****
 
@@ -1855,6 +1856,7 @@ TwemproxyConfigSpec defines the desired state of TwemproxyConfig
 | *`sentinelURIs`* __string array__ | SentinelURI is the redis URI of sentinel. This is required as TewmproxyConfig will obtain the info about available redis servers from sentinel.
 | *`serverPools`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyserverpool[$$TwemproxyServerPool$$] array__ | ServerPools is the list of Twemproxy server pools
 | *`reconcileServerPools`* __boolean__ | ReconcileServerPools is a flag that allows to deactivate the reconcile of the contents of the managed ConfigMap. This is useful in an emergency, to fix something manually. The re-sync logic will still work whenever the contents of the ConfigMap are changed, even if they are manually changed. This switch defaults to "true".
+| *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
 |===
 
 
