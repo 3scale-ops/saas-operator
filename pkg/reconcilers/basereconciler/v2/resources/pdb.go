@@ -10,6 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 var _ basereconciler.Resource = PodDisruptionBudgetTemplate{}
@@ -32,6 +33,8 @@ func (pdbt PodDisruptionBudgetTemplate) Enabled() bool {
 }
 
 func (st PodDisruptionBudgetTemplate) ResourceReconciler(ctx context.Context, cl client.Client, obj client.Object) error {
+	logger := log.FromContext(ctx, "ResourceReconciler", "PodDisruptionBudget")
+
 	needsUpdate := false
 	desired := obj.(*policyv1beta1.PodDisruptionBudget)
 
@@ -43,6 +46,7 @@ func (st PodDisruptionBudgetTemplate) ResourceReconciler(ctx context.Context, cl
 			if err != nil {
 				return fmt.Errorf("unable to create object: " + err.Error())
 			}
+			logger.Info("Resource created")
 			return nil
 		}
 		return err
@@ -79,6 +83,7 @@ func (st PodDisruptionBudgetTemplate) ResourceReconciler(ctx context.Context, cl
 		if err != nil {
 			return err
 		}
+		logger.Info("Resource updated")
 	}
 
 	return nil
