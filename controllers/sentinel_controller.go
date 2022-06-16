@@ -30,10 +30,12 @@ import (
 	"github.com/3scale/saas-operator/pkg/redis/metrics"
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
+	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
@@ -57,7 +59,8 @@ type SentinelReconciler struct {
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	log := r.Log.WithValues("name", req.Name, "namespace", req.Namespace)
+	logger := r.Log.WithValues("name", req.Name, "namespace", req.Namespace)
+	ctx = log.IntoContext(ctx, logger)
 
 	instance := &saasv1alpha1.Sentinel{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
@@ -65,8 +68,7 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		key,
 		instance,
 		saasv1alpha1.Finalizer,
-		[]func(){r.SentinelEvents.CleanupThreads(instance), r.Metrics.CleanupThreads(instance)},
-		log)
+		[]func(){r.SentinelEvents.CleanupThreads(instance), r.Metrics.CleanupThreads(instance)})
 	if result != nil || err != nil {
 		return *result, err
 	}
@@ -87,7 +89,7 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	resources = append(gen.Resources(), resources...)
 
 	if err := r.ReconcileOwnedResources(ctx, instance, resources); err != nil {
-		log.Error(err, "unable to update owned resources")
+		logger.Error(err, "unable to update owned resources")
 		return r.ManageError(ctx, instance, err)
 	}
 
@@ -96,17 +98,17 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		types.NamespacedName{Name: gen.GetComponent(), Namespace: gen.GetNamespace()}, int(*instance.Spec.Replicas))
 
 	// Close Redis clients
-	defer sentinelPool.Cleanup(log)
+	defer sentinelPool.Cleanup(logger)
 
 	if err != nil {
 		return r.ManageError(ctx, instance, err)
 	}
 
 	// Create the ShardedCluster objects that represents the redis servers to be monitored by sentinel
-	shardedCluster, err := redis.NewShardedCluster(ctx, instance.Spec.Config.MonitoredShards, log)
+	shardedCluster, err := redis.NewShardedCluster(ctx, instance.Spec.Config.MonitoredShards, logger)
 
 	// Close Redis clients
-	defer shardedCluster.Cleanup(log)
+	defer shardedCluster.Cleanup(logger)
 
 	if err != nil {
 		return r.ManageError(ctx, instance, err)
@@ -118,7 +120,7 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return r.ManageError(ctx, instance, err)
 	}
 	if !allMonitored {
-		if err := shardedCluster.Discover(ctx, log); err != nil {
+		if err := shardedCluster.Discover(ctx, logger); err != nil {
 			return r.ManageError(ctx, instance, err)
 		}
 		if _, err := sentinelPool.Monitor(ctx, shardedCluster); err != nil {
@@ -140,15 +142,15 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			SentinelURI:     uri,
 		})
 	}
-	if err := r.SentinelEvents.ReconcileThreads(ctx, instance, eventWatchers, log.WithName("event-watcher")); err != nil {
+	if err := r.SentinelEvents.ReconcileThreads(ctx, instance, eventWatchers, logger.WithName("event-watcher")); err != nil {
 		return r.ManageError(ctx, instance, err)
 	}
-	if err := r.Metrics.ReconcileThreads(ctx, instance, metricsGatherers, log.WithName("metrics-gatherer")); err != nil {
+	if err := r.Metrics.ReconcileThreads(ctx, instance, metricsGatherers, logger.WithName("metrics-gatherer")); err != nil {
 		return r.ManageError(ctx, instance, err)
 	}
 
 	// Reconcile status of the Sentinel resource
-	if err := r.reconcileStatus(ctx, instance, &gen, sentinelPool, log); err != nil {
+	if err := r.reconcileStatus(ctx, instance, &gen, sentinelPool, logger); err != nil {
 		return r.ManageError(ctx, instance, err)
 	}
 
@@ -195,6 +197,7 @@ func (r *SentinelReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&saasv1alpha1.Sentinel{}).
 		Owns(&corev1.Service{}).
+		Owns(&policyv1beta1.PodDisruptionBudget{}).
 		Watches(&source.Channel{Source: r.GetStatusChangeChannel()}, &handler.EnqueueRequestForObject{}).
 		Watches(&source.Channel{Source: r.SentinelEvents.GetChannel()}, &handler.EnqueueRequestForObject{}).
 		Complete(r)

@@ -9,7 +9,6 @@ import (
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
-	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -30,25 +29,6 @@ func (est ExternalSecretTemplate) Build(ctx context.Context, cl client.Client) (
 
 func (est ExternalSecretTemplate) Enabled() bool {
 	return est.IsEnabled
-}
-
-var _ basereconciler.Resource = PodDisruptionBudgetTemplate{}
-
-// PodDisruptionBudget specifies a PodDisruptionBudget resource
-type PodDisruptionBudgetTemplate struct {
-	Template  func() *policyv1beta1.PodDisruptionBudget
-	IsEnabled bool
-}
-
-func (pdbt PodDisruptionBudgetTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
-
-	pdb := pdbt.Template()
-	pdb.GetObjectKind().SetGroupVersionKind(policyv1beta1.SchemeGroupVersion.WithKind("PodDisruptionBudget"))
-	return pdb.DeepCopy(), DefaultExcludedPaths, nil
-}
-
-func (pdbt PodDisruptionBudgetTemplate) Enabled() bool {
-	return pdbt.IsEnabled
 }
 
 var _ basereconciler.Resource = HorizontalPodAutoscalerTemplate{}

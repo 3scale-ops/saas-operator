@@ -25,10 +25,12 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/redhat-cop/operator-utils/pkg/util"
 	corev1 "k8s.io/api/core/v1"
+	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
@@ -50,11 +52,12 @@ type EchoAPIReconciler struct {
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 func (r *EchoAPIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	log := r.Log.WithValues("name", req.Name, "namespace", req.Namespace)
+	logger := r.Log.WithValues("name", req.Name, "namespace", req.Namespace)
+	ctx = log.IntoContext(ctx, logger)
 
 	instance := &saasv1alpha1.EchoAPI{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx, key, instance, saasv1alpha1.Finalizer, nil, log)
+	result, err := r.GetInstance(ctx, key, instance, saasv1alpha1.Finalizer, nil)
 	if result != nil || err != nil {
 		return *result, err
 	}
@@ -75,7 +78,7 @@ func (r *EchoAPIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	err = r.ReconcileOwnedResources(ctx, instance, resources)
 	if err != nil {
-		log.Error(err, "unable to update owned resources")
+		logger.Error(err, "unable to update owned resources")
 		return r.ManageError(ctx, instance, err)
 	}
 
@@ -87,6 +90,7 @@ func (r *EchoAPIReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&saasv1alpha1.EchoAPI{}, builder.WithPredicates(util.ResourceGenerationOrFinalizerChangedPredicate{})).
 		Owns(&corev1.Service{}).
+		Owns(&policyv1beta1.PodDisruptionBudget{}).
 		Watches(&source.Channel{Source: r.GetStatusChangeChannel()}, &handler.EnqueueRequestForObject{}).
 		Complete(r)
 }

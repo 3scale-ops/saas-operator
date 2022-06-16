@@ -37,6 +37,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
@@ -57,12 +58,13 @@ type TwemproxyConfigReconciler struct {
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	log := r.Log.WithValues("name", req.Name, "namespace", req.Namespace)
+	logger := r.Log.WithValues("name", req.Name, "namespace", req.Namespace)
+	ctx = log.IntoContext(ctx, logger)
 
 	instance := &saasv1alpha1.TwemproxyConfig{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
 	result, err := r.GetInstance(ctx, key, instance, saasv1alpha1.Finalizer,
-		[]func(){r.SentinelEvents.CleanupThreads(instance)}, log)
+		[]func(){r.SentinelEvents.CleanupThreads(instance)})
 	if result != nil || err != nil {
 		return *result, err
 	}
@@ -72,7 +74,7 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	// Generate the ConfigMap
 	gen, err := twemproxyconfig.NewGenerator(
-		ctx, instance, r.GetClient(), log.WithName("generator"),
+		ctx, instance, r.GetClient(), logger.WithName("generator"),
 	)
 
 	if err != nil {
@@ -84,7 +86,7 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	}
 
 	// Reconcile the ConfigMap
-	hash, err := r.reconcileConfigMap(ctx, instance, cm.(*corev1.ConfigMap), *instance.Spec.ReconcileServerPools, log)
+	hash, err := r.reconcileConfigMap(ctx, instance, cm.(*corev1.ConfigMap), *instance.Spec.ReconcileServerPools, logger)
 	if err != nil {
 		return r.ManageError(ctx, instance, err)
 	}
@@ -93,7 +95,7 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	// Pods annotations so the ConfigMap is re-synced inside the container. Otherwide kubelet
 	// would re-sync the file asynchronously depending on its configured refresh time, which might
 	// take several seconds.
-	if err := r.reconcileSyncAnnotations(ctx, instance, hash, log); err != nil {
+	if err := r.reconcileSyncAnnotations(ctx, instance, hash, logger); err != nil {
 		return r.ManageError(ctx, instance, err)
 	}
 
@@ -106,7 +108,7 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 			ExportMetrics: false,
 		})
 	}
-	r.SentinelEvents.ReconcileThreads(ctx, instance, eventWatchers, log.WithName("event-watcher"))
+	r.SentinelEvents.ReconcileThreads(ctx, instance, eventWatchers, logger.WithName("event-watcher"))
 
 	if err := r.ReconcileOwnedResources(
 		ctx, instance, []basereconciler.Resource{gen.GrafanaDashboard()},
