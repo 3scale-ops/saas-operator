@@ -41,7 +41,7 @@ IMG ?= $(IMAGE_TAG_BASE):v$(VERSION)
 CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 # Upgrade this to the k8s version of our clusters
-ENVTEST_K8S_VERSION = 1.20
+ENVTEST_K8S_VERSION = 1.21
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))

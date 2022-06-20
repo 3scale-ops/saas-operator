@@ -17,6 +17,7 @@ limitations under the License.
 package test
 
 import (
+	"context"
 	"path/filepath"
 	"testing"
 	"time"
@@ -49,6 +50,8 @@ var (
 	nameGenerator namegenerator.Generator
 	timeout       time.Duration = 30 * time.Second
 	poll          time.Duration = 5 * time.Second
+	ctx           context.Context
+	cancel        context.CancelFunc
 )
 
 func TestAPIs(t *testing.T) {
@@ -97,9 +100,11 @@ var _ = BeforeSuite(func() {
 	k8sClient = mgr.GetClient()
 	Expect(k8sClient).ToNot(BeNil())
 
+	ctx, cancel = context.WithCancel(context.Background())
+
 	go func() {
 		defer GinkgoRecover()
-		err = mgr.Start(ctrl.SetupSignalHandler())
+		err = mgr.Start(ctx)
 		Expect(err).ToNot(HaveOccurred())
 	}()
 
@@ -113,7 +118,9 @@ var _ = BeforeSuite(func() {
 }, 60)
 
 var _ = AfterSuite(func() {
+	cancel()
 	By("tearing down the test environment")
-	err := testEnv.Stop()
-	Expect(err).NotTo(HaveOccurred())
+	Eventually(func() error {
+		return testEnv.Stop()
+	}, timeout, poll).ShouldNot(HaveOccurred())
 })
