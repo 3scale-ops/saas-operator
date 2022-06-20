@@ -11,7 +11,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
-	policyv1beta1 "k8s.io/api/policy/v1beta1"
+	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -103,7 +103,7 @@ var _ = Describe("Test controller", func() {
 				}, timeout, poll).ShouldNot(HaveOccurred())
 				Expect(hpa.GetLabels()).To(Equal(map[string]string{"alice-lkey1": "alice-lvalue1"}))
 
-				pdb := &policyv1beta1.PodDisruptionBudget{}
+				pdb := &policyv1.PodDisruptionBudget{}
 				Eventually(func() error {
 					return k8sClient.Get(
 						context.Background(),
@@ -139,7 +139,7 @@ var _ = Describe("Test controller", func() {
 				}, timeout, poll).ShouldNot(HaveOccurred())
 				Expect(hpa.GetLabels()).To(Equal(map[string]string{"bob-lkey1": "bob-lvalue1"}))
 
-				pdb := &policyv1beta1.PodDisruptionBudget{}
+				pdb := &policyv1.PodDisruptionBudget{}
 				Eventually(func() error {
 					return k8sClient.Get(
 						context.Background(),

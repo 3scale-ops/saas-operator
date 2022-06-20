@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
-	policyv1beta1 "k8s.io/api/policy/v1beta1"
+	policyv1 "k8s.io/api/policy/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -17,14 +17,14 @@ var _ basereconciler.Resource = PodDisruptionBudgetTemplate{}
 
 // PodDisruptionBudget specifies a PodDisruptionBudget resource
 type PodDisruptionBudgetTemplate struct {
-	Template  func() *policyv1beta1.PodDisruptionBudget
+	Template  func() *policyv1.PodDisruptionBudget
 	IsEnabled bool
 }
 
 func (pdbt PodDisruptionBudgetTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
 
 	pdb := pdbt.Template()
-	pdb.GetObjectKind().SetGroupVersionKind(policyv1beta1.SchemeGroupVersion.WithKind("PodDisruptionBudget"))
+	pdb.GetObjectKind().SetGroupVersionKind(policyv1.SchemeGroupVersion.WithKind("PodDisruptionBudget"))
 	return pdb.DeepCopy(), DefaultExcludedPaths, nil
 }
 
@@ -36,9 +36,9 @@ func (st PodDisruptionBudgetTemplate) ResourceReconciler(ctx context.Context, cl
 	logger := log.FromContext(ctx, "ResourceReconciler", "PodDisruptionBudget")
 
 	needsUpdate := false
-	desired := obj.(*policyv1beta1.PodDisruptionBudget)
+	desired := obj.(*policyv1.PodDisruptionBudget)
 
-	instance := &policyv1beta1.PodDisruptionBudget{}
+	instance := &policyv1.PodDisruptionBudget{}
 	err := cl.Get(ctx, types.NamespacedName{Name: desired.GetName(), Namespace: desired.GetNamespace()}, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {

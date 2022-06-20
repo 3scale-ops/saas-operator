@@ -25,7 +25,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/redhat-cop/operator-utils/pkg/util"
 	corev1 "k8s.io/api/core/v1"
-	policyv1beta1 "k8s.io/api/policy/v1beta1"
+	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -107,7 +107,7 @@ func (r *ZyncReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&saasv1alpha1.Zync{}, builder.WithPredicates(util.ResourceGenerationOrFinalizerChangedPredicate{})).
 		Owns(&corev1.Service{}).
-		Owns(&policyv1beta1.PodDisruptionBudget{}).
+		Owns(&policyv1.PodDisruptionBudget{}).
 		Watches(&source.Channel{Source: r.GetStatusChangeChannel()}, &handler.EnqueueRequestForObject{}).
 		Watches(&source.Kind{Type: &corev1.Secret{TypeMeta: metav1.TypeMeta{Kind: "Secret"}}},
 			r.SecretEventHandler(&saasv1alpha1.ZyncList{}, r.Log)).
