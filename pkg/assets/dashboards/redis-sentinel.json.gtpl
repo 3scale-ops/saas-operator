@@ -35,7 +35,7 @@
       },
       {
         "aliasColors": {},
-        "bars": false,
+        "bars": true,
         "dashLength": 10,
         "dashes": false,
         "datasource": "$datasource",
@@ -84,12 +84,21 @@
         "targets": [
           {
             "exemplar": true,
-            "expr": "rate(saas_redis_sentinel_sdown_count{namespace='$namespace',sentinel=~\"[[sentinel]].*\"}[1m])",
+            "expr": "rate(saas_redis_sentinel_sdown_count{namespace='$namespace',sentinel=~\"[[sentinel]].*\"}[1m]) > 0",
             "format": "time_series",
             "interval": "",
             "intervalFactor": 1,
             "legendFormat": "{{`{{shard}}`}}-{{`{{redis_server}}`}}",
             "refId": "A"
+          },
+          {
+            "exemplar": true,
+            "expr": "rate(saas_redis_sentinel_sdown_sentinel_count{namespace='$namespace',sentinel=~\"[[sentinel]].*\"}[1m]) > 0",
+            "format": "time_series",
+            "interval": "",
+            "intervalFactor": 1,
+            "legendFormat": "sentinel-{{`{{redis_server}}`}}",
+            "refId": "B"
           }
         ],
         "thresholds": [],
@@ -135,7 +144,7 @@
       },
       {
         "aliasColors": {},
-        "bars": false,
+        "bars": true,
         "dashLength": 10,
         "dashes": false,
         "datasource": "$datasource",
@@ -184,7 +193,7 @@
         "targets": [
           {
             "exemplar": true,
-            "expr": "rate(saas_redis_sentinel_switch_master_count{namespace='$namespace',sentinel=~\"[[sentinel]].*\"}[1m])",
+            "expr": "rate(saas_redis_sentinel_switch_master_count{namespace='$namespace',sentinel=~\"[[sentinel]].*\"}[1m]) > 0",
             "format": "time_series",
             "interval": "",
             "intervalFactor": 1,
@@ -235,7 +244,7 @@
       },
       {
         "aliasColors": {},
-        "bars": false,
+        "bars": true,
         "dashLength": 10,
         "dashes": false,
         "datasource": "$datasource",
@@ -284,7 +293,7 @@
         "targets": [
           {
             "exemplar": true,
-            "expr": "rate(saas_redis_sentinel_failover_abort_no_good_slave_count{namespace='$namespace',sentinel=~\"[[sentinel]].*\"}[1m])",
+            "expr": "rate(saas_redis_sentinel_failover_abort_no_good_slave_count{namespace='$namespace',sentinel=~\"[[sentinel]].*\"}[1m]) > 0",
             "format": "time_series",
             "interval": "",
             "intervalFactor": 1,
