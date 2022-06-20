@@ -245,7 +245,7 @@ catalog-retag-latest:
 
 kind-create: export KUBECONFIG = $(PWD)/kubeconfig
 kind-create: docker-build kind ## Runs a k8s kind cluster with a local registry in "localhost:5000" and ports 1080 and 1443 exposed to the host
-	$(KIND) create cluster --wait 5m --image kindest/node:v1.20.7 || true
+	$(KIND) create cluster --wait 5m --image kindest/node:v1.21.12 || true
 
 kind-delete: ## Deletes the kind cluster and the registry
 kind-delete: kind

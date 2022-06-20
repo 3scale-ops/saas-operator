@@ -29,7 +29,7 @@ import (
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
-	policyv1beta1 "k8s.io/api/policy/v1beta1"
+	policyv1 "k8s.io/api/policy/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/utils/pointer"
@@ -113,7 +113,7 @@ func checkWorkloadResources(dep *appsv1.Deployment, ew expectedWorkload) func() 
 			Expect(dep.Spec.Replicas).To(Equal(pointer.Int32Ptr(ew.Replicas)))
 		}
 
-		pdb := &policyv1beta1.PodDisruptionBudget{}
+		pdb := &policyv1.PodDisruptionBudget{}
 		By(fmt.Sprintf("%s workload PDB", ew.Name),
 			checkResource(pdb, expectedResource{
 				Name:      ew.Name,

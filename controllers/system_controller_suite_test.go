@@ -12,7 +12,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
-	policyv1beta1 "k8s.io/api/policy/v1beta1"
+	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/pointer"
@@ -368,7 +368,7 @@ var _ = Describe("System controller", func() {
 				Expect(sts.Spec.Template.Spec.Containers[0].Image).Should((Equal("newImage:newTag")))
 				Expect(sts.Spec.Template.Spec.Volumes[0].Secret.SecretName).Should((Equal("system-config")))
 
-				pdb := &policyv1beta1.PodDisruptionBudget{}
+				pdb := &policyv1.PodDisruptionBudget{}
 				By("ensuring the system-console PDB",
 					checkResource(pdb, expectedResource{
 						Name: "system-console", Namespace: namespace, Missing: true,

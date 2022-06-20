@@ -11,7 +11,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
-	policyv1beta1 "k8s.io/api/policy/v1beta1"
+	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -517,14 +517,14 @@ func TestPodDisruptionBudgetTemplate_ApplyMeta(t *testing.T) {
 		name string
 		pdbt PodDisruptionBudgetTemplate
 		args args
-		want *policyv1beta1.PodDisruptionBudget
+		want *policyv1.PodDisruptionBudget
 	}{
 		{
 			name: "Applies meta to PDB",
 			pdbt: PodDisruptionBudgetTemplate{
 				PodDisruptionBudgetTemplate: basereconciler_resources.PodDisruptionBudgetTemplate{
-					Template: func() *policyv1beta1.PodDisruptionBudget {
-						return &policyv1beta1.PodDisruptionBudget{}
+					Template: func() *policyv1.PodDisruptionBudget {
+						return &policyv1.PodDisruptionBudget{}
 					},
 					IsEnabled: false,
 				},
@@ -538,13 +538,13 @@ func TestPodDisruptionBudgetTemplate_ApplyMeta(t *testing.T) {
 					TSelector:  map[string]string{"skey": "svalue"},
 				},
 			},
-			want: &policyv1beta1.PodDisruptionBudget{
+			want: &policyv1.PodDisruptionBudget{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test",
 					Namespace: "ns",
 					Labels:    map[string]string{"key": "value"},
 				},
-				Spec: policyv1beta1.PodDisruptionBudgetSpec{
+				Spec: policyv1.PodDisruptionBudgetSpec{
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{"skey": "svalue"},
 					},
