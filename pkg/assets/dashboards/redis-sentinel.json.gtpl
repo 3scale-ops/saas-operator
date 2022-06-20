@@ -90,6 +90,15 @@
             "intervalFactor": 1,
             "legendFormat": "{{`{{shard}}`}}-{{`{{redis_server}}`}}",
             "refId": "A"
+          },
+          {
+            "exemplar": true,
+            "expr": "rate(saas_redis_sentinel_sdown_sentinel_count{namespace='$namespace',sentinel=~\"[[sentinel]].*\"}[1m])",
+            "format": "time_series",
+            "interval": "",
+            "intervalFactor": 1,
+            "legendFormat": "sentinel-{{`{{redis_server}}`}}",
+            "refId": "B"
           }
         ],
         "thresholds": [],
