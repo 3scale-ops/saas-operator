@@ -38,11 +38,19 @@ var (
 		},
 		[]string{"sentinel", "shard", "redis_server", "role"},
 	)
+	sdownSentinelCount = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name:      "sdown_sentinel_count",
+			Namespace: "saas_redis_sentinel",
+			Help:      "+sdown (https://redis.io/topics/sentinel#sentinel-api)",
+		},
+		[]string{"sentinel", "shard", "redis_server", "role"},
+	)
 )
 
 func init() {
 	// Register custom metrics with the global prometheus registry
-	metrics.Registry.MustRegister(switchMasterCount, failoverAbortNoGoodSlaveCount, sdownCount)
+	metrics.Registry.MustRegister(switchMasterCount, failoverAbortNoGoodSlaveCount, sdownCount, sdownSentinelCount)
 }
 
 // SentinelEventWatcher implements RunnableThread
@@ -158,10 +166,19 @@ func (smg *SentinelEventWatcher) metricsFromEvent(rem RedisEventMessage) {
 			},
 		).Add(1)
 	case "+sdown":
-		sdownCount.With(
-			prometheus.Labels{
-				"sentinel": smg.SentinelURI, "shard": rem.master.name, "role": rem.target.role, "redis_server": rem.target.ip,
-			},
-		).Add(1)
+		switch rem.target.role {
+		case "sentinel":
+			sdownSentinelCount.With(
+				prometheus.Labels{
+					"sentinel": smg.SentinelURI, "shard": rem.master.name, "role": rem.target.role, "redis_server": rem.target.ip,
+				},
+			).Add(1)
+		default:
+			sdownCount.With(
+				prometheus.Labels{
+					"sentinel": smg.SentinelURI, "shard": rem.master.name, "role": rem.target.role, "redis_server": rem.target.ip,
+				},
+			).Add(1)
+		}
 	}
 }
