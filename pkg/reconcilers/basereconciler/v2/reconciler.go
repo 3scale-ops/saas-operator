@@ -126,9 +126,11 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 
 	for _, res := range resources {
 
-		if res.Enabled() {
+		// If the resource implements a custom reconciler, call it and
+		// avoid the generic resource processing using operator-utils
+		if custom, ok := res.(ResourceWithCustomReconciler); ok {
 
-			object, exclude, err := res.Build(ctx, r.GetClient())
+			object, _, err := res.Build(ctx, r.GetClient())
 			if err != nil {
 				return err
 			}
@@ -137,14 +139,22 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 				return err
 			}
 
-			// If the resource implements a custom reconciler, call it and
-			// avoid the generic resource processing using operator-utils
-			if custom, ok := res.(ResourceWithCustomReconciler); ok {
-				if err := custom.ResourceReconciler(ctx, r.GetClient(), object); err != nil {
+			if err := custom.ResourceReconciler(ctx, r.GetClient(), object); err != nil {
+				return err
+			}
+
+		} else {
+
+			if res.Enabled() {
+
+				object, exclude, err := res.Build(ctx, r.GetClient())
+				if err != nil {
 					return err
 				}
 
-			} else {
+				if err := controllerutil.SetControllerReference(owner, object, r.GetScheme()); err != nil {
+					return err
+				}
 
 				u, err := runtime.DefaultUnstructuredConverter.ToUnstructured(object)
 				if err != nil {
@@ -160,6 +170,7 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 		}
 	}
 
+	// Call UpdateLockedResources() to reconcile resource types controlled by operator-utils
 	if err := r.UpdateLockedResources(ctx, owner, lr, []lockedpatch.LockedPatch{}); err != nil {
 		return err
 	}

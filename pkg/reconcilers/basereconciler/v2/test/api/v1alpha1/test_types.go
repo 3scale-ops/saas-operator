@@ -40,11 +40,13 @@ var (
 
 // NOTE: execute the following commands whenever you modify this file
 //
-// $ bin/controller-gen object:headerFile=hack/boilerplate.go.txt paths=./pkg/reconcilers/basereconciler/test/api/v1alpha1
-// $ bin/controller-gen crd:trivialVersions=true,preserveUnknownFields=false paths=./pkg/reconcilers/basereconciler/test/api/v1alpha1 output:crd:artifacts:config=./pkg/basereconciler/test/api/v1alpha1
+// $ bin/controller-gen object:headerFile=hack/boilerplate.go.txt paths=./pkg/reconcilers/basereconciler/v2/test/api/v1alpha1
+// $ bin/controller-gen crd:trivialVersions=true,preserveUnknownFields=false paths=./pkg/reconcilers/basereconciler/v2/test/api/v1alpha1 output:crd:artifacts:config=./pkg/reconcilers/basereconciler/v2/test/api/v1alpha1
 
 // TestSpec defines the desired state of Test
 type TestSpec struct {
+	// +optional
+	PDB *bool `json:"pdb,omitempty"`
 	// +optional
 	ServiceAnnotations map[string]string `json:"serviceAnnotations,omitempty"`
 	// +optional

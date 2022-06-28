@@ -26,9 +26,11 @@ import (
 	"github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/resources"
 	"github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/test/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/resource_builders/marin3r"
+	"github.com/3scale/saas-operator/pkg/resource_builders/pdb"
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -77,6 +79,23 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 			Template:  service(req.Namespace, instance.Spec.ServiceAnnotations),
 			IsEnabled: true,
 		},
+		resources.PodDisruptionBudgetTemplate{
+			Template: pdb.New(
+				types.NamespacedName{Name: "pdb", Namespace: req.Namespace},
+				map[string]string{},
+				map[string]string{},
+				saasv1alpha1.PodDisruptionBudgetSpec{
+					MinAvailable: &intstr.IntOrString{IntVal: 1},
+				},
+			),
+			IsEnabled: func() bool {
+				if instance.Spec.PDB != nil {
+					return *instance.Spec.PDB
+				} else {
+					return true
+				}
+			}(),
+		},
 	})
 
 	if err != nil {
@@ -91,7 +110,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha1.Test{}).
-		Owns(&corev1.Service{}).
+		Owns(&corev1.Service{}).Owns(&policyv1.PodDisruptionBudget{}).
 		Watches(&source.Channel{Source: r.GetStatusChangeChannel()}, &handler.EnqueueRequestForObject{}).
 		Watches(&source.Kind{Type: &corev1.Secret{TypeMeta: metav1.TypeMeta{Kind: "Secret"}}},
 			r.SecretEventHandler(&v1alpha1.TestList{}, r.Log)).
@@ -130,7 +149,6 @@ func deployment(namespace string, marin3rSpec *saasv1alpha1.Marin3rSidecarSpec) 
 		if marin3rSpec != nil && !marin3rSpec.IsDeactivated() {
 			dep = marin3r.EnableSidecar(*dep, *marin3rSpec)
 		}
-
 		return dep
 	}
 }
