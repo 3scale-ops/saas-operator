@@ -11,10 +11,12 @@ import (
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	policyv1 "k8s.io/api/policy/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -62,10 +64,7 @@ var _ = Describe("Test controller", func() {
 			Eventually(func() bool {
 				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, instance)
 				Expect(err).ToNot(HaveOccurred())
-				if len(instance.GetFinalizers()) > 0 {
-					return true
-				}
-				return false
+				return len(instance.GetFinalizers()) > 0
 			}, timeout, poll).Should(BeTrue())
 
 			dep := &appsv1.Deployment{}
@@ -92,6 +91,15 @@ var _ = Describe("Test controller", func() {
 					context.Background(),
 					types.NamespacedName{Name: "secret", Namespace: namespace},
 					es,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+
+			pdb := &policyv1.PodDisruptionBudget{}
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "pdb", Namespace: namespace},
+					pdb,
 				)
 			}, timeout, poll).ShouldNot(HaveOccurred())
 
@@ -130,10 +138,7 @@ var _ = Describe("Test controller", func() {
 				value, ok := dep.Spec.Template.ObjectMeta.Annotations["saas.3scale.net/secret.secret-hash"]
 				Expect(ok).To(BeTrue())
 				// Value of the annotation should be the hash of the Secret contents
-				if value == util.Hash(secret.Data) {
-					return true
-				}
-				return false
+				return value == util.Hash(secret.Data)
 			}, timeout, poll).ShouldNot(BeTrue())
 
 			patch := client.MergeFrom(secret.DeepCopy())
@@ -151,11 +156,42 @@ var _ = Describe("Test controller", func() {
 				value, ok := dep.Spec.Template.ObjectMeta.Annotations["saas.3scale.net/secret.secret-hash"]
 				Expect(ok).To(BeTrue())
 				// Value of the annotation should be the hash of the Secret new contents
-				if value == util.Hash(secret.Data) {
-					return true
-				}
-				return false
+				return value == util.Hash(secret.Data)
 			}, timeout, poll).ShouldNot(BeTrue())
+		})
+
+		It("Deletes specific resources when disabled", func() {
+			// Wait for resources to be created
+			pdb := &policyv1.PodDisruptionBudget{}
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "pdb", Namespace: namespace},
+					pdb,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
+
+			// disable pdb
+			instance = &v1alpha1.Test{}
+			Eventually(func() error {
+				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, instance)
+				if err != nil {
+					return err
+				}
+				instance.Spec.PDB = pointer.Bool(false)
+				err = k8sClient.Update(context.Background(), instance)
+				return err
+
+			}, timeout, poll).ShouldNot(HaveOccurred())
+
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "pdb", Namespace: namespace},
+					pdb,
+				)
+			}, timeout, poll).Should(HaveOccurred())
+
 		})
 
 		It("Deletes all owned resources when custom resource is deleted", func() {
@@ -163,10 +199,7 @@ var _ = Describe("Test controller", func() {
 			Eventually(func() bool {
 				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, instance)
 				Expect(err).ToNot(HaveOccurred())
-				if len(instance.GetFinalizers()) > 0 {
-					return true
-				}
-				return false
+				return len(instance.GetFinalizers()) > 0
 			}, timeout, poll).Should(BeTrue())
 
 			dep := &appsv1.Deployment{}
@@ -245,10 +278,7 @@ var _ = Describe("Test controller", func() {
 					svc,
 				)
 				Expect(err).ToNot(HaveOccurred())
-				if svc.GetAnnotations()["key"] == "value" {
-					return true
-				}
-				return false
+				return svc.GetAnnotations()["key"] == "value"
 			}, timeout, poll).Should(BeTrue())
 		})
 	})
@@ -295,10 +325,7 @@ var _ = Describe("Test controller", func() {
 			Eventually(func() bool {
 				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, instance)
 				Expect(err).ToNot(HaveOccurred())
-				if len(instance.GetFinalizers()) > 0 {
-					return true
-				}
-				return false
+				return len(instance.GetFinalizers()) > 0
 			}, timeout, poll).Should(BeTrue())
 
 			dep := &appsv1.Deployment{}
