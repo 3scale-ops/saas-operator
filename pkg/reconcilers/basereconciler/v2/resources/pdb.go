@@ -32,7 +32,7 @@ func (pdbt PodDisruptionBudgetTemplate) Enabled() bool {
 	return pdbt.IsEnabled
 }
 
-func (st PodDisruptionBudgetTemplate) ResourceReconciler(ctx context.Context, cl client.Client, obj client.Object) error {
+func (pdbt PodDisruptionBudgetTemplate) ResourceReconciler(ctx context.Context, cl client.Client, obj client.Object) error {
 	logger := log.FromContext(ctx, "ResourceReconciler", "PodDisruptionBudget")
 
 	needsUpdate := false
@@ -42,14 +42,31 @@ func (st PodDisruptionBudgetTemplate) ResourceReconciler(ctx context.Context, cl
 	err := cl.Get(ctx, types.NamespacedName{Name: desired.GetName(), Namespace: desired.GetNamespace()}, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			err = cl.Create(ctx, desired)
-			if err != nil {
-				return fmt.Errorf("unable to create object: " + err.Error())
+
+			if pdbt.Enabled() {
+				err = cl.Create(ctx, desired)
+				if err != nil {
+					return fmt.Errorf("unable to create object: " + err.Error())
+				}
+				logger.Info("Resource created")
+				return nil
+
+			} else {
+				return nil
 			}
-			logger.Info("Resource created")
-			return nil
 		}
+
 		return err
+	}
+
+	/* Delete and return if not enabled */
+	if !pdbt.Enabled() {
+		err := cl.Delete(ctx, instance)
+		if err != nil {
+			return fmt.Errorf("unable to delete object: " + err.Error())
+		}
+		logger.Info("Resource deleted")
+		return nil
 	}
 
 	/* Reconcile metadata */
