@@ -10,6 +10,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -170,8 +171,16 @@ var _ = Describe("Test controller", func() {
 					pdb,
 				)
 			}, timeout, poll).ShouldNot(HaveOccurred())
+			hpa := &autoscalingv2beta2.HorizontalPodAutoscaler{}
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "hpa", Namespace: namespace},
+					hpa,
+				)
+			}, timeout, poll).ShouldNot(HaveOccurred())
 
-			// disable pdb
+			// disable pdb and hpa
 			instance = &v1alpha1.Test{}
 			Eventually(func() error {
 				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, instance)
@@ -179,6 +188,7 @@ var _ = Describe("Test controller", func() {
 					return err
 				}
 				instance.Spec.PDB = pointer.Bool(false)
+				instance.Spec.HPA = pointer.Bool(false)
 				err = k8sClient.Update(context.Background(), instance)
 				return err
 
@@ -189,6 +199,14 @@ var _ = Describe("Test controller", func() {
 					context.Background(),
 					types.NamespacedName{Name: "pdb", Namespace: namespace},
 					pdb,
+				)
+			}, timeout, poll).Should(HaveOccurred())
+
+			Eventually(func() error {
+				return k8sClient.Get(
+					context.Background(),
+					types.NamespacedName{Name: "hpa", Namespace: namespace},
+					hpa,
 				)
 			}, timeout, poll).Should(HaveOccurred())
 

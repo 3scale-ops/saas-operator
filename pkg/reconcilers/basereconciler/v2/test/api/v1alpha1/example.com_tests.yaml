@@ -36,6 +36,8 @@ spec:
           spec:
             description: TestSpec defines the desired state of Test
             properties:
+              hpa:
+                type: boolean
               marin3r:
                 description: Marin3rSidecarSpec defines the marin3r sidecar for the
                   component

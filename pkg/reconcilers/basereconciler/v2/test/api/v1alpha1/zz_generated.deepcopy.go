@@ -92,6 +92,11 @@ func (in *TestSpec) DeepCopyInto(out *TestSpec) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.HPA != nil {
+		in, out := &in.HPA, &out.HPA
+		*out = new(bool)
+		**out = **in
+	}
 	if in.ServiceAnnotations != nil {
 		in, out := &in.ServiceAnnotations, &out.ServiceAnnotations
 		*out = make(map[string]string, len(*in))
