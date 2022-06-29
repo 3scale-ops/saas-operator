@@ -149,61 +149,56 @@ var _ = Describe("EchoAPI controller", func() {
 
 		})
 
-		// Disabled due to https://github.com/3scale-ops/saas-operator/issues/126
-		if flag_executeRemoveTests {
+		When("removing the PDB and HPA from a EchoAPI instance", func() {
 
-			When("removing the PDB and HPA from a EchoAPI instance", func() {
+			// Resource Versions
+			rvs := make(map[string]string)
 
-				// Resource Versions
-				rvs := make(map[string]string)
+			BeforeEach(func() {
+				Eventually(func() error {
 
-				BeforeEach(func() {
-					Eventually(func() error {
+					echoapi := &saasv1alpha1.EchoAPI{}
+					if err := k8sClient.Get(
+						context.Background(),
+						types.NamespacedName{Name: "instance", Namespace: namespace},
+						echoapi,
+					); err != nil {
+						return err
+					}
 
-						echoapi := &saasv1alpha1.EchoAPI{}
-						if err := k8sClient.Get(
-							context.Background(),
-							types.NamespacedName{Name: "instance", Namespace: namespace},
-							echoapi,
-						); err != nil {
-							return err
-						}
-
-						rvs["deployment/echoapi"] = getResourceVersion(
-							&appsv1.Deployment{}, "echo-api", namespace,
-						)
-						patch := client.MergeFrom(echoapi.DeepCopy())
-						echoapi.Spec.Replicas = pointer.Int32(0)
-						echoapi.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
-						echoapi.Spec.PDB = &saasv1alpha1.PodDisruptionBudgetSpec{}
-
-						return k8sClient.Patch(context.Background(), echoapi, patch)
-
-					}, timeout, poll).ShouldNot(HaveOccurred())
-				})
-
-				It("removes the EchoAPI disabled resources", func() {
-
-					dep := &appsv1.Deployment{}
-					By("updating the EchoAPI workload",
-						checkWorkloadResources(dep,
-							expectedWorkload{
-								Name:        "echo-api",
-								Namespace:   namespace,
-								Replicas:    0,
-								HPA:         false,
-								PDB:         false,
-								PodMonitor:  true,
-								LastVersion: rvs["deployment/echoapi"],
-							},
-						),
+					rvs["deployment/echoapi"] = getResourceVersion(
+						&appsv1.Deployment{}, "echo-api", namespace,
 					)
+					patch := client.MergeFrom(echoapi.DeepCopy())
+					echoapi.Spec.Replicas = pointer.Int32(0)
+					echoapi.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
+					echoapi.Spec.PDB = &saasv1alpha1.PodDisruptionBudgetSpec{}
 
-				})
+					return k8sClient.Patch(context.Background(), echoapi, patch)
+
+				}, timeout, poll).ShouldNot(HaveOccurred())
+			})
+
+			It("removes the EchoAPI disabled resources", func() {
+
+				dep := &appsv1.Deployment{}
+				By("updating the EchoAPI workload",
+					checkWorkloadResources(dep,
+						expectedWorkload{
+							Name:        "echo-api",
+							Namespace:   namespace,
+							Replicas:    0,
+							HPA:         false,
+							PDB:         false,
+							PodMonitor:  true,
+							LastVersion: rvs["deployment/echoapi"],
+						},
+					),
+				)
 
 			})
 
-		}
+		})
 
 	})
 

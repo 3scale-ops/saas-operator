@@ -49,12 +49,6 @@ import (
 	// +kubebuilder:scaffold:imports
 )
 
-// Flag to disable flaky tests related to resource removal
-// Related to a bug documented in https://github.com/3scale-ops/saas-operator/issues/126
-const (
-	flag_executeRemoveTests bool = false
-)
-
 type expectedWorkload struct {
 	Namespace      string
 	Name           string
