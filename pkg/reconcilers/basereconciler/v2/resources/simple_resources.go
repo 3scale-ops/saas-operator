@@ -7,7 +7,6 @@ import (
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
 	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
-	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -29,25 +28,6 @@ func (est ExternalSecretTemplate) Build(ctx context.Context, cl client.Client) (
 
 func (est ExternalSecretTemplate) Enabled() bool {
 	return est.IsEnabled
-}
-
-var _ basereconciler.Resource = HorizontalPodAutoscalerTemplate{}
-
-// HorizontalPodAutoscaler specifies a HorizontalPodAutoscaler resource
-type HorizontalPodAutoscalerTemplate struct {
-	Template  func() *autoscalingv2beta2.HorizontalPodAutoscaler
-	IsEnabled bool
-}
-
-func (hpat HorizontalPodAutoscalerTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
-
-	hpa := hpat.Template()
-	hpa.GetObjectKind().SetGroupVersionKind(autoscalingv2beta2.SchemeGroupVersion.WithKind("HorizontalPodAutoscaler"))
-	return hpa.DeepCopy(), DefaultExcludedPaths, nil
-}
-
-func (hpat HorizontalPodAutoscalerTemplate) Enabled() bool {
-	return hpat.IsEnabled
 }
 
 var _ basereconciler.Resource = PodMonitorTemplate{}

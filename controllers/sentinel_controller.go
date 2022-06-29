@@ -29,6 +29,7 @@ import (
 	"github.com/3scale/saas-operator/pkg/redis/events"
 	"github.com/3scale/saas-operator/pkg/redis/metrics"
 	"github.com/go-logr/logr"
+	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -198,6 +199,7 @@ func (r *SentinelReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&saasv1alpha1.Sentinel{}).
 		Owns(&corev1.Service{}).
 		Owns(&policyv1.PodDisruptionBudget{}).
+		Owns(&autoscalingv2beta2.HorizontalPodAutoscaler{}).
 		Watches(&source.Channel{Source: r.GetStatusChangeChannel()}, &handler.EnqueueRequestForObject{}).
 		Watches(&source.Channel{Source: r.SentinelEvents.GetChannel()}, &handler.EnqueueRequestForObject{}).
 		Complete(r)
