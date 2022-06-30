@@ -12,7 +12,6 @@ metadata:
 spec: {}
 
 ---
----
 apiVersion: saas.3scale.net/v1alpha1
 kind: RedisShard
 metadata:

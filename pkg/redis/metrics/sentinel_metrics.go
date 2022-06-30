@@ -7,6 +7,7 @@ import (
 
 	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
 	"github.com/3scale/saas-operator/pkg/redis"
+	"github.com/3scale/saas-operator/pkg/redis/crud/client"
 	"github.com/go-logr/logr"
 	"github.com/prometheus/client_golang/prometheus"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -200,6 +201,15 @@ func (smg *SentinelMetricsGatherer) gatherMetrics(ctx context.Context) error {
 			return err
 		}
 
+		// Cleanup any vector that corresponds to the same server but with a
+		// different role to avoid stale metrics after a role switch
+		cleanupMetrics(prometheus.Labels{
+			"sentinel":     smg.SentinelURI,
+			"shard":        master.Name,
+			"redis_server": fmt.Sprintf("%s:%d", master.IP, master.Port),
+			"role":         string(client.Slave),
+		})
+
 		for _, slave := range sresult {
 
 			linkPendingCommands.With(prometheus.Labels{"sentinel": smg.SentinelURI, "shard": master.Name,
@@ -221,8 +231,25 @@ func (smg *SentinelMetricsGatherer) gatherMetrics(ctx context.Context) error {
 			slaveReplOffset.With(prometheus.Labels{"sentinel": smg.SentinelURI, "shard": master.Name,
 				"redis_server": fmt.Sprintf("%s:%d", slave.IP, slave.Port), "role": slave.RoleReported,
 			}).Set(float64(slave.SlaveReplOffset))
+
+			cleanupMetrics(prometheus.Labels{
+				"sentinel":     smg.SentinelURI,
+				"shard":        master.Name,
+				"redis_server": fmt.Sprintf("%s:%d", slave.IP, slave.Port),
+				"role":         string(client.Master),
+			})
 		}
 	}
 
 	return nil
+}
+
+func cleanupMetrics(labels prometheus.Labels) {
+	linkPendingCommands.Delete(labels)
+	lastOkPingReply.Delete(labels)
+	roleReportedTime.Delete(labels)
+	numSlaves.Delete(labels)
+	numOtherSentinels.Delete(labels)
+	masterLinkDownTime.Delete(labels)
+	slaveReplOffset.Delete(labels)
 }
