@@ -36,7 +36,7 @@ var (
 			Namespace: "saas_redis_sentinel",
 			Help:      "+sdown (https://redis.io/topics/sentinel#sentinel-api)",
 		},
-		[]string{"sentinel", "shard", "redis_server", "role"},
+		[]string{"sentinel", "shard", "redis_server"},
 	)
 	sdownSentinelCount = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
@@ -44,7 +44,7 @@ var (
 			Namespace: "saas_redis_sentinel",
 			Help:      "+sdown (https://redis.io/topics/sentinel#sentinel-api)",
 		},
-		[]string{"sentinel", "shard", "redis_server", "role"},
+		[]string{"sentinel", "shard", "redis_server"},
 	)
 )
 
