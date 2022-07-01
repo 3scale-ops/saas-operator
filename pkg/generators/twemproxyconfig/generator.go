@@ -11,13 +11,31 @@ import (
 	"github.com/3scale/saas-operator/pkg/redis"
 	"github.com/3scale/saas-operator/pkg/resource_builders/grafanadashboard"
 	"github.com/go-logr/logr"
+	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/metrics"
 )
 
 const (
 	component string = "twemproxy"
 )
+
+var (
+	slaveRwConfigured = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name:      "slave_rw_configured",
+			Namespace: "saas_twemproxyconfig",
+			Help:      `"sentinel master <name> link-pending-commands"`,
+		},
+		[]string{"shard"},
+	)
+)
+
+func init() {
+	// Register custom metrics with the global prometheus registry
+	metrics.Registry.MustRegister(slaveRwConfigured)
+}
 
 // Generator configures the generators for Sentinel
 type Generator struct {
@@ -154,6 +172,7 @@ func (gen *Generator) getMonitoredReadWriteSlavesWithFallbackToMasters(ctx conte
 				Address:  shard.SlavesRW[0],
 				Priority: 1,
 			}
+			slaveRwConfigured.With(prometheus.Labels{"shard": shard.Name}).Set(1)
 		} else {
 			// Fall back to masters if there are no
 			// available RW slaves
@@ -162,6 +181,7 @@ func (gen *Generator) getMonitoredReadWriteSlavesWithFallbackToMasters(ctx conte
 				Address:  shard.Master,
 				Priority: 1,
 			}
+			slaveRwConfigured.With(prometheus.Labels{"shard": shard.Name}).Set(0)
 		}
 	}
 
