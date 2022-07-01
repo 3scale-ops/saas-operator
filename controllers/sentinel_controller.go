@@ -137,6 +137,7 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			Instance:      instance,
 			SentinelURI:   uri,
 			ExportMetrics: true,
+			Topology:      &shardedCluster,
 		})
 		metricsGatherers = append(metricsGatherers, &metrics.SentinelMetricsGatherer{
 			RefreshInterval: *gen.Spec.Config.MetricsRefreshInterval,

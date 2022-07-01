@@ -61,6 +61,7 @@ type SentinelEventWatcher struct {
 	Instance      client.Object
 	SentinelURI   string
 	ExportMetrics bool
+	Topology      *redis.ShardedCluster
 	eventsCh      chan event.GenericEvent
 	started       bool
 	cancel        context.CancelFunc
@@ -90,6 +91,11 @@ func (sew *SentinelEventWatcher) Start(parentCtx context.Context, l logr.Logger)
 	if sew.started {
 		log.Info("the event watcher is already running")
 		return nil
+	}
+
+	if sew.ExportMetrics {
+		// Initializes metrics with 0 value
+		sew.initCounters()
 	}
 
 	var err error
@@ -171,15 +177,51 @@ func (sew *SentinelEventWatcher) metricsFromEvent(rem RedisEventMessage) {
 		case "sentinel":
 			sdownSentinelCount.With(
 				prometheus.Labels{
-					"sentinel": smg.SentinelURI, "shard": rem.master.name, "role": rem.target.role, "redis_server": rem.target.ip,
+					"sentinel": sew.SentinelURI, "shard": rem.master.name,
+					"redis_server": fmt.Sprintf("%s:%s", rem.target.ip, rem.target.port),
 				},
 			).Add(1)
 		default:
 			sdownCount.With(
 				prometheus.Labels{
-					"sentinel": smg.SentinelURI, "shard": rem.master.name, "role": rem.target.role, "redis_server": rem.target.ip,
+					"sentinel": sew.SentinelURI, "shard": rem.master.name,
+					"redis_server": fmt.Sprintf("%s:%s", rem.target.ip, rem.target.port),
 				},
 			).Add(1)
 		}
+	}
+}
+
+func (sew *SentinelEventWatcher) initCounters() {
+	if sew.Topology != nil {
+
+		for _, shard := range *sew.Topology {
+			switchMasterCount.With(
+				prometheus.Labels{
+					"sentinel": sew.SentinelURI, "shard": shard.Name,
+				},
+			).Add(0)
+			failoverAbortNoGoodSlaveCount.With(
+				prometheus.Labels{
+					"sentinel": sew.SentinelURI, "shard": shard.Name,
+				},
+			).Add(0)
+
+			for _, server := range shard.Servers {
+				sdownSentinelCount.With(
+					prometheus.Labels{
+						"sentinel": sew.SentinelURI, "shard": shard.Name,
+						"redis_server": fmt.Sprintf("%s:%s", server.CRUD.IP, server.CRUD.Port),
+					},
+				).Add(0)
+				sdownCount.With(
+					prometheus.Labels{
+						"sentinel": sew.SentinelURI, "shard": shard.Name,
+						"redis_server": fmt.Sprintf("%s:%s", server.CRUD.IP, server.CRUD.Port),
+					},
+				).Add(0)
+			}
+		}
+
 	}
 }
