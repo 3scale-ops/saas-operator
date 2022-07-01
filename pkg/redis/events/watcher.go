@@ -147,22 +147,22 @@ func (sew *SentinelEventWatcher) Start(parentCtx context.Context, l logr.Logger)
 }
 
 // Stop stops the sentinel event watcher
-func (fw *SentinelEventWatcher) Stop() {
-	fw.cancel()
+func (sew *SentinelEventWatcher) Stop() {
+	sew.cancel()
 }
 
-func (smg *SentinelEventWatcher) metricsFromEvent(rem RedisEventMessage) {
+func (sew *SentinelEventWatcher) metricsFromEvent(rem RedisEventMessage) {
 	switch rem.event {
 	case "+switch-master":
 		switchMasterCount.With(
 			prometheus.Labels{
-				"sentinel": smg.SentinelURI, "shard": rem.target.name,
+				"sentinel": sew.SentinelURI, "shard": rem.target.name,
 			},
 		).Add(1)
 	case "-failover-abort-no-good-slave":
 		failoverAbortNoGoodSlaveCount.With(
 			prometheus.Labels{
-				"sentinel": smg.SentinelURI, "shard": rem.target.name,
+				"sentinel": sew.SentinelURI, "shard": rem.target.name,
 			},
 		).Add(1)
 	case "+sdown":
