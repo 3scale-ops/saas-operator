@@ -259,62 +259,57 @@ var _ = Describe("MappingService controller", func() {
 
 		})
 
-		// Disabled due to https://github.com/3scale-ops/saas-operator/issues/126
-		if flag_executeRemoveTests {
+		When("removing the PDB and HPA from a MappingService instance", func() {
 
-			When("removing the PDB and HPA from a MappingService instance", func() {
+			// Resource Versions
+			rvs := make(map[string]string)
 
-				// Resource Versions
-				rvs := make(map[string]string)
+			BeforeEach(func() {
+				Eventually(func() error {
 
-				BeforeEach(func() {
-					Eventually(func() error {
+					mappingservice := &saasv1alpha1.MappingService{}
+					if err := k8sClient.Get(
+						context.Background(),
+						types.NamespacedName{Name: "instance", Namespace: namespace},
+						mappingservice,
+					); err != nil {
+						return err
+					}
 
-						mappingservice := &saasv1alpha1.MappingService{}
-						if err := k8sClient.Get(
-							context.Background(),
-							types.NamespacedName{Name: "instance", Namespace: namespace},
-							mappingservice,
-						); err != nil {
-							return err
-						}
-
-						rvs["deployment/mappingservice"] = getResourceVersion(
-							&appsv1.Deployment{}, "mapping-service", namespace,
-						)
-
-						patch := client.MergeFrom(mappingservice.DeepCopy())
-						mappingservice.Spec.Replicas = pointer.Int32(0)
-						mappingservice.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
-						mappingservice.Spec.PDB = &saasv1alpha1.PodDisruptionBudgetSpec{}
-
-						return k8sClient.Patch(context.Background(), mappingservice, patch)
-
-					}, timeout, poll).ShouldNot(HaveOccurred())
-				})
-
-				It("removes the MappingService disabled resources", func() {
-
-					dep := &appsv1.Deployment{}
-					By("updating the MappingService workload",
-						checkWorkloadResources(dep,
-							expectedWorkload{
-								Name:        "mapping-service",
-								Namespace:   namespace,
-								Replicas:    0,
-								HPA:         false,
-								PDB:         false,
-								PodMonitor:  true,
-								LastVersion: rvs["deployment/mappingservice"],
-							},
-						),
+					rvs["deployment/mappingservice"] = getResourceVersion(
+						&appsv1.Deployment{}, "mapping-service", namespace,
 					)
 
-				})
+					patch := client.MergeFrom(mappingservice.DeepCopy())
+					mappingservice.Spec.Replicas = pointer.Int32(0)
+					mappingservice.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
+					mappingservice.Spec.PDB = &saasv1alpha1.PodDisruptionBudgetSpec{}
+
+					return k8sClient.Patch(context.Background(), mappingservice, patch)
+
+				}, timeout, poll).ShouldNot(HaveOccurred())
+			})
+
+			It("removes the MappingService disabled resources", func() {
+
+				dep := &appsv1.Deployment{}
+				By("updating the MappingService workload",
+					checkWorkloadResources(dep,
+						expectedWorkload{
+							Name:        "mapping-service",
+							Namespace:   namespace,
+							Replicas:    0,
+							HPA:         false,
+							PDB:         false,
+							PodMonitor:  true,
+							LastVersion: rvs["deployment/mappingservice"],
+						},
+					),
+				)
 
 			})
 
-		}
+		})
 
 	})
 

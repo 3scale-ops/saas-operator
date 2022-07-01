@@ -25,6 +25,7 @@ import (
 	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
 	"github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/resources"
 	"github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/test/api/v1alpha1"
+	"github.com/3scale/saas-operator/pkg/resource_builders/hpa"
 	"github.com/3scale/saas-operator/pkg/resource_builders/marin3r"
 	"github.com/3scale/saas-operator/pkg/resource_builders/pdb"
 	"github.com/go-logr/logr"
@@ -91,6 +92,25 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 			IsEnabled: func() bool {
 				if instance.Spec.PDB != nil {
 					return *instance.Spec.PDB
+				} else {
+					return true
+				}
+			}(),
+		},
+		resources.HorizontalPodAutoscalerTemplate{
+			Template: hpa.New(
+				types.NamespacedName{Name: "hpa", Namespace: req.Namespace},
+				map[string]string{},
+				saasv1alpha1.HorizontalPodAutoscalerSpec{
+					MinReplicas:         pointer.Int32(1),
+					MaxReplicas:         pointer.Int32(2),
+					ResourceName:        pointer.String("deployment"),
+					ResourceUtilization: pointer.Int32(90),
+				},
+			),
+			IsEnabled: func() bool {
+				if instance.Spec.HPA != nil {
+					return *instance.Spec.HPA
 				} else {
 					return true
 				}

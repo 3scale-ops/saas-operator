@@ -14,8 +14,7 @@ import (
 func New(key types.NamespacedName, labels map[string]string, cfg saasv1alpha1.HorizontalPodAutoscalerSpec) func() *autoscalingv2beta2.HorizontalPodAutoscaler {
 
 	return func() *autoscalingv2beta2.HorizontalPodAutoscaler {
-
-		return &autoscalingv2beta2.HorizontalPodAutoscaler{
+		hpa := autoscalingv2beta2.HorizontalPodAutoscaler{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "HorizontalPodAutoscaler",
 				APIVersion: autoscalingv2beta2.SchemeGroupVersion.String(),
@@ -32,23 +31,31 @@ func New(key types.NamespacedName, labels map[string]string, cfg saasv1alpha1.Ho
 					Name:       key.Name,
 				},
 				MinReplicas: cfg.MinReplicas,
-				MaxReplicas: *cfg.MaxReplicas,
-				Metrics: []autoscalingv2beta2.MetricSpec{
-					{
-						Type: autoscalingv2beta2.ResourceMetricSourceType,
-						Resource: &autoscalingv2beta2.ResourceMetricSource{
-							Name: corev1.ResourceName(*cfg.ResourceName),
-							Target: autoscalingv2beta2.MetricTarget{
-								Type:               autoscalingv2beta2.UtilizationMetricType,
-								AverageUtilization: cfg.ResourceUtilization,
-							},
-						},
-					},
-				},
 			},
 			Status: autoscalingv2beta2.HorizontalPodAutoscalerStatus{
 				Conditions: []autoscalingv2beta2.HorizontalPodAutoscalerCondition{},
 			},
 		}
+
+		if cfg.MaxReplicas != nil {
+			hpa.Spec.MaxReplicas = *cfg.MaxReplicas
+		}
+
+		if cfg.ResourceName != nil {
+			hpa.Spec.Metrics = []autoscalingv2beta2.MetricSpec{
+				{
+					Type: autoscalingv2beta2.ResourceMetricSourceType,
+					Resource: &autoscalingv2beta2.ResourceMetricSource{
+						Name: corev1.ResourceName(*cfg.ResourceName),
+						Target: autoscalingv2beta2.MetricTarget{
+							Type:               autoscalingv2beta2.UtilizationMetricType,
+							AverageUtilization: cfg.ResourceUtilization,
+						},
+					},
+				},
+			}
+		}
+
+		return &hpa
 	}
 }

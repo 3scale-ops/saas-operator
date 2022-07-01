@@ -48,6 +48,8 @@ type TestSpec struct {
 	// +optional
 	PDB *bool `json:"pdb,omitempty"`
 	// +optional
+	HPA *bool `json:"hpa,omitempty"`
+	// +optional
 	ServiceAnnotations map[string]string `json:"serviceAnnotations,omitempty"`
 	// +optional
 	Marin3r *saasv1alpha1.Marin3rSidecarSpec `json:"marin3r,omitempty"`
