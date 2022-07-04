@@ -15,6 +15,13 @@ import (
 )
 
 var (
+	serverInfo = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name:      "server_info",
+			Namespace: "saas_redis_sentinel",
+			Help:      `"redis server info"`,
+		},
+		[]string{"sentinel", "shard", "redis_server", "role"})
 	linkPendingCommands = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name:      "link_pending_commands",
@@ -78,7 +85,7 @@ var (
 func init() {
 	// Register custom metrics with the global prometheus registry
 	metrics.Registry.MustRegister(
-		linkPendingCommands, lastOkPingReply, roleReportedTime,
+		serverInfo, linkPendingCommands, lastOkPingReply, roleReportedTime,
 		numSlaves, numOtherSentinels, masterLinkDownTime, slaveReplOffset,
 	)
 }
@@ -159,6 +166,7 @@ func (smg *SentinelMetricsGatherer) Stop() {
 	smg.cancel()
 	// Reset all gauge metrics so the values related to
 	// this exporter are deleted from the collection
+	serverInfo.Reset()
 	linkPendingCommands.Reset()
 	lastOkPingReply.Reset()
 	roleReportedTime.Reset()
@@ -176,6 +184,11 @@ func (smg *SentinelMetricsGatherer) gatherMetrics(ctx context.Context) error {
 	}
 
 	for _, master := range mresult {
+
+		serverInfo.With(prometheus.Labels{"sentinel": smg.SentinelURI, "shard": master.Name,
+			"redis_server": fmt.Sprintf("%s:%d", master.IP, master.Port), "role": master.RoleReported,
+		}).Set(float64(1))
+
 		linkPendingCommands.With(prometheus.Labels{"sentinel": smg.SentinelURI, "shard": master.Name,
 			"redis_server": fmt.Sprintf("%s:%d", master.IP, master.Port), "role": master.RoleReported,
 		}).Set(float64(master.LinkPendingCommands))
@@ -212,6 +225,10 @@ func (smg *SentinelMetricsGatherer) gatherMetrics(ctx context.Context) error {
 
 		for _, slave := range sresult {
 
+			serverInfo.With(prometheus.Labels{"sentinel": smg.SentinelURI, "shard": master.Name,
+				"redis_server": fmt.Sprintf("%s:%d", slave.IP, slave.Port), "role": slave.RoleReported,
+			}).Set(float64(1))
+
 			linkPendingCommands.With(prometheus.Labels{"sentinel": smg.SentinelURI, "shard": master.Name,
 				"redis_server": fmt.Sprintf("%s:%d", slave.IP, slave.Port), "role": slave.RoleReported,
 			}).Set(float64(slave.LinkPendingCommands))
@@ -245,6 +262,7 @@ func (smg *SentinelMetricsGatherer) gatherMetrics(ctx context.Context) error {
 }
 
 func cleanupMetrics(labels prometheus.Labels) {
+	serverInfo.Delete(labels)
 	linkPendingCommands.Delete(labels)
 	lastOkPingReply.Delete(labels)
 	roleReportedTime.Delete(labels)

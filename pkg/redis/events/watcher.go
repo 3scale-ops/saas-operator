@@ -2,6 +2,7 @@ package events
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
 	"github.com/3scale/saas-operator/pkg/redis"
@@ -36,7 +37,7 @@ var (
 			Namespace: "saas_redis_sentinel",
 			Help:      "+sdown (https://redis.io/topics/sentinel#sentinel-api)",
 		},
-		[]string{"sentinel", "shard", "redis_server", "role"},
+		[]string{"sentinel", "shard", "redis_server"},
 	)
 	sdownSentinelCount = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
@@ -44,7 +45,7 @@ var (
 			Namespace: "saas_redis_sentinel",
 			Help:      "+sdown (https://redis.io/topics/sentinel#sentinel-api)",
 		},
-		[]string{"sentinel", "shard", "redis_server", "role"},
+		[]string{"sentinel", "shard", "redis_server"},
 	)
 )
 
@@ -60,6 +61,7 @@ type SentinelEventWatcher struct {
 	Instance      client.Object
 	SentinelURI   string
 	ExportMetrics bool
+	Topology      *redis.ShardedCluster
 	eventsCh      chan event.GenericEvent
 	started       bool
 	cancel        context.CancelFunc
@@ -89,6 +91,11 @@ func (sew *SentinelEventWatcher) Start(parentCtx context.Context, l logr.Logger)
 	if sew.started {
 		log.Info("the event watcher is already running")
 		return nil
+	}
+
+	if sew.ExportMetrics {
+		// Initializes metrics with 0 value
+		sew.initCounters()
 	}
 
 	var err error
@@ -147,22 +154,22 @@ func (sew *SentinelEventWatcher) Start(parentCtx context.Context, l logr.Logger)
 }
 
 // Stop stops the sentinel event watcher
-func (fw *SentinelEventWatcher) Stop() {
-	fw.cancel()
+func (sew *SentinelEventWatcher) Stop() {
+	sew.cancel()
 }
 
-func (smg *SentinelEventWatcher) metricsFromEvent(rem RedisEventMessage) {
+func (sew *SentinelEventWatcher) metricsFromEvent(rem RedisEventMessage) {
 	switch rem.event {
 	case "+switch-master":
 		switchMasterCount.With(
 			prometheus.Labels{
-				"sentinel": smg.SentinelURI, "shard": rem.target.name,
+				"sentinel": sew.SentinelURI, "shard": rem.target.name,
 			},
 		).Add(1)
 	case "-failover-abort-no-good-slave":
 		failoverAbortNoGoodSlaveCount.With(
 			prometheus.Labels{
-				"sentinel": smg.SentinelURI, "shard": rem.target.name,
+				"sentinel": sew.SentinelURI, "shard": rem.target.name,
 			},
 		).Add(1)
 	case "+sdown":
@@ -170,15 +177,51 @@ func (smg *SentinelEventWatcher) metricsFromEvent(rem RedisEventMessage) {
 		case "sentinel":
 			sdownSentinelCount.With(
 				prometheus.Labels{
-					"sentinel": smg.SentinelURI, "shard": rem.master.name, "role": rem.target.role, "redis_server": rem.target.ip,
+					"sentinel": sew.SentinelURI, "shard": rem.master.name,
+					"redis_server": fmt.Sprintf("%s:%s", rem.target.ip, rem.target.port),
 				},
 			).Add(1)
 		default:
 			sdownCount.With(
 				prometheus.Labels{
-					"sentinel": smg.SentinelURI, "shard": rem.master.name, "role": rem.target.role, "redis_server": rem.target.ip,
+					"sentinel": sew.SentinelURI, "shard": rem.master.name,
+					"redis_server": fmt.Sprintf("%s:%s", rem.target.ip, rem.target.port),
 				},
 			).Add(1)
 		}
+	}
+}
+
+func (sew *SentinelEventWatcher) initCounters() {
+	if sew.Topology != nil {
+
+		for _, shard := range *sew.Topology {
+			switchMasterCount.With(
+				prometheus.Labels{
+					"sentinel": sew.SentinelURI, "shard": shard.Name,
+				},
+			).Add(0)
+			failoverAbortNoGoodSlaveCount.With(
+				prometheus.Labels{
+					"sentinel": sew.SentinelURI, "shard": shard.Name,
+				},
+			).Add(0)
+
+			for _, server := range shard.Servers {
+				sdownSentinelCount.With(
+					prometheus.Labels{
+						"sentinel": sew.SentinelURI, "shard": shard.Name,
+						"redis_server": fmt.Sprintf("%s:%s", server.CRUD.IP, server.CRUD.Port),
+					},
+				).Add(0)
+				sdownCount.With(
+					prometheus.Labels{
+						"sentinel": sew.SentinelURI, "shard": shard.Name,
+						"redis_server": fmt.Sprintf("%s:%s", server.CRUD.IP, server.CRUD.Port),
+					},
+				).Add(0)
+			}
+		}
+
 	}
 }
