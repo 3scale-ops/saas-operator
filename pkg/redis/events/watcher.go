@@ -47,11 +47,28 @@ var (
 		},
 		[]string{"sentinel", "shard", "redis_server"},
 	)
+	sdownClearedCount = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name:      "sdown_cleared_count",
+			Namespace: "saas_redis_sentinel",
+			Help:      "-sdown (https://redis.io/topics/sentinel#sentinel-api)",
+		},
+		[]string{"sentinel", "shard", "redis_server"},
+	)
+	sdownClearedSentinelCount = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name:      "sdown_cleared_sentinel_count",
+			Namespace: "saas_redis_sentinel",
+			Help:      "-sdown (https://redis.io/topics/sentinel#sentinel-api)",
+		},
+		[]string{"sentinel", "shard", "redis_server"},
+	)
 )
 
 func init() {
 	// Register custom metrics with the global prometheus registry
-	metrics.Registry.MustRegister(switchMasterCount, failoverAbortNoGoodSlaveCount, sdownCount, sdownSentinelCount)
+	metrics.Registry.MustRegister(switchMasterCount, failoverAbortNoGoodSlaveCount,
+		sdownCount, sdownSentinelCount, sdownClearedCount, sdownClearedSentinelCount)
 }
 
 // SentinelEventWatcher implements RunnableThread
@@ -189,6 +206,23 @@ func (sew *SentinelEventWatcher) metricsFromEvent(rem RedisEventMessage) {
 				},
 			).Add(1)
 		}
+	case "-sdown":
+		switch rem.target.role {
+		case "sentinel":
+			sdownClearedSentinelCount.With(
+				prometheus.Labels{
+					"sentinel": sew.SentinelURI, "shard": rem.master.name,
+					"redis_server": fmt.Sprintf("%s:%s", rem.target.ip, rem.target.port),
+				},
+			).Add(1)
+		default:
+			sdownClearedCount.With(
+				prometheus.Labels{
+					"sentinel": sew.SentinelURI, "shard": rem.master.name,
+					"redis_server": fmt.Sprintf("%s:%s", rem.target.ip, rem.target.port),
+				},
+			).Add(1)
+		}
 	}
 }
 
@@ -215,6 +249,18 @@ func (sew *SentinelEventWatcher) initCounters() {
 					},
 				).Add(0)
 				sdownCount.With(
+					prometheus.Labels{
+						"sentinel": sew.SentinelURI, "shard": shard.Name,
+						"redis_server": fmt.Sprintf("%s:%s", server.CRUD.IP, server.CRUD.Port),
+					},
+				).Add(0)
+				sdownClearedSentinelCount.With(
+					prometheus.Labels{
+						"sentinel": sew.SentinelURI, "shard": shard.Name,
+						"redis_server": fmt.Sprintf("%s:%s", server.CRUD.IP, server.CRUD.Port),
+					},
+				).Add(0)
+				sdownClearedCount.With(
 					prometheus.Labels{
 						"sentinel": sew.SentinelURI, "shard": shard.Name,
 						"redis_server": fmt.Sprintf("%s:%s", server.CRUD.IP, server.CRUD.Port),
