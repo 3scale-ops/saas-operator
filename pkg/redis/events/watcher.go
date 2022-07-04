@@ -20,7 +20,7 @@ var (
 			Namespace: "saas_redis_sentinel",
 			Help:      "+switch-master (https://redis.io/topics/sentinel#sentinel-api)",
 		},
-		[]string{"sentinel", "shard"},
+		[]string{"sentinel", "shard", "redis_server"},
 	)
 
 	failoverAbortNoGoodSlaveCount = prometheus.NewCounterVec(
@@ -180,7 +180,8 @@ func (sew *SentinelEventWatcher) metricsFromEvent(rem RedisEventMessage) {
 	case "+switch-master":
 		switchMasterCount.With(
 			prometheus.Labels{
-				"sentinel": sew.SentinelURI, "shard": rem.target.name,
+				"sentinel": sew.SentinelURI, "shard": rem.master.name,
+				"redis_server": fmt.Sprintf("%s:%s", rem.master.ip, rem.master.port),
 			},
 		).Add(1)
 	case "-failover-abort-no-good-slave":
@@ -230,11 +231,6 @@ func (sew *SentinelEventWatcher) initCounters() {
 	if sew.Topology != nil {
 
 		for _, shard := range *sew.Topology {
-			switchMasterCount.With(
-				prometheus.Labels{
-					"sentinel": sew.SentinelURI, "shard": shard.Name,
-				},
-			).Add(0)
 			failoverAbortNoGoodSlaveCount.With(
 				prometheus.Labels{
 					"sentinel": sew.SentinelURI, "shard": shard.Name,
@@ -242,6 +238,12 @@ func (sew *SentinelEventWatcher) initCounters() {
 			).Add(0)
 
 			for _, server := range shard.Servers {
+				switchMasterCount.With(
+					prometheus.Labels{
+						"sentinel": sew.SentinelURI, "shard": shard.Name,
+						"redis_server": fmt.Sprintf("%s:%s", server.CRUD.IP, server.CRUD.Port),
+					},
+				).Add(0)
 				sdownSentinelCount.With(
 					prometheus.Labels{
 						"sentinel": sew.SentinelURI, "shard": shard.Name,

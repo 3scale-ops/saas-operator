@@ -232,11 +232,11 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "saas_redis_sentinel_server_info and on(namespace,sentinel,shard) rate(saas_redis_sentinel_switch_master_count{namespace='$namespace',sentinel=~\"[[sentinel]].*\"}[1m]) > 0",
+          "expr": "saas_redis_sentinel_server_info{role='master'} and on(namespace,sentinel,shard,redis_server) rate(saas_redis_sentinel_switch_master_count{namespace='$namespace',sentinel=~\"[[sentinel]].*\"}[1m]) > 0",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "{{`{{shard}}`}}",
+          "legendFormat": "{{`{{shard}}/{{redis_server}}`}}",
           "refId": "A"
         }
       ],
