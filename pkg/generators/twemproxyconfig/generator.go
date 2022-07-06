@@ -26,7 +26,7 @@ var (
 		prometheus.GaugeOpts{
 			Name:      "slave_rw_configured",
 			Namespace: "saas_twemproxyconfig",
-			Help:      `"sentinel master <name> link-pending-commands"`,
+			Help:      "1 if the TwemproxyConfig points to a RW slave, 0 otherwise",
 		},
 		[]string{"twemproxy_config", "shard"},
 	)
