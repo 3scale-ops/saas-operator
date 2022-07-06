@@ -28,7 +28,7 @@ var (
 			Namespace: "saas_twemproxyconfig",
 			Help:      `"sentinel master <name> link-pending-commands"`,
 		},
-		[]string{"shard"},
+		[]string{"twemproxy_config", "shard"},
 	)
 )
 
@@ -172,7 +172,7 @@ func (gen *Generator) getMonitoredReadWriteSlavesWithFallbackToMasters(ctx conte
 				Address:  shard.SlavesRW[0],
 				Priority: 1,
 			}
-			slaveRwConfigured.With(prometheus.Labels{"shard": shard.Name}).Set(1)
+			slaveRwConfigured.With(prometheus.Labels{"twemproxy_config": gen.InstanceName, "shard": shard.Name}).Set(1)
 		} else {
 			// Fall back to masters if there are no
 			// available RW slaves
@@ -181,7 +181,7 @@ func (gen *Generator) getMonitoredReadWriteSlavesWithFallbackToMasters(ctx conte
 				Address:  shard.Master,
 				Priority: 1,
 			}
-			slaveRwConfigured.With(prometheus.Labels{"shard": shard.Name}).Set(0)
+			slaveRwConfigured.With(prometheus.Labels{"twemproxy_config": gen.InstanceName, "shard": shard.Name}).Set(0)
 		}
 	}
 
