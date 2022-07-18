@@ -107,6 +107,12 @@ func (c *GoRedisClient) RedisConfigGet(ctx context.Context, parameter string) ([
 	return val, err
 }
 
+func (c *GoRedisClient) RedisConfigSet(ctx context.Context, parameter, value string) error {
+
+	_, err := c.redis.ConfigSet(ctx, parameter, value).Result()
+	return err
+}
+
 func (c *GoRedisClient) RedisSlaveOf(ctx context.Context, host, port string) error {
 
 	_, err := c.redis.SlaveOf(ctx, host, port).Result()

@@ -60,6 +60,11 @@ func (fc *FakeClient) RedisConfigGet(ctx context.Context, parameter string) ([]i
 	return rsp.InjectResponse().([]interface{}), rsp.InjectError()
 }
 
+func (fc *FakeClient) RedisConfigSet(ctx context.Context, parameter, value string) error {
+	rsp := fc.pop()
+	return rsp.InjectError()
+}
+
 func (fc *FakeClient) RedisSlaveOf(ctx context.Context, host, port string) error {
 	rsp := fc.pop()
 	return rsp.InjectError()

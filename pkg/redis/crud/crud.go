@@ -27,6 +27,7 @@ type Client interface {
 	SentinelInfoCache(context.Context) (interface{}, error)
 	RedisRole(context.Context) (interface{}, error)
 	RedisConfigGet(context.Context, string) ([]interface{}, error)
+	RedisConfigSet(context.Context, string, string) error
 	RedisSlaveOf(context.Context, string, string) error
 	Close() error
 }
