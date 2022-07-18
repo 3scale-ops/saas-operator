@@ -127,16 +127,20 @@ func (gen *Generator) getMonitoredMasters(ctx context.Context, log logr.Logger) 
 		spool = append(spool, *sentinel)
 	}
 
-	monitoredShards, err := spool.MonitoredShards(ctx, 2, false)
+	monitoredShards, err := spool.MonitoredShards(ctx, 2, redis.OnlyMasterDiscoveryOpt)
 	if err != nil {
 		return nil, err
 	}
 
 	m := make(map[string]TwemproxyServer, len(monitoredShards))
-	for _, s := range monitoredShards {
-		m[s.Name] = TwemproxyServer{
-			Name:     s.Name,
-			Address:  s.Master,
+	for _, shard := range monitoredShards {
+		masterAddress, _, err := shard.GetMaster()
+		if err != nil {
+			return nil, err
+		}
+		m[shard.Name] = TwemproxyServer{
+			Name:     shard.Name,
+			Address:  masterAddress,
 			Priority: 1,
 		}
 	}
@@ -158,7 +162,7 @@ func (gen *Generator) getMonitoredReadWriteSlavesWithFallbackToMasters(ctx conte
 		spool = append(spool, *sentinel)
 	}
 
-	monitoredShards, err := spool.MonitoredShards(ctx, 2, true)
+	monitoredShards, err := spool.MonitoredShards(ctx, 2, redis.SlaveReadOnlyDiscoveryOpt)
 	if err != nil {
 		return nil, err
 	}
@@ -166,19 +170,32 @@ func (gen *Generator) getMonitoredReadWriteSlavesWithFallbackToMasters(ctx conte
 	m := make(map[string]TwemproxyServer, len(monitoredShards))
 	for _, shard := range monitoredShards {
 
-		if len(shard.SlavesRW) > 0 {
+		if slavesRW := shard.GetSlavesRW(); len(slavesRW) > 0 {
+			// In the (unlikely) case that there are more than 1 slaveRW
+			// we need to consistenly choose the same in all reconcile loops, otherwise
+			// we would be forcing twemproxy restart if we are constantly changing the chosen server.
+			// Due to the lack of a better criteria, we just choose the server address that scores
+			// lowest in alphabetical order.
+			var address []string
+			for k := range slavesRW {
+				address = append(address, k)
+			}
 			m[shard.Name] = TwemproxyServer{
 				Name:     shard.Name,
-				Address:  shard.SlavesRW[0],
+				Address:  address[0],
 				Priority: 1,
 			}
 			slaveRwConfigured.With(prometheus.Labels{"twemproxy_config": gen.InstanceName, "shard": shard.Name}).Set(1)
 		} else {
 			// Fall back to masters if there are no
 			// available RW slaves
+			masterAddress, _, err := shard.GetMaster()
+			if err != nil {
+				return nil, err
+			}
 			m[shard.Name] = TwemproxyServer{
 				Name:     shard.Name,
-				Address:  shard.Master,
+				Address:  masterAddress,
 				Priority: 1,
 			}
 			slaveRwConfigured.With(prometheus.Labels{"twemproxy_config": gen.InstanceName, "shard": shard.Name}).Set(0)

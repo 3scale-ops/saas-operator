@@ -2,19 +2,23 @@ apiVersion: saas.3scale.net/v1alpha1
 kind: RedisShard
 metadata:
   name: shard01
-spec: {}
+spec:
+  image:
+    tag: 6.2.7-alpine
 
 ---
 apiVersion: saas.3scale.net/v1alpha1
 kind: RedisShard
 metadata:
   name: shard02
-spec: {}
-
----
-apiVersion: saas.3scale.net/v1alpha1
-kind: RedisShard
-metadata:
-  name: resque
 spec:
-  slaveCount: 0
+  image:
+    tag: 6.2.7-alpine
+
+# ---
+# apiVersion: saas.3scale.net/v1alpha1
+# kind: RedisShard
+# metadata:
+#   name: resque
+# spec:
+#   slaveCount: 0

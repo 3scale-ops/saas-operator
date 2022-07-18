@@ -162,7 +162,7 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 func (r *SentinelReconciler) reconcileStatus(ctx context.Context, instance *saasv1alpha1.Sentinel, gen *sentinel.Generator,
 	spool redis.SentinelPool, log logr.Logger) error {
 
-	monitoredShards, err := spool.MonitoredShards(ctx, saasv1alpha1.SentinelDefaultQuorum, true)
+	monitoredShards, err := spool.MonitoredShards(ctx, saasv1alpha1.SentinelDefaultQuorum, redis.SlaveReadOnlyDiscoveryOpt, redis.SaveConfigDiscoveryOpt)
 	if err != nil {
 		return err
 	}

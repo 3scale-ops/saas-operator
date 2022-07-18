@@ -467,6 +467,24 @@ spec:
                     name:
                       description: Name is the name of the redis shard
                       type: string
+                    servers:
+                      additionalProperties:
+                        properties:
+                          config:
+                            additionalProperties:
+                              type: string
+                            type: object
+                          role:
+                            description: Role represents the role of a redis server
+                              within a shard
+                            type: string
+                        required:
+                        - role
+                        type: object
+                      description: RedisServerDetails is a map intended to store configuration
+                        information of each of the RedisServer instances that belong
+                        to the MonitoredShard
+                      type: object
                     slavesRO:
                       description: SlavesRO is the list of addresses of the read-only
                         slave servers in this shard, in the format "127.0.0.1:6379"
@@ -480,7 +498,6 @@ spec:
                         type: string
                       type: array
                   required:
-                  - master
                   - name
                   type: object
                 type: array
