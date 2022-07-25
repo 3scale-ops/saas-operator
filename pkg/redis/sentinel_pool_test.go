@@ -650,22 +650,64 @@ func Test_applyQuorum(t *testing.T) {
 			args: args{
 				responses: []saasv1alpha1.MonitoredShards{
 					{
-						{Name: "shard01", Master: "127.0.0.1:1111"},
-						{Name: "shard02", Master: "127.0.0.2:2222"},
-						{Name: "shard03", Master: "127.0.0.3:3333"},
+						{
+							Name: "shard01",
+							Servers: map[string]saasv1alpha1.RedisServerDetails{
+								"127.0.0.1:1111": {Role: redis.Master, Config: map[string]string{}}},
+						},
+						{
+							Name: "shard02",
+							Servers: map[string]saasv1alpha1.RedisServerDetails{
+								"127.0.0.2:2222": {Role: redis.Master, Config: map[string]string{}},
+							},
+						},
+						{
+							Name: "shard03",
+							Servers: map[string]saasv1alpha1.RedisServerDetails{
+								"127.0.0.3:3333": {Role: redis.Master, Config: map[string]string{}},
+							},
+						},
 					},
 					{
-						{Name: "shard03", Master: "127.0.0.3:3333"},
-						{Name: "shard02", Master: "127.0.0.2:2222"},
-						{Name: "shard01", Master: "127.0.0.1:1111"},
+						{
+							Name: "shard03",
+							Servers: map[string]saasv1alpha1.RedisServerDetails{
+								"127.0.0.3:3333": {Role: redis.Master, Config: map[string]string{}},
+							},
+						},
+						{
+							Name: "shard01",
+							Servers: map[string]saasv1alpha1.RedisServerDetails{
+								"127.0.0.1:1111": {Role: redis.Master, Config: map[string]string{}}},
+						},
+						{
+							Name: "shard02",
+							Servers: map[string]saasv1alpha1.RedisServerDetails{
+								"127.0.0.2:2222": {Role: redis.Master, Config: map[string]string{}},
+							},
+						},
 					},
 				},
 				quorum: 2,
 			},
 			want: []saasv1alpha1.MonitoredShard{
-				{Name: "shard01", Master: "127.0.0.1:1111"},
-				{Name: "shard02", Master: "127.0.0.2:2222"},
-				{Name: "shard03", Master: "127.0.0.3:3333"},
+				{
+					Name: "shard01",
+					Servers: map[string]saasv1alpha1.RedisServerDetails{
+						"127.0.0.1:1111": {Role: redis.Master, Config: map[string]string{}}},
+				},
+				{
+					Name: "shard02",
+					Servers: map[string]saasv1alpha1.RedisServerDetails{
+						"127.0.0.2:2222": {Role: redis.Master, Config: map[string]string{}},
+					},
+				},
+				{
+					Name: "shard03",
+					Servers: map[string]saasv1alpha1.RedisServerDetails{
+						"127.0.0.3:3333": {Role: redis.Master, Config: map[string]string{}},
+					},
+				},
 			},
 			wantErr: false,
 		},
@@ -674,14 +716,42 @@ func Test_applyQuorum(t *testing.T) {
 			args: args{
 				responses: []saasv1alpha1.MonitoredShards{
 					{
-						{Name: "shard01", Master: "127.0.0.1:1111"},
-						{Name: "shard02", Master: "127.0.0.2:2222"},
-						{Name: "shard03", Master: "127.0.0.3:3333"},
+						{
+							Name: "shard01",
+							Servers: map[string]saasv1alpha1.RedisServerDetails{
+								"127.0.0.1:1111": {Role: redis.Master, Config: map[string]string{}}},
+						},
+						{
+							Name: "shard02",
+							Servers: map[string]saasv1alpha1.RedisServerDetails{
+								"127.0.0.2:2222": {Role: redis.Master, Config: map[string]string{}},
+							},
+						},
+						{
+							Name: "shard03",
+							Servers: map[string]saasv1alpha1.RedisServerDetails{
+								"127.0.0.2:3333": {Role: redis.Master, Config: map[string]string{}},
+							},
+						},
 					},
 					{
-						{Name: "shard03", Master: "127.0.0.3:3333"},
-						{Name: "shard02", Master: "127.0.0.2:2222"},
-						{Name: "shard01", Master: "127.0.0.4:4444"},
+						{
+							Name: "shard01",
+							Servers: map[string]saasv1alpha1.RedisServerDetails{
+								"127.0.0.1:1111": {Role: redis.Master, Config: map[string]string{}}},
+						},
+						{
+							Name: "shard02",
+							Servers: map[string]saasv1alpha1.RedisServerDetails{
+								"127.0.0.4:4444": {Role: redis.Master, Config: map[string]string{}},
+							},
+						},
+						{
+							Name: "shard03",
+							Servers: map[string]saasv1alpha1.RedisServerDetails{
+								"127.0.0.3:3333": {Role: redis.Master, Config: map[string]string{}},
+							},
+						},
 					},
 				},
 				quorum: 2,

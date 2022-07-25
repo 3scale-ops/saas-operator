@@ -5,10 +5,13 @@ import (
 	"errors"
 	"reflect"
 	"testing"
+	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/redis/crud"
+	"github.com/3scale/saas-operator/pkg/redis/crud/client"
 	redis "github.com/3scale/saas-operator/pkg/redis/crud/client"
+	redis_client "github.com/3scale/saas-operator/pkg/redis/crud/client"
 	"github.com/go-test/deep"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -243,72 +246,6 @@ func TestSentinelServer_IsMonitoringShards(t *testing.T) {
 	}
 }
 
-// func TestSentinelServer_MonitoredShards(t *testing.T) {
-// 	type args struct {
-// 		ctx            context.Context
-// 		discoverSlaves bool
-// 	}
-// 	tests := []struct {
-// 		name    string
-// 		ss      *SentinelServer
-// 		args    args
-// 		want    saasv1alpha1.MonitoredShards
-// 		wantErr bool
-// 	}{
-// 		{
-// 			name: "Returns all shards monitored by sentinel",
-// 			ss: &SentinelServer{
-// 				Name: "test-server",
-// 				CRUD: crud.NewFakeCRUD(redis.FakeResponse{
-// 					InjectResponse: func() interface{} {
-// 						return []interface{}{
-// 							[]interface{}{"name", "shard01", "ip", "127.0.0.1", "port", "6379"},
-// 							[]interface{}{"name", "shard02", "ip", "127.0.0.2", "port", "6379"},
-// 						}
-// 					},
-// 					InjectError: func() error { return nil },
-// 				}),
-// 			},
-// 			args: args{
-// 				ctx:            context.TODO(),
-// 				discoverSlaves: false,
-// 			},
-// 			want: saasv1alpha1.MonitoredShards{
-// 				{Name: "shard01", Master: "127.0.0.1:6379"},
-// 				{Name: "shard02", Master: "127.0.0.2:6379"},
-// 			},
-// 			wantErr: false,
-// 		},
-// 		{
-// 			name: "Returns an error",
-// 			ss: &SentinelServer{
-// 				Name: "test-server",
-// 				CRUD: crud.NewFakeCRUD(redis.FakeResponse{
-// 					InjectResponse: func() interface{} { return []interface{}{} },
-// 					InjectError:    func() error { return errors.New("error") },
-// 				}),
-// 			},
-// 			args: args{
-// 				ctx:            context.TODO(),
-// 				discoverSlaves: false,
-// 			},
-// 			want:    nil,
-// 			wantErr: true,
-// 		},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			got, err := tt.ss.MonitoredShards(tt.args.ctx, tt.args.discoverSlaves)
-// 			if (err != nil) != tt.wantErr {
-// 				t.Errorf("SentinelServer.MonitoredShards() error = %v, wantErr %v", err, tt.wantErr)
-// 				return
-// 			}
-// 			if !reflect.DeepEqual(got, tt.want) {
-// 				t.Errorf("SentinelServer.MonitoredShards() = %v, want %v", got, tt.want)
-// 			}
-// 		})
-// 	}
-// }
 func TestSentinelServer_Monitor(t *testing.T) {
 	type fields struct {
 		Name string
@@ -687,6 +624,679 @@ func TestSentinelServer_Monitor(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("SentinelServer.Monitor() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSentinelServer_MonitoredShards(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		opts ShardDiscoveryOption
+	}
+	tests := []struct {
+		name    string
+		ss      *SentinelServer
+		args    args
+		want    saasv1alpha1.MonitoredShards
+		wantErr bool
+	}{
+		{
+			name: "Returns all shards monitored by sentinel",
+			ss: &SentinelServer{
+				Name: "test-server",
+				CRUD: crud.NewFakeCRUD(
+					redis.FakeResponse{
+						// cmd: SentinelMasters()
+						InjectResponse: func() interface{} {
+							return []interface{}{
+								[]interface{}{"name", "shard01", "ip", "127.0.0.1", "port", "6379"},
+								[]interface{}{"name", "shard02", "ip", "127.0.0.2", "port", "6379"},
+							}
+						},
+						InjectError: func() error { return nil },
+					},
+					redis.FakeResponse{
+						// cmd: SentinelMaster
+						InjectResponse: func() interface{} {
+							return &redis_client.SentinelMasterCmdResult{Name: "shard01", IP: "127.0.0.1", Port: 6379, Flags: "master"}
+						},
+						InjectError: func() error { return nil },
+					},
+					redis.FakeResponse{
+						// cmd: SentinelMaster
+						InjectResponse: func() interface{} {
+							return &redis_client.SentinelMasterCmdResult{Name: "shard02", IP: "127.0.0.2", Port: 6379, Flags: "master"}
+						},
+						InjectError: func() error { return nil },
+					},
+				),
+			},
+			args: args{
+				ctx:  context.TODO(),
+				opts: OnlyMasterDiscoveryOpt,
+			},
+			want: saasv1alpha1.MonitoredShards{
+				{
+					Name: "shard01",
+					Servers: map[string]saasv1alpha1.RedisServerDetails{
+						"127.0.0.1:6379": {Role: client.Master, Config: map[string]string{}}},
+				},
+				{
+					Name: "shard02",
+					Servers: map[string]saasv1alpha1.RedisServerDetails{
+						"127.0.0.2:6379": {Role: client.Master, Config: map[string]string{}},
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Returns an error",
+			ss: &SentinelServer{
+				Name: "test-server",
+				CRUD: crud.NewFakeCRUD(redis.FakeResponse{
+					InjectResponse: func() interface{} { return []interface{}{} },
+					InjectError:    func() error { return errors.New("error") },
+				}),
+			},
+			args: args{
+				ctx:  context.TODO(),
+				opts: OnlyMasterDiscoveryOpt,
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.ss.MonitoredShards(tt.args.ctx, tt.args.opts)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("SentinelServer.MonitoredShards() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("SentinelServer.MonitoredShards() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSentinelServer_DiscoverShard(t *testing.T) {
+	type args struct {
+		ctx             context.Context
+		shard           string
+		maxInfoCacheAge time.Duration
+		opts            ShardDiscoveryOptions
+	}
+	tests := []struct {
+		name    string
+		ss      *SentinelServer
+		rss     []RedisServer
+		args    args
+		want    map[string]saasv1alpha1.RedisServerDetails
+		wantErr bool
+	}{
+		{
+			name: "Discovers roles and config options within a shard (all available options)",
+			ss: &SentinelServer{
+				Name: "tsentinel",
+				CRUD: crud.NewFakeCRUD(
+					redis.FakeResponse{
+						// cmd: SentinelMaster
+						InjectResponse: func() interface{} {
+							return &redis_client.SentinelMasterCmdResult{Name: "shard0", IP: "127.0.0.1", Port: 1000, Flags: "master"}
+						},
+						InjectError: func() error { return nil },
+					},
+					redis.FakeResponse{
+						// cmd: SentinelSlaves
+						InjectResponse: func() interface{} {
+							return []interface{}{
+								[]interface{}{
+									"name", "127.0.0.1:2000",
+									"ip", "127.0.0.1",
+									"port", "2000",
+									"flags", "slave",
+								},
+								[]interface{}{
+									"name", "127.0.0.1:3000",
+									"ip", "127.0.0.1",
+									"port", "3000",
+									"flags", "slave",
+								},
+								[]interface{}{
+									"name", "127.0.0.1:4000",
+									"ip", "127.0.0.1",
+									"port", "4000",
+									"flags", "slave",
+								},
+							}
+						},
+						InjectError: func() error { return nil },
+					},
+				),
+				MonitoredRedisServers: map[string]*RedisServer{
+					// redis master
+					"127.0.0.1:1000": {
+						CRUD: crud.NewFakeCRUD(
+							redis.FakeResponse{
+								// cmd: RedisConfigGet("save")
+								InjectResponse: func() interface{} {
+									return []interface{}{"save", "900 1 300 10"}
+								},
+								InjectError: func() error { return nil },
+							}),
+					},
+					// redis slaves
+					"127.0.0.1:2000": {
+						CRUD: crud.NewFakeCRUD(
+							redis.FakeResponse{
+								// cmd: RedisConfigGet("save")
+								InjectResponse: func() interface{} {
+									return []interface{}{"save", "900 1 300 10"}
+								},
+								InjectError: func() error { return nil },
+							},
+							redis.FakeResponse{
+								// cmd: RedisConfigGet("slave-read-only")
+								InjectResponse: func() interface{} {
+									return []interface{}{"slave-read-only", "yes"}
+								},
+								InjectError: func() error { return nil },
+							},
+						),
+					},
+					"127.0.0.1:3000": {
+						CRUD: crud.NewFakeCRUD(
+							redis.FakeResponse{
+								// cmd: RedisConfigGet("save")
+								InjectResponse: func() interface{} {
+									return []interface{}{"save", "900 1 300 10"}
+								},
+								InjectError: func() error { return nil },
+							},
+							redis.FakeResponse{
+								// cmd: RedisConfigGet("slave-read-only")
+								InjectResponse: func() interface{} {
+									return []interface{}{"slave-read-only", "yes"}
+								},
+								InjectError: func() error { return nil },
+							},
+						),
+					},
+					"127.0.0.1:4000": {
+						CRUD: crud.NewFakeCRUD(
+							redis.FakeResponse{
+								// cmd: RedisConfigGet("save")
+								InjectResponse: func() interface{} {
+									return []interface{}{"save", "900 1 300 10"}
+								},
+								InjectError: func() error { return nil },
+							},
+							redis.FakeResponse{
+								// cmd: RedisConfigGet("slave-read-only")
+								InjectResponse: func() interface{} {
+									return []interface{}{"slave-read-only", "no"}
+								},
+								InjectError: func() error { return nil },
+							},
+						),
+					},
+				},
+			},
+			args: args{
+				opts: ShardDiscoveryOptions{SaveConfigDiscoveryOpt, SlaveReadOnlyDiscoveryOpt},
+			},
+			want: map[string]saasv1alpha1.RedisServerDetails{
+				"127.0.0.1:1000": {
+					Role:   client.Master,
+					Config: map[string]string{"save": "900 1 300 10"},
+				},
+				"127.0.0.1:2000": {
+					Role:   client.Slave,
+					Config: map[string]string{"save": "900 1 300 10", "slave-read-only": "yes"},
+				},
+				"127.0.0.1:3000": {
+					Role:   client.Slave,
+					Config: map[string]string{"save": "900 1 300 10", "slave-read-only": "yes"},
+				},
+				"127.0.0.1:4000": {
+					Role:   client.Slave,
+					Config: map[string]string{"save": "900 1 300 10", "slave-read-only": "no"},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Only discovers master, no config",
+			ss: &SentinelServer{
+				Name: "tsentinel",
+				CRUD: crud.NewFakeCRUD(
+					redis.FakeResponse{
+						// cmd: SentinelMaster
+						InjectResponse: func() interface{} {
+							return &redis_client.SentinelMasterCmdResult{Name: "shard0", IP: "127.0.0.1", Port: 1000, Flags: "master"}
+						},
+						InjectError: func() error { return nil },
+					},
+				),
+				MonitoredRedisServers: map[string]*RedisServer{},
+			},
+			args: args{
+				opts: ShardDiscoveryOptions{OnlyMasterDiscoveryOpt},
+			},
+			want: map[string]saasv1alpha1.RedisServerDetails{
+				"127.0.0.1:1000": {
+					Role:   client.Master,
+					Config: map[string]string{},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Discovers roles and slave-read-only option",
+			ss: &SentinelServer{
+				Name: "tsentinel",
+				CRUD: crud.NewFakeCRUD(
+					redis.FakeResponse{
+						// cmd: SentinelMaster
+						InjectResponse: func() interface{} {
+							return &redis_client.SentinelMasterCmdResult{Name: "shard0", IP: "127.0.0.1", Port: 1000, Flags: "master"}
+						},
+						InjectError: func() error { return nil },
+					},
+					redis.FakeResponse{
+						// cmd: SentinelSlaves
+						InjectResponse: func() interface{} {
+							return []interface{}{
+								[]interface{}{
+									"name", "127.0.0.1:2000",
+									"ip", "127.0.0.1",
+									"port", "2000",
+									"flags", "slave",
+								},
+								[]interface{}{
+									"name", "127.0.0.1:3000",
+									"ip", "127.0.0.1",
+									"port", "3000",
+									"flags", "slave",
+								},
+								[]interface{}{
+									"name", "127.0.0.1:4000",
+									"ip", "127.0.0.1",
+									"port", "4000",
+									"flags", "slave",
+								},
+							}
+						},
+						InjectError: func() error { return nil },
+					},
+				),
+				MonitoredRedisServers: map[string]*RedisServer{
+					// redis master
+					"127.0.0.1:1000": {
+						CRUD: crud.NewFakeCRUD(),
+					},
+					// redis slaves
+					"127.0.0.1:2000": {
+						CRUD: crud.NewFakeCRUD(
+							redis.FakeResponse{
+								// cmd: RedisConfigGet("slave-read-only")
+								InjectResponse: func() interface{} {
+									return []interface{}{"slave-read-only", "yes"}
+								},
+								InjectError: func() error { return nil },
+							},
+						),
+					},
+					"127.0.0.1:3000": {
+						CRUD: crud.NewFakeCRUD(
+							redis.FakeResponse{
+								// cmd: RedisConfigGet("slave-read-only")
+								InjectResponse: func() interface{} {
+									return []interface{}{"slave-read-only", "yes"}
+								},
+								InjectError: func() error { return nil },
+							},
+						),
+					},
+					"127.0.0.1:4000": {
+						CRUD: crud.NewFakeCRUD(
+							redis.FakeResponse{
+								// cmd: RedisConfigGet("slave-read-only")
+								InjectResponse: func() interface{} {
+									return []interface{}{"slave-read-only", "no"}
+								},
+								InjectError: func() error { return nil },
+							},
+						),
+					},
+				},
+			},
+			args: args{
+				opts: ShardDiscoveryOptions{SlaveReadOnlyDiscoveryOpt},
+			},
+			want: map[string]saasv1alpha1.RedisServerDetails{
+				"127.0.0.1:1000": {
+					Role:   client.Master,
+					Config: map[string]string{},
+				},
+				"127.0.0.1:2000": {
+					Role:   client.Slave,
+					Config: map[string]string{"slave-read-only": "yes"},
+				},
+				"127.0.0.1:3000": {
+					Role:   client.Slave,
+					Config: map[string]string{"slave-read-only": "yes"},
+				},
+				"127.0.0.1:4000": {
+					Role:   client.Slave,
+					Config: map[string]string{"slave-read-only": "no"},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Discovers roles and save option",
+			ss: &SentinelServer{
+				Name: "tsentinel",
+				CRUD: crud.NewFakeCRUD(
+					redis.FakeResponse{
+						// cmd: SentinelMaster
+						InjectResponse: func() interface{} {
+							return &redis_client.SentinelMasterCmdResult{Name: "shard0", IP: "127.0.0.1", Port: 1000, Flags: "master"}
+						},
+						InjectError: func() error { return nil },
+					},
+					redis.FakeResponse{
+						// cmd: SentinelSlaves
+						InjectResponse: func() interface{} {
+							return []interface{}{
+								[]interface{}{
+									"name", "127.0.0.1:2000",
+									"ip", "127.0.0.1",
+									"port", "2000",
+									"flags", "slave",
+								},
+								[]interface{}{
+									"name", "127.0.0.1:3000",
+									"ip", "127.0.0.1",
+									"port", "3000",
+									"flags", "slave",
+								},
+								[]interface{}{
+									"name", "127.0.0.1:4000",
+									"ip", "127.0.0.1",
+									"port", "4000",
+									"flags", "slave",
+								},
+							}
+						},
+						InjectError: func() error { return nil },
+					},
+				),
+				MonitoredRedisServers: map[string]*RedisServer{
+					// redis master
+					"127.0.0.1:1000": {
+						CRUD: crud.NewFakeCRUD(
+							redis.FakeResponse{
+								// cmd: RedisConfigGet("save")
+								InjectResponse: func() interface{} {
+									return []interface{}{"save", "900 1 300 10"}
+								},
+								InjectError: func() error { return nil },
+							},
+						)},
+					// redis slaves
+					"127.0.0.1:2000": {
+						CRUD: crud.NewFakeCRUD(
+							redis.FakeResponse{
+								// cmd: RedisConfigGet("save")
+								InjectResponse: func() interface{} {
+									return []interface{}{"save", "900 1 300 10"}
+								},
+								InjectError: func() error { return nil },
+							},
+						),
+					},
+					"127.0.0.1:3000": {
+						CRUD: crud.NewFakeCRUD(
+							redis.FakeResponse{
+								// cmd: RedisConfigGet("save")
+								InjectResponse: func() interface{} {
+									return []interface{}{"save", "900 1 300 10"}
+								},
+								InjectError: func() error { return nil },
+							},
+						),
+					},
+					"127.0.0.1:4000": {
+						CRUD: crud.NewFakeCRUD(
+							redis.FakeResponse{
+								// cmd: RedisConfigGet("save")
+								InjectResponse: func() interface{} {
+									return []interface{}{"save", "900 1 300 10"}
+								},
+								InjectError: func() error { return nil },
+							},
+						),
+					},
+				},
+			},
+			args: args{
+				opts: ShardDiscoveryOptions{SaveConfigDiscoveryOpt},
+			},
+			want: map[string]saasv1alpha1.RedisServerDetails{
+				"127.0.0.1:1000": {
+					Role:   client.Master,
+					Config: map[string]string{"save": "900 1 300 10"},
+				},
+				"127.0.0.1:2000": {
+					Role:   client.Slave,
+					Config: map[string]string{"save": "900 1 300 10"},
+				},
+				"127.0.0.1:3000": {
+					Role:   client.Slave,
+					Config: map[string]string{"save": "900 1 300 10"},
+				},
+				"127.0.0.1:4000": {
+					Role:   client.Slave,
+					Config: map[string]string{"save": "900 1 300 10"},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Avoids down slaves",
+			ss: &SentinelServer{
+				Name: "tsentinel",
+				CRUD: crud.NewFakeCRUD(
+					redis.FakeResponse{
+						// cmd: SentinelMaster
+						InjectResponse: func() interface{} {
+							return &redis_client.SentinelMasterCmdResult{Name: "shard0", IP: "127.0.0.1", Port: 1000, Flags: "master"}
+						},
+						InjectError: func() error { return nil },
+					},
+					redis.FakeResponse{
+						// cmd: SentinelSlaves
+						InjectResponse: func() interface{} {
+							return []interface{}{
+								[]interface{}{
+									"name", "127.0.0.1:2000",
+									"ip", "127.0.0.1",
+									"port", "2000",
+									"flags", "slave,s_down",
+								},
+								[]interface{}{
+									"name", "127.0.0.1:3000",
+									"ip", "127.0.0.1",
+									"port", "3000",
+									"flags", "slave",
+								},
+								[]interface{}{
+									"name", "127.0.0.1:4000",
+									"ip", "127.0.0.1",
+									"port", "4000",
+									"flags", "slave",
+								},
+							}
+						},
+						InjectError: func() error { return nil },
+					},
+				),
+				MonitoredRedisServers: map[string]*RedisServer{
+					// redis master
+					"127.0.0.1:1000": {
+						CRUD: crud.NewFakeCRUD(
+							redis.FakeResponse{
+								// cmd: RedisConfigGet("save")
+								InjectResponse: func() interface{} {
+									return []interface{}{"save", "900 1 300 10"}
+								},
+								InjectError: func() error { return nil },
+							}),
+					},
+					// redis slaves
+					"127.0.0.1:2000": {
+						CRUD: crud.NewFakeCRUD(
+							redis.FakeResponse{
+								// cmd: RedisConfigGet("save")
+								InjectResponse: func() interface{} {
+									return []interface{}{"save", "900 1 300 10"}
+								},
+								InjectError: func() error { return nil },
+							},
+							redis.FakeResponse{
+								// cmd: RedisConfigGet("slave-read-only")
+								InjectResponse: func() interface{} {
+									return []interface{}{"slave-read-only", "yes"}
+								},
+								InjectError: func() error { return nil },
+							},
+						),
+					},
+					"127.0.0.1:3000": {
+						CRUD: crud.NewFakeCRUD(
+							redis.FakeResponse{
+								// cmd: RedisConfigGet("save")
+								InjectResponse: func() interface{} {
+									return []interface{}{"save", "900 1 300 10"}
+								},
+								InjectError: func() error { return nil },
+							},
+							redis.FakeResponse{
+								// cmd: RedisConfigGet("slave-read-only")
+								InjectResponse: func() interface{} {
+									return []interface{}{"slave-read-only", "yes"}
+								},
+								InjectError: func() error { return nil },
+							},
+						),
+					},
+					"127.0.0.1:4000": {
+						CRUD: crud.NewFakeCRUD(
+							redis.FakeResponse{
+								// cmd: RedisConfigGet("save")
+								InjectResponse: func() interface{} {
+									return []interface{}{"save", "900 1 300 10"}
+								},
+								InjectError: func() error { return nil },
+							},
+							redis.FakeResponse{
+								// cmd: RedisConfigGet("slave-read-only")
+								InjectResponse: func() interface{} {
+									return []interface{}{"slave-read-only", "no"}
+								},
+								InjectError: func() error { return nil },
+							},
+						),
+					},
+				},
+			},
+			args: args{
+				opts: ShardDiscoveryOptions{SaveConfigDiscoveryOpt, SlaveReadOnlyDiscoveryOpt},
+			},
+			want: map[string]saasv1alpha1.RedisServerDetails{
+				"127.0.0.1:1000": {
+					Role:   client.Master,
+					Config: map[string]string{"save": "900 1 300 10"},
+				},
+				"127.0.0.1:3000": {
+					Role:   client.Slave,
+					Config: map[string]string{"save": "900 1 300 10", "slave-read-only": "yes"},
+				},
+				"127.0.0.1:4000": {
+					Role:   client.Slave,
+					Config: map[string]string{"save": "900 1 300 10", "slave-read-only": "no"},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Fails if master is down",
+			ss: &SentinelServer{
+				Name: "tsentinel",
+				CRUD: crud.NewFakeCRUD(
+					redis.FakeResponse{
+						// cmd: SentinelMaster
+						InjectResponse: func() interface{} {
+							return &redis_client.SentinelMasterCmdResult{Name: "shard0", IP: "127.0.0.1", Port: 1000, Flags: "o_down,master"}
+						},
+						InjectError: func() error { return nil },
+					},
+				),
+				MonitoredRedisServers: map[string]*RedisServer{},
+			},
+			args: args{
+				opts: ShardDiscoveryOptions{SaveConfigDiscoveryOpt, SlaveReadOnlyDiscoveryOpt},
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.ss.DiscoverShard(tt.args.ctx, tt.args.shard, tt.args.maxInfoCacheAge, tt.args.opts)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("SentinelServer.DiscoverShard() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("SentinelServer.DiscoverShard() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestShardDiscoveryOptions_Has(t *testing.T) {
+	type args struct {
+		sdo ShardDiscoveryOption
+	}
+	tests := []struct {
+		name string
+		sdos ShardDiscoveryOptions
+		args args
+		want bool
+	}{
+		{
+			name: "Returns true if option in slice",
+			sdos: []ShardDiscoveryOption{SaveConfigDiscoveryOpt, SlaveReadOnlyDiscoveryOpt},
+			args: args{SlaveReadOnlyDiscoveryOpt},
+			want: true,
+		},
+		{
+			name: "Returns false if option not in slice",
+			sdos: []ShardDiscoveryOption{SaveConfigDiscoveryOpt, SlaveReadOnlyDiscoveryOpt},
+			args: args{OnlyMasterDiscoveryOpt},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.sdos.Has(tt.args.sdo); got != tt.want {
+				t.Errorf("ShardDiscoveryOptions.Has() = %v, want %v", got, tt.want)
 			}
 		})
 	}

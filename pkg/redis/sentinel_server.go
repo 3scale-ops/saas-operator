@@ -21,10 +21,11 @@ const (
 
 // SentinelServer represents a sentinel Pod
 type SentinelServer struct {
-	Name string
-	IP   string
-	Port string
-	CRUD *crud.CRUD
+	Name                  string
+	IP                    string
+	Port                  string
+	CRUD                  *crud.CRUD
+	MonitoredRedisServers map[string]*RedisServer
 }
 
 func NewSentinelServerFromConnectionString(name, connectionString string) (*SentinelServer, error) {
@@ -191,7 +192,7 @@ func (ss *SentinelServer) DiscoverShard(ctx context.Context, shard string, maxIn
 	sn := serverName(master.IP, master.Port)
 
 	// do not try to discover a master flagged as "s_down" or "o_down"
-	if strings.Contains(master.Flags, "s_down") && strings.Contains(master.Flags, "o_down") {
+	if strings.Contains(master.Flags, "s_down") || strings.Contains(master.Flags, "o_down") {
 		return nil, fmt.Errorf("%s master %s is s_down/o_down", shard, sn)
 	}
 
@@ -204,8 +205,8 @@ func (ss *SentinelServer) DiscoverShard(ctx context.Context, shard string, maxIn
 
 	if opts.Has(SaveConfigDiscoveryOpt) {
 
-		// open a client to the redis server
-		rs, err := NewRedisServerFromConnectionString(sn, connectionString(master.IP, master.Port))
+		// open/reuse a client to the redis server
+		rs, err := ss.OpenDirectRedisConnection(ctx, master.IP, master.Port)
 		defer rs.Cleanup(log.FromContext(ctx))
 		if err != nil {
 			logger.Error(err, fmt.Sprintf("unable to open client to master %s", sn))
@@ -244,8 +245,8 @@ func (ss *SentinelServer) DiscoverShard(ctx context.Context, shard string, maxIn
 
 				if opts.Has(SaveConfigDiscoveryOpt) || opts.Has(SlaveReadOnlyDiscoveryOpt) {
 
-					// open a client to the redis server
-					rs, err := NewRedisServerFromConnectionString(sn, connectionString(slave.IP, slave.Port))
+					// open/reuse a client to the redis server
+					rs, err := ss.OpenDirectRedisConnection(ctx, slave.IP, slave.Port)
 					defer rs.Cleanup(log.FromContext(ctx))
 					if err != nil {
 						logger.Error(err, fmt.Sprintf("unable to open client to slave %s", sn))
@@ -278,4 +279,14 @@ func (ss *SentinelServer) DiscoverShard(ctx context.Context, shard string, maxIn
 	return result, nil
 }
 
-//
+func (ss *SentinelServer) OpenDirectRedisConnection(ctx context.Context, ip string, port int) (*RedisServer, error) {
+	sn := serverName(ip, port)
+
+	// Check if a connection is already open for the ip:port
+	if rs, ok := ss.MonitoredRedisServers[sn]; ok {
+		return rs, nil
+	}
+
+	// open a new connection to redis
+	return NewRedisServerFromConnectionString(sn, connectionString(ip, port))
+}
