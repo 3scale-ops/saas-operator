@@ -127,6 +127,15 @@ const (
 	SaveConfigDiscoveryOpt
 )
 
+func (sdos ShardDiscoveryOptions) Has(sdo ShardDiscoveryOption) bool {
+	for _, opt := range sdos {
+		if opt == sdo {
+			return true
+		}
+	}
+	return false
+}
+
 type ShardDiscoveryOptions []ShardDiscoveryOption
 
 // MonitoredShards returns the list of monitored shards of this SentinelServer
@@ -154,15 +163,6 @@ func (ss *SentinelServer) MonitoredShards(ctx context.Context, options ...ShardD
 		)
 	}
 	return monitoredShards, nil
-}
-
-func (sdos ShardDiscoveryOptions) contain(sdo ShardDiscoveryOption) bool {
-	for _, opt := range sdos {
-		if opt == sdo {
-			return true
-		}
-	}
-	return false
 }
 
 func serverName(ip string, port int) string {
@@ -199,7 +199,7 @@ func (ss *SentinelServer) DiscoverShard(ctx context.Context, shard string, maxIn
 		},
 	}
 
-	if opts.contain(SaveConfigDiscoveryOpt) {
+	if opts.Has(SaveConfigDiscoveryOpt) {
 
 		// open a client to the redis server
 		rs, err := NewRedisServerFromConnectionString(sn, connectionString(master.IP, master.Port))
@@ -219,7 +219,7 @@ func (ss *SentinelServer) DiscoverShard(ctx context.Context, shard string, maxIn
 	// discover the shard's slaves //
 	/////////////////////////////////
 
-	if !opts.contain(OnlyMasterDiscoveryOpt) {
+	if !opts.Has(OnlyMasterDiscoveryOpt) {
 		slaves, err := ss.CRUD.SentinelSlaves(ctx, shard)
 		if err != nil {
 			return nil, err
@@ -236,7 +236,7 @@ func (ss *SentinelServer) DiscoverShard(ctx context.Context, shard string, maxIn
 					Config: map[string]string{},
 				}
 
-				if opts.contain(SaveConfigDiscoveryOpt) || opts.contain(SlaveReadOnlyDiscoveryOpt) {
+				if opts.Has(SaveConfigDiscoveryOpt) || opts.Has(SlaveReadOnlyDiscoveryOpt) {
 
 					// open a client to the redis server
 					rs, err := NewRedisServerFromConnectionString(sn, connectionString(slave.IP, slave.Port))
@@ -245,7 +245,7 @@ func (ss *SentinelServer) DiscoverShard(ctx context.Context, shard string, maxIn
 						return nil, err
 					}
 
-					if opts.contain(SaveConfigDiscoveryOpt) {
+					if opts.Has(SaveConfigDiscoveryOpt) {
 						save, err := rs.CRUD.RedisConfigGet(ctx, "save")
 						if err != nil {
 							return nil, err
@@ -253,7 +253,7 @@ func (ss *SentinelServer) DiscoverShard(ctx context.Context, shard string, maxIn
 						result[sn].Config["save"] = save
 					}
 
-					if opts.contain(SlaveReadOnlyDiscoveryOpt) {
+					if opts.Has(SlaveReadOnlyDiscoveryOpt) {
 						slaveReadOnly, err := rs.CRUD.RedisConfigGet(ctx, "slave-read-only")
 						if err != nil {
 							return nil, err
