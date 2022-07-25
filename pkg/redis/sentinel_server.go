@@ -176,12 +176,15 @@ func connectionString(ip string, port int) string {
 func (ss *SentinelServer) DiscoverShard(ctx context.Context, shard string, maxInfoCacheAge time.Duration,
 	opts ShardDiscoveryOptions) (map[string]saasv1alpha1.RedisServerDetails, error) {
 
+	logger := log.FromContext(ctx, "function", "(*SentinelServer).DiscoverShard()")
+
 	/////////////////////////////////
 	// discover the shard's master //
 	/////////////////////////////////
 
 	master, err := ss.CRUD.SentinelMaster(ctx, shard)
 	if err != nil {
+		logger.Error(err, fmt.Sprintf("unable to get master for shard %s", shard))
 		return nil, err
 	}
 
@@ -205,11 +208,13 @@ func (ss *SentinelServer) DiscoverShard(ctx context.Context, shard string, maxIn
 		rs, err := NewRedisServerFromConnectionString(sn, connectionString(master.IP, master.Port))
 		defer rs.Cleanup(log.FromContext(ctx))
 		if err != nil {
+			logger.Error(err, fmt.Sprintf("unable to open client to master %s", sn))
 			return nil, err
 		}
 
 		save, err := rs.CRUD.RedisConfigGet(ctx, "save")
 		if err != nil {
+			logger.Error(err, fmt.Sprintf("unable to get master %s 'save' option", sn))
 			return nil, err
 		}
 		result[sn].Config["save"] = save
@@ -222,6 +227,7 @@ func (ss *SentinelServer) DiscoverShard(ctx context.Context, shard string, maxIn
 	if !opts.Has(OnlyMasterDiscoveryOpt) {
 		slaves, err := ss.CRUD.SentinelSlaves(ctx, shard)
 		if err != nil {
+			logger.Error(err, fmt.Sprintf("unable to get slaves for shard %s", shard))
 			return nil, err
 		}
 
@@ -242,12 +248,14 @@ func (ss *SentinelServer) DiscoverShard(ctx context.Context, shard string, maxIn
 					rs, err := NewRedisServerFromConnectionString(sn, connectionString(slave.IP, slave.Port))
 					defer rs.Cleanup(log.FromContext(ctx))
 					if err != nil {
+						logger.Error(err, fmt.Sprintf("unable to open client to slave %s", sn))
 						return nil, err
 					}
 
 					if opts.Has(SaveConfigDiscoveryOpt) {
 						save, err := rs.CRUD.RedisConfigGet(ctx, "save")
 						if err != nil {
+							logger.Error(err, fmt.Sprintf("unable to get slave %s 'save' option", sn))
 							return nil, err
 						}
 						result[sn].Config["save"] = save
@@ -256,6 +264,7 @@ func (ss *SentinelServer) DiscoverShard(ctx context.Context, shard string, maxIn
 					if opts.Has(SlaveReadOnlyDiscoveryOpt) {
 						slaveReadOnly, err := rs.CRUD.RedisConfigGet(ctx, "slave-read-only")
 						if err != nil {
+							logger.Error(err, fmt.Sprintf("unable to get slave %s 'slave-read-only' option", sn))
 							return nil, err
 						}
 						result[sn].Config["slave-read-only"] = slaveReadOnly
@@ -268,3 +277,5 @@ func (ss *SentinelServer) DiscoverShard(ctx context.Context, shard string, maxIn
 
 	return result, nil
 }
+
+//
