@@ -85,8 +85,7 @@ func (sic SentinelInfoCache) GetValue(shard, runID, key string, maxCacheAge time
 		return "", fmt.Errorf("cache is too old (%s)", age)
 	}
 	if value, ok := sic[shard][runID].Info[key]; !ok {
-		// keys do not exist in the cache for empty values
-		return "", nil
+		return "", fmt.Errorf("unable to find key '%s' in %s's cache", key, runID)
 	} else {
 		return value, nil
 	}
