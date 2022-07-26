@@ -462,7 +462,8 @@ spec:
                   properties:
                     master:
                       description: Master is the address of the master redis server
-                        of this shard, in the format "127.0.0.1:6379"
+                        of this shard, in the format "127.0.0.1:6379" DEPRECATED -
+                        this field will be removed in an upcoming release
                       type: string
                     name:
                       description: Name is the name of the redis shard
@@ -481,19 +482,21 @@ spec:
                         required:
                         - role
                         type: object
-                      description: RedisServerDetails is a map intended to store configuration
+                      description: Server is a map intended to store configuration
                         information of each of the RedisServer instances that belong
                         to the MonitoredShard
                       type: object
                     slavesRO:
                       description: SlavesRO is the list of addresses of the read-only
                         slave servers in this shard, in the format "127.0.0.1:6379"
+                        DEPRECATED - this field will be removed in an upcoming release
                       items:
                         type: string
                       type: array
                     slavesRW:
                       description: SlavesRW is the list of addresses of the read-write
                         slave servers in this shard, in the format "127.0.0.1:6379"
+                        DEPRECATED - this field will be removed in an upcoming release
                       items:
                         type: string
                       type: array

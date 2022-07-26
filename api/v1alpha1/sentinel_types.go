@@ -190,20 +190,23 @@ type MonitoredShard struct {
 	Name string `json:"name"`
 	// Master is the address of the master redis server of
 	// this shard, in the format "127.0.0.1:6379"
+	// DEPRECATED - this field will be removed in an upcoming release
 	// +operator-sdk:csv:customresourcedefinitions:type=status
 	// +optional
 	Master string `json:"master,omitempty"`
 	// SlavesRO is the list of addresses of the read-only slave
 	// servers in this shard, in the format "127.0.0.1:6379"
+	// DEPRECATED - this field will be removed in an upcoming release
 	// +operator-sdk:csv:customresourcedefinitions:type=status
 	// +optional
 	SlavesRO []string `json:"slavesRO,omitempty"`
 	// SlavesRW is the list of addresses of the read-write slave
 	// servers in this shard, in the format "127.0.0.1:6379"
+	// DEPRECATED - this field will be removed in an upcoming release
 	// +operator-sdk:csv:customresourcedefinitions:type=status
 	// +optional
 	SlavesRW []string `json:"slavesRW,omitempty"`
-	// RedisServerDetails is a map intended to store configuration information
+	// Server is a map intended to store configuration information
 	// of each of the RedisServer instances that belong to the MonitoredShard
 	// +operator-sdk:csv:customresourcedefinitions:type=status
 	// +optional
