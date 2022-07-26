@@ -23,10 +23,12 @@ import (
 	"testing"
 	"time"
 
+	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
+	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
+	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	"github.com/goombaio/namegenerator"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	policyv1 "k8s.io/api/policy/v1"
@@ -43,9 +45,7 @@ import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	externalsecretsv1beta1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
-	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
-	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
-	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	// +kubebuilder:scaffold:imports
 )
 
