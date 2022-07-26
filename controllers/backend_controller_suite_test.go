@@ -7,6 +7,7 @@ import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	externalsecretsv1beta1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
+	testutil "github.com/3scale/saas-operator/test/util"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
@@ -111,72 +112,62 @@ var _ = Describe("Backend controller", func() {
 
 			dep := &appsv1.Deployment{}
 			By("deploying the backend-listener workload",
-				checkWorkloadResources(dep,
-					expectedWorkload{
-						Name:          "backend-listener",
-						Namespace:     namespace,
-						Replicas:      2,
-						ContainerName: "backend-listener",
-						ContainterArgs: []string{
-							"bin/3scale_backend", "start",
-							"-e", "production",
-							"-p", "3000",
-							"-x", "/dev/stdout",
-						},
-						PDB:        true,
-						HPA:        true,
-						PodMonitor: true,
+				(&testutil.ExpectedWorkload{
+					Name:          "backend-listener",
+					Namespace:     namespace,
+					Replicas:      2,
+					ContainerName: "backend-listener",
+					ContainterArgs: []string{
+						"bin/3scale_backend", "start",
+						"-e", "production",
+						"-p", "3000",
+						"-x", "/dev/stdout",
 					},
-				),
-			)
+					PDB:        true,
+					HPA:        true,
+					PodMonitor: true,
+				}).Assert(k8sClient, dep, timeout, poll))
 
 			svc := &corev1.Service{}
 			By("deploying the backend-listener service",
-				checkResource(svc, expectedResource{
+				(&testutil.ExpectedResource{
 					Name: "backend-listener", Namespace: namespace,
-				}),
-			)
+				}).Assert(k8sClient, svc, timeout, poll))
+
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("backend-listener"))
 
 			By("deploying the backend-listener-internal service",
-				checkResource(svc, expectedResource{
+				(&testutil.ExpectedResource{
 					Name: "backend-listener-internal", Namespace: namespace,
-				}),
-			)
+				}).Assert(k8sClient, svc, timeout, poll))
+
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("backend-listener"))
 
 			By("deploying the backend-worker workload",
-				checkWorkloadResources(dep,
-					expectedWorkload{
-						Name:          "backend-worker",
-						Namespace:     namespace,
-						Replicas:      2,
-						ContainerName: "backend-worker",
-						ContainterArgs: []string{
-							"bin/3scale_backend_worker", "run",
-						},
-						PDB:        true,
-						HPA:        true,
-						PodMonitor: true,
+				(&testutil.ExpectedWorkload{
+					Name:          "backend-worker",
+					Namespace:     namespace,
+					Replicas:      2,
+					ContainerName: "backend-worker",
+					ContainterArgs: []string{
+						"bin/3scale_backend_worker", "run",
 					},
-				),
-			)
+					PDB:        true,
+					HPA:        true,
+					PodMonitor: true,
+				}).Assert(k8sClient, dep, timeout, poll))
+
 			Expect(dep.Spec.Template.Spec.Containers[0].Env[12].Name).To(Equal("CONFIG_EVENTS_HOOK"))
 			Expect(dep.Spec.Template.Spec.Containers[0].Env[12].Value).To(Equal("system-app"))
 
 			By("deploying the backend-cron workload",
-				checkWorkloadResources(dep,
-					expectedWorkload{
-						Name:          "backend-cron",
-						Namespace:     namespace,
-						Replicas:      1,
-						ContainerName: "backend-cron",
-						ContainterArgs: []string{
-							"backend-cron",
-						},
-					},
-				),
-			)
+				(&testutil.ExpectedWorkload{
+					Name:           "backend-cron",
+					Namespace:      namespace,
+					Replicas:       1,
+					ContainerName:  "backend-cron",
+					ContainterArgs: []string{"backend-cron"},
+				}).Assert(k8sClient, dep, timeout, poll))
 
 		})
 
@@ -184,21 +175,13 @@ var _ = Describe("Backend controller", func() {
 
 			gd := &grafanav1alpha1.GrafanaDashboard{}
 			By("deploying the backend grafana dashboard",
-				checkResource(gd, expectedResource{
-					Name: "backend", Namespace: namespace,
-				}),
-			)
+				(&testutil.ExpectedResource{Name: "backend", Namespace: namespace}).
+					Assert(k8sClient, gd, timeout, poll))
 
 			esApi := &externalsecretsv1beta1.ExternalSecret{}
 			By("deploying the backend-internal-api external secret",
-				checkResource(
-					esApi,
-					expectedResource{
-						Name:      "backend-internal-api",
-						Namespace: namespace,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{Name: "backend-internal-api", Namespace: namespace}).
+					Assert(k8sClient, esApi, timeout, poll))
 
 			Expect(esApi.Spec.RefreshInterval.ToUnstructured()).To(Equal("1m0s"))
 			Expect(esApi.Spec.SecretStoreRef.Name).To(Equal("vault-mgmt"))
@@ -217,14 +200,8 @@ var _ = Describe("Backend controller", func() {
 
 			esHook := &externalsecretsv1beta1.ExternalSecret{}
 			By("deploying the backend-system-events-hook external secret",
-				checkResource(
-					esHook,
-					expectedResource{
-						Name:      "backend-system-events-hook",
-						Namespace: namespace,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{Name: "backend-system-events-hook", Namespace: namespace}).
+					Assert(k8sClient, esHook, timeout, poll))
 
 			Expect(esHook.Spec.RefreshInterval.ToUnstructured()).To(Equal("1m0s"))
 			Expect(esHook.Spec.SecretStoreRef.Name).To(Equal("vault-mgmt"))
@@ -239,14 +216,8 @@ var _ = Describe("Backend controller", func() {
 
 				esError := &externalsecretsv1beta1.ExternalSecret{}
 				By("deploying the backend-error-monitoring external secret",
-					checkResource(
-						esError,
-						expectedResource{
-							Name:      "backend-error-monitoring",
-							Namespace: namespace,
-						},
-					),
-				)
+					(&testutil.ExpectedResource{Name: "backend-error-monitoring", Namespace: namespace}).
+						Assert(k8sClient, esError, timeout, poll))
 
 				Expect(esError.Spec.RefreshInterval.ToUnstructured()).To(Equal("1m0s"))
 				Expect(esError.Spec.SecretStoreRef.Name).To(Equal("vault-mgmt"))
@@ -281,27 +252,20 @@ var _ = Describe("Backend controller", func() {
 						return err
 					}
 
-					rvs["svc/backend-listener"] = getResourceVersion(
-						&corev1.Service{}, "backend-listener", namespace,
-					)
-					rvs["deployment/backend-listener"] = getResourceVersion(
-						&appsv1.Deployment{}, "backend-listener", namespace,
-					)
-					rvs["hpa/backend-worker"] = getResourceVersion(
-						&autoscalingv2beta2.HorizontalPodAutoscaler{}, "backend-worker", namespace,
-					)
-					rvs["deployment/backend-cron"] = getResourceVersion(
-						&appsv1.Deployment{}, "backend-cron", namespace,
-					)
-					rvs["externalsecret/backend-internal-api"] = getResourceVersion(
-						&externalsecretsv1beta1.ExternalSecret{}, "backend-internal-api", namespace,
-					)
-					rvs["externalsecret/backend-system-events-hook"] = getResourceVersion(
-						&externalsecretsv1beta1.ExternalSecret{}, "backend-system-events-hook", namespace,
-					)
-					rvs["externalsecret/backend-error-monitoring"] = getResourceVersion(
-						&externalsecretsv1beta1.ExternalSecret{}, "backend-error-monitoring", namespace,
-					)
+					rvs["svc/backend-listener"] = testutil.GetResourceVersion(
+						k8sClient, &corev1.Service{}, "backend-listener", namespace, timeout, poll)
+					rvs["deployment/backend-listener"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "backend-listener", namespace, timeout, poll)
+					rvs["hpa/backend-worker"] = testutil.GetResourceVersion(
+						k8sClient, &autoscalingv2beta2.HorizontalPodAutoscaler{}, "backend-worker", namespace, timeout, poll)
+					rvs["deployment/backend-cron"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "backend-cron", namespace, timeout, poll)
+					rvs["externalsecret/backend-internal-api"] = testutil.GetResourceVersion(
+						k8sClient, &externalsecretsv1beta1.ExternalSecret{}, "backend-internal-api", namespace, timeout, poll)
+					rvs["externalsecret/backend-system-events-hook"] = testutil.GetResourceVersion(
+						k8sClient, &externalsecretsv1beta1.ExternalSecret{}, "backend-system-events-hook", namespace, timeout, poll)
+					rvs["externalsecret/backend-error-monitoring"] = testutil.GetResourceVersion(
+						k8sClient, &externalsecretsv1beta1.ExternalSecret{}, "backend-error-monitoring", namespace, timeout, poll)
 
 					patch := client.MergeFrom(backend.DeepCopy())
 					backend.Spec.Image = &saasv1alpha1.ImageSpec{
@@ -341,72 +305,62 @@ var _ = Describe("Backend controller", func() {
 
 				dep := &appsv1.Deployment{}
 				By("updating the backend-listener workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:           "backend-listener",
-							Namespace:      namespace,
-							Replicas:       3,
-							ContainerName:  "backend-listener",
-							ContainerImage: "newImage:newTag",
-							ContainterArgs: []string{
-								"bin/3scale_backend", "-s", "falcon", "start",
-								"-e", "production",
-								"-p", "3000",
-								"-x", "/dev/stdout",
-							},
-							PDB:         true,
-							PodMonitor:  true,
-							LastVersion: rvs["deployment/backend-listener"],
+					(&testutil.ExpectedWorkload{
+
+						Name:           "backend-listener",
+						Namespace:      namespace,
+						Replicas:       3,
+						ContainerName:  "backend-listener",
+						ContainerImage: "newImage:newTag",
+						ContainterArgs: []string{
+							"bin/3scale_backend", "-s", "falcon", "start",
+							"-e", "production",
+							"-p", "3000",
+							"-x", "/dev/stdout",
 						},
-					),
-				)
+						PDB:         true,
+						PodMonitor:  true,
+						LastVersion: rvs["deployment/backend-listener"],
+					}).Assert(k8sClient, dep, timeout, poll))
 
 				svc := &corev1.Service{}
 				By("updating backend-listener service",
-					checkResource(svc, expectedResource{
+					(&testutil.ExpectedResource{
 						Name: "backend-listener", Namespace: namespace,
 						LastVersion: rvs["svc/backend-listener"],
-					}),
-				)
+					}).Assert(k8sClient, svc, timeout, poll))
+
 				Expect(svc.Spec.Selector["deployment"]).To(Equal("backend-listener"))
 				Expect(svc.GetAnnotations()["service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled"]).To(Equal("false"))
 
 				hpa := &autoscalingv2beta2.HorizontalPodAutoscaler{}
 				By("updating the backend-worker workload",
-					checkResource(hpa,
-						expectedResource{
-							Name:        "backend-worker",
-							Namespace:   namespace,
-							LastVersion: rvs["hpa/backend-worker"],
-						},
-					),
-				)
+					(&testutil.ExpectedResource{
+						Name:        "backend-worker",
+						Namespace:   namespace,
+						LastVersion: rvs["hpa/backend-worker"],
+					}).
+						Assert(k8sClient, hpa, timeout, poll))
+
 				Expect(hpa.Spec.MinReplicas).To(Equal(pointer.Int32(3)))
 
 				By("updating the backend-cron workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:           "backend-cron",
-							Namespace:      namespace,
-							Replicas:       3,
-							ContainerName:  "backend-cron",
-							ContainerImage: "newImage:newTag",
-							LastVersion:    rvs["deployment/backend-cron"],
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+						Name:           "backend-cron",
+						Namespace:      namespace,
+						Replicas:       3,
+						ContainerName:  "backend-cron",
+						ContainerImage: "newImage:newTag",
+						LastVersion:    rvs["deployment/backend-cron"],
+					}).Assert(k8sClient, dep, timeout, poll))
 
 				esApi := &externalsecretsv1beta1.ExternalSecret{}
 				By("updating the backend-internal-api external secret",
-					checkResource(
-						esApi,
-						expectedResource{
-							Name:        "backend-internal-api",
-							Namespace:   namespace,
-							LastVersion: rvs["externalsecret/backend-internal-api"],
-						},
-					),
-				)
+					(&testutil.ExpectedResource{
+						Name:        "backend-internal-api",
+						Namespace:   namespace,
+						LastVersion: rvs["externalsecret/backend-internal-api"],
+					}).Assert(k8sClient, esApi, timeout, poll))
 
 				Expect(esApi.Spec.RefreshInterval.ToUnstructured()).To(Equal("1s"))
 				Expect(esApi.Spec.SecretStoreRef.Name).To(Equal("other-store"))
@@ -421,15 +375,11 @@ var _ = Describe("Backend controller", func() {
 
 				esHook := &externalsecretsv1beta1.ExternalSecret{}
 				By("updating the backend-system-events-hook external secret",
-					checkResource(
-						esHook,
-						expectedResource{
-							Name:        "backend-system-events-hook",
-							Namespace:   namespace,
-							LastVersion: rvs["externalsecret/backend-system-events-hook"],
-						},
-					),
-				)
+					(&testutil.ExpectedResource{
+						Name:        "backend-system-events-hook",
+						Namespace:   namespace,
+						LastVersion: rvs["externalsecret/backend-system-events-hook"],
+					}).Assert(k8sClient, esHook, timeout, poll))
 
 				Expect(esHook.Spec.RefreshInterval.ToUnstructured()).To(Equal("1s"))
 				Expect(esHook.Spec.SecretStoreRef.Name).To(Equal("other-store"))
@@ -444,15 +394,11 @@ var _ = Describe("Backend controller", func() {
 
 				esError := &externalsecretsv1beta1.ExternalSecret{}
 				By("updating the backend-error-monitoring external secret",
-					checkResource(
-						esError,
-						expectedResource{
-							Name:        "backend-error-monitoring",
-							Namespace:   namespace,
-							LastVersion: rvs["backend-error-monitoring"],
-						},
-					),
-				)
+					(&testutil.ExpectedResource{
+						Name:        "backend-error-monitoring",
+						Namespace:   namespace,
+						LastVersion: rvs["backend-error-monitoring"],
+					}).Assert(k8sClient, esError, timeout, poll))
 
 				Expect(esError.Spec.RefreshInterval.ToUnstructured()).To(Equal("1s"))
 				Expect(esError.Spec.SecretStoreRef.Name).To(Equal("other-store"))
@@ -484,15 +430,12 @@ var _ = Describe("Backend controller", func() {
 						return err
 					}
 
-					rvs["svc/backend-listener"] = getResourceVersion(
-						&corev1.Service{}, "backend-listener", namespace,
-					)
-					rvs["deployment/backend-listener"] = getResourceVersion(
-						&appsv1.Deployment{}, "backend-listener", namespace,
-					)
-					rvs["deployment/backend-worker"] = getResourceVersion(
-						&appsv1.Deployment{}, "backend-worker", namespace,
-					)
+					rvs["svc/backend-listener"] = testutil.GetResourceVersion(
+						k8sClient, &corev1.Service{}, "backend-listener", namespace, timeout, poll)
+					rvs["deployment/backend-listener"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "backend-listener", namespace, timeout, poll)
+					rvs["deployment/backend-worker"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "backend-worker", namespace, timeout, poll)
 
 					patch := client.MergeFrom(backend.DeepCopy())
 					backend.Spec.Listener.Canary = &saasv1alpha1.Canary{
@@ -518,57 +461,54 @@ var _ = Describe("Backend controller", func() {
 
 				dep := &appsv1.Deployment{}
 				By("deploying the backend-listener-canary workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:           "backend-listener-canary",
-							Namespace:      namespace,
-							Replicas:       2,
-							ContainerName:  "backend-listener",
-							ContainerImage: "newImage:newTag",
-							ContainterArgs: []string{
-								"bin/3scale_backend", "start",
-								"-e", "production",
-								"-p", "3000",
-								"-x", "/dev/stdout",
-							},
-							PodMonitor:  true,
-							LastVersion: rvs["deployment/backend-listener"],
+					(&testutil.ExpectedWorkload{
+
+						Name:           "backend-listener-canary",
+						Namespace:      namespace,
+						Replicas:       2,
+						ContainerName:  "backend-listener",
+						ContainerImage: "newImage:newTag",
+						ContainterArgs: []string{
+							"bin/3scale_backend", "start",
+							"-e", "production",
+							"-p", "3000",
+							"-x", "/dev/stdout",
 						},
-					),
-				)
+						PodMonitor:  true,
+						LastVersion: rvs["deployment/backend-listener"],
+					}).Assert(k8sClient, dep, timeout, poll))
 
 				svc := &corev1.Service{}
 				By("keeps the backend-listener service deployment label selector",
-					checkResource(svc, expectedResource{
+					(&testutil.ExpectedResource{
 						Name: "backend-listener", Namespace: namespace,
-					}),
-				)
+					}).Assert(k8sClient, svc, timeout, poll))
+
 				Expect(svc.Spec.Selector["deployment"]).To(Equal("backend-listener"))
 				Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("backend-listener"))
 
 				By("keeps the backend-listener-internal service deployment label selector",
-					checkResource(svc, expectedResource{
+					(&testutil.ExpectedResource{
 						Name: "backend-listener-internal", Namespace: namespace,
-					}),
-				)
+					}).Assert(k8sClient, svc, timeout, poll))
+
 				Expect(svc.Spec.Selector["deployment"]).To(Equal("backend-listener"))
 				Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("backend-listener"))
 
 				By("deploying the backend-worker-canary workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:           "backend-worker-canary",
-							Namespace:      namespace,
-							Replicas:       2,
-							ContainerName:  "backend-worker",
-							ContainerImage: "newImage:newTag",
-							ContainterArgs: []string{
-								"bin/3scale_backend_worker", "run",
-							},
-							PodMonitor: true,
+					(&testutil.ExpectedWorkload{
+
+						Name:           "backend-worker-canary",
+						Namespace:      namespace,
+						Replicas:       2,
+						ContainerName:  "backend-worker",
+						ContainerImage: "newImage:newTag",
+						ContainterArgs: []string{
+							"bin/3scale_backend_worker", "run",
 						},
-					),
-				)
+						PodMonitor: true,
+					}).Assert(k8sClient, dep, timeout, poll))
+
 				Expect(dep.Spec.Template.Spec.Containers[0].Env[0].Name).To(Equal("RACK_ENV"))
 				Expect(dep.Spec.Template.Spec.Containers[0].Env[0].Value).To(Equal("test"))
 				Expect(dep.Spec.Template.Spec.Containers[0].Env[1].Name).To(Equal("CONFIG_REDIS_PROXY"))
@@ -590,15 +530,12 @@ var _ = Describe("Backend controller", func() {
 							return err
 						}
 
-						rvs["deployment/backend-listener-canary"] = getResourceVersion(
-							&appsv1.Deployment{}, "backend-listener-canary", namespace,
-						)
-						rvs["svc/backend-listener"] = getResourceVersion(
-							&corev1.Service{}, "backend-listener", namespace,
-						)
-						rvs["deployment/backend-worker-canary"] = getResourceVersion(
-							&appsv1.Deployment{}, "backend-worker-canary", namespace,
-						)
+						rvs["deployment/backend-listener-canary"] = testutil.GetResourceVersion(
+							k8sClient, &appsv1.Deployment{}, "backend-listener-canary", namespace, timeout, poll)
+						rvs["svc/backend-listener"] = testutil.GetResourceVersion(
+							k8sClient, &corev1.Service{}, "backend-listener", namespace, timeout, poll)
+						rvs["deployment/backend-worker-canary"] = testutil.GetResourceVersion(
+							k8sClient, &appsv1.Deployment{}, "backend-worker-canary", namespace, timeout, poll)
 
 						patch := client.MergeFrom(backend.DeepCopy())
 						backend.Spec.Listener.Replicas = pointer.Int32(3)
@@ -621,39 +558,36 @@ var _ = Describe("Backend controller", func() {
 
 					dep := &appsv1.Deployment{}
 					By("scaling up the backend-listener-canary workload",
-						checkWorkloadResources(dep,
-							expectedWorkload{
-								Name:        "backend-listener-canary",
-								Namespace:   namespace,
-								Replicas:    3,
-								PodMonitor:  true,
-								LastVersion: rvs["deployment/backend-listener-canary"],
-							},
-						),
-					)
+						(&testutil.ExpectedWorkload{
+
+							Name:        "backend-listener-canary",
+							Namespace:   namespace,
+							Replicas:    3,
+							PodMonitor:  true,
+							LastVersion: rvs["deployment/backend-listener-canary"],
+						}).Assert(k8sClient, dep, timeout, poll))
+
 					Expect(dep.Spec.Replicas).To(Equal(pointer.Int32(3)))
 
 					svc := &corev1.Service{}
 					By("removing the backend-listener service deployment label selector",
-						checkResource(svc, expectedResource{
+						(&testutil.ExpectedResource{
 							Name: "backend-listener", Namespace: namespace,
 							LastVersion: rvs["svc/backend-listener"],
-						}),
-					)
+						}).Assert(k8sClient, svc, timeout, poll))
+
 					Expect(svc.Spec.Selector).ToNot(HaveKey("deployment"))
 					Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("backend-listener"))
 
 					By("scaling up the backend-worker-canary workload",
-						checkWorkloadResources(&appsv1.Deployment{},
-							expectedWorkload{
-								Name:        "backend-worker-canary",
-								Namespace:   namespace,
-								Replicas:    3,
-								PodMonitor:  true,
-								LastVersion: rvs["deployment/backend-worker-canary"],
-							},
-						),
-					)
+						(&testutil.ExpectedWorkload{
+
+							Name:        "backend-worker-canary",
+							Namespace:   namespace,
+							Replicas:    3,
+							PodMonitor:  true,
+							LastVersion: rvs["deployment/backend-worker-canary"],
+						}).Assert(k8sClient, dep, timeout, poll))
 
 				})
 
@@ -678,15 +612,12 @@ var _ = Describe("Backend controller", func() {
 						return err
 					}
 
-					rvs["deployment/backend-listener"] = getResourceVersion(
-						&appsv1.Deployment{}, "backend-listener", namespace,
-					)
-					rvs["deployment/backend-worker"] = getResourceVersion(
-						&appsv1.Deployment{}, "backend-worker", namespace,
-					)
-					rvs["deployment/backend-cron"] = getResourceVersion(
-						&appsv1.Deployment{}, "backend-cron", namespace,
-					)
+					rvs["deployment/backend-listener"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "backend-listener", namespace, timeout, poll)
+					rvs["deployment/backend-worker"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "backend-worker", namespace, timeout, poll)
+					rvs["deployment/backend-cron"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "backend-cron", namespace, timeout, poll)
 
 					patch := client.MergeFrom(backend.DeepCopy())
 					backend.Spec.Listener.Replicas = pointer.Int32(2)
@@ -721,18 +652,16 @@ var _ = Describe("Backend controller", func() {
 
 				dep := &appsv1.Deployment{}
 				By("adding a twemproxy sidecar to the backend-listener workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:        "backend-listener",
-							Namespace:   namespace,
-							Replicas:    2,
-							PDB:         true,
-							HPA:         true,
-							PodMonitor:  true,
-							LastVersion: rvs["deployment/backend-listener"],
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+
+						Name:        "backend-listener",
+						Namespace:   namespace,
+						Replicas:    2,
+						PDB:         true,
+						HPA:         true,
+						PodMonitor:  true,
+						LastVersion: rvs["deployment/backend-listener"],
+					}).Assert(k8sClient, dep, timeout, poll))
 
 				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("twemproxy-config"))
 				Expect(dep.Spec.Template.Spec.Volumes[0].VolumeSource.ConfigMap.LocalObjectReference.Name).To(Equal("backend-twemproxyconfig"))
@@ -740,15 +669,13 @@ var _ = Describe("Backend controller", func() {
 				Expect(dep.Spec.Template.Spec.Containers[1].VolumeMounts[0].Name).To(Equal("twemproxy-config"))
 
 				By("adding a twemproxy sidecar to the backend-listener-canary workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:       "backend-listener-canary",
-							Replicas:   2,
-							Namespace:  namespace,
-							PodMonitor: true,
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+
+						Name:       "backend-listener-canary",
+						Replicas:   2,
+						Namespace:  namespace,
+						PodMonitor: true,
+					}).Assert(k8sClient, dep, timeout, poll))
 
 				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("twemproxy-config"))
 				Expect(dep.Spec.Template.Spec.Volumes[0].VolumeSource.ConfigMap.LocalObjectReference.Name).To(Equal("backend-canary-twemproxyconfig"))
@@ -758,18 +685,16 @@ var _ = Describe("Backend controller", func() {
 				Expect(dep.Spec.Template.Spec.Containers[1].Env[3].Value).To(Equal("3"))
 
 				By("adding a twemproxy sidecar to the backend-worker workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:        "backend-worker",
-							Namespace:   namespace,
-							Replicas:    2,
-							PDB:         true,
-							HPA:         true,
-							PodMonitor:  true,
-							LastVersion: rvs["deployment/backend-worker"],
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+
+						Name:        "backend-worker",
+						Namespace:   namespace,
+						Replicas:    2,
+						PDB:         true,
+						HPA:         true,
+						PodMonitor:  true,
+						LastVersion: rvs["deployment/backend-worker"],
+					}).Assert(k8sClient, dep, timeout, poll))
 
 				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("twemproxy-config"))
 				Expect(dep.Spec.Template.Spec.Volumes[0].VolumeSource.ConfigMap.LocalObjectReference.Name).To(Equal("backend-twemproxyconfig"))
@@ -777,15 +702,13 @@ var _ = Describe("Backend controller", func() {
 				Expect(dep.Spec.Template.Spec.Containers[1].VolumeMounts[0].Name).To(Equal("twemproxy-config"))
 
 				By("adding a twemproxy sidecar to the backend-worker-canary workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:       "backend-worker-canary",
-							Replicas:   2,
-							Namespace:  namespace,
-							PodMonitor: true,
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+
+						Name:       "backend-worker-canary",
+						Replicas:   2,
+						Namespace:  namespace,
+						PodMonitor: true,
+					}).Assert(k8sClient, dep, timeout, poll))
 
 				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("twemproxy-config"))
 				Expect(dep.Spec.Template.Spec.Volumes[0].VolumeSource.ConfigMap.LocalObjectReference.Name).To(Equal("backend-twemproxyconfig"))
@@ -795,14 +718,12 @@ var _ = Describe("Backend controller", func() {
 				Expect(dep.Spec.Template.Spec.Containers[1].Env[3].Value).To(Equal("4"))
 
 				By("not updating the backend-cron workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:      "backend-cron",
-							Namespace: namespace,
-							Replicas:  1,
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+
+						Name:      "backend-cron",
+						Namespace: namespace,
+						Replicas:  1,
+					}).Assert(k8sClient, dep, timeout, poll))
 
 				Expect(dep.GetResourceVersion()).To(Equal(rvs["deployment/backend-cron"]))
 				Expect(dep.Spec.Template.Spec.Containers).To(HaveLen(1))

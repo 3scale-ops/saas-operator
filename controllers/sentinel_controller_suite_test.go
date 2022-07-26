@@ -5,6 +5,7 @@ import (
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
+	testutil "github.com/3scale/saas-operator/test/util"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
@@ -67,69 +68,36 @@ var _ = Describe("Sentinel controller", func() {
 
 		It("creates the required Sentiel resources", func() {
 
-			sts := &appsv1.StatefulSet{}
 			By("deploying the sentinel statefulset",
-				checkResource(sts, expectedResource{
-					Name: "redis-sentinel", Namespace: namespace,
-				}),
-			)
+				(&testutil.ExpectedResource{Name: "redis-sentinel", Namespace: namespace}).
+					Assert(k8sClient, &appsv1.StatefulSet{}, timeout, poll))
 
 			svc := &corev1.Service{}
 			By("deploying a Sentinel headless service",
-				checkResource(svc,
-					expectedResource{
-						Name:      "redis-sentinel-headless",
-						Namespace: namespace,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{Name: "redis-sentinel-headless", Namespace: namespace}).
+					Assert(k8sClient, svc, timeout, poll))
+
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("redis-sentinel"))
 
 			By("deploying a Sentinel redis-0 service",
-				checkResource(svc,
-					expectedResource{
-						Name:      "redis-sentinel-0",
-						Namespace: namespace,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{Name: "redis-sentinel-0", Namespace: namespace}).
+					Assert(k8sClient, svc, timeout, poll))
 
 			By("deploying a Sentinel redis-1 service",
-				checkResource(svc,
-					expectedResource{
-						Name:      "redis-sentinel-1",
-						Namespace: namespace,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{Name: "redis-sentinel-1", Namespace: namespace}).
+					Assert(k8sClient, svc, timeout, poll))
 
 			By("deploying a Sentinel redis-2 service",
-				checkResource(svc,
-					expectedResource{
-						Name:      "redis-sentinel-2",
-						Namespace: namespace,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{Name: "redis-sentinel-2", Namespace: namespace}).
+					Assert(k8sClient, svc, timeout, poll))
 
 			By("deploying a Sentinel gen-config configmap",
-				checkResource(&corev1.ConfigMap{},
-					expectedResource{
-						Name:      "redis-sentinel-gen-config",
-						Namespace: namespace,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{Name: "redis-sentinel-gen-config", Namespace: namespace}).
+					Assert(k8sClient, &corev1.ConfigMap{}, timeout, poll))
 
 			By("deploying the Sentinel grafana dashboard",
-				checkResource(
-					&grafanav1alpha1.GrafanaDashboard{},
-					expectedResource{
-						Name:      "redis-sentinel",
-						Namespace: namespace,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{Name: "redis-sentinel", Namespace: namespace}).
+					Assert(k8sClient, &grafanav1alpha1.GrafanaDashboard{}, timeout, poll))
 
 		})
 

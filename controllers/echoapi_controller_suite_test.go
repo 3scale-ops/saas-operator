@@ -4,6 +4,7 @@ import (
 	"context"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	testutil "github.com/3scale/saas-operator/test/util"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
@@ -64,29 +65,23 @@ var _ = Describe("EchoAPI controller", func() {
 
 			dep := &appsv1.Deployment{}
 			By("deploying an echo-api workload",
-				checkWorkloadResources(dep,
-					expectedWorkload{
-						Name:          "echo-api",
-						Namespace:     namespace,
-						Replicas:      2,
-						ContainerName: "echo-api",
-						PDB:           true,
-						HPA:           true,
-						PodMonitor:    true,
-					},
-				),
-			)
+				(&testutil.ExpectedWorkload{
+					Name:          "echo-api",
+					Namespace:     namespace,
+					Replicas:      2,
+					ContainerName: "echo-api",
+					PDB:           true,
+					HPA:           true,
+					PodMonitor:    true,
+				}).Assert(k8sClient, dep, timeout, poll))
+
 			Expect(dep.Spec.Template.Spec.Volumes).To(HaveLen(0))
 
 			svc := &corev1.Service{}
 			By("deploying an echo-api service",
-				checkResource(svc,
-					expectedResource{
-						Name:      "echo-api",
-						Namespace: namespace,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{Name: "echo-api", Namespace: namespace}).
+					Assert(k8sClient, svc, timeout, poll))
+
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("echo-api"))
 			Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("echo-api"))
 
@@ -109,9 +104,8 @@ var _ = Describe("EchoAPI controller", func() {
 						return err
 					}
 
-					rvs["deployment/echoapi"] = getResourceVersion(
-						&appsv1.Deployment{}, "echo-api", namespace,
-					)
+					rvs["deployment/echoapi"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "echo-api", namespace, timeout, poll)
 
 					patch := client.MergeFrom(echoapi.DeepCopy())
 					echoapi.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{
@@ -129,19 +123,17 @@ var _ = Describe("EchoAPI controller", func() {
 
 				dep := &appsv1.Deployment{}
 				By("updating the EchoAPI workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:          "echo-api",
-							Namespace:     namespace,
-							Replicas:      3,
-							ContainerName: "echo-api",
-							PDB:           true,
-							HPA:           true,
-							PodMonitor:    true,
-							LastVersion:   rvs["deployment/echoapi"],
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+						Name:          "echo-api",
+						Namespace:     namespace,
+						Replicas:      3,
+						ContainerName: "echo-api",
+						PDB:           true,
+						HPA:           true,
+						PodMonitor:    true,
+						LastVersion:   rvs["deployment/echoapi"],
+					}).Assert(k8sClient, dep, timeout, poll))
+
 				Expect(dep.Spec.Template.Spec.Containers[0].LivenessProbe).To(BeNil())
 				Expect(dep.Spec.Template.Spec.Containers[0].ReadinessProbe).To(BeNil())
 
@@ -166,9 +158,9 @@ var _ = Describe("EchoAPI controller", func() {
 						return err
 					}
 
-					rvs["deployment/echoapi"] = getResourceVersion(
-						&appsv1.Deployment{}, "echo-api", namespace,
-					)
+					rvs["deployment/echoapi"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "echo-api", namespace, timeout, poll)
+
 					patch := client.MergeFrom(echoapi.DeepCopy())
 					echoapi.Spec.Replicas = pointer.Int32(0)
 					echoapi.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
@@ -183,18 +175,15 @@ var _ = Describe("EchoAPI controller", func() {
 
 				dep := &appsv1.Deployment{}
 				By("updating the EchoAPI workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:        "echo-api",
-							Namespace:   namespace,
-							Replicas:    0,
-							HPA:         false,
-							PDB:         false,
-							PodMonitor:  true,
-							LastVersion: rvs["deployment/echoapi"],
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+						Name:        "echo-api",
+						Namespace:   namespace,
+						Replicas:    0,
+						HPA:         false,
+						PDB:         false,
+						PodMonitor:  true,
+						LastVersion: rvs["deployment/echoapi"],
+					}).Assert(k8sClient, dep, timeout, poll))
 
 			})
 

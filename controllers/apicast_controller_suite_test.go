@@ -5,6 +5,7 @@ import (
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
+	testutil "github.com/3scale/saas-operator/test/util"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
@@ -81,17 +82,15 @@ var _ = Describe("Apicast controller", func() {
 
 			dep := &appsv1.Deployment{}
 			By("deploying an apicast-production workload",
-				checkWorkloadResources(dep,
-					expectedWorkload{
-						Name:          "apicast-production",
-						Namespace:     namespace,
-						Replicas:      2,
-						ContainerName: "apicast",
-						PDB:           true,
-						HPA:           true,
-						PodMonitor:    true,
-					},
-				),
+				(&testutil.ExpectedWorkload{
+					Name:          "apicast-production",
+					Namespace:     namespace,
+					Replicas:      2,
+					ContainerName: "apicast",
+					PDB:           true,
+					HPA:           true,
+					PodMonitor:    true,
+				}).Assert(k8sClient, dep, timeout, poll),
 			)
 			for _, env := range dep.Spec.Template.Spec.Containers[0].Env {
 				switch env.Name {
@@ -107,17 +106,15 @@ var _ = Describe("Apicast controller", func() {
 			}
 
 			By("deploying an apicast-staging workload",
-				checkWorkloadResources(dep,
-					expectedWorkload{
-						Name:          "apicast-staging",
-						Namespace:     namespace,
-						Replicas:      2,
-						ContainerName: "apicast",
-						PDB:           true,
-						HPA:           true,
-						PodMonitor:    true,
-					},
-				),
+				(&testutil.ExpectedWorkload{
+					Name:          "apicast-staging",
+					Namespace:     namespace,
+					Replicas:      2,
+					ContainerName: "apicast",
+					PDB:           true,
+					HPA:           true,
+					PodMonitor:    true,
+				}).Assert(k8sClient, dep, timeout, poll),
 			)
 			for _, env := range dep.Spec.Template.Spec.Containers[0].Env {
 				switch env.Name {
@@ -134,10 +131,9 @@ var _ = Describe("Apicast controller", func() {
 
 			svc := &corev1.Service{}
 			By("deploying the apicast-production service",
-				checkResource(svc, expectedResource{
-					Name: "apicast-production", Namespace: namespace,
-				}),
-			)
+				(&testutil.ExpectedResource{Name: "apicast-production", Namespace: namespace}).
+					Assert(k8sClient, svc, timeout, poll))
+
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("apicast-production"))
 			Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("apicast-production"))
 			Expect(
@@ -154,9 +150,8 @@ var _ = Describe("Apicast controller", func() {
 			).To(Equal("true"))
 
 			By("deploying the apicast-production-management service",
-				checkResource(svc, expectedResource{
-					Name: "apicast-production-management", Namespace: namespace,
-				}),
+				(&testutil.ExpectedResource{Name: "apicast-production-management", Namespace: namespace}).
+					Assert(k8sClient, svc, timeout, poll),
 			)
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("apicast-production"))
 			Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("apicast-production"))
@@ -164,10 +159,10 @@ var _ = Describe("Apicast controller", func() {
 			Expect(svc.Annotations).To(HaveLen(0))
 
 			By("deploying the apicast-staging service",
-				checkResource(svc, expectedResource{
-					Name: "apicast-staging", Namespace: namespace,
-				}),
-			)
+				(&testutil.ExpectedResource{
+					Name: "apicast-staging", Namespace: namespace}).
+					Assert(k8sClient, svc, timeout, poll))
+
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("apicast-staging"))
 			Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("apicast-staging"))
 			Expect(
@@ -184,58 +179,34 @@ var _ = Describe("Apicast controller", func() {
 			).To(Equal("true"))
 
 			By("deploying the apicast-staging-management service",
-				checkResource(svc, expectedResource{
-					Name: "apicast-staging-management", Namespace: namespace,
-				}),
-			)
+				(&testutil.ExpectedResource{Name: "apicast-staging-management", Namespace: namespace}).
+					Assert(k8sClient, svc, timeout, poll))
+
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("apicast-staging"))
 			Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("apicast-staging"))
 			Expect(svc.Spec.Ports[0].Name).To(Equal("management"))
 			Expect(svc.Annotations).To(HaveLen(0))
 
 			By("deploying an apicast grafana dashboard",
-				checkResource(
-					&grafanav1alpha1.GrafanaDashboard{},
-					expectedResource{
-						Name:      "apicast",
-						Namespace: namespace,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{Name: "apicast", Namespace: namespace}).
+					Assert(k8sClient, &grafanav1alpha1.GrafanaDashboard{}, timeout, poll))
 
 			By("deploying an apicast-services grafana dashboard",
-				checkResource(
-					&grafanav1alpha1.GrafanaDashboard{},
-					expectedResource{
-						Name:      "apicast-services",
-						Namespace: namespace,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{Name: "apicast-services", Namespace: namespace}).
+					Assert(k8sClient, &grafanav1alpha1.GrafanaDashboard{}, timeout, poll))
 
 		})
 
-		It("doesn't creates the non-default resources", func() {
+		It("doesn't create the non-default resources", func() {
 
 			dep := &appsv1.Deployment{}
 			By("ensuring an apicast-production-canary workload is gone",
-				checkResource(dep,
-					expectedResource{
-						Name:      "apicast-production-canary",
-						Namespace: namespace,
-						Missing:   true,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{Name: "apicast-production-canary", Namespace: namespace, Missing: true}).
+					Assert(k8sClient, dep, timeout, poll))
+
 			By("ensuring an apicast-staging-canary workload is gone",
-				checkResource(dep,
-					expectedResource{
-						Name:      "apicast-staging-canary",
-						Namespace: namespace,
-						Missing:   true,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{Name: "apicast-staging-canary", Namespace: namespace, Missing: true}).
+					Assert(k8sClient, dep, timeout, poll))
 
 		})
 
@@ -256,12 +227,11 @@ var _ = Describe("Apicast controller", func() {
 						return err
 					}
 
-					rvs["deployment/apicast-production"] = getResourceVersion(
-						&appsv1.Deployment{}, "apicast-production", namespace,
-					)
-					rvs["deployment/apicast-staging"] = getResourceVersion(
-						&appsv1.Deployment{}, "apicast-staging", namespace,
-					)
+					rvs["deployment/apicast-production"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "apicast-production", namespace, timeout, poll)
+
+					rvs["deployment/apicast-staging"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "apicast-staging", namespace, timeout, poll)
 
 					patch := client.MergeFrom(apicast.DeepCopy())
 					apicast.Spec.Production = saasv1alpha1.ApicastEnvironmentSpec{
@@ -302,31 +272,27 @@ var _ = Describe("Apicast controller", func() {
 			It("updates the Apicast resources", func() {
 
 				By("ensuring the Apicast grafana dashboard is gone",
-					checkResource(
-						&grafanav1alpha1.GrafanaDashboard{},
-						expectedResource{
-							Name:      "apicast-production",
-							Namespace: namespace,
-							Missing:   true,
-						},
-					),
+					(&testutil.ExpectedResource{
+						Name:      "apicast-production",
+						Namespace: namespace,
+						Missing:   true,
+					}).Assert(k8sClient, &grafanav1alpha1.GrafanaDashboard{}, timeout, poll),
 				)
 
 				dep := &appsv1.Deployment{}
+
 				By("updating the Apicast Production workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:          "apicast-production",
-							Namespace:     namespace,
-							Replicas:      3,
-							ContainerName: "apicast",
-							HPA:           true,
-							PDB:           true,
-							PodMonitor:    true,
-							LastVersion:   rvs["deployment/apicast-production"],
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+						Name:          "apicast-production",
+						Namespace:     namespace,
+						Replicas:      3,
+						ContainerName: "apicast",
+						HPA:           true,
+						PDB:           true,
+						PodMonitor:    true,
+						LastVersion:   rvs["deployment/apicast-production"],
+					}).Assert(k8sClient, dep, timeout, poll))
+
 				for _, env := range dep.Spec.Template.Spec.Containers[0].Env {
 					switch env.Name {
 					case "THREESCALE_PORTAL_ENDPOINT":
@@ -341,19 +307,17 @@ var _ = Describe("Apicast controller", func() {
 				}
 
 				By("updating the Apicast Staging workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:          "apicast-staging",
-							Namespace:     namespace,
-							Replicas:      3,
-							ContainerName: "apicast",
-							HPA:           true,
-							PDB:           true,
-							PodMonitor:    true,
-							LastVersion:   rvs["deployment/apicast-staging"],
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+						Name:          "apicast-staging",
+						Namespace:     namespace,
+						Replicas:      3,
+						ContainerName: "apicast",
+						HPA:           true,
+						PDB:           true,
+						PodMonitor:    true,
+						LastVersion:   rvs["deployment/apicast-staging"],
+					}).Assert(k8sClient, dep, timeout, poll))
+
 				for _, env := range dep.Spec.Template.Spec.Containers[0].Env {
 					switch env.Name {
 					case "THREESCALE_PORTAL_ENDPOINT":
@@ -371,18 +335,18 @@ var _ = Describe("Apicast controller", func() {
 
 				svc := &corev1.Service{}
 				By("updating the apicast-production service annotation",
-					checkResource(svc, expectedResource{
+					(&testutil.ExpectedResource{
 						Name: "apicast-production", Namespace: namespace,
-					}),
+					}).Assert(k8sClient, svc, timeout, poll),
 				)
 				Expect(svc.Annotations["external-dns.alpha.kubernetes.io/hostname"]).To(
 					Equal("updated-apicast-production.example.com"),
 				)
 
 				By("updating the apicast-staging service annotation",
-					checkResource(svc, expectedResource{
+					(&testutil.ExpectedResource{
 						Name: "apicast-staging", Namespace: namespace,
-					}),
+					}).Assert(k8sClient, svc, timeout, poll),
 				)
 				Expect(svc.Annotations["external-dns.alpha.kubernetes.io/hostname"]).To(
 					Equal("updated-apicast-staging.example.com"),
@@ -408,18 +372,14 @@ var _ = Describe("Apicast controller", func() {
 						return err
 					}
 
-					rvs["svc/apicast-production"] = getResourceVersion(
-						&corev1.Service{}, "apicast-production", namespace,
-					)
-					rvs["deployment/apicast-production"] = getResourceVersion(
-						&appsv1.Deployment{}, "apicast-production", namespace,
-					)
-					rvs["svc/apicast-staging"] = getResourceVersion(
-						&corev1.Service{}, "apicast-staging", namespace,
-					)
-					rvs["deployment/apicast-staging"] = getResourceVersion(
-						&appsv1.Deployment{}, "apicast-staging", namespace,
-					)
+					rvs["svc/apicast-production"] = testutil.GetResourceVersion(
+						k8sClient, &corev1.Service{}, "apicast-production", namespace, timeout, poll)
+					rvs["deployment/apicast-production"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "apicast-production", namespace, timeout, poll)
+					rvs["svc/apicast-staging"] = testutil.GetResourceVersion(
+						k8sClient, &corev1.Service{}, "apicast-staging", namespace, timeout, poll)
+					rvs["deployment/apicast-staging"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "apicast-staging", namespace, timeout, poll)
 
 					patch := client.MergeFrom(apicast.DeepCopy())
 					apicast.Spec.Production.Canary = &saasv1alpha1.Canary{
@@ -441,16 +401,14 @@ var _ = Describe("Apicast controller", func() {
 
 				dep := &appsv1.Deployment{}
 				By("deploying an Apicast-production-canary workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:          "apicast-production-canary",
-							Namespace:     namespace,
-							Replicas:      1,
-							ContainerName: "apicast",
-							PodMonitor:    true,
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+						Name:          "apicast-production-canary",
+						Namespace:     namespace,
+						Replicas:      1,
+						ContainerName: "apicast",
+						PodMonitor:    true,
+					}).Assert(k8sClient, dep, timeout, poll))
+
 				for _, env := range dep.Spec.Template.Spec.Containers[0].Env {
 					switch env.Name {
 					case "THREESCALE_DEPLOYMENT_ENV":
@@ -463,16 +421,15 @@ var _ = Describe("Apicast controller", func() {
 				}
 
 				By("deploying an Apicast-staging-canary workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:          "apicast-staging-canary",
-							Namespace:     namespace,
-							Replicas:      1,
-							ContainerName: "apicast",
-							PodMonitor:    true,
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+
+						Name:          "apicast-staging-canary",
+						Namespace:     namespace,
+						Replicas:      1,
+						ContainerName: "apicast",
+						PodMonitor:    true,
+					}).Assert(k8sClient, dep, timeout, poll))
+
 				for _, env := range dep.Spec.Template.Spec.Containers[0].Env {
 					switch env.Name {
 					case "THREESCALE_DEPLOYMENT_ENV":
@@ -486,10 +443,9 @@ var _ = Describe("Apicast controller", func() {
 
 				svc := &corev1.Service{}
 				By("keeping the apicast-production service spec",
-					checkResource(svc, expectedResource{
-						Name: "apicast-production", Namespace: namespace,
-					}),
-				)
+					(&testutil.ExpectedResource{
+						Name: "apicast-production", Namespace: namespace}).Assert(k8sClient, svc, timeout, poll))
+
 				Expect(svc.Spec.Selector["deployment"]).To(Equal("apicast-production"))
 				Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("apicast-production"))
 				Expect(
@@ -506,40 +462,29 @@ var _ = Describe("Apicast controller", func() {
 				).To(Equal("true"))
 
 				By("keeping the apicast-production-management service spec",
-					checkResource(svc, expectedResource{
-						Name: "apicast-production-management", Namespace: namespace,
-					}),
-				)
+					(&testutil.ExpectedResource{
+						Name: "apicast-production-management", Namespace: namespace}).Assert(k8sClient, svc, timeout, poll))
+
 				Expect(svc.Spec.Selector["deployment"]).To(Equal("apicast-production"))
 				Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("apicast-production"))
 				Expect(svc.Spec.Ports[0].Name).To(Equal("management"))
 				Expect(svc.Annotations).To(HaveLen(0))
 
 				By("keeping the apicast-staging service spec",
-					checkResource(svc, expectedResource{
-						Name: "apicast-staging", Namespace: namespace,
-					}),
-				)
+					(&testutil.ExpectedResource{
+						Name: "apicast-staging", Namespace: namespace}).Assert(k8sClient, svc, timeout, poll))
+
 				Expect(svc.Spec.Selector["deployment"]).To(Equal("apicast-staging"))
 				Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("apicast-staging"))
-				Expect(
-					svc.Annotations["external-dns.alpha.kubernetes.io/hostname"],
-				).To(Equal("apicast-staging.example.com"))
-				Expect(
-					svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"],
-				).To(Equal("*"))
-				Expect(
-					svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-connection-draining-enabled"],
-				).To(Equal("true"))
-				Expect(
-					svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled"],
-				).To(Equal("true"))
+				Expect(svc.Annotations["external-dns.alpha.kubernetes.io/hostname"]).To(Equal("apicast-staging.example.com"))
+				Expect(svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"]).To(Equal("*"))
+				Expect(svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-connection-draining-enabled"]).To(Equal("true"))
+				Expect(svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled"]).To(Equal("true"))
 
 				By("keeping the apicast-staging-management service spec",
-					checkResource(svc, expectedResource{
-						Name: "apicast-staging-management", Namespace: namespace,
-					}),
-				)
+					(&testutil.ExpectedResource{
+						Name: "apicast-staging-management", Namespace: namespace}).Assert(k8sClient, svc, timeout, poll))
+
 				Expect(svc.Spec.Selector["deployment"]).To(Equal("apicast-staging"))
 				Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("apicast-staging"))
 				Expect(svc.Spec.Ports[0].Name).To(Equal("management"))
@@ -559,12 +504,11 @@ var _ = Describe("Apicast controller", func() {
 						); err != nil {
 							return err
 						}
-						rvs["svc/apicast-production"] = getResourceVersion(
-							&corev1.Service{}, "apicast-production", namespace,
-						)
-						rvs["svc/apicast-staging"] = getResourceVersion(
-							&corev1.Service{}, "apicast-staging", namespace,
-						)
+						rvs["svc/apicast-production"] = testutil.GetResourceVersion(
+							k8sClient, &corev1.Service{}, "apicast-production", namespace, timeout, poll)
+						rvs["svc/apicast-staging"] = testutil.GetResourceVersion(
+							k8sClient, &corev1.Service{}, "apicast-staging", namespace, timeout, poll)
+
 						patch := client.MergeFrom(apicast.DeepCopy())
 						apicast.Spec.Production.Canary = &saasv1alpha1.Canary{
 							SendTraffic: *pointer.Bool(true),
@@ -580,20 +524,20 @@ var _ = Describe("Apicast controller", func() {
 
 					svc := &corev1.Service{}
 					By("removing the apicast-production service deployment label selector",
-						checkResource(svc, expectedResource{
+						(&testutil.ExpectedResource{
 							Name: "apicast-production", Namespace: namespace,
 							LastVersion: rvs["svc/apicast-production"],
-						}),
-					)
+						}).Assert(k8sClient, svc, timeout, poll))
+
 					Expect(svc.Spec.Selector).NotTo(HaveKey("deployment"))
 					Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("apicast-production"))
 
 					By("removing the apicast-staging service deployment label selector",
-						checkResource(svc, expectedResource{
+						(&testutil.ExpectedResource{
 							Name: "apicast-staging", Namespace: namespace,
 							LastVersion: rvs["svc/apicast-staging"],
-						}),
-					)
+						}).Assert(k8sClient, svc, timeout, poll))
+
 					Expect(svc.Spec.Selector).NotTo(HaveKey("deployment"))
 					Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("apicast-staging"))
 
@@ -620,12 +564,10 @@ var _ = Describe("Apicast controller", func() {
 						return err
 					}
 
-					rvs["deployment/apicast-production"] = getResourceVersion(
-						&appsv1.Deployment{}, "apicast-production", namespace,
-					)
-					rvs["deployment/apicast-staging"] = getResourceVersion(
-						&appsv1.Deployment{}, "apicast-staging", namespace,
-					)
+					rvs["deployment/apicast-production"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "apicast-production", namespace, timeout, poll)
+					rvs["deployment/apicast-staging"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "apicast-staging", namespace, timeout, poll)
 
 					patch := client.MergeFrom(apicast.DeepCopy())
 
@@ -646,31 +588,26 @@ var _ = Describe("Apicast controller", func() {
 
 				dep := &appsv1.Deployment{}
 				By("updating the Apicast Production workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:        "apicast-production",
-							Namespace:   namespace,
-							Replicas:    0,
-							HPA:         false,
-							PDB:         false,
-							PodMonitor:  true,
-							LastVersion: rvs["deployment/apicast-production"],
-						},
-					),
+					(&testutil.ExpectedWorkload{
+						Name:        "apicast-production",
+						Namespace:   namespace,
+						Replicas:    0,
+						HPA:         false,
+						PDB:         false,
+						PodMonitor:  true,
+						LastVersion: rvs["deployment/apicast-production"],
+					}).Assert(k8sClient, dep, timeout, poll),
 				)
 				By("updating the Apicast Staging workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:        "apicast-staging",
-							Namespace:   namespace,
-							Replicas:    0,
-							HPA:         false,
-							PDB:         false,
-							PodMonitor:  true,
-							LastVersion: rvs["deployment/apicast-staging"],
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+						Name:        "apicast-staging",
+						Namespace:   namespace,
+						Replicas:    0,
+						HPA:         false,
+						PDB:         false,
+						PodMonitor:  true,
+						LastVersion: rvs["deployment/apicast-staging"],
+					}).Assert(k8sClient, dep, timeout, poll))
 
 			})
 

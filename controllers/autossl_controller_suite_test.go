@@ -5,6 +5,7 @@ import (
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
+	testutil "github.com/3scale/saas-operator/test/util"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
@@ -71,18 +72,16 @@ var _ = Describe("AutoSSL controller", func() {
 
 			dep := &appsv1.Deployment{}
 			By("deploying an autossl workload",
-				checkWorkloadResources(dep,
-					expectedWorkload{
-						Name:          "autossl",
-						Namespace:     namespace,
-						Replicas:      2,
-						ContainerName: "autossl",
-						PDB:           true,
-						HPA:           true,
-						PodMonitor:    true,
-					},
-				),
-			)
+				(&testutil.ExpectedWorkload{
+					Name:          "autossl",
+					Namespace:     namespace,
+					Replicas:      2,
+					ContainerName: "autossl",
+					PDB:           true,
+					HPA:           true,
+					PodMonitor:    true,
+				}).Assert(k8sClient, dep, timeout, poll))
+
 			Expect(dep.Spec.Template.Spec.Volumes).To(HaveLen(2))
 			Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("autossl-cache"))
 			Expect(dep.Spec.Template.Spec.Volumes[0].VolumeSource.EmptyDir).ShouldNot(BeNil())
@@ -96,25 +95,19 @@ var _ = Describe("AutoSSL controller", func() {
 
 			svc := &corev1.Service{}
 			By("deploying an autossl service",
-				checkResource(svc,
-					expectedResource{
-						Name:      "autossl",
-						Namespace: namespace,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{
+					Name:      "autossl",
+					Namespace: namespace,
+				}).Assert(k8sClient, svc, timeout, poll))
+
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("autossl"))
 			Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("autossl"))
 
 			By("deploying an autossl grafana dashboard",
-				checkResource(
-					&grafanav1alpha1.GrafanaDashboard{},
-					expectedResource{
-						Name:      "autossl",
-						Namespace: namespace,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{
+					Name:      "autossl",
+					Namespace: namespace,
+				}).Assert(k8sClient, &grafanav1alpha1.GrafanaDashboard{}, timeout, poll))
 
 		})
 
@@ -122,14 +115,11 @@ var _ = Describe("AutoSSL controller", func() {
 
 			dep := &appsv1.Deployment{}
 			By("ensuring an autossl-canary workload",
-				checkResource(dep,
-					expectedResource{
-						Name:      "autossl-canary",
-						Namespace: namespace,
-						Missing:   true,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{
+					Name:      "autossl-canary",
+					Namespace: namespace,
+					Missing:   true,
+				}).Assert(k8sClient, dep, timeout, poll))
 
 		})
 
@@ -150,12 +140,10 @@ var _ = Describe("AutoSSL controller", func() {
 						return err
 					}
 
-					rvs["autossl"] = getResourceVersion(
-						autossl, "instance", namespace,
-					)
-					rvs["deployment/autossl"] = getResourceVersion(
-						&appsv1.Deployment{}, "autossl", namespace,
-					)
+					rvs["autossl"] = testutil.GetResourceVersion(
+						k8sClient, autossl, "instance", namespace, timeout, poll)
+					rvs["deployment/autossl"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "autossl", namespace, timeout, poll)
 
 					patch := client.MergeFrom(autossl.DeepCopy())
 					autossl.Spec.Config.ContactEmail = "updated-example@3scale.net"
@@ -175,31 +163,25 @@ var _ = Describe("AutoSSL controller", func() {
 			It("updates the AutoSSL resources", func() {
 
 				By("ensuring the AutoSSL grafana dashboard",
-					checkResource(
-						&grafanav1alpha1.GrafanaDashboard{},
-						expectedResource{
-							Name:      "autossl",
-							Namespace: namespace,
-							Missing:   true,
-						},
-					),
-				)
+					(&testutil.ExpectedResource{
+						Name:      "autossl",
+						Namespace: namespace,
+						Missing:   true,
+					}).Assert(k8sClient, &grafanav1alpha1.GrafanaDashboard{}, timeout, poll))
 
 				dep := &appsv1.Deployment{}
 				By("updating the AutoSSL workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:          "autossl",
-							Namespace:     namespace,
-							Replicas:      3,
-							ContainerName: "autossl",
-							HPA:           true,
-							PDB:           true,
-							PodMonitor:    true,
-							LastVersion:   rvs["deployment/autossl"],
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+						Name:          "autossl",
+						Namespace:     namespace,
+						Replicas:      3,
+						ContainerName: "autossl",
+						HPA:           true,
+						PDB:           true,
+						PodMonitor:    true,
+						LastVersion:   rvs["deployment/autossl"],
+					}).Assert(k8sClient, dep, timeout, poll))
+
 				Expect(dep.Spec.Template.Spec.Containers[0].Name).To(Equal("autossl"))
 				for _, env := range dep.Spec.Template.Spec.Containers[0].Env {
 					switch env.Name {
@@ -242,12 +224,10 @@ var _ = Describe("AutoSSL controller", func() {
 						return err
 					}
 
-					rvs["svc/autossl"] = getResourceVersion(
-						&corev1.Service{}, "autossl", namespace,
-					)
-					rvs["deployment/autossl"] = getResourceVersion(
-						&appsv1.Deployment{}, "autossl", namespace,
-					)
+					rvs["svc/autossl"] = testutil.GetResourceVersion(
+						k8sClient, &corev1.Service{}, "autossl", namespace, timeout, poll)
+					rvs["deployment/autossl"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "autossl", namespace, timeout, poll)
 
 					patch := client.MergeFrom(autossl.DeepCopy())
 					autossl.Spec.Canary = &saasv1alpha1.Canary{
@@ -264,16 +244,14 @@ var _ = Describe("AutoSSL controller", func() {
 
 				dep := &appsv1.Deployment{}
 				By("deploying a autossl-canary workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:          "autossl-canary",
-							Namespace:     namespace,
-							Replicas:      1,
-							ContainerName: "autossl",
-							PodMonitor:    true,
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+						Name:          "autossl-canary",
+						Namespace:     namespace,
+						Replicas:      1,
+						ContainerName: "autossl",
+						PodMonitor:    true,
+					}).Assert(k8sClient, dep, timeout, poll))
+
 				Expect(dep.Spec.Template.Spec.Containers[0].Name).To(Equal("autossl"))
 				for _, env := range dep.Spec.Template.Spec.Containers[0].Env {
 					switch env.Name {
@@ -296,10 +274,10 @@ var _ = Describe("AutoSSL controller", func() {
 
 				svc := &corev1.Service{}
 				By("keeping the autossl service deployment label selector",
-					checkResource(svc, expectedResource{
+					(&testutil.ExpectedResource{
 						Name: "autossl", Namespace: namespace,
-					}),
-				)
+					}).Assert(k8sClient, svc, timeout, poll))
+
 				Expect(svc.Spec.Selector["deployment"]).To(Equal("autossl"))
 				Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("autossl"))
 
@@ -317,9 +295,9 @@ var _ = Describe("AutoSSL controller", func() {
 						); err != nil {
 							return err
 						}
-						rvs["svc/autossl"] = getResourceVersion(
-							&corev1.Service{}, "autossl", namespace,
-						)
+						rvs["svc/autossl"] = testutil.GetResourceVersion(
+							k8sClient, &corev1.Service{}, "autossl", namespace, timeout, poll)
+
 						patch := client.MergeFrom(autossl.DeepCopy())
 						autossl.Spec.Canary = &saasv1alpha1.Canary{
 							SendTraffic: *pointer.Bool(true),
@@ -332,11 +310,11 @@ var _ = Describe("AutoSSL controller", func() {
 
 					svc := &corev1.Service{}
 					By("removing the autossl service deployment label selector",
-						checkResource(svc, expectedResource{
+						(&testutil.ExpectedResource{
 							Name: "autossl", Namespace: namespace,
 							LastVersion: rvs["svc/autossl"],
-						}),
-					)
+						}).Assert(k8sClient, svc, timeout, poll))
+
 					Expect(svc.Spec.Selector).NotTo(HaveKey("deployment"))
 					Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("autossl"))
 
@@ -363,9 +341,8 @@ var _ = Describe("AutoSSL controller", func() {
 						return err
 					}
 
-					rvs["deployment/autossl"] = getResourceVersion(
-						&appsv1.Deployment{}, "autossl", namespace,
-					)
+					rvs["deployment/autossl"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "autossl", namespace, timeout, poll)
 
 					patch := client.MergeFrom(autossl.DeepCopy())
 					autossl.Spec.Replicas = pointer.Int32(0)
@@ -381,18 +358,15 @@ var _ = Describe("AutoSSL controller", func() {
 
 				dep := &appsv1.Deployment{}
 				By("updating the AutoSSL workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:        "autossl",
-							Namespace:   namespace,
-							Replicas:    0,
-							HPA:         false,
-							PDB:         false,
-							PodMonitor:  true,
-							LastVersion: rvs["deployment/autossl"],
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+						Name:        "autossl",
+						Namespace:   namespace,
+						Replicas:    0,
+						HPA:         false,
+						PDB:         false,
+						PodMonitor:  true,
+						LastVersion: rvs["deployment/autossl"],
+					}).Assert(k8sClient, dep, timeout, poll))
 
 			})
 

@@ -7,6 +7,7 @@ import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	externalsecretsv1beta1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
+	testutil "github.com/3scale/saas-operator/test/util"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
@@ -92,18 +93,16 @@ var _ = Describe("Zync controller", func() {
 
 			dep := &appsv1.Deployment{}
 			By("deploying a Zync workload",
-				checkWorkloadResources(dep,
-					expectedWorkload{
-						Name:          "zync",
-						Namespace:     namespace,
-						Replicas:      2,
-						ContainerName: "zync",
-						PDB:           true,
-						HPA:           true,
-						PodMonitor:    true,
-					},
-				),
-			)
+				(&testutil.ExpectedWorkload{
+					Name:          "zync",
+					Namespace:     namespace,
+					Replicas:      2,
+					ContainerName: "zync",
+					PDB:           true,
+					HPA:           true,
+					PodMonitor:    true,
+				}).Assert(k8sClient, dep, timeout, poll))
+
 			for _, env := range dep.Spec.Template.Spec.Containers[0].Env {
 				switch env.Name {
 				case "RAILS_ENV":
@@ -119,18 +118,16 @@ var _ = Describe("Zync controller", func() {
 			Expect(dep.Spec.Template.Spec.Containers[0].ReadinessProbe).ToNot(BeNil())
 
 			By("deploying a Zync-Que workload",
-				checkWorkloadResources(dep,
-					expectedWorkload{
-						Name:          "zync-que",
-						Namespace:     namespace,
-						Replicas:      2,
-						ContainerName: "zync-que",
-						PDB:           true,
-						HPA:           true,
-						PodMonitor:    true,
-					},
-				),
-			)
+				(&testutil.ExpectedWorkload{
+					Name:          "zync-que",
+					Namespace:     namespace,
+					Replicas:      2,
+					ContainerName: "zync-que",
+					PDB:           true,
+					HPA:           true,
+					PodMonitor:    true,
+				}).Assert(k8sClient, dep, timeout, poll))
+
 			for _, env := range dep.Spec.Template.Spec.Containers[0].Env {
 				switch env.Name {
 				case "RAILS_ENV":
@@ -147,26 +144,16 @@ var _ = Describe("Zync controller", func() {
 
 			svc := &corev1.Service{}
 			By("deploying a Zync service",
-				checkResource(svc,
-					expectedResource{
-						Name:      "zync",
-						Namespace: namespace,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{Name: "zync", Namespace: namespace}).
+					Assert(k8sClient, svc, timeout, poll))
+
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("zync"))
 			Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("zync"))
 
 			es := &externalsecretsv1beta1.ExternalSecret{}
 			By("deploying the Zync external secret",
-				checkResource(
-					es,
-					expectedResource{
-						Name:      "zync",
-						Namespace: namespace,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{Name: "zync", Namespace: namespace}).
+					Assert(k8sClient, es, timeout, poll))
 
 			Expect(es.Spec.RefreshInterval.ToUnstructured()).To(Equal("1m0s"))
 			Expect(es.Spec.SecretStoreRef.Name).To(Equal("vault-mgmt"))
@@ -190,14 +177,8 @@ var _ = Describe("Zync controller", func() {
 			}
 
 			By("deploying the Zync grafana dashboard",
-				checkResource(
-					&grafanav1alpha1.GrafanaDashboard{},
-					expectedResource{
-						Name:      "zync",
-						Namespace: namespace,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{Name: "zync", Namespace: namespace}).
+					Assert(k8sClient, &grafanav1alpha1.GrafanaDashboard{}, timeout, poll))
 
 		})
 
@@ -218,15 +199,12 @@ var _ = Describe("Zync controller", func() {
 						return err
 					}
 
-					rvs["deployment/zync"] = getResourceVersion(
-						&appsv1.Deployment{}, "zync", namespace,
-					)
-					rvs["deployment/zync-que"] = getResourceVersion(
-						&appsv1.Deployment{}, "zync-que", namespace,
-					)
-					rvs["externalsecret/zync"] = getResourceVersion(
-						&externalsecretsv1beta1.ExternalSecret{}, "zync", namespace,
-					)
+					rvs["deployment/zync"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "zync", namespace, timeout, poll)
+					rvs["deployment/zync-que"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "zync-que", namespace, timeout, poll)
+					rvs["externalsecret/zync"] = testutil.GetResourceVersion(
+						k8sClient, &externalsecretsv1beta1.ExternalSecret{}, "zync", namespace, timeout, poll)
 
 					patch := client.MergeFrom(zync.DeepCopy())
 					zync.Spec.API = &saasv1alpha1.APISpec{
@@ -266,19 +244,17 @@ var _ = Describe("Zync controller", func() {
 
 				dep := &appsv1.Deployment{}
 				By("updating the Zync workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:          "zync",
-							Namespace:     namespace,
-							Replicas:      3,
-							ContainerName: "zync",
-							PDB:           true,
-							HPA:           true,
-							PodMonitor:    true,
-							LastVersion:   rvs["deployment/zync"],
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+						Name:          "zync",
+						Namespace:     namespace,
+						Replicas:      3,
+						ContainerName: "zync",
+						PDB:           true,
+						HPA:           true,
+						PodMonitor:    true,
+						LastVersion:   rvs["deployment/zync"],
+					}).Assert(k8sClient, dep, timeout, poll))
+
 				for _, env := range dep.Spec.Template.Spec.Containers[0].Env {
 					switch env.Name {
 					case "RAILS_ENV":
@@ -293,24 +269,22 @@ var _ = Describe("Zync controller", func() {
 				Expect(dep.Spec.Template.Spec.Containers[0].ReadinessProbe).To(BeNil())
 
 				By("updating the Zync-Que workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:          "zync-que",
-							Namespace:     namespace,
-							Replicas:      3,
-							ContainerName: "zync-que",
-							ContainterCmd: []string{
-								"/usr/bin/bash",
-								"-c",
-								"bundle exec rake 'que[--worker-count 10]'",
-							},
-							PDB:         true,
-							HPA:         true,
-							PodMonitor:  true,
-							LastVersion: rvs["deployment/zync-que"],
+					(&testutil.ExpectedWorkload{
+						Name:          "zync-que",
+						Namespace:     namespace,
+						Replicas:      3,
+						ContainerName: "zync-que",
+						ContainterCmd: []string{
+							"/usr/bin/bash",
+							"-c",
+							"bundle exec rake 'que[--worker-count 10]'",
 						},
-					),
-				)
+						PDB:         true,
+						HPA:         true,
+						PodMonitor:  true,
+						LastVersion: rvs["deployment/zync-que"],
+					}).Assert(k8sClient, dep, timeout, poll))
+
 				for _, env := range dep.Spec.Template.Spec.Containers[0].Env {
 					switch env.Name {
 					case "RAILS_ENV":
@@ -326,15 +300,11 @@ var _ = Describe("Zync controller", func() {
 
 				es := &externalsecretsv1beta1.ExternalSecret{}
 				By("updating the Zync external secret",
-					checkResource(
-						es,
-						expectedResource{
-							Name:        "zync",
-							Namespace:   namespace,
-							LastVersion: rvs["externalsecret/zync"],
-						},
-					),
-				)
+					(&testutil.ExpectedResource{
+						Name:        "zync",
+						Namespace:   namespace,
+						LastVersion: rvs["externalsecret/zync"],
+					}).Assert(k8sClient, es, timeout, poll))
 
 				Expect(es.Spec.RefreshInterval.ToUnstructured()).To(Equal("1s"))
 				Expect(es.Spec.SecretStoreRef.Name).To(Equal("other-store"))
@@ -348,15 +318,11 @@ var _ = Describe("Zync controller", func() {
 				}
 
 				By("ensuring the Zync grafana dashboard is gone",
-					checkResource(
-						&grafanav1alpha1.GrafanaDashboard{},
-						expectedResource{
-							Name:      "zync",
-							Namespace: namespace,
-							Missing:   true,
-						},
-					),
-				)
+					(&testutil.ExpectedResource{
+						Name:      "zync",
+						Namespace: namespace,
+						Missing:   true,
+					}).Assert(k8sClient, &grafanav1alpha1.GrafanaDashboard{}, timeout, poll))
 
 			})
 
@@ -379,12 +345,11 @@ var _ = Describe("Zync controller", func() {
 						return err
 					}
 
-					rvs["deployment/zync"] = getResourceVersion(
-						&appsv1.Deployment{}, "zync", namespace,
-					)
-					rvs["deployment/zync-que"] = getResourceVersion(
-						&appsv1.Deployment{}, "zync-que", namespace,
-					)
+					rvs["deployment/zync"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "zync", namespace, timeout, poll)
+					rvs["deployment/zync-que"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "zync-que", namespace, timeout, poll)
+
 					patch := client.MergeFrom(zync.DeepCopy())
 
 					zync.Spec.API = &saasv1alpha1.APISpec{
@@ -407,34 +372,26 @@ var _ = Describe("Zync controller", func() {
 			It("removes the Zync disabled resources", func() {
 
 				By("updating the Zync workload",
-					checkWorkloadResources(
-						&appsv1.Deployment{},
-						expectedWorkload{
-							Name:        "zync",
-							Namespace:   namespace,
-							Replicas:    0,
-							HPA:         false,
-							PDB:         false,
-							PodMonitor:  true,
-							LastVersion: rvs["deployment/zync"],
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+						Name:        "zync",
+						Namespace:   namespace,
+						Replicas:    0,
+						HPA:         false,
+						PDB:         false,
+						PodMonitor:  true,
+						LastVersion: rvs["deployment/zync"],
+					}).Assert(k8sClient, &appsv1.Deployment{}, timeout, poll))
 
 				By("updating the Zync-Que workload",
-					checkWorkloadResources(
-						&appsv1.Deployment{},
-						expectedWorkload{
-							Name:        "zync-que",
-							Namespace:   namespace,
-							Replicas:    0,
-							HPA:         false,
-							PDB:         false,
-							PodMonitor:  true,
-							LastVersion: rvs["deployment/zync-que"],
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+						Name:        "zync-que",
+						Namespace:   namespace,
+						Replicas:    0,
+						HPA:         false,
+						PDB:         false,
+						PodMonitor:  true,
+						LastVersion: rvs["deployment/zync-que"],
+					}).Assert(k8sClient, &appsv1.Deployment{}, timeout, poll))
 
 			})
 

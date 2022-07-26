@@ -7,6 +7,7 @@ import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	externalsecretsv1beta1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
+	testutil "github.com/3scale/saas-operator/test/util"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
@@ -133,30 +134,27 @@ var _ = Describe("System controller", func() {
 
 			dep := &appsv1.Deployment{}
 			By("deploying a system-app workload",
-				checkWorkloadResources(dep,
-					expectedWorkload{
-						Name:          "system-app",
-						Namespace:     namespace,
-						Replicas:      2,
-						ContainerName: "system-app",
-						ContainterArgs: []string{
-							"env", "PORT=3000", "container-entrypoint", "bundle", "exec",
-							"unicorn", "-c", "config/unicorn.rb",
-						},
-						PDB:        true,
-						HPA:        true,
-						PodMonitor: true,
+				(&testutil.ExpectedWorkload{
+					Name:          "system-app",
+					Namespace:     namespace,
+					Replicas:      2,
+					ContainerName: "system-app",
+					ContainterArgs: []string{
+						"env", "PORT=3000", "container-entrypoint", "bundle", "exec",
+						"unicorn", "-c", "config/unicorn.rb",
 					},
-				),
-			)
+					PDB:        true,
+					HPA:        true,
+					PodMonitor: true,
+				}).Assert(k8sClient, dep, timeout, poll))
+
 			Expect(dep.Spec.Template.Spec.Volumes[0].Secret.SecretName).To(Equal("system-config"))
 
 			svc := &corev1.Service{}
 			By("deploying the system-app service",
-				checkResource(svc, expectedResource{
-					Name: "system-app", Namespace: namespace,
-				}),
-			)
+				(&testutil.ExpectedResource{Name: "system-app", Namespace: namespace}).
+					Assert(k8sClient, svc, timeout, poll))
+
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("system-app"))
 
 		})
@@ -165,58 +163,52 @@ var _ = Describe("System controller", func() {
 
 			dep := &appsv1.Deployment{}
 			By("deploying a system-sidekiq-default workload",
-				checkWorkloadResources(dep,
-					expectedWorkload{
-						Name:          "system-sidekiq-default",
-						Namespace:     namespace,
-						Replicas:      2,
-						ContainerName: "system-sidekiq",
-						ContainterArgs: []string{"sidekiq",
-							"--queue", "critical", "--queue", "backend_sync",
-							"--queue", "events", "--queue", "zync,40",
-							"--queue", "priority,25", "--queue", "default,15",
-							"--queue", "web_hooks,10", "--queue", "deletion,5",
-						},
-						PDB:        true,
-						HPA:        true,
-						PodMonitor: true,
+				(&testutil.ExpectedWorkload{
+					Name:          "system-sidekiq-default",
+					Namespace:     namespace,
+					Replicas:      2,
+					ContainerName: "system-sidekiq",
+					ContainterArgs: []string{"sidekiq",
+						"--queue", "critical", "--queue", "backend_sync",
+						"--queue", "events", "--queue", "zync,40",
+						"--queue", "priority,25", "--queue", "default,15",
+						"--queue", "web_hooks,10", "--queue", "deletion,5",
 					},
-				),
-			)
+					PDB:        true,
+					HPA:        true,
+					PodMonitor: true,
+				}).Assert(k8sClient, dep, timeout, poll))
+
 			Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
 			Expect(dep.Spec.Template.Spec.Volumes[1].Secret.SecretName).To(Equal("system-config"))
 
 			By("deploying a system-sidekiq-billing workload",
-				checkWorkloadResources(dep,
-					expectedWorkload{
-						Name:           "system-sidekiq-billing",
-						Namespace:      namespace,
-						Replicas:       2,
-						ContainerName:  "system-sidekiq",
-						ContainterArgs: []string{"sidekiq", "--queue", "billing"},
-						PDB:            true,
-						HPA:            true,
-						PodMonitor:     true,
-					},
-				),
-			)
+				(&testutil.ExpectedWorkload{
+					Name:           "system-sidekiq-billing",
+					Namespace:      namespace,
+					Replicas:       2,
+					ContainerName:  "system-sidekiq",
+					ContainterArgs: []string{"sidekiq", "--queue", "billing"},
+					PDB:            true,
+					HPA:            true,
+					PodMonitor:     true,
+				}).Assert(k8sClient, dep, timeout, poll))
+
 			Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
 			Expect(dep.Spec.Template.Spec.Volumes[1].Secret.SecretName).To(Equal("system-config"))
 
 			By("deploying a system-sidekiq-low workload",
-				checkWorkloadResources(dep,
-					expectedWorkload{
-						Name:           "system-sidekiq-low",
-						Namespace:      namespace,
-						Replicas:       2,
-						ContainerName:  "system-sidekiq",
-						ContainterArgs: []string{"sidekiq", "--queue", "mailers", "--queue", "low"},
-						PDB:            true,
-						HPA:            true,
-						PodMonitor:     true,
-					},
-				),
-			)
+				(&testutil.ExpectedWorkload{
+					Name:           "system-sidekiq-low",
+					Namespace:      namespace,
+					Replicas:       2,
+					ContainerName:  "system-sidekiq",
+					ContainterArgs: []string{"sidekiq", "--queue", "mailers", "--queue", "low"},
+					PDB:            true,
+					HPA:            true,
+					PodMonitor:     true,
+				}).Assert(k8sClient, dep, timeout, poll))
+
 			Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
 			Expect(dep.Spec.Template.Spec.Volumes[1].Secret.SecretName).To(Equal("system-config"))
 
@@ -226,17 +218,13 @@ var _ = Describe("System controller", func() {
 
 			sts := &appsv1.StatefulSet{}
 			By("deploying the system-sphinx statefulset",
-				checkResource(sts, expectedResource{
-					Name: "system-sphinx", Namespace: namespace,
-				}),
-			)
+				(&testutil.ExpectedResource{Name: "system-sphinx", Namespace: namespace}).
+					Assert(k8sClient, sts, timeout, poll))
 
 			svc := &corev1.Service{}
 			By("deploying the system-sphinx service",
-				checkResource(svc, expectedResource{
-					Name: "system-sphinx", Namespace: namespace,
-				}),
-			)
+				(&testutil.ExpectedResource{Name: "system-sphinx", Namespace: namespace}).
+					Assert(k8sClient, svc, timeout, poll))
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("system-sphinx"))
 
 		})
@@ -245,10 +233,8 @@ var _ = Describe("System controller", func() {
 
 			gd := &grafanav1alpha1.GrafanaDashboard{}
 			By("deploying the system grafana dashboard",
-				checkResource(gd, expectedResource{
-					Name: "system", Namespace: namespace,
-				}),
-			)
+				(&testutil.ExpectedResource{Name: "system", Namespace: namespace}).
+					Assert(k8sClient, gd, timeout, poll))
 
 			for _, esn := range []string{
 				"system-database",
@@ -264,22 +250,14 @@ var _ = Describe("System controller", func() {
 				es := &externalsecretsv1beta1.ExternalSecret{}
 
 				By("deploying the system external secret",
-					checkResource(es, expectedResource{
-						Name: esn, Namespace: namespace,
-					}),
-				)
+					(&testutil.ExpectedResource{Name: esn, Namespace: namespace}).
+						Assert(k8sClient, es, timeout, poll))
 			}
 
 			es := &externalsecretsv1beta1.ExternalSecret{}
 			By("deploying the system-database external secret with specific configuration",
-				checkResource(
-					es,
-					expectedResource{
-						Name:      "system-database",
-						Namespace: namespace,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{Name: "system-database", Namespace: namespace}).
+					Assert(k8sClient, es, timeout, poll))
 
 			Expect(es.Spec.RefreshInterval.ToUnstructured()).To(Equal("1m0s"))
 			Expect(es.Spec.SecretStoreRef.Name).To(Equal("vault-mgmt"))
@@ -298,41 +276,25 @@ var _ = Describe("System controller", func() {
 
 			sts := &appsv1.StatefulSet{}
 			By("ensuring the system-console statefulset",
-				checkResource(sts, expectedResource{
-					Name:      "system-console",
-					Namespace: namespace, Missing: true,
-				}),
-			)
+				(&testutil.ExpectedResource{Name: "system-console", Namespace: namespace, Missing: true}).
+					Assert(k8sClient, sts, timeout, poll))
 
 			dep := &appsv1.Deployment{}
 			By("ensuring the system-app-canary deployment",
-				checkResource(dep, expectedResource{
-					Name:      "system-app-canary",
-					Namespace: namespace, Missing: true,
-				}),
-			)
+				(&testutil.ExpectedResource{Name: "system-app-canary", Namespace: namespace, Missing: true}).
+					Assert(k8sClient, dep, timeout, poll))
 
 			By("ensuring the system-sidekiq-default-canary deployment",
-				checkResource(dep, expectedResource{
-					Name:      "system-sidekiq-default-canary",
-					Namespace: namespace, Missing: true,
-				}),
-			)
+				(&testutil.ExpectedResource{Name: "system-sidekiq-default-canary", Namespace: namespace, Missing: true}).
+					Assert(k8sClient, dep, timeout, poll))
 
 			By("ensuring the system-sidekiq-billing-canary deployment",
-				checkResource(dep, expectedResource{
-					Name:      "system-sidekiq-billing-canary",
-					Namespace: namespace, Missing: true,
-				}),
-			)
+				(&testutil.ExpectedResource{Name: "system-sidekiq-billing-canary", Namespace: namespace, Missing: true}).
+					Assert(k8sClient, dep, timeout, poll))
 
 			By("ensuring the system-sidekiq-low-canary deployment",
-				checkResource(dep, expectedResource{
-					Name:      "system-sidekiq-low-canary",
-					Namespace: namespace, Missing: true,
-				}),
-			)
-
+				(&testutil.ExpectedResource{Name: "system-sidekiq-low-canary", Namespace: namespace, Missing: true}).
+					Assert(k8sClient, dep, timeout, poll))
 		})
 
 		When("updating a System resource with console", func() {
@@ -361,26 +323,21 @@ var _ = Describe("System controller", func() {
 
 				sts := &appsv1.StatefulSet{}
 				By("deploying the system-console StatefulSet",
-					checkResource(sts, expectedResource{
-						Name: "system-console", Namespace: namespace,
-					}),
-				)
+					(&testutil.ExpectedResource{Name: "system-console", Namespace: namespace}).
+						Assert(k8sClient, sts, timeout, poll))
+
 				Expect(sts.Spec.Template.Spec.Containers[0].Image).Should((Equal("newImage:newTag")))
 				Expect(sts.Spec.Template.Spec.Volumes[0].Secret.SecretName).Should((Equal("system-config")))
 
 				pdb := &policyv1.PodDisruptionBudget{}
 				By("ensuring the system-console PDB",
-					checkResource(pdb, expectedResource{
-						Name: "system-console", Namespace: namespace, Missing: true,
-					}),
-				)
+					(&testutil.ExpectedResource{Name: "system-console", Namespace: namespace, Missing: true}).
+						Assert(k8sClient, pdb, timeout, poll))
 
 				hpa := &autoscalingv2beta2.HorizontalPodAutoscaler{}
 				By("ensuring the system-console HPA",
-					checkResource(hpa, expectedResource{
-						Name: "system-console", Namespace: namespace, Missing: true,
-					}),
-				)
+					(&testutil.ExpectedResource{Name: "system-console", Namespace: namespace, Missing: true}).
+						Assert(k8sClient, hpa, timeout, poll))
 
 			})
 
@@ -402,12 +359,10 @@ var _ = Describe("System controller", func() {
 						return err
 					}
 
-					rvs["svc/system-app"] = getResourceVersion(
-						&corev1.Service{}, "system-app", namespace,
-					)
-					rvs["deployment/system-app"] = getResourceVersion(
-						&appsv1.Deployment{}, "system-app", namespace,
-					)
+					rvs["svc/system-app"] = testutil.GetResourceVersion(
+						k8sClient, &corev1.Service{}, "system-app", namespace, timeout, poll)
+					rvs["deployment/system-app"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "system-app", namespace, timeout, poll)
 
 					patch := client.MergeFrom(system.DeepCopy())
 					system.Spec.App = &saasv1alpha1.SystemAppSpec{
@@ -442,78 +397,69 @@ var _ = Describe("System controller", func() {
 
 				dep := &appsv1.Deployment{}
 				By("deploying a system-app-canary workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:          "system-app-canary",
-							Namespace:     namespace,
-							Replicas:      2,
-							ContainerName: "system-app",
-							ContainterArgs: []string{
-								"env", "PORT=3000", "container-entrypoint", "bundle", "exec",
-								"unicorn", "-c", "config/unicorn.rb",
-							},
-							PodMonitor: true,
+					(&testutil.ExpectedWorkload{
+						Name:          "system-app-canary",
+						Namespace:     namespace,
+						Replicas:      2,
+						ContainerName: "system-app",
+						ContainterArgs: []string{
+							"env", "PORT=3000", "container-entrypoint", "bundle", "exec",
+							"unicorn", "-c", "config/unicorn.rb",
 						},
-					),
-				)
+						PodMonitor: true,
+					}).Assert(k8sClient, dep, timeout, poll))
+
 				Expect(dep.Spec.Template.Spec.Volumes[0].Secret.SecretName).To(Equal("system-config"))
 
 				svc := &corev1.Service{}
 				By("keeps the system-app service deployment label selector",
-					checkResource(svc, expectedResource{
-						Name: "system-app", Namespace: namespace,
-					}),
-				)
+					(&testutil.ExpectedResource{Name: "system-app", Namespace: namespace}).
+						Assert(k8sClient, svc, timeout, poll))
+
 				Expect(svc.Spec.Selector["deployment"]).To(Equal("system-app"))
 				Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("system-app"))
 
 				By("deploying a system-sidekiq-default-canary workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:          "system-sidekiq-default-canary",
-							Namespace:     namespace,
-							Replicas:      2,
-							ContainerName: "system-sidekiq",
-							ContainterArgs: []string{"sidekiq",
-								"--queue", "critical", "--queue", "backend_sync",
-								"--queue", "events", "--queue", "zync,40",
-								"--queue", "priority,25", "--queue", "default,15",
-								"--queue", "web_hooks,10", "--queue", "deletion,5",
-							},
-							PodMonitor: true,
+					(&testutil.ExpectedWorkload{
+						Name:          "system-sidekiq-default-canary",
+						Namespace:     namespace,
+						Replicas:      2,
+						ContainerName: "system-sidekiq",
+						ContainterArgs: []string{"sidekiq",
+							"--queue", "critical", "--queue", "backend_sync",
+							"--queue", "events", "--queue", "zync,40",
+							"--queue", "priority,25", "--queue", "default,15",
+							"--queue", "web_hooks,10", "--queue", "deletion,5",
 						},
-					),
-				)
+						PodMonitor: true,
+					}).Assert(k8sClient, dep, timeout, poll))
+
 				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
 				Expect(dep.Spec.Template.Spec.Volumes[1].Secret.SecretName).To(Equal("system-config"))
 
 				By("deploying a system-sidekiq-billing-canary workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:           "system-sidekiq-billing-canary",
-							Namespace:      namespace,
-							Replicas:       2,
-							ContainerName:  "system-sidekiq",
-							ContainterArgs: []string{"sidekiq", "--queue", "billing"},
-							PodMonitor:     true,
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+						Name:           "system-sidekiq-billing-canary",
+						Namespace:      namespace,
+						Replicas:       2,
+						ContainerName:  "system-sidekiq",
+						ContainterArgs: []string{"sidekiq", "--queue", "billing"},
+						PodMonitor:     true,
+					}).Assert(k8sClient, dep, timeout, poll))
+
 				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
 				Expect(dep.Spec.Template.Spec.Volumes[1].Secret.SecretName).To(Equal("system-config"))
 
 				By("deploying a system-sidekiq-low-canary workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:           "system-sidekiq-low-canary",
-							Namespace:      namespace,
-							Replicas:       2,
-							ContainerName:  "system-sidekiq",
-							ContainterArgs: []string{"sidekiq", "--queue", "mailers", "--queue", "low"},
-							PodMonitor:     true,
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+						Name:           "system-sidekiq-low-canary",
+						Namespace:      namespace,
+						Replicas:       2,
+						ContainerName:  "system-sidekiq",
+						ContainterArgs: []string{"sidekiq", "--queue", "mailers", "--queue", "low"},
+						PodMonitor:     true,
+					}).Assert(k8sClient, dep, timeout, poll))
+
 				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
 				Expect(dep.Spec.Template.Spec.Volumes[1].Secret.SecretName).To(Equal("system-config"))
 
@@ -531,9 +477,9 @@ var _ = Describe("System controller", func() {
 						); err != nil {
 							return err
 						}
-						rvs["svc/system-app"] = getResourceVersion(
-							&corev1.Service{}, "system-app", namespace,
-						)
+						rvs["svc/system-app"] = testutil.GetResourceVersion(
+							k8sClient, &corev1.Service{}, "system-app", namespace, timeout, poll)
+
 						patch := client.MergeFrom(system.DeepCopy())
 						system.Spec.App = &saasv1alpha1.SystemAppSpec{
 							Canary: &saasv1alpha1.Canary{
@@ -548,11 +494,12 @@ var _ = Describe("System controller", func() {
 
 					svc := &corev1.Service{}
 					By("removing the system-app service deployment label selector",
-						checkResource(svc, expectedResource{
-							Name: "system-app", Namespace: namespace,
+						(&testutil.ExpectedResource{
+							Name:        "system-app",
+							Namespace:   namespace,
 							LastVersion: rvs["svc/system-app"],
-						}),
-					)
+						}).Assert(k8sClient, svc, timeout, poll))
+
 					Expect(svc.Spec.Selector).NotTo(HaveKey("deployment"))
 					Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("system-app"))
 
@@ -578,18 +525,14 @@ var _ = Describe("System controller", func() {
 						return err
 					}
 
-					rvs["deployment/system-app"] = getResourceVersion(
-						&appsv1.Deployment{}, "system-app", namespace,
-					)
-					rvs["deployment/system-sidekiq-billing"] = getResourceVersion(
-						&appsv1.Deployment{}, "system-sidekiq-billing", namespace,
-					)
-					rvs["deployment/system-sidekiq-default"] = getResourceVersion(
-						&appsv1.Deployment{}, "system-sidekiq-default", namespace,
-					)
-					rvs["deployment/system-sidekiq-low"] = getResourceVersion(
-						&appsv1.Deployment{}, "system-sidekiq-low", namespace,
-					)
+					rvs["deployment/system-app"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "system-app", namespace, timeout, poll)
+					rvs["deployment/system-sidekiq-billing"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "system-sidekiq-billing", namespace, timeout, poll)
+					rvs["deployment/system-sidekiq-default"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "system-sidekiq-default", namespace, timeout, poll)
+					rvs["deployment/system-sidekiq-low"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "system-sidekiq-low", namespace, timeout, poll)
 
 					patch := client.MergeFrom(system.DeepCopy())
 
@@ -647,18 +590,16 @@ var _ = Describe("System controller", func() {
 
 				dep := &appsv1.Deployment{}
 				By("adding a twemproxy sidecar to the system-app workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:        "system-app",
-							Namespace:   namespace,
-							Replicas:    2,
-							PDB:         true,
-							HPA:         true,
-							PodMonitor:  true,
-							LastVersion: rvs["deployment/system-app"],
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+						Name:        "system-app",
+						Namespace:   namespace,
+						Replicas:    2,
+						PDB:         true,
+						HPA:         true,
+						PodMonitor:  true,
+						LastVersion: rvs["deployment/system-app"],
+					}).Assert(k8sClient, dep, timeout, poll))
+
 				Expect(dep.Spec.Template.Spec.Volumes).To(HaveLen(2))
 				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-config"))
 				Expect(dep.Spec.Template.Spec.Volumes[0].VolumeSource.Secret.SecretName).To(Equal("system-config"))
@@ -669,15 +610,13 @@ var _ = Describe("System controller", func() {
 				Expect(dep.Spec.Template.Spec.Containers[1].VolumeMounts[0].Name).To(Equal("twemproxy-config"))
 
 				By("adding a twemproxy sidecar to the system-app-canary workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:       "system-app-canary",
-							Replicas:   2,
-							Namespace:  namespace,
-							PodMonitor: true,
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+						Name:       "system-app-canary",
+						Replicas:   2,
+						Namespace:  namespace,
+						PodMonitor: true,
+					}).Assert(k8sClient, dep, timeout, poll))
+
 				Expect(dep.Spec.Template.Spec.Volumes).To(HaveLen(2))
 				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-config"))
 				Expect(dep.Spec.Template.Spec.Volumes[0].VolumeSource.Secret.SecretName).To(Equal("system-config"))
@@ -690,18 +629,16 @@ var _ = Describe("System controller", func() {
 				Expect(dep.Spec.Template.Spec.Containers[1].Env[3].Value).To(Equal("2"))
 
 				By("adding a twemproxy sidecar to the system-sidekiq-billing workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:        "system-sidekiq-billing",
-							Namespace:   namespace,
-							Replicas:    2,
-							PDB:         true,
-							HPA:         true,
-							PodMonitor:  true,
-							LastVersion: rvs["deployment/system-sidekiq-billing"],
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+						Name:        "system-sidekiq-billing",
+						Namespace:   namespace,
+						Replicas:    2,
+						PDB:         true,
+						HPA:         true,
+						PodMonitor:  true,
+						LastVersion: rvs["deployment/system-sidekiq-billing"],
+					}).Assert(k8sClient, dep, timeout, poll))
+
 				Expect(dep.Spec.Template.Spec.Volumes).To(HaveLen(3))
 				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
 				Expect(dep.Spec.Template.Spec.Volumes[0].VolumeSource.EmptyDir).ShouldNot(BeNil())
@@ -716,15 +653,13 @@ var _ = Describe("System controller", func() {
 				Expect(dep.Spec.Template.Spec.Containers[1].Env[3].Value).To(Equal("2"))
 
 				By("adding a twemproxy sidecar to the system-sidekiq-billing-canary workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:       "system-sidekiq-billing-canary",
-							Replicas:   3,
-							Namespace:  namespace,
-							PodMonitor: true,
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+						Name:       "system-sidekiq-billing-canary",
+						Replicas:   3,
+						Namespace:  namespace,
+						PodMonitor: true,
+					}).Assert(k8sClient, dep, timeout, poll))
+
 				Expect(dep.Spec.Template.Spec.Volumes).To(HaveLen(3))
 				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
 				Expect(dep.Spec.Template.Spec.Volumes[0].VolumeSource.EmptyDir).ShouldNot(BeNil())
@@ -739,18 +674,16 @@ var _ = Describe("System controller", func() {
 				Expect(dep.Spec.Template.Spec.Containers[1].Env[3].Value).To(Equal("3"))
 
 				By("adding a twemproxy sidecar to the system-sidekiq-low workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:        "system-sidekiq-low",
-							Namespace:   namespace,
-							Replicas:    2,
-							PDB:         true,
-							HPA:         true,
-							PodMonitor:  true,
-							LastVersion: rvs["deployment/system-sidekiq-low"],
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+						Name:        "system-sidekiq-low",
+						Namespace:   namespace,
+						Replicas:    2,
+						PDB:         true,
+						HPA:         true,
+						PodMonitor:  true,
+						LastVersion: rvs["deployment/system-sidekiq-low"],
+					}).Assert(k8sClient, dep, timeout, poll))
+
 				Expect(dep.Spec.Template.Spec.Volumes).To(HaveLen(3))
 				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
 				Expect(dep.Spec.Template.Spec.Volumes[0].VolumeSource.EmptyDir).ShouldNot(BeNil())
@@ -765,15 +698,13 @@ var _ = Describe("System controller", func() {
 				Expect(dep.Spec.Template.Spec.Containers[1].Env[3].Value).To(Equal("2"))
 
 				By("adding a twemproxy sidecar to the system-sidekiq-low-canary workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:       "system-sidekiq-low-canary",
-							Replicas:   5,
-							Namespace:  namespace,
-							PodMonitor: true,
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+						Name:       "system-sidekiq-low-canary",
+						Replicas:   5,
+						Namespace:  namespace,
+						PodMonitor: true,
+					}).Assert(k8sClient, dep, timeout, poll))
+
 				Expect(dep.Spec.Template.Spec.Volumes).To(HaveLen(3))
 				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
 				Expect(dep.Spec.Template.Spec.Volumes[0].VolumeSource.EmptyDir).ShouldNot(BeNil())
@@ -807,9 +738,8 @@ var _ = Describe("System controller", func() {
 						return err
 					}
 
-					rvs["externalsecret/system-database"] = getResourceVersion(
-						&externalsecretsv1beta1.ExternalSecret{}, "system-database", namespace,
-					)
+					rvs["externalsecret/system-database"] = testutil.GetResourceVersion(
+						k8sClient, &externalsecretsv1beta1.ExternalSecret{}, "system-database", namespace, timeout, poll)
 
 					patch := client.MergeFrom(system.DeepCopy())
 
@@ -829,15 +759,11 @@ var _ = Describe("System controller", func() {
 
 				es := &externalsecretsv1beta1.ExternalSecret{}
 				By("updating the system-database external secret",
-					checkResource(
-						es,
-						expectedResource{
-							Name:        "system-database",
-							Namespace:   namespace,
-							LastVersion: rvs["externalsecret/system-database"],
-						},
-					),
-				)
+					(&testutil.ExpectedResource{
+						Name:        "system-database",
+						Namespace:   namespace,
+						LastVersion: rvs["externalsecret/system-database"],
+					}).Assert(k8sClient, es, timeout, poll))
 
 				Expect(es.Spec.RefreshInterval.ToUnstructured()).To(Equal("1s"))
 				Expect(es.Spec.SecretStoreRef.Name).To(Equal("other-store"))
