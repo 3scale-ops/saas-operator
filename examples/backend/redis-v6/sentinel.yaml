@@ -1,0 +1,21 @@
+apiVersion: saas.3scale.net/v1alpha1
+kind: Sentinel
+metadata:
+  name: sentinel
+spec:
+  replicas: 3
+  image:
+    tag: 6.2.7-debian-11-r17
+  config:
+    monitoredShards:
+      # DNS should not be used in production. DNS is
+      # used here for convenience as redis IPs might change
+      # inside the cluster.
+      shard01:
+        - redis://redis-shard-shard01-0.redis-shard-shard01:6379
+        - redis://redis-shard-shard01-1.redis-shard-shard01:6379
+        - redis://redis-shard-shard01-2.redis-shard-shard01:6379
+      shard02:
+        - redis://redis-shard-shard02-0.redis-shard-shard02:6379
+        - redis://redis-shard-shard02-1.redis-shard-shard02:6379
+        - redis://redis-shard-shard02-2.redis-shard-shard02:6379

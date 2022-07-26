@@ -462,25 +462,45 @@ spec:
                   properties:
                     master:
                       description: Master is the address of the master redis server
-                        of this shard, in the format "127.0.0.1:6379"
+                        of this shard, in the format "127.0.0.1:6379" DEPRECATED -
+                        this field will be removed in an upcoming release
                       type: string
                     name:
                       description: Name is the name of the redis shard
                       type: string
+                    servers:
+                      additionalProperties:
+                        properties:
+                          config:
+                            additionalProperties:
+                              type: string
+                            type: object
+                          role:
+                            description: Role represents the role of a redis server
+                              within a shard
+                            type: string
+                        required:
+                        - role
+                        type: object
+                      description: Server is a map intended to store configuration
+                        information of each of the RedisServer instances that belong
+                        to the MonitoredShard
+                      type: object
                     slavesRO:
                       description: SlavesRO is the list of addresses of the read-only
                         slave servers in this shard, in the format "127.0.0.1:6379"
+                        DEPRECATED - this field will be removed in an upcoming release
                       items:
                         type: string
                       type: array
                     slavesRW:
                       description: SlavesRW is the list of addresses of the read-write
                         slave servers in this shard, in the format "127.0.0.1:6379"
+                        DEPRECATED - this field will be removed in an upcoming release
                       items:
                         type: string
                       type: array
                   required:
-                  - master
                   - name
                   type: object
                 type: array
