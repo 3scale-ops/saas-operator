@@ -7,6 +7,7 @@ import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	externalsecretsv1beta1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
+	testutil "github.com/3scale/saas-operator/test/util"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
@@ -76,18 +77,17 @@ var _ = Describe("MappingService controller", func() {
 
 			dep := &appsv1.Deployment{}
 			By("deploying a MappingService workload",
-				checkWorkloadResources(dep,
-					expectedWorkload{
-						Name:          "mapping-service",
-						Namespace:     namespace,
-						Replicas:      2,
-						ContainerName: "mapping-service",
-						PDB:           true,
-						HPA:           true,
-						PodMonitor:    true,
-					},
-				),
-			)
+				(&testutil.ExpectedWorkload{
+
+					Name:          "mapping-service",
+					Namespace:     namespace,
+					Replicas:      2,
+					ContainerName: "mapping-service",
+					PDB:           true,
+					HPA:           true,
+					PodMonitor:    true,
+				}).Assert(k8sClient, dep, timeout, poll))
+
 			for _, env := range dep.Spec.Template.Spec.Containers[0].Env {
 				switch env.Name {
 				case "MASTER_ACCESS_TOKEN":
@@ -100,26 +100,16 @@ var _ = Describe("MappingService controller", func() {
 
 			svc := &corev1.Service{}
 			By("deploying a MappingService service",
-				checkResource(svc,
-					expectedResource{
-						Name:      "mapping-service",
-						Namespace: namespace,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{Name: "mapping-service", Namespace: namespace}).
+					Assert(k8sClient, svc, timeout, poll))
+
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("mapping-service"))
 			Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("mapping-service"))
 
 			es := &externalsecretsv1beta1.ExternalSecret{}
 			By("deploying the MappingService System Token external secret",
-				checkResource(
-					es,
-					expectedResource{
-						Name:      "mapping-service-system-master-access-token",
-						Namespace: namespace,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{Name: "mapping-service-system-master-access-token", Namespace: namespace}).
+					Assert(k8sClient, es, timeout, poll))
 
 			Expect(es.Spec.RefreshInterval.ToUnstructured()).To(Equal("1m0s"))
 			Expect(es.Spec.SecretStoreRef.Name).To(Equal("vault-mgmt"))
@@ -134,14 +124,8 @@ var _ = Describe("MappingService controller", func() {
 			}
 
 			By("deploying the MappingService grafana dashboard",
-				checkResource(
-					&grafanav1alpha1.GrafanaDashboard{},
-					expectedResource{
-						Name:      "mapping-service",
-						Namespace: namespace,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{Name: "mapping-service", Namespace: namespace}).
+					Assert(k8sClient, &grafanav1alpha1.GrafanaDashboard{}, timeout, poll))
 
 		})
 
@@ -162,15 +146,12 @@ var _ = Describe("MappingService controller", func() {
 						return err
 					}
 
-					rvs["mapping-service"] = getResourceVersion(
-						mappingservice, "instance", namespace,
-					)
-					rvs["deployment/mappingservice"] = getResourceVersion(
-						&appsv1.Deployment{}, "mapping-service", namespace,
-					)
-					rvs["externalsecret/mapping-service-system-master-access-token"] = getResourceVersion(
-						&externalsecretsv1beta1.ExternalSecret{}, "mapping-service-system-master-access-token", namespace,
-					)
+					rvs["mapping-service"] = testutil.GetResourceVersion(
+						k8sClient, mappingservice, "instance", namespace, timeout, poll)
+					rvs["deployment/mappingservice"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "mapping-service", namespace, timeout, poll)
+					rvs["externalsecret/mapping-service-system-master-access-token"] = testutil.GetResourceVersion(
+						k8sClient, &externalsecretsv1beta1.ExternalSecret{}, "mapping-service-system-master-access-token", namespace, timeout, poll)
 
 					patch := client.MergeFrom(mappingservice.DeepCopy())
 					mappingservice.Spec.Config.APIHost = "updated-example.com"
@@ -197,19 +178,18 @@ var _ = Describe("MappingService controller", func() {
 
 				dep := &appsv1.Deployment{}
 				By("updating the MappingService workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:          "mapping-service",
-							Namespace:     namespace,
-							Replicas:      3,
-							ContainerName: "mapping-service",
-							PDB:           true,
-							HPA:           true,
-							PodMonitor:    true,
-							LastVersion:   rvs["deployment/mappingservice"],
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+
+						Name:          "mapping-service",
+						Namespace:     namespace,
+						Replicas:      3,
+						ContainerName: "mapping-service",
+						PDB:           true,
+						HPA:           true,
+						PodMonitor:    true,
+						LastVersion:   rvs["deployment/mappingservice"],
+					}).Assert(k8sClient, dep, timeout, poll))
+
 				for _, env := range dep.Spec.Template.Spec.Containers[0].Env {
 					switch env.Name {
 					case "MASTER_ACCESS_TOKEN":
@@ -223,15 +203,11 @@ var _ = Describe("MappingService controller", func() {
 
 				es := &externalsecretsv1beta1.ExternalSecret{}
 				By("updating the MappingService System Token external secret",
-					checkResource(
-						es,
-						expectedResource{
-							Name:        "mapping-service-system-master-access-token",
-							Namespace:   namespace,
-							LastVersion: rvs["externalsecret/mapping-service-system-master-access-token"],
-						},
-					),
-				)
+					(&testutil.ExpectedResource{
+						Name:        "mapping-service-system-master-access-token",
+						Namespace:   namespace,
+						LastVersion: rvs["externalsecret/mapping-service-system-master-access-token"],
+					}).Assert(k8sClient, es, timeout, poll))
 
 				Expect(es.Spec.RefreshInterval.ToUnstructured()).To(Equal("1s"))
 				Expect(es.Spec.SecretStoreRef.Name).To(Equal("other-store"))
@@ -245,15 +221,11 @@ var _ = Describe("MappingService controller", func() {
 				}
 
 				By("ensuring the MappingService grafana dashboard is gone",
-					checkResource(
-						&grafanav1alpha1.GrafanaDashboard{},
-						expectedResource{
-							Name:      "mapping-service",
-							Namespace: namespace,
-							Missing:   true,
-						},
-					),
-				)
+					(&testutil.ExpectedResource{
+						Name:      "mapping-service",
+						Namespace: namespace,
+						Missing:   true,
+					}).Assert(k8sClient, &grafanav1alpha1.GrafanaDashboard{}, timeout, poll))
 
 			})
 
@@ -276,10 +248,8 @@ var _ = Describe("MappingService controller", func() {
 						return err
 					}
 
-					rvs["deployment/mappingservice"] = getResourceVersion(
-						&appsv1.Deployment{}, "mapping-service", namespace,
-					)
-
+					rvs["deployment/mappingservice"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "mapping-service", namespace, timeout, poll)
 					patch := client.MergeFrom(mappingservice.DeepCopy())
 					mappingservice.Spec.Replicas = pointer.Int32(0)
 					mappingservice.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
@@ -294,18 +264,16 @@ var _ = Describe("MappingService controller", func() {
 
 				dep := &appsv1.Deployment{}
 				By("updating the MappingService workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:        "mapping-service",
-							Namespace:   namespace,
-							Replicas:    0,
-							HPA:         false,
-							PDB:         false,
-							PodMonitor:  true,
-							LastVersion: rvs["deployment/mappingservice"],
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+
+						Name:        "mapping-service",
+						Namespace:   namespace,
+						Replicas:    0,
+						HPA:         false,
+						PDB:         false,
+						PodMonitor:  true,
+						LastVersion: rvs["deployment/mappingservice"],
+					}).Assert(k8sClient, dep, timeout, poll))
 
 			})
 

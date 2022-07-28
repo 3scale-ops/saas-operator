@@ -7,6 +7,7 @@ import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	externalsecretsv1beta1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
+	testutil "github.com/3scale/saas-operator/test/util"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
@@ -77,18 +78,17 @@ var _ = Describe("CORSProxy controller", func() {
 
 			dep := &appsv1.Deployment{}
 			By("deploying a CORSProxy workload",
-				checkWorkloadResources(dep,
-					expectedWorkload{
-						Name:          "cors-proxy",
-						Namespace:     namespace,
-						Replicas:      2,
-						ContainerName: "cors-proxy",
-						PDB:           true,
-						HPA:           true,
-						PodMonitor:    true,
-					},
-				),
-			)
+				(&testutil.ExpectedWorkload{
+
+					Name:          "cors-proxy",
+					Namespace:     namespace,
+					Replicas:      2,
+					ContainerName: "cors-proxy",
+					PDB:           true,
+					HPA:           true,
+					PodMonitor:    true,
+				}).Assert(k8sClient, dep, timeout, poll))
+
 			Expect(dep.Spec.Template.Spec.Volumes).To(HaveLen(0))
 			Expect(dep.Spec.Template.Spec.Containers[0].Env[0].Name).To(Equal("DATABASE_URL"))
 			Expect(dep.Spec.Template.Spec.Containers[0].Env[0].ValueFrom.SecretKeyRef.Key).To(Equal("DATABASE_URL"))
@@ -96,26 +96,20 @@ var _ = Describe("CORSProxy controller", func() {
 
 			svc := &corev1.Service{}
 			By("deploying a CORSProxy service",
-				checkResource(svc,
-					expectedResource{
-						Name:      "cors-proxy",
-						Namespace: namespace,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{
+					Name:      "cors-proxy",
+					Namespace: namespace,
+				}).Assert(k8sClient, svc, timeout, poll))
+
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("cors-proxy"))
 			Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("cors-proxy"))
 
 			es := &externalsecretsv1beta1.ExternalSecret{}
 			By("deploying the CORSProxy System Database external secret",
-				checkResource(
-					es,
-					expectedResource{
-						Name:      "cors-proxy-system-database",
-						Namespace: namespace,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{
+					Name:      "cors-proxy-system-database",
+					Namespace: namespace,
+				}).Assert(k8sClient, es, timeout, poll))
 
 			Expect(es.Spec.RefreshInterval.ToUnstructured()).To(Equal("1m0s"))
 			Expect(es.Spec.SecretStoreRef.Name).To(Equal("vault-mgmt"))
@@ -130,14 +124,10 @@ var _ = Describe("CORSProxy controller", func() {
 			}
 
 			By("deploying the CORSProxy grafana dashboard",
-				checkResource(
-					&grafanav1alpha1.GrafanaDashboard{},
-					expectedResource{
-						Name:      "cors-proxy",
-						Namespace: namespace,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{
+					Name:      "cors-proxy",
+					Namespace: namespace,
+				}).Assert(k8sClient, &grafanav1alpha1.GrafanaDashboard{}, timeout, poll))
 
 		})
 
@@ -158,15 +148,14 @@ var _ = Describe("CORSProxy controller", func() {
 						return err
 					}
 
-					rvs["cors-proxy"] = getResourceVersion(
-						corsproxy, "instance", namespace,
-					)
-					rvs["deployment/corsproxy"] = getResourceVersion(
-						&appsv1.Deployment{}, "cors-proxy", namespace,
-					)
-					rvs["externalsecret/cors-proxy-system-database"] = getResourceVersion(
-						&externalsecretsv1beta1.ExternalSecret{}, "cors-proxy-system-database", namespace,
-					)
+					rvs["cors-proxy"] = testutil.GetResourceVersion(
+						k8sClient, corsproxy, "instance", namespace, timeout, poll)
+
+					rvs["deployment/corsproxy"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "cors-proxy", namespace, timeout, poll)
+
+					rvs["externalsecret/cors-proxy-system-database"] = testutil.GetResourceVersion(
+						k8sClient, &externalsecretsv1beta1.ExternalSecret{}, "cors-proxy-system-database", namespace, timeout, poll)
 
 					patch := client.MergeFrom(corsproxy.DeepCopy())
 					corsproxy.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{
@@ -191,33 +180,28 @@ var _ = Describe("CORSProxy controller", func() {
 
 				dep := &appsv1.Deployment{}
 				By("updating the CORSProxy workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:          "cors-proxy",
-							Namespace:     namespace,
-							Replicas:      3,
-							ContainerName: "cors-proxy",
-							PDB:           true,
-							HPA:           true,
-							PodMonitor:    true,
-							LastVersion:   rvs["deployment/corsproxy"],
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+
+						Name:          "cors-proxy",
+						Namespace:     namespace,
+						Replicas:      3,
+						ContainerName: "cors-proxy",
+						PDB:           true,
+						HPA:           true,
+						PodMonitor:    true,
+						LastVersion:   rvs["deployment/corsproxy"],
+					}).Assert(k8sClient, dep, timeout, poll))
+
 				Expect(dep.Spec.Template.Spec.Containers[0].LivenessProbe).To(BeNil())
 				Expect(dep.Spec.Template.Spec.Containers[0].ReadinessProbe).To(BeNil())
 
 				es := &externalsecretsv1beta1.ExternalSecret{}
 				By("updating the CORSProxy System Database external secret",
-					checkResource(
-						es,
-						expectedResource{
-							Name:        "cors-proxy-system-database",
-							Namespace:   namespace,
-							LastVersion: rvs["externalsecret/cors-proxy-system-database"],
-						},
-					),
-				)
+					(&testutil.ExpectedResource{
+						Name:        "cors-proxy-system-database",
+						Namespace:   namespace,
+						LastVersion: rvs["externalsecret/cors-proxy-system-database"],
+					}).Assert(k8sClient, es, timeout, poll))
 
 				Expect(es.Spec.RefreshInterval.ToUnstructured()).To(Equal("1s"))
 				Expect(es.Spec.SecretStoreRef.Name).To(Equal("other-store"))
@@ -231,15 +215,11 @@ var _ = Describe("CORSProxy controller", func() {
 				}
 
 				By("ensuring the CORSProxy grafana dashboard is gone",
-					checkResource(
-						&grafanav1alpha1.GrafanaDashboard{},
-						expectedResource{
-							Name:      "cors-proxy",
-							Namespace: namespace,
-							Missing:   true,
-						},
-					),
-				)
+					(&testutil.ExpectedResource{
+						Name:      "cors-proxy",
+						Namespace: namespace,
+						Missing:   true,
+					}).Assert(k8sClient, &grafanav1alpha1.GrafanaDashboard{}, timeout, poll))
 
 			})
 
@@ -262,9 +242,8 @@ var _ = Describe("CORSProxy controller", func() {
 						return err
 					}
 
-					rvs["deployment/corsproxy"] = getResourceVersion(
-						&appsv1.Deployment{}, "cors-proxy", namespace,
-					)
+					rvs["deployment/corsproxy"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "cors-proxy", namespace, timeout, poll)
 
 					patch := client.MergeFrom(corsproxy.DeepCopy())
 					corsproxy.Spec.Replicas = pointer.Int32(0)
@@ -280,18 +259,16 @@ var _ = Describe("CORSProxy controller", func() {
 
 				dep := &appsv1.Deployment{}
 				By("updating the CORSProxy workload",
-					checkWorkloadResources(dep,
-						expectedWorkload{
-							Name:        "cors-proxy",
-							Namespace:   namespace,
-							Replicas:    0,
-							HPA:         false,
-							PDB:         false,
-							PodMonitor:  true,
-							LastVersion: rvs["deployment/corsproxy"],
-						},
-					),
-				)
+					(&testutil.ExpectedWorkload{
+
+						Name:        "cors-proxy",
+						Namespace:   namespace,
+						Replicas:    0,
+						HPA:         false,
+						PDB:         false,
+						PodMonitor:  true,
+						LastVersion: rvs["deployment/corsproxy"],
+					}).Assert(k8sClient, dep, timeout, poll))
 
 			})
 

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	testutil "github.com/3scale/saas-operator/test/util"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
@@ -60,31 +61,16 @@ var _ = Describe("TwemproxyConfig controller", func() {
 		It("creates the required RedisShard resources", func() {
 
 			By("deploying a RedisShard statefulset",
-				checkResource(&appsv1.StatefulSet{},
-					expectedResource{
-						Name:      "redis-shard-shard01",
-						Namespace: namespace,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{Name: "redis-shard-shard01", Namespace: namespace}).
+					Assert(k8sClient, &appsv1.StatefulSet{}, timeout, poll))
 
 			By("deploying a RedisShard service",
-				checkResource(&corev1.Service{},
-					expectedResource{
-						Name:      "redis-shard-shard01",
-						Namespace: namespace,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{Name: "redis-shard-shard01", Namespace: namespace}).
+					Assert(k8sClient, &corev1.Service{}, timeout, poll))
 
 			By("deploying a RedisShard config configmap",
-				checkResource(&corev1.ConfigMap{},
-					expectedResource{
-						Name:      "redis-config-shard01",
-						Namespace: namespace,
-					},
-				),
-			)
+				(&testutil.ExpectedResource{Name: "redis-config-shard01", Namespace: namespace}).
+					Assert(k8sClient, &corev1.ConfigMap{}, timeout, poll))
 
 		})
 
