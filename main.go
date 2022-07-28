@@ -107,12 +107,19 @@ func main() {
 		Namespace:              watchNamespace, // namespaced-scope when the value is not an empty string
 	}
 
+	var clusterWatch bool
 	if strings.Contains(watchNamespace, ",") {
 		setupLog.Info(fmt.Sprintf("manager in MultiNamespaced mode will be watching namespaces %q", watchNamespace))
 		options.NewCache = cache.MultiNamespacedCacheBuilder(strings.Split(watchNamespace, ","))
-	} else {
+		clusterWatch = false
+	} else if watchNamespace != "" {
 		setupLog.Info(fmt.Sprintf("manager in Namespaced mode will be watching namespace %q", watchNamespace))
 		options.Namespace = watchNamespace
+		clusterWatch = false
+	} else {
+		setupLog.Info("manager in cluster mode will be watching all namespaces")
+		options.Namespace = ""
+		clusterWatch = true
 	}
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), options)
@@ -124,7 +131,7 @@ func main() {
 	/* BASERECONCILER_V2 BASED CONTROLLERS*/
 
 	if err = (&controllers.SentinelReconciler{
-		Reconciler:     basereconciler.NewFromManager(mgr, "Sentinel", false),
+		Reconciler:     basereconciler.NewFromManager(mgr, "Sentinel", clusterWatch),
 		SentinelEvents: threads.NewManager(),
 		Metrics:        threads.NewManager(),
 		Log:            ctrl.Log.WithName("controllers").WithName("Sentinel"),
@@ -133,14 +140,14 @@ func main() {
 		os.Exit(1)
 	}
 	if err = (&controllers.RedisShardReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr, "RedisShard", false),
+		Reconciler: basereconciler.NewFromManager(mgr, "RedisShard", clusterWatch),
 		Log:        ctrl.Log.WithName("controllers").WithName("RedisShard"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "RedisShard")
 		os.Exit(1)
 	}
 	if err = (&controllers.TwemproxyConfigReconciler{
-		Reconciler:     basereconciler.NewFromManager(mgr, "TwemproxyConfig", false),
+		Reconciler:     basereconciler.NewFromManager(mgr, "TwemproxyConfig", clusterWatch),
 		SentinelEvents: threads.NewManager(),
 		Log:            ctrl.Log.WithName("controllers").WithName("TwemproxyConfig"),
 	}).SetupWithManager(mgr); err != nil {
@@ -151,7 +158,7 @@ func main() {
 	/* WORKLOADS RECONCILER BASED CONTROLLERS*/
 
 	if err = (&controllers.ApicastReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, "Apicast", false),
+		WorkloadReconciler: workloads.NewFromManager(mgr, "Apicast", clusterWatch),
 		Log:                ctrl.Log.WithName("controllers").WithName("Apicast"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Apicast")
@@ -159,7 +166,7 @@ func main() {
 	}
 
 	if err = (&controllers.ZyncReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, "Zync", false),
+		WorkloadReconciler: workloads.NewFromManager(mgr, "Zync", clusterWatch),
 		Log:                ctrl.Log.WithName("controllers").WithName("Zync"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Zync")
@@ -167,7 +174,7 @@ func main() {
 	}
 
 	if err = (&controllers.MappingServiceReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, "MappingService", false),
+		WorkloadReconciler: workloads.NewFromManager(mgr, "MappingService", clusterWatch),
 		Log:                ctrl.Log.WithName("controllers").WithName("MappingService"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "MappingService")
@@ -175,7 +182,7 @@ func main() {
 	}
 
 	if err = (&controllers.CORSProxyReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, "CORSProxy", false),
+		WorkloadReconciler: workloads.NewFromManager(mgr, "CORSProxy", clusterWatch),
 		Log:                ctrl.Log.WithName("controllers").WithName("CORSProxy"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "CORSProxy")
@@ -183,7 +190,7 @@ func main() {
 	}
 
 	if err = (&controllers.AutoSSLReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, "AutoSSL", false),
+		WorkloadReconciler: workloads.NewFromManager(mgr, "AutoSSL", clusterWatch),
 		Log:                ctrl.Log.WithName("controllers").WithName("AutoSSL"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "AutoSSL")
@@ -191,7 +198,7 @@ func main() {
 	}
 
 	if err = (&controllers.EchoAPIReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, "EchoAPI", false),
+		WorkloadReconciler: workloads.NewFromManager(mgr, "EchoAPI", clusterWatch),
 		Log:                ctrl.Log.WithName("controllers").WithName("EchoAPI"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "EchoAPI")
@@ -199,7 +206,7 @@ func main() {
 	}
 
 	if err = (&controllers.BackendReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, "Backend", false),
+		WorkloadReconciler: workloads.NewFromManager(mgr, "Backend", clusterWatch),
 		Log:                ctrl.Log.WithName("controllers").WithName("Backend"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Backend")
@@ -207,7 +214,7 @@ func main() {
 	}
 
 	if err = (&controllers.SystemReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, "System", false),
+		WorkloadReconciler: workloads.NewFromManager(mgr, "System", clusterWatch),
 		Log:                ctrl.Log.WithName("controllers").WithName("System"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "System")

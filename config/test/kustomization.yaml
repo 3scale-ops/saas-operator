@@ -16,4 +16,29 @@ patches:
     patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/env/0
-        value: { "name": "WATCH_NAMESPACE", "value": default }
+        value: { "name": "WATCH_NAMESPACE", "value": "" }
+  - target:
+      group: rbac.authorization.k8s.io
+      kind: Role
+      name: manager-role
+      version: v1
+    patch: |-
+      - op: replace
+        path: /kind
+        value: ClusterRole
+      - op: remove
+        path: /metadata/namespace
+  - target:
+      group: rbac.authorization.k8s.io
+      kind: RoleBinding
+      name: manager-rolebinding
+      version: v1
+    patch: |-
+      - op: replace
+        path: /kind
+        value: ClusterRoleBinding
+      - op: replace
+        path: /roleRef/kind
+        value: ClusterRole
+      - op: remove
+        path: /metadata/namespace
