@@ -2,7 +2,9 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -116,5 +118,11 @@ func (c *GoRedisClient) RedisConfigSet(ctx context.Context, parameter, value str
 func (c *GoRedisClient) RedisSlaveOf(ctx context.Context, host, port string) error {
 
 	_, err := c.redis.SlaveOf(ctx, host, port).Result()
+	return err
+}
+
+// WARNING: this command blocks for the duration
+func (c *GoRedisClient) RedisDebugSleep(ctx context.Context, duration time.Duration) error {
+	_, err := c.redis.Do(ctx, "debug", "sleep", fmt.Sprintf("%.1f", duration.Seconds())).Result()
 	return err
 }

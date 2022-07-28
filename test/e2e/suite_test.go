@@ -46,8 +46,8 @@ var (
 	cfg           *rest.Config
 	k8sClient     client.Client
 	testEnv       *envtest.Environment
-	timeout       time.Duration = 60 * time.Second
-	poll          time.Duration = 5 * time.Second
+	timeout       time.Duration = 120 * time.Second
+	poll          time.Duration = 10 * time.Second
 	nameGenerator namegenerator.Generator
 )
 

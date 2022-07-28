@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -68,6 +69,18 @@ func (fc *FakeClient) RedisConfigSet(ctx context.Context, parameter, value strin
 func (fc *FakeClient) RedisSlaveOf(ctx context.Context, host, port string) error {
 	rsp := fc.pop()
 	return rsp.InjectError()
+}
+
+// WARNING: this command blocks for the duration
+func (fc *FakeClient) RedisDebugSleep(ctx context.Context, duration time.Duration) error {
+
+	rsp := fc.pop()
+	if rsp.InjectError() != nil {
+		return rsp.InjectError()
+	}
+
+	time.Sleep(duration)
+	return nil
 }
 
 func (fc *FakeClient) pop() (fakeRsp FakeResponse) {
