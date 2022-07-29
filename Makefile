@@ -95,6 +95,33 @@ test: manifests generate fmt vet envtest assets ginkgo ## Run tests.
 test-sequential: manifests generate fmt vet envtest assets ginkgo ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" $(GINKGO) -r ./... -coverprofile cover.out
 
+OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
+ARCH := $(shell uname -m | sed 's/x86_64/amd64/')
+
+# Download kuttl locally if necessary for e2e tests
+KUTTL_RELEASE = 0.12.1
+KUTTL = $(shell pwd)/bin/kuttl-v$(KUTTL_RELEASE)
+KUTTL_DL_URL = https://github.com/kudobuilder/kuttl/releases/download/v$(KUTTL_RELEASE)/kubectl-kuttl_$(KUTTL_RELEASE)_$(OS)_x86_64
+kuttl:
+ifeq (,$(wildcard $(KUTTL)))
+ifeq (,$(shell which $(KUTTL) 2>/dev/null))
+	@{ \
+	set -e ;\
+	mkdir -p $(shell pwd)/bin ;\
+	curl -sL -o $(KUTTL) $(KUTTL_DL_URL) ;\
+	chmod +x $(KUTTL) ;\
+	}
+else
+KUTTL = $(shell which $(KUTTL))
+endif
+endif
+
+test-e2e: export KUBECONFIG = $(PWD)/kubeconfig
+test-e2e: manifests ginkgo kuttl kind-create kind-deploy ## Runs e2e tests
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" $(GINKGO) -r -p ./test/e2e
+	$(KUTTL) test
+	$(MAKE) kind-delete
+
 assets: go-bindata ## assets: Generate embedded assets
 	@echo Generate Go embedded assets files by processing source
 	PATH=$$PATH:$$PWD/bin go generate github.com/3scale/saas-operator/pkg/assets
@@ -274,33 +301,6 @@ kind-undeploy: ## Undeploy controller from the Kind K8s cluster
 KIND = $(shell pwd)/bin/kind
 kind: ## Download kind locally if necessary
 	$(call go-get-tool,$(KIND),sigs.k8s.io/kind@v0.11.1)
-
-##@ E2E Testing
-
-OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
-ARCH := $(shell uname -m | sed 's/x86_64/amd64/')
-
-# Download kuttl locally if necessary for e2e tests
-KUTTL_RELEASE = 0.12.1
-KUTTL = $(shell pwd)/bin/kuttl-v$(KUTTL_RELEASE)
-KUTTL_DL_URL = https://github.com/kudobuilder/kuttl/releases/download/v$(KUTTL_RELEASE)/kubectl-kuttl_$(KUTTL_RELEASE)_$(OS)_x86_64
-kuttl:
-ifeq (,$(wildcard $(KUTTL)))
-ifeq (,$(shell which $(KUTTL) 2>/dev/null))
-	@{ \
-	set -e ;\
-	mkdir -p $(shell pwd)/bin ;\
-	curl -sL -o $(KUTTL) $(KUTTL_DL_URL) ;\
-	chmod +x $(KUTTL) ;\
-	}
-else
-KUTTL = $(shell which $(KUTTL))
-endif
-endif
-
-test-e2e: export KUBECONFIG = ${PWD}/kubeconfig
-test-e2e: kuttl kind-create kind-deploy ## Run kuttl e2e tests in the k8s kind cluster
-	$(KUTTL) test
 
 ##@ Other
 
