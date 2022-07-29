@@ -296,6 +296,10 @@ var _ = Describe("sentinel e2e suite", func() {
 
 	AfterEach(func() {
 
+		// Delete sentinel
+		err := k8sClient.Delete(context.Background(), &sentinel, client.PropagationPolicy(metav1.DeletePropagationForeground))
+		Expect(err).ToNot(HaveOccurred())
+
 		// Delete redis shards
 		for _, shard := range shards {
 			err := k8sClient.Delete(context.Background(), &shard, client.PropagationPolicy(metav1.DeletePropagationForeground))
@@ -304,7 +308,7 @@ var _ = Describe("sentinel e2e suite", func() {
 
 		// Delete the namespace
 		ns := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: ns}}
-		err := k8sClient.Delete(context.Background(), ns, client.PropagationPolicy(metav1.DeletePropagationForeground))
+		err = k8sClient.Delete(context.Background(), ns, client.PropagationPolicy(metav1.DeletePropagationForeground))
 		Expect(err).ToNot(HaveOccurred())
 	})
 
