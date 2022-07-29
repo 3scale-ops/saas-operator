@@ -67,11 +67,6 @@ var _ = BeforeSuite(func() {
 
 	By("bootstrapping test environment")
 	testEnv = &envtest.Environment{
-		// CRDDirectoryPaths: []string{
-		// 	filepath.Join("...", "..", "config", "crd", "bases"),
-		// 	filepath.Join("...", "..", "config", "test", "external-apis"),
-		// },
-		// ErrorIfCRDPathMissing: true,
 		UseExistingCluster: pointer.BoolPtr(true),
 	}
 
