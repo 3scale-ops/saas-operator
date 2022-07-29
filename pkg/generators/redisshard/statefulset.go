@@ -44,17 +44,7 @@ func (gen *Generator) statefulSet() func() *appsv1.StatefulSet {
 							{
 								Command: []string{"redis-server", "/redis/redis.conf"},
 								Image:   fmt.Sprintf("%s:%s", *gen.Image.Name, *gen.Image.Tag),
-								LivenessProbe: &corev1.Probe{
-									Handler: corev1.Handler{Exec: &corev1.ExecAction{
-										Command: strings.Split("sh -c redis-cli -h $(hostname) ping", " "),
-									}},
-									FailureThreshold:    3,
-									InitialDelaySeconds: 30,
-									PeriodSeconds:       10,
-									SuccessThreshold:    1,
-									TimeoutSeconds:      5,
-								},
-								Name: "redis-server",
+								Name:    "redis-server",
 								Ports: pod.ContainerPorts(
 									pod.ContainerPortTCP("redis-server", 6379),
 								),
@@ -63,7 +53,7 @@ func (gen *Generator) statefulSet() func() *appsv1.StatefulSet {
 										Command: strings.Split("/bin/sh /redis-readiness/ready.sh", " "),
 									}},
 									FailureThreshold:    3,
-									InitialDelaySeconds: 30,
+									InitialDelaySeconds: 10,
 									PeriodSeconds:       10,
 									SuccessThreshold:    1,
 									TimeoutSeconds:      5,
