@@ -56,9 +56,8 @@ spec:
                   even if they are manually changed. This switch defaults to "true".
                 type: boolean
               sentinelURIs:
-                description: SentinelURI is the redis URI of sentinel. This is required
-                  as TewmproxyConfig will obtain the info about available redis servers
-                  from sentinel.
+                description: SentinelURI is the redis URI of sentinel. If not set,
+                  the controller will try to autodiscover Sentinel within the namespace.
                 items:
                   type: string
                 type: array

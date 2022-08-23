@@ -37,8 +37,8 @@ var (
 
 // TwemproxyConfigSpec defines the desired state of TwemproxyConfig
 type TwemproxyConfigSpec struct {
-	// SentinelURI is the redis URI of sentinel. This is required as TewmproxyConfig
-	// will obtain the info about available redis servers from sentinel.
+	// SentinelURI is the redis URI of sentinel. If not set, the controller
+	// will try to autodiscover Sentinel within the namespace.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	SentinelURIs []string `json:"sentinelURIs,omitempty"`
