@@ -3,6 +3,8 @@ package twemproxyconfig
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
@@ -23,6 +25,19 @@ type TwemproxyServer struct {
 
 func (tserver *TwemproxyServer) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf("\"%s:%d %s\"", tserver.Address, tserver.Priority, tserver.Name)), nil
+}
+
+func (tserver *TwemproxyServer) UnmarshalJSON(data []byte) error {
+	parts := strings.Split(strings.Trim(string(data), "\""), " ")
+	tserver.Name = parts[1]
+	parts = strings.Split(parts[0], ":")
+	p, err := strconv.Atoi(parts[len(parts)-1])
+	if err != nil {
+		return err
+	}
+	tserver.Priority = p
+	tserver.Address = strings.Join(parts[0:len(parts)-1], ":")
+	return nil
 }
 
 type TwemproxyConfigServerPool struct {
