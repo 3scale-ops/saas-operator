@@ -10,6 +10,7 @@ import (
 	basereconciler_resources "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/resources"
 	"github.com/3scale/saas-operator/pkg/redis"
 	"github.com/3scale/saas-operator/pkg/resource_builders/grafanadashboard"
+	"github.com/3scale/saas-operator/pkg/resource_builders/twemproxy"
 	"github.com/go-logr/logr"
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/apimachinery/pkg/types"
@@ -41,8 +42,8 @@ func init() {
 type Generator struct {
 	generators.BaseOptionsV2
 	Spec           saasv1alpha1.TwemproxyConfigSpec
-	masterTargets  map[string]TwemproxyServer
-	slaverwTargets map[string]TwemproxyServer
+	masterTargets  map[string]twemproxy.Server
+	slaverwTargets map[string]twemproxy.Server
 }
 
 // NewGenerator returns a new Options struct
@@ -113,7 +114,7 @@ func discoverSentinels(ctx context.Context, cl client.Client, namespace string) 
 	return uris, nil
 }
 
-func (gen *Generator) getMonitoredMasters(ctx context.Context, log logr.Logger) (map[string]TwemproxyServer, error) {
+func (gen *Generator) getMonitoredMasters(ctx context.Context, log logr.Logger) (map[string]twemproxy.Server, error) {
 
 	spool := make(redis.SentinelPool, 0, len(gen.Spec.SentinelURIs))
 
@@ -132,13 +133,13 @@ func (gen *Generator) getMonitoredMasters(ctx context.Context, log logr.Logger) 
 		return nil, err
 	}
 
-	m := make(map[string]TwemproxyServer, len(monitoredShards))
+	m := make(map[string]twemproxy.Server, len(monitoredShards))
 	for _, shard := range monitoredShards {
 		masterAddress, _, err := shard.GetMaster()
 		if err != nil {
 			return nil, err
 		}
-		m[shard.Name] = TwemproxyServer{
+		m[shard.Name] = twemproxy.Server{
 			Name:     shard.Name,
 			Address:  masterAddress,
 			Priority: 1,
@@ -148,7 +149,7 @@ func (gen *Generator) getMonitoredMasters(ctx context.Context, log logr.Logger) 
 	return m, nil
 }
 
-func (gen *Generator) getMonitoredReadWriteSlavesWithFallbackToMasters(ctx context.Context, log logr.Logger) (map[string]TwemproxyServer, error) {
+func (gen *Generator) getMonitoredReadWriteSlavesWithFallbackToMasters(ctx context.Context, log logr.Logger) (map[string]twemproxy.Server, error) {
 
 	spool := make(redis.SentinelPool, 0, len(gen.Spec.SentinelURIs))
 
@@ -167,7 +168,7 @@ func (gen *Generator) getMonitoredReadWriteSlavesWithFallbackToMasters(ctx conte
 		return nil, err
 	}
 
-	m := make(map[string]TwemproxyServer, len(monitoredShards))
+	m := make(map[string]twemproxy.Server, len(monitoredShards))
 	for _, shard := range monitoredShards {
 
 		if slavesRW := shard.GetSlavesRW(); len(slavesRW) > 0 {
@@ -180,7 +181,7 @@ func (gen *Generator) getMonitoredReadWriteSlavesWithFallbackToMasters(ctx conte
 			for k := range slavesRW {
 				address = append(address, k)
 			}
-			m[shard.Name] = TwemproxyServer{
+			m[shard.Name] = twemproxy.Server{
 				Name:     shard.Name,
 				Address:  address[0],
 				Priority: 1,
@@ -193,7 +194,7 @@ func (gen *Generator) getMonitoredReadWriteSlavesWithFallbackToMasters(ctx conte
 			if err != nil {
 				return nil, err
 			}
-			m[shard.Name] = TwemproxyServer{
+			m[shard.Name] = twemproxy.Server{
 				Name:     shard.Name,
 				Address:  masterAddress,
 				Priority: 1,
