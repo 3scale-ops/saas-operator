@@ -52,7 +52,7 @@ var _ = Describe("twemproxyconfig e2e suite", func() {
 			},
 			{
 				ObjectMeta: metav1.ObjectMeta{Name: "rs1", Namespace: ns},
-				Spec:       saasv1alpha1.RedisShardSpec{MasterIndex: pointer.Int32(2), SlaveCount: pointer.Int32(2)},
+				Spec:       saasv1alpha1.RedisShardSpec{MasterIndex: pointer.Int32(0), SlaveCount: pointer.Int32(2)},
 			},
 		}
 
@@ -214,7 +214,7 @@ var _ = Describe("twemproxyconfig e2e suite", func() {
 
 			})
 
-			FIt("updates the twemproxy configuration with new master", func() {
+			It("updates the twemproxy configuration with new master", func() {
 				Eventually(func() error {
 
 					cm := &corev1.ConfigMap{}
@@ -256,6 +256,224 @@ var _ = Describe("twemproxyconfig e2e suite", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
+	})
+
+	When("TwemproxyConfig resource is created targeting redis rw-slaves", func() {
+		cm := &corev1.ConfigMap{}
+
+		BeforeEach(func() {
+
+			By("configuring rw-slaves in each shard", func() {
+
+				for _, slave := range []string{"redis-shard-rs0-2", "redis-shard-rs1-2"} {
+					rclient, stopCh, err := testutil.RedisClient(cfg,
+						types.NamespacedName{
+							Name:      slave,
+							Namespace: ns,
+						})
+					Expect(err).ToNot(HaveOccurred())
+					defer close(stopCh)
+					defer rclient.CloseClient()
+
+					ctx, cancel := context.WithTimeout(context.TODO(), 60*time.Second)
+					defer cancel()
+
+					err = rclient.RedisConfigSet(ctx, "slave-read-only", "no")
+					Expect(err).ToNot(HaveOccurred())
+				}
+
+			})
+
+			By("creating the TwemproxyConfig resource pointing to rw-slaves", func() {
+				twemproxyconfig = saasv1alpha1.TwemproxyConfig{
+					ObjectMeta: metav1.ObjectMeta{Name: "tmc-instance", Namespace: ns},
+					Spec: saasv1alpha1.TwemproxyConfigSpec{
+						ServerPools: []saasv1alpha1.TwemproxyServerPool{{
+							Name:   "test-pool",
+							Target: func() *saasv1alpha1.TargetRedisServers { t := saasv1alpha1.SlavesRW; return &t }(),
+							Topology: []saasv1alpha1.ShardedRedisTopology{
+								{ShardName: "l-shard00", PhysicalShard: shards[0].GetName()},
+								{ShardName: "l-shard01", PhysicalShard: shards[0].GetName()},
+								{ShardName: "l-shard02", PhysicalShard: shards[0].GetName()},
+								{ShardName: "l-shard03", PhysicalShard: shards[1].GetName()},
+								{ShardName: "l-shard04", PhysicalShard: shards[1].GetName()},
+							},
+							BindAddress: "0.0.0.0:22121",
+							Timeout:     5000,
+							TCPBacklog:  512,
+							PreConnect:  false,
+						}},
+						GrafanaDashboard: &saasv1alpha1.GrafanaDashboardSpec{},
+					},
+				}
+
+				err := k8sClient.Create(context.Background(), &twemproxyconfig)
+				Expect(err).ToNot(HaveOccurred())
+
+				Eventually(func() error {
+					return k8sClient.Get(context.Background(), types.NamespacedName{Name: twemproxyconfig.GetName(), Namespace: ns}, &twemproxyconfig)
+				}, timeout, poll).ShouldNot(HaveOccurred())
+
+				By("getting the generated ConfigMap",
+					(&testutil.ExpectedResource{Name: "tmc-instance", Namespace: ns}).
+						Assert(k8sClient, cm, timeout, poll))
+			})
+
+		})
+
+		It("deploys a ConfigMap with twemproxy configuration that points to redis rw-slaves", func() {
+
+			config := map[string]twemproxy.ServerPoolConfig{}
+			data, err := yaml.YAMLToJSON([]byte(cm.Data["nutcracker.yml"]))
+			Expect(err).ToNot(HaveOccurred())
+			err = json.Unmarshal(data, &config)
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(config["test-pool"].Servers).To(Equal(
+				[]twemproxy.Server{
+					{Address: strings.TrimPrefix(shards[0].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard00"},
+					{Address: strings.TrimPrefix(shards[0].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard01"},
+					{Address: strings.TrimPrefix(shards[0].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard02"},
+					{Address: strings.TrimPrefix(shards[1].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard03"},
+					{Address: strings.TrimPrefix(shards[1].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard04"},
+				},
+			))
+		})
+
+		When("there are no rw-slaves available in a shard it failovers to the master", func() {
+
+			BeforeEach(func() {
+				By("simulating a failure in 'redis-shard-rs0-2' rw-slave", func() {
+
+					go func() {
+						defer GinkgoRecover()
+
+						rclient, stopCh, err := testutil.RedisClient(cfg,
+							types.NamespacedName{
+								Name:      "redis-shard-rs0-2",
+								Namespace: ns,
+							})
+						Expect(err).ToNot(HaveOccurred())
+						defer close(stopCh)
+						defer rclient.CloseClient()
+
+						rclient.RedisDebugSleep(context.TODO(), 10*time.Second)
+					}()
+				})
+			})
+
+			It("reconfigures shard rs0 to point to the master", func() {
+
+				By("checking the config for rs0 points to master", func() {
+
+					Eventually(func() []twemproxy.Server {
+
+						By("getting the ConfigMap",
+							(&testutil.ExpectedResource{Name: "tmc-instance", Namespace: ns}).
+								Assert(k8sClient, cm, timeout, poll))
+
+						config := map[string]twemproxy.ServerPoolConfig{}
+						data, err := yaml.YAMLToJSON([]byte(cm.Data["nutcracker.yml"]))
+						Expect(err).ToNot(HaveOccurred())
+						err = json.Unmarshal(data, &config)
+						Expect(err).ToNot(HaveOccurred())
+						return config["test-pool"].Servers
+
+					}, timeout, poll).Should(Equal(
+						[]twemproxy.Server{
+							{Address: strings.TrimPrefix(*shards[0].Status.ShardNodes.Master, "redis://"), Priority: 1, Name: "l-shard00"},
+							{Address: strings.TrimPrefix(*shards[0].Status.ShardNodes.Master, "redis://"), Priority: 1, Name: "l-shard01"},
+							{Address: strings.TrimPrefix(*shards[0].Status.ShardNodes.Master, "redis://"), Priority: 1, Name: "l-shard02"},
+							{Address: strings.TrimPrefix(shards[1].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard03"},
+							{Address: strings.TrimPrefix(shards[1].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard04"},
+						},
+					))
+
+				})
+
+				By("checking the config for rs0 points back to rw-slave once it's recovered", func() {
+
+					Eventually(func() []twemproxy.Server {
+
+						By("getting the ConfigMap",
+							(&testutil.ExpectedResource{Name: "tmc-instance", Namespace: ns}).
+								Assert(k8sClient, cm, timeout, poll))
+
+						config := map[string]twemproxy.ServerPoolConfig{}
+						data, err := yaml.YAMLToJSON([]byte(cm.Data["nutcracker.yml"]))
+						Expect(err).ToNot(HaveOccurred())
+						err = json.Unmarshal(data, &config)
+						Expect(err).ToNot(HaveOccurred())
+						return config["test-pool"].Servers
+
+					}, timeout, poll).Should(Equal(
+						[]twemproxy.Server{
+							{Address: strings.TrimPrefix(shards[0].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard00"},
+							{Address: strings.TrimPrefix(shards[0].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard01"},
+							{Address: strings.TrimPrefix(shards[0].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard02"},
+							{Address: strings.TrimPrefix(shards[1].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard03"},
+							{Address: strings.TrimPrefix(shards[1].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard04"},
+						},
+					))
+
+				})
+
+			})
+		})
+
+		When("when there are several rw-slaves, chooses the first in alphabetical order (by address)", func() {
+
+			BeforeEach(func() {
+				By("configuring 'redis-shard-rs0-1' also as a rw-slave", func() {
+
+					rclient, stopCh, err := testutil.RedisClient(cfg,
+						types.NamespacedName{
+							Name:      "redis-shard-rs0-1",
+							Namespace: ns,
+						})
+					Expect(err).ToNot(HaveOccurred())
+					defer close(stopCh)
+					defer rclient.CloseClient()
+
+					ctx, cancel := context.WithTimeout(context.TODO(), 60*time.Second)
+					defer cancel()
+
+					err = rclient.RedisConfigSet(ctx, "slave-read-only", "no")
+					Expect(err).ToNot(HaveOccurred())
+				})
+			})
+
+			It("reconfigures shard rs0 to point to 'redis-shard-rs0-1'", func() {
+
+				By("checking the config for rs0 points to 'redis-shard-rs0-1'", func() {
+
+					Eventually(func() []twemproxy.Server {
+
+						By("getting the ConfigMap",
+							(&testutil.ExpectedResource{Name: "tmc-instance", Namespace: ns}).
+								Assert(k8sClient, cm, timeout, poll))
+
+						config := map[string]twemproxy.ServerPoolConfig{}
+						data, err := yaml.YAMLToJSON([]byte(cm.Data["nutcracker.yml"]))
+						Expect(err).ToNot(HaveOccurred())
+						err = json.Unmarshal(data, &config)
+						Expect(err).ToNot(HaveOccurred())
+						return config["test-pool"].Servers
+
+					}, timeout, poll).Should(Equal(
+						[]twemproxy.Server{
+							{Address: strings.TrimPrefix(shards[0].Status.ShardNodes.Slaves[0], "redis://"), Priority: 1, Name: "l-shard00"},
+							{Address: strings.TrimPrefix(shards[0].Status.ShardNodes.Slaves[0], "redis://"), Priority: 1, Name: "l-shard01"},
+							{Address: strings.TrimPrefix(shards[0].Status.ShardNodes.Slaves[0], "redis://"), Priority: 1, Name: "l-shard02"},
+							{Address: strings.TrimPrefix(shards[1].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard03"},
+							{Address: strings.TrimPrefix(shards[1].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard04"},
+						},
+					))
+
+				})
+
+			})
+		})
 	})
 
 	AfterEach(func() {
