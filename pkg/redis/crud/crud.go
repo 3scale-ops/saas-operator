@@ -29,6 +29,7 @@ type Client interface {
 	RedisConfigGet(context.Context, string) ([]interface{}, error)
 	RedisConfigSet(context.Context, string, string) error
 	RedisSlaveOf(context.Context, string, string) error
+	RedisDebugSleep(context.Context, time.Duration) error
 	Close() error
 }
 
@@ -185,8 +186,16 @@ func (crud *CRUD) RedisConfigGet(ctx context.Context, parameter string) (string,
 	return val[1].(string), nil
 }
 
+func (crud *CRUD) RedisConfigSet(ctx context.Context, parameter, value string) error {
+	return crud.Client.RedisConfigSet(ctx, parameter, value)
+}
+
 func (sc *CRUD) RedisSlaveOf(ctx context.Context, host, port string) error {
 	return sc.Client.RedisSlaveOf(ctx, host, port)
+}
+
+func (crud *CRUD) RedisDebugSleep(ctx context.Context, duration time.Duration) error {
+	return crud.Client.RedisDebugSleep(ctx, duration)
 }
 
 // This is a horrible function to parse the horrible structs that the redis-go

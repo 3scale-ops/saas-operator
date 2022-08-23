@@ -36,7 +36,7 @@ const (
 
 // bitnami/redis-sentinel:4.0.11-debian-9-r110
 var (
-	sentinelDefaultReplicas int32            = 3
+	SentinelDefaultReplicas int32            = 3
 	SentinelDefaultQuorum   int              = 2
 	sentinelDefaultImage    defaultImageSpec = defaultImageSpec{
 		Name:       pointer.StringPtr("bitnami/redis-sentinel"),
@@ -153,7 +153,7 @@ type SentinelSpec struct {
 func (spec *SentinelSpec) Default() {
 
 	spec.Image = InitializeImageSpec(spec.Image, sentinelDefaultImage)
-	spec.Replicas = intOrDefault(spec.Replicas, &sentinelDefaultReplicas)
+	spec.Replicas = intOrDefault(spec.Replicas, &SentinelDefaultReplicas)
 	spec.PDB = InitializePodDisruptionBudgetSpec(spec.PDB, sentinelDefaultPDB)
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, sentinelDefaultResources)
 	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, sentinelDefaultProbe)
