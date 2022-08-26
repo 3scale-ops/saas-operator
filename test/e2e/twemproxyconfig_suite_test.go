@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -443,9 +444,17 @@ var _ = Describe("twemproxyconfig e2e suite", func() {
 				})
 			})
 
-			It("reconfigures shard rs0 to point to 'redis-shard-rs0-1'", func() {
+			It("reconfigures shard rs0 to point to the first slave in alphabetical order (by address)", func() {
 
-				By("checking the config for rs0 points to 'redis-shard-rs0-1'", func() {
+				By("checking the twemproxy config for shard rs0", func() {
+
+					// determine which should be the chosen rw-slave
+					addresses := []string{
+						strings.TrimPrefix(shards[0].Status.ShardNodes.Slaves[0], "redis://"),
+						strings.TrimPrefix(shards[0].Status.ShardNodes.Slaves[1], "redis://"),
+					}
+					sort.Strings(addresses)
+					expectedRWSlave := addresses[0]
 
 					Eventually(func() []twemproxy.Server {
 
@@ -462,9 +471,9 @@ var _ = Describe("twemproxyconfig e2e suite", func() {
 
 					}, timeout, poll).Should(Equal(
 						[]twemproxy.Server{
-							{Address: strings.TrimPrefix(shards[0].Status.ShardNodes.Slaves[0], "redis://"), Priority: 1, Name: "l-shard00"},
-							{Address: strings.TrimPrefix(shards[0].Status.ShardNodes.Slaves[0], "redis://"), Priority: 1, Name: "l-shard01"},
-							{Address: strings.TrimPrefix(shards[0].Status.ShardNodes.Slaves[0], "redis://"), Priority: 1, Name: "l-shard02"},
+							{Address: expectedRWSlave, Priority: 1, Name: "l-shard00"},
+							{Address: expectedRWSlave, Priority: 1, Name: "l-shard01"},
+							{Address: expectedRWSlave, Priority: 1, Name: "l-shard02"},
 							{Address: strings.TrimPrefix(shards[1].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard03"},
 							{Address: strings.TrimPrefix(shards[1].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard04"},
 						},

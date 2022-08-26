@@ -3,6 +3,7 @@ package twemproxyconfig
 import (
 	"context"
 	"fmt"
+	"sort"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators"
@@ -181,6 +182,7 @@ func (gen *Generator) getMonitoredReadWriteSlavesWithFallbackToMasters(ctx conte
 			for k := range slavesRW {
 				address = append(address, k)
 			}
+			sort.Strings(address)
 			m[shard.Name] = twemproxy.Server{
 				Name:     shard.Name,
 				Address:  address[0],
