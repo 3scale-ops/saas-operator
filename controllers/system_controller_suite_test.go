@@ -221,6 +221,19 @@ var _ = Describe("System controller", func() {
 				(&testutil.ExpectedResource{Name: "system-sphinx", Namespace: namespace}).
 					Assert(k8sClient, sts, timeout, poll))
 
+			Expect(sts.Spec.Template.Spec.Containers[0].Env).To(
+				ContainElement(
+					HaveField("Name", "SECRET_KEY_BASE"),
+				),
+			)
+
+			for _, env := range sts.Spec.Template.Spec.Containers[0].Env {
+				switch env.Name {
+				case "SECRET_KEY_BASE":
+					Expect(env.Value).NotTo(Equal(""))
+				}
+			}
+
 			svc := &corev1.Service{}
 			By("deploying the system-sphinx service",
 				(&testutil.ExpectedResource{Name: "system-sphinx", Namespace: namespace}).
