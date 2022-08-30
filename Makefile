@@ -99,28 +99,9 @@ test-sequential: manifests generate fmt vet envtest assets ginkgo ## Run tests.
 OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
 ARCH := $(shell uname -m | sed 's/x86_64/amd64/')
 
-# Download kuttl locally if necessary for e2e tests
-KUTTL_RELEASE = 0.12.1
-KUTTL = $(shell pwd)/bin/kuttl-v$(KUTTL_RELEASE)
-KUTTL_DL_URL = https://github.com/kudobuilder/kuttl/releases/download/v$(KUTTL_RELEASE)/kubectl-kuttl_$(KUTTL_RELEASE)_$(OS)_x86_64
-kuttl:
-ifeq (,$(wildcard $(KUTTL)))
-ifeq (,$(shell which $(KUTTL) 2>/dev/null))
-	@{ \
-	set -e ;\
-	mkdir -p $(shell pwd)/bin ;\
-	curl -sL -o $(KUTTL) $(KUTTL_DL_URL) ;\
-	chmod +x $(KUTTL) ;\
-	}
-else
-KUTTL = $(shell which $(KUTTL))
-endif
-endif
-
 test-e2e: export KUBECONFIG = $(PWD)/kubeconfig
-test-e2e: manifests ginkgo kuttl kind-create kind-deploy ## Runs e2e tests
+test-e2e: manifests ginkgo kind-create kind-deploy ## Runs e2e tests
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" $(GINKGO) -r -p ./test/e2e
-	$(KUTTL) test
 	$(MAKE) kind-delete
 
 assets: go-bindata ## assets: Generate embedded assets

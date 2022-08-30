@@ -5,6 +5,7 @@ import (
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators"
+	"github.com/3scale/saas-operator/pkg/resource_builders/twemproxy"
 	"github.com/go-test/deep"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -14,8 +15,8 @@ func TestGenerator_configMap(t *testing.T) {
 	type fields struct {
 		BaseOptionsV2  generators.BaseOptionsV2
 		Spec           saasv1alpha1.TwemproxyConfigSpec
-		masterTargets  map[string]TwemproxyServer
-		slaverwTargets map[string]TwemproxyServer
+		masterTargets  map[string]twemproxy.Server
+		slaverwTargets map[string]twemproxy.Server
 	}
 	type args struct {
 		toYAML bool
@@ -66,11 +67,11 @@ func TestGenerator_configMap(t *testing.T) {
 						},
 					},
 				},
-				masterTargets: map[string]TwemproxyServer{
+				masterTargets: map[string]twemproxy.Server{
 					"pshard01": {Address: "127.0.0.1:6379", Priority: 1, Name: "pshard01"},
 					"pshard02": {Address: "127.0.0.2:6379", Priority: 1, Name: "pshard02"},
 				},
-				slaverwTargets: map[string]TwemproxyServer{},
+				slaverwTargets: map[string]twemproxy.Server{},
 			},
 			args: args{},
 			want: &corev1.ConfigMap{
@@ -112,11 +113,11 @@ func TestGenerator_configMap(t *testing.T) {
 						},
 					},
 				},
-				masterTargets: map[string]TwemproxyServer{
+				masterTargets: map[string]twemproxy.Server{
 					"pshard01": {Address: "127.0.0.1:6379", Priority: 1, Name: "pshard01"},
 					"pshard02": {Address: "127.0.0.2:6379", Priority: 1, Name: "pshard02"},
 				},
-				slaverwTargets: map[string]TwemproxyServer{
+				slaverwTargets: map[string]twemproxy.Server{
 					"pshard01": {Address: "127.0.0.3:6379", Priority: 1, Name: "pshard01"},
 					"pshard02": {Address: "127.0.0.4:6379", Priority: 1, Name: "pshard02"},
 				},
