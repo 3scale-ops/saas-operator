@@ -17,6 +17,7 @@ type SphinxOptions struct {
 	FUllReindexInterval     pod.EnvVarValue `env:"FULL_REINDEX_INTERVAL"`
 
 	RailsEnvironment pod.EnvVarValue `env:"RAILS_ENV"`
+	SecretKeyBase    pod.EnvVarValue `env:"SECRET_KEY_BASE"`
 
 	DatabaseURL pod.EnvVarValue `env:"DATABASE_URL" secret:"system-database"`
 
@@ -36,6 +37,7 @@ func NewSphinxOptions(spec saasv1alpha1.SystemSpec) SphinxOptions {
 		DeltaIndexInterval:      &pod.ClearTextValue{Value: fmt.Sprintf("%d", *spec.Sphinx.Config.DeltaIndexInterval)},
 		FUllReindexInterval:     &pod.ClearTextValue{Value: fmt.Sprintf("%d", *spec.Sphinx.Config.FullReindexInterval)},
 		RailsEnvironment:        &pod.ClearTextValue{Value: *spec.Config.Rails.Environment},
+		SecretKeyBase:           &pod.ClearTextValue{Value: "dummy"}, // https://github.com/rails/rails/issues/32947
 		DatabaseURL:             &pod.SecretValue{Value: spec.Config.DatabaseDSN},
 		RedisURL:                &pod.ClearTextValue{Value: spec.Config.Redis.QueuesDSN},
 		RedisNamespace:          &pod.ClearTextValue{Value: ""},

@@ -976,9 +976,10 @@ MonitoredShard contains information of one of the shards monitored by the Sentin
 |===
 | Field | Description
 | *`name`* __string__ | Name is the name of the redis shard
-| *`master`* __string__ | Master is the address of the master redis server of this shard, in the format "127.0.0.1:6379"
-| *`slavesRO`* __string array__ | SlavesRO is the list of addresses of the read-only slave servers in this shard, in the format "127.0.0.1:6379"
-| *`slavesRW`* __string array__ | SlavesRW is the list of addresses of the read-write slave servers in this shard, in the format "127.0.0.1:6379"
+| *`master`* __string__ | Master is the address of the master redis server of this shard, in the format "127.0.0.1:6379" DEPRECATED - this field will be removed in an upcoming release
+| *`slavesRO`* __string array__ | SlavesRO is the list of addresses of the read-only slave servers in this shard, in the format "127.0.0.1:6379" DEPRECATED - this field will be removed in an upcoming release
+| *`slavesRW`* __string array__ | SlavesRW is the list of addresses of the read-write slave servers in this shard, in the format "127.0.0.1:6379" DEPRECATED - this field will be removed in an upcoming release
+| *`servers`* __object (keys:string, values:xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisserverdetails[$$RedisServerDetails$$])__ | Server is a map intended to store configuration information of each of the RedisServer instances that belong to the MonitoredShard
 |===
 
 
@@ -1106,6 +1107,24 @@ RedHatCustomerPortalSpec has configuration for integration with Red Hat Customer
 | Field | Description
 | *`clientID`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Client ID
 | *`clientSecret`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Client secret
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisserverdetails"]
+==== RedisServerDetails 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-monitoredshard[$$MonitoredShard$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`role`* __Role__ | 
+| *`config`* __object (keys:string, values:string)__ | 
 |===
 
 
@@ -1853,7 +1872,7 @@ TwemproxyConfigSpec defines the desired state of TwemproxyConfig
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`sentinelURIs`* __string array__ | SentinelURI is the redis URI of sentinel. This is required as TewmproxyConfig will obtain the info about available redis servers from sentinel.
+| *`sentinelURIs`* __string array__ | SentinelURI is the redis URI of sentinel. If not set, the controller will try to autodiscover Sentinel within the namespace.
 | *`serverPools`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyserverpool[$$TwemproxyServerPool$$] array__ | ServerPools is the list of Twemproxy server pools
 | *`reconcileServerPools`* __boolean__ | ReconcileServerPools is a flag that allows to deactivate the reconcile of the contents of the managed ConfigMap. This is useful in an emergency, to fix something manually. The re-sync logic will still work whenever the contents of the ConfigMap are changed, even if they are manually changed. This switch defaults to "true".
 | *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component

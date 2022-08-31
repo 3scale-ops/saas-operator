@@ -3515,9 +3515,8 @@ spec:
       - description: Label value used by grafana-operator for dashboard discovery
         displayName: Selector Value
         path: grafanaDashboard.selectorValue
-      - description: SentinelURI is the redis URI of sentinel. This is required as
-          TewmproxyConfig will obtain the info about available redis servers from
-          sentinel.
+      - description: SentinelURI is the redis URI of sentinel. If not set, the controller
+          will try to autodiscover Sentinel within the namespace.
         displayName: Sentinel URIs
         path: sentinelURIs
       - description: ServerPools is the list of Twemproxy server pools
