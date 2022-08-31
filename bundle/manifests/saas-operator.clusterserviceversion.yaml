@@ -570,7 +570,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/3scale/saas-operator
     support: Red Hat
-  name: saas-operator.v0.16.0-alpha.12
+  name: saas-operator.v0.16.1-alpha.1
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -3938,9 +3938,8 @@ spec:
       - description: Label value used by grafana-operator for dashboard discovery
         displayName: Selector Value
         path: grafanaDashboard.selectorValue
-      - description: SentinelURI is the redis URI of sentinel. This is required as
-          TewmproxyConfig will obtain the info about available redis servers from
-          sentinel.
+      - description: SentinelURI is the redis URI of sentinel. If not set, the controller
+          will try to autodiscover Sentinel within the namespace.
         displayName: Sentinel URIs
         path: sentinelURIs
       - description: ServerPools is the list of Twemproxy server pools
@@ -4367,7 +4366,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/3scale/saas-operator:v0.16.0-alpha.12
+                image: quay.io/3scale/saas-operator:v0.16.1-alpha.1
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -4869,4 +4868,4 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
-  version: 0.16.0-alpha.12
+  version: 0.16.1-alpha.1
