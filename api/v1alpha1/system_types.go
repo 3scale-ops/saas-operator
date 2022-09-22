@@ -162,7 +162,7 @@ var (
 	systemDefaultSphinxFullReindexInterval int32                           = 60
 	systemDefaultSphinxPort                int32                           = 9306
 	systemDefaultSphinxBindAddress         string                          = "0.0.0.0"
-	systemDefaultSphinxConfigFile          string                          = "/opt/system/db/sphinx/preview.conf"
+	systemDefaultSphinxConfigFile          string                          = "/opt/system/db/sphinx/sphinx.conf"
 	systemDefaultSphinxDBPath              string                          = "/opt/system/db/sphinx"
 	systemDefaultSphinxDatabaseStorageSize string                          = "30Gi"
 	systemDefaultSphinxPIDFile             string                          = "/opt/system/tmp/pids/searchd.pid"
