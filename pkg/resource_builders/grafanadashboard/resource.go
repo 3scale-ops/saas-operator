@@ -23,8 +23,9 @@ func New(key types.NamespacedName, labels map[string]string, cfg saasv1alpha1.Gr
 				Name:      key.Name,
 				Namespace: key.Namespace,
 				Labels: func() map[string]string {
-					labels := labels
-					labels[*cfg.SelectorKey] = *cfg.SelectorValue
+					if cfg.SelectorKey != nil && cfg.SelectorValue != nil {
+						labels[*cfg.SelectorKey] = *cfg.SelectorValue
+					}
 					return labels
 				}(),
 			},
