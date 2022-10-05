@@ -4065,7 +4065,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{namespace=~'$namespace', pod=~'redis-sentinel.*'}) by (pod)",
+          "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=~'$namespace', pod=~'redis-sentinel.*'}) by (pod)",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{`{{pod}}`}}",
@@ -4291,7 +4291,7 @@
       ],
       "targets": [
         {
-          "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{namespace=~'$namespace', pod=~'redis-sentinel.*'}) by (pod)",
+          "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=~'$namespace', pod=~'redis-sentinel.*'}) by (pod)",
           "format": "table",
           "instant": true,
           "intervalFactor": 2,
@@ -4309,7 +4309,7 @@
           "step": 10
         },
         {
-          "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{namespace=~'$namespace', pod=~'redis-sentinel.*'}) by (pod) / sum(kube_pod_container_resource_requests{unit='core',namespace=~'$namespace', pod=~'redis-sentinel.*'}) by (pod)",
+          "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=~'$namespace', pod=~'redis-sentinel.*'}) by (pod) / sum(kube_pod_container_resource_requests{unit='core',namespace=~'$namespace', pod=~'redis-sentinel.*'}) by (pod)",
           "format": "table",
           "instant": true,
           "intervalFactor": 2,
@@ -4327,7 +4327,7 @@
           "step": 10
         },
         {
-          "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{namespace=~'$namespace', pod=~'redis-sentinel.*'}) by (pod) / sum(kube_pod_container_resource_limits{unit='core',namespace=~'$namespace', pod=~'redis-sentinel.*'}) by (pod)",
+          "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=~'$namespace', pod=~'redis-sentinel.*'}) by (pod) / sum(kube_pod_container_resource_limits{unit='core',namespace=~'$namespace', pod=~'redis-sentinel.*'}) by (pod)",
           "format": "table",
           "instant": true,
           "intervalFactor": 2,
