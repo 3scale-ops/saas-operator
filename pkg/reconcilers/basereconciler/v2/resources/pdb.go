@@ -15,12 +15,13 @@ import (
 
 var _ basereconciler.Resource = PodDisruptionBudgetTemplate{}
 
-// PodDisruptionBudget specifies a PodDisruptionBudget resource
+// PodDisruptionBudgetTemplate has methods to generate and reconcile a PodDisruptionBudget
 type PodDisruptionBudgetTemplate struct {
 	Template  func() *policyv1.PodDisruptionBudget
 	IsEnabled bool
 }
 
+// Build returns a PodDisruptionBudget resource
 func (pdbt PodDisruptionBudgetTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
 
 	pdb := pdbt.Template()
@@ -28,10 +29,12 @@ func (pdbt PodDisruptionBudgetTemplate) Build(ctx context.Context, cl client.Cli
 	return pdb.DeepCopy(), DefaultExcludedPaths, nil
 }
 
+// Enabled indicates if the resource should be present or not
 func (pdbt PodDisruptionBudgetTemplate) Enabled() bool {
 	return pdbt.IsEnabled
 }
 
+// ResourceReconciler implements a generic reconciler for PodDisruptionBudget resources
 func (pdbt PodDisruptionBudgetTemplate) ResourceReconciler(ctx context.Context, cl client.Client, obj client.Object) error {
 	logger := log.FromContext(ctx, "ResourceReconciler", "PodDisruptionBudget")
 

@@ -15,12 +15,13 @@ import (
 
 var _ basereconciler.Resource = GrafanaDashboardTemplate{}
 
-// GrafanaDashboard specifies a GrafanaDashboard resource
+// GrafanaDashboardTemplate has methods to generate and reconcile a GrafanaDashboard
 type GrafanaDashboardTemplate struct {
 	Template  func() *grafanav1alpha1.GrafanaDashboard
 	IsEnabled bool
 }
 
+// Build returns a GrafanaDashboard resource
 func (gdt GrafanaDashboardTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
 
 	gd := gdt.Template()
@@ -28,10 +29,12 @@ func (gdt GrafanaDashboardTemplate) Build(ctx context.Context, cl client.Client)
 	return gd.DeepCopy(), DefaultExcludedPaths, nil
 }
 
+// Enabled indicates if the resource should be present or not
 func (gdt GrafanaDashboardTemplate) Enabled() bool {
 	return gdt.IsEnabled
 }
 
+// ResourceReconciler implements a generic reconciler for GrafanaDashboard resources
 func (gdt GrafanaDashboardTemplate) ResourceReconciler(ctx context.Context, cl client.Client, obj client.Object) error {
 	logger := log.FromContext(ctx, "ResourceReconciler", "GrafanaDashboard")
 

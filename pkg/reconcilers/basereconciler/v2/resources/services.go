@@ -16,11 +16,13 @@ import (
 var _ basereconciler.Resource = ServiceTemplate{}
 var _ basereconciler.ResourceWithCustomReconciler = ServiceTemplate{}
 
+// ServiceTemplate has methods to generate and reconcile a Service
 type ServiceTemplate struct {
 	Template  func() *corev1.Service
 	IsEnabled bool
 }
 
+// Build returns a Service resource
 func (st ServiceTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
 
 	svc := st.Template()
@@ -33,10 +35,12 @@ func (st ServiceTemplate) Build(ctx context.Context, cl client.Client) (client.O
 	return svc.DeepCopy(), serviceExcludes(svc), nil
 }
 
+// Enabled indicates if the resource should be present or not
 func (dt ServiceTemplate) Enabled() bool {
 	return dt.IsEnabled
 }
 
+// ResourceReconciler implements a generic reconciler for Service resources
 func (st ServiceTemplate) ResourceReconciler(ctx context.Context, cl client.Client, obj client.Object) error {
 	logger := log.FromContext(ctx, "ResourceReconciler", "Service")
 

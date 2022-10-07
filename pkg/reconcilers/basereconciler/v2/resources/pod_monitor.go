@@ -15,12 +15,13 @@ import (
 
 var _ basereconciler.Resource = PodMonitorTemplate{}
 
-// PodDisruptionBudget specifies a PodDisruptionBudget resource
+// PodMonitorTemplate has methods to generate and reconcile a PodMonitor
 type PodMonitorTemplate struct {
 	Template  func() *monitoringv1.PodMonitor
 	IsEnabled bool
 }
 
+// Build returns a PodMonitor resource
 func (pmt PodMonitorTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
 
 	pm := pmt.Template()
@@ -28,10 +29,12 @@ func (pmt PodMonitorTemplate) Build(ctx context.Context, cl client.Client) (clie
 	return pm.DeepCopy(), DefaultExcludedPaths, nil
 }
 
+// Enabled indicates if the resource should be present or not
 func (pmt PodMonitorTemplate) Enabled() bool {
 	return pmt.IsEnabled
 }
 
+// ResourceReconciler implements a generic reconciler for PodMonitor resources
 func (pmt PodMonitorTemplate) ResourceReconciler(ctx context.Context, cl client.Client, obj client.Object) error {
 	logger := log.FromContext(ctx, "ResourceReconciler", "PodMonitor")
 

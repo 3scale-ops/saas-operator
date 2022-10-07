@@ -15,12 +15,13 @@ import (
 
 var _ basereconciler.Resource = ExternalSecretTemplate{}
 
-// PodDisruptionBudget specifies a PodDisruptionBudget resource
+// ExternalSecretTemplate has methods to generate and reconcile an ExternalSecret
 type ExternalSecretTemplate struct {
 	Template  func() *externalsecretsv1beta1.ExternalSecret
 	IsEnabled bool
 }
 
+// Build returns an ExternalSecret resource
 func (est ExternalSecretTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
 
 	es := est.Template()
@@ -28,10 +29,12 @@ func (est ExternalSecretTemplate) Build(ctx context.Context, cl client.Client) (
 	return es.DeepCopy(), DefaultExcludedPaths, nil
 }
 
+// Enabled indicates if the resource should be present or not
 func (est ExternalSecretTemplate) Enabled() bool {
 	return est.IsEnabled
 }
 
+// ResourceReconciler implements a generic reconciler for ExternalSecret resources
 func (est ExternalSecretTemplate) ResourceReconciler(ctx context.Context, cl client.Client, obj client.Object) error {
 	logger := log.FromContext(ctx, "ResourceReconciler", "ExternalSecret")
 

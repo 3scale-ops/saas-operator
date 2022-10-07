@@ -15,12 +15,13 @@ import (
 
 var _ basereconciler.Resource = ConfigMapTemplate{}
 
-// ConfigMaps specifies a ConfigMap resource
+// ConfigMapsTemplate has methods to generate and reconcile a ConfigMap
 type ConfigMapTemplate struct {
 	Template  func() *corev1.ConfigMap
 	IsEnabled bool
 }
 
+// Build returns a ConfigMap resource
 func (cmt ConfigMapTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
 
 	cm := cmt.Template()
@@ -28,10 +29,12 @@ func (cmt ConfigMapTemplate) Build(ctx context.Context, cl client.Client) (clien
 	return cm.DeepCopy(), DefaultExcludedPaths, nil
 }
 
+// Enabled indicates if the resource should be present or not
 func (cmt ConfigMapTemplate) Enabled() bool {
 	return cmt.IsEnabled
 }
 
+// ResourceReconciler implements a generic reconciler for ConfigMap resources
 func (cmt ConfigMapTemplate) ResourceReconciler(ctx context.Context, cl client.Client, obj client.Object) error {
 	logger := log.FromContext(ctx, "ResourceReconciler", "ConfigMap")
 
