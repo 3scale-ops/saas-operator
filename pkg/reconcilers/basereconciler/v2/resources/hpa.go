@@ -15,12 +15,13 @@ import (
 
 var _ basereconciler.Resource = HorizontalPodAutoscalerTemplate{}
 
-// HorizontalPodAutoscaler specifies a HorizontalPodAutoscaler resource
+// HorizontalPodAutoscalerTemplate has methods to generate and reconcile a HorizontalPodAutoscaler
 type HorizontalPodAutoscalerTemplate struct {
 	Template  func() *autoscalingv2beta2.HorizontalPodAutoscaler
 	IsEnabled bool
 }
 
+// Build returns a HorizontalPodAutoscaler resource
 func (hpat HorizontalPodAutoscalerTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
 
 	hpa := hpat.Template()
@@ -28,10 +29,12 @@ func (hpat HorizontalPodAutoscalerTemplate) Build(ctx context.Context, cl client
 	return hpa.DeepCopy(), []string{}, nil
 }
 
+// Enabled indicates if the resource should be present or not
 func (hpat HorizontalPodAutoscalerTemplate) Enabled() bool {
 	return hpat.IsEnabled
 }
 
+// ResourceReconciler implements a generic reconciler for HorizontalPodAutoscaler resources
 func (hpat HorizontalPodAutoscalerTemplate) ResourceReconciler(ctx context.Context, cl client.Client, obj client.Object) error {
 	logger := log.FromContext(ctx, "ResourceReconciler", "HorizontalPodAutoscaler")
 
