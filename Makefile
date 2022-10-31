@@ -99,18 +99,20 @@ vet: ## Run go vet against code.
 	go vet ./...
 
 TEST_PKG = ./api/... ./controllers/... ./pkg/...
+KUBEBUILDER_ASSETS = "$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)"
+
 test: manifests generate fmt vet envtest assets ginkgo ## Run tests.
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" $(GINKGO) -p -r $(TEST_PKG)  -coverprofile cover.out
+	KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) $(GINKGO) -p -r $(TEST_PKG)  -coverprofile cover.out
 
 test-sequential: manifests generate fmt vet envtest assets ginkgo ## Run tests.
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" $(GINKGO) -r $(TEST_PKG) -coverprofile cover.out
+	KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) $(GINKGO) -r $(TEST_PKG)  -coverprofile cover.out
 
 OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
 ARCH := $(shell uname -m | sed 's/x86_64/amd64/')
 
 test-e2e: export KUBECONFIG = $(PWD)/kubeconfig
 test-e2e: manifests ginkgo kind-create kind-deploy ## Runs e2e tests
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" $(GINKGO) -r -p ./test/e2e
+	$(GINKGO) -p -r ./test/e2e
 	$(MAKE) kind-delete
 
 assets: go-bindata ## assets: Generate embedded assets
@@ -245,7 +247,7 @@ catalog-retag-latest:
 
 kind-create: export KUBECONFIG = $(PWD)/kubeconfig
 kind-create: docker-build kind ## Runs a k8s kind cluster with a local registry in "localhost:5000" and ports 1080 and 1443 exposed to the host
-	$(KIND) create cluster --wait 5m --image kindest/node:v1.21.12 || true
+	$(KIND) create cluster --wait 5m --image kindest/node:v1.23.13 || true
 
 kind-delete: ## Deletes the kind cluster and the registry
 kind-delete: kind
@@ -294,7 +296,7 @@ GOBINDATA ?= $(LOCALBIN)/go-bindata
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v3.8.7
 CONTROLLER_TOOLS_VERSION ?= v0.9.2
-GINKGO_VERSION ?= v1.16.5
+GINKGO_VERSION ?= v2.1.4
 CRD_REFDOCS_VERSION ?= v0.0.8
 KIND_VERSION ?= v0.16.0
 ENVTEST_VERSION ?= latest
@@ -319,7 +321,7 @@ $(ENVTEST): $(LOCALBIN)
 .PHONY: ginkgo
 ginkgo: $(GINKGO) ## Download ginkgo locally if necessary
 $(GINKGO):
-	test -s $(GINKGO) || GOBIN=$(LOCALBIN) go install github.com/onsi/ginkgo/ginkgo@$(GINKGO_VERSION)
+	test -s $(GINKGO) || GOBIN=$(LOCALBIN) go install -mod=mod github.com/onsi/ginkgo/v2/ginkgo@$(GINKGO_VERSION)
 
 .PHONY: crd-ref-docs
 crd-ref-docs: ## Download crd-ref-docs locally if necessary
