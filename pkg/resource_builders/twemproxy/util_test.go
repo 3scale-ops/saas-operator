@@ -98,7 +98,7 @@ func Test_addTwemproxySidecar(t *testing.T) {
 									Resources:       corev1.ResourceRequirements{},
 									ImagePullPolicy: corev1.PullIfNotPresent,
 									LivenessProbe: &corev1.Probe{
-										Handler: corev1.Handler{Exec: &corev1.ExecAction{
+										ProbeHandler: corev1.ProbeHandler{Exec: &corev1.ExecAction{
 											Command: strings.Split(healthCommand, " "),
 										}},
 										InitialDelaySeconds: *pointer.Int32(1),
@@ -108,7 +108,7 @@ func Test_addTwemproxySidecar(t *testing.T) {
 										FailureThreshold:    *pointer.Int32(3),
 									},
 									ReadinessProbe: &corev1.Probe{
-										Handler: corev1.Handler{Exec: &corev1.ExecAction{
+										ProbeHandler: corev1.ProbeHandler{Exec: &corev1.ExecAction{
 											Command: strings.Split(healthCommand, " "),
 										}},
 										InitialDelaySeconds: *pointer.Int32(1),
@@ -120,7 +120,7 @@ func Test_addTwemproxySidecar(t *testing.T) {
 									TerminationMessagePath:   corev1.TerminationMessagePathDefault,
 									TerminationMessagePolicy: corev1.TerminationMessageReadFile,
 									Lifecycle: &corev1.Lifecycle{
-										PreStop: &corev1.Handler{
+										PreStop: &corev1.LifecycleHandler{
 											Exec: &corev1.ExecAction{
 												Command: []string{"pre-stop", TwemproxyConfigFile},
 											},
