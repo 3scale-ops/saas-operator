@@ -3,9 +3,11 @@ module github.com/3scale/saas-operator
 go 1.18
 
 require (
+	github.com/3scale-ops/marin3r v0.0.0-20221102171130-b886ba8ff1dd
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/davecgh/go-spew v1.1.1
+	github.com/envoyproxy/go-control-plane v0.10.3
 	github.com/evanphx/json-patch v5.6.0+incompatible
 	github.com/go-logr/logr v1.2.3
 	github.com/go-redis/redis/v8 v8.11.5
@@ -21,6 +23,7 @@ require (
 	github.com/prometheus/client_golang v1.12.2
 	github.com/redhat-cop/operator-utils v1.3.4
 	go.uber.org/zap v1.21.0
+	google.golang.org/protobuf v1.28.0
 	k8s.io/api v0.25.0
 	k8s.io/apimachinery v0.25.0
 	k8s.io/client-go v0.25.0
@@ -44,11 +47,15 @@ require (
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/census-instrumentation/opencensus-proto v0.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
+	github.com/cncf/xds/go v0.0.0-20220314180256-7f1daf1720fc // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/emicklei/go-restful/v3 v3.8.0 // indirect
+	github.com/envoyproxy/protoc-gen-validate v0.6.7 // indirect
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
+	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-logr/zapr v1.2.3 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.19.5 // indirect
@@ -79,6 +86,7 @@ require (
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	go.opentelemetry.io/proto/otlp v0.15.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd // indirect
@@ -90,7 +98,8 @@ require (
 	golang.org/x/time v0.0.0-20220609170525-579cf78fd858 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/protobuf v1.28.0 // indirect
+	google.golang.org/genproto v0.0.0-20220502173005-c8bf987b8c21 // indirect
+	google.golang.org/grpc v1.47.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
