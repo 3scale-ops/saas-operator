@@ -3,7 +3,7 @@
 # To re-generate a bundle for another specific version without changing the standard setup, you can:
 # - use the VERSION as arg of the bundle target (e.g make bundle VERSION=0.0.2)
 # - use environment variables to overwrite this value (e.g export VERSION=0.0.2)
-VERSION ?= 0.16.3
+VERSION ?= 0.17.0-alpha.1
 
 # CHANNELS define the bundle channels used in the bundle.
 # Add a new line here if you would like to change its default config. (E.g CHANNELS = "candidate,fast,stable")
@@ -52,6 +52,10 @@ IMG ?= $(IMAGE_TAG_BASE):v$(VERSION)
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.24
 
+# KIND_K8S_VERSION refers to the version of the kind k8s cluster for e2e testing.
+# OCP 4.10 uses k8s 1.23
+KIND_K8S_VERSION = v1.23.13
+
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
 GOBIN=$(shell go env GOPATH)/bin
@@ -64,6 +68,10 @@ endif
 # Options are set to exit when a recipe line exits non-zero or a piped command fails.
 SHELL = /usr/bin/env bash -o pipefail
 .SHELLFLAGS = -ec
+
+
+OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
+ARCH := $(shell uname -m | sed 's/x86_64/amd64/')
 
 all: build
 
@@ -106,9 +114,6 @@ test: manifests generate fmt vet envtest assets ginkgo ## Run tests.
 
 test-sequential: manifests generate fmt vet envtest assets ginkgo ## Run tests.
 	KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) $(GINKGO) -r $(TEST_PKG)  -coverprofile cover.out
-
-OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
-ARCH := $(shell uname -m | sed 's/x86_64/amd64/')
 
 test-e2e: export KUBECONFIG = $(PWD)/kubeconfig
 test-e2e: manifests ginkgo kind-create kind-deploy ## Runs e2e tests
@@ -247,7 +252,7 @@ catalog-retag-latest:
 
 kind-create: export KUBECONFIG = $(PWD)/kubeconfig
 kind-create: docker-build kind ## Runs a k8s kind cluster with a local registry in "localhost:5000" and ports 1080 and 1443 exposed to the host
-	$(KIND) create cluster --wait 5m --image kindest/node:v1.23.13 || true
+	$(KIND) create cluster --wait 5m --image kindest/node:$(KIND_K8S_VERSION) || true
 
 kind-delete: ## Deletes the kind cluster and the registry
 kind-delete: kind
@@ -271,11 +276,6 @@ kind-refresh-operator: manifests kind docker-build ## Reloads the operator image
 kind-undeploy: export KUBECONFIG = $(PWD)/kubeconfig
 kind-undeploy: ## Undeploy controller from the Kind K8s cluster
 	$(KUSTOMIZE) build config/test | kubectl delete -f -
-
-.PHONY: kind
-KIND = $(shell pwd)/bin/kind
-kind: ## Download kind locally if necessary
-	$(call go-get-tool,$(KIND),sigs.k8s.io/kind@v0.11.1)
 
 ##@ Build Dependencies
 
