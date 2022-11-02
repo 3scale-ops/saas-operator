@@ -22,6 +22,7 @@ import (
 	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators/sentinel"
 	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
 	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
@@ -29,7 +30,6 @@ import (
 	"github.com/3scale/saas-operator/pkg/redis/events"
 	"github.com/3scale/saas-operator/pkg/redis/metrics"
 	"github.com/go-logr/logr"
-	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -83,13 +83,7 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		instance.Spec,
 	)
 
-	resources := []basereconciler.Resource{
-		gen.GrafanaDashboard(),
-	}
-
-	resources = append(gen.Resources(), resources...)
-
-	if err := r.ReconcileOwnedResources(ctx, instance, resources); err != nil {
+	if err := r.ReconcileOwnedResources(ctx, instance, gen.Resources()); err != nil {
 		logger.Error(err, "unable to update owned resources")
 		return r.ManageError(ctx, instance, err)
 	}
@@ -200,7 +194,8 @@ func (r *SentinelReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&saasv1alpha1.Sentinel{}).
 		Owns(&corev1.Service{}).
 		Owns(&policyv1.PodDisruptionBudget{}).
-		Owns(&autoscalingv2beta2.HorizontalPodAutoscaler{}).
+		Owns(&grafanav1alpha1.GrafanaDashboard{}).
+		Owns(&corev1.ConfigMap{}).
 		Watches(&source.Channel{Source: r.GetStatusChangeChannel()}, &handler.EnqueueRequestForObject{}).
 		Watches(&source.Channel{Source: r.SentinelEvents.GetChannel()}, &handler.EnqueueRequestForObject{}).
 		Complete(r)

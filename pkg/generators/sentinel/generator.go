@@ -58,6 +58,10 @@ func (gen *Generator) Resources() []basereconciler.Resource {
 			Template:  gen.configMap(),
 			IsEnabled: true,
 		},
+		basereconciler_resources.GrafanaDashboardTemplate{
+			Template:  grafanadashboard.New(gen.GetKey(), gen.GetLabels(), *gen.Spec.GrafanaDashboard, "dashboards/redis-sentinel.json.gtpl"),
+			IsEnabled: !gen.Spec.GrafanaDashboard.IsDeactivated(),
+		},
 	}
 
 	for idx := 0; idx < int(*gen.Spec.Replicas); idx++ {
@@ -66,11 +70,4 @@ func (gen *Generator) Resources() []basereconciler.Resource {
 	}
 
 	return resources
-}
-
-func (gen *Generator) GrafanaDashboard() basereconciler_resources.GrafanaDashboardTemplate {
-	return basereconciler_resources.GrafanaDashboardTemplate{
-		Template:  grafanadashboard.New(gen.GetKey(), gen.GetLabels(), *gen.Spec.GrafanaDashboard, "dashboards/redis-sentinel.json.gtpl"),
-		IsEnabled: !gen.Spec.GrafanaDashboard.IsDeactivated(),
-	}
 }
