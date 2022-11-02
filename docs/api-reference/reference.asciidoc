@@ -58,8 +58,8 @@ APISpec is the configuration for main Zync api component
 | *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
 | *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
 | *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
-| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
-| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 |===
 
 
@@ -78,7 +78,7 @@ Apicast is the Schema for the apicasts API
 | Field | Description
 | *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
 | *`kind`* __string__ | `Apicast`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
 | *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastspec[$$ApicastSpec$$]__ | 
 | *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicaststatus[$$ApicastStatus$$]__ | 
@@ -129,8 +129,8 @@ ApicastEnvironmentSpec is the configuration for an Apicast environment
 | *`endpoint`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-endpoint[$$Endpoint$$]__ | The external endpoint/s for the component
 | *`marin3r`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]__ | Marin3r configures the Marin3r sidecars for the component
 | *`loadBalancer`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-loadbalancerspec[$$LoadBalancerSpec$$]__ | Configures the AWS load balancer for the component
-| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
-| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 | *`canary`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
 |===
 
@@ -147,9 +147,9 @@ ApicastList contains a list of Apicast
 | Field | Description
 | *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
 | *`kind`* __string__ | `ApicastList`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
-| *`items`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicast[$$Apicast$$]__ | 
+| *`items`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicast[$$Apicast$$] array__ | 
 |===
 
 
@@ -210,7 +210,7 @@ AutoSSL is the Schema for the autossls API
 | Field | Description
 | *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
 | *`kind`* __string__ | `AutoSSL`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
 | *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]__ | 
 | *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslstatus[$$AutoSSLStatus$$]__ | 
@@ -254,9 +254,9 @@ AutoSSLList contains a list of AutoSSL
 | Field | Description
 | *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
 | *`kind`* __string__ | `AutoSSLList`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
-| *`items`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autossl[$$AutoSSL$$]__ | 
+| *`items`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autossl[$$AutoSSL$$] array__ | 
 |===
 
 
@@ -284,8 +284,8 @@ AutoSSLSpec defines the desired state of AutoSSL
 | *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
 | *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslconfig[$$AutoSSLConfig$$]__ | Application specific configuration options for the component
 | *`endpoint`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-endpoint[$$Endpoint$$]__ | The external endpoint/s for the component
-| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
-| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 | *`canary`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
 |===
 
@@ -307,7 +307,7 @@ Backend is the Schema for the backends API
 | Field | Description
 | *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
 | *`kind`* __string__ | `Backend`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
 | *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backendspec[$$BackendSpec$$]__ | 
 | *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backendstatus[$$BackendStatus$$]__ | 
@@ -353,9 +353,9 @@ BackendList contains a list of Backend
 | Field | Description
 | *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
 | *`kind`* __string__ | `BackendList`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
-| *`items`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backend[$$Backend$$]__ | 
+| *`items`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backend[$$Backend$$] array__ | 
 |===
 
 
@@ -417,7 +417,7 @@ CORSProxy is the Schema for the corsproxies API
 | Field | Description
 | *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
 | *`kind`* __string__ | `CORSProxy`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
 | *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]__ | 
 | *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxystatus[$$CORSProxyStatus$$]__ | 
@@ -454,9 +454,9 @@ CORSProxyList contains a list of CORSProxy
 | Field | Description
 | *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
 | *`kind`* __string__ | `CORSProxyList`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
-| *`items`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxy[$$CORSProxy$$]__ | 
+| *`items`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxy[$$CORSProxy$$] array__ | 
 |===
 
 
@@ -482,8 +482,8 @@ CORSProxySpec defines the desired state of CORSProxy
 | *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
 | *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
 | *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyconfig[$$CORSProxyConfig$$]__ | Application specific configuration options for the component
-| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
-| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 |===
 
 
@@ -530,8 +530,8 @@ CronSpec is the configuration for Backend Cron
 | Field | Description
 | *`replicas`* __integer__ | Number of replicas for the component
 | *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
-| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
-| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 |===
 
 
@@ -550,7 +550,7 @@ EchoAPI is the Schema for the echoapis API
 | Field | Description
 | *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
 | *`kind`* __string__ | `EchoAPI`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
 | *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]__ | 
 | *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapistatus[$$EchoAPIStatus$$]__ | 
@@ -569,9 +569,9 @@ EchoAPIList contains a list of echoapi
 | Field | Description
 | *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
 | *`kind`* __string__ | `EchoAPIList`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
-| *`items`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapi[$$EchoAPI$$]__ | 
+| *`items`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapi[$$EchoAPI$$] array__ | 
 |===
 
 
@@ -598,8 +598,8 @@ EchoAPISpec defines the desired state of echoapi
 | *`marin3r`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]__ | Marin3r configures the Marin3r sidecars for the component
 | *`loadBalancer`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-nlbloadbalancerspec[$$NLBLoadBalancerSpec$$]__ | Configures the AWS Network load balancer for the component
 | *`endpoint`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-endpoint[$$Endpoint$$]__ | The external endpoint/s for the component
-| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
-| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 |===
 
 
@@ -643,7 +643,7 @@ ExternalSecret is a reference to the ExternalSecret common configuration
 |===
 | Field | Description
 | *`secretStoreRef`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-externalsecretsecretstorereferencespec[$$ExternalSecretSecretStoreReferenceSpec$$]__ | SecretStoreRef defines which SecretStore to use when fetching the secret data
-| *`refreshInterval`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#duration-v1-meta[$$Duration$$]__ | RefreshInterval is the amount of time before the values reading again from the SecretStore provider (duration)
+| *`refreshInterval`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#duration-v1-meta[$$Duration$$]__ | RefreshInterval is the amount of time before the values reading again from the SecretStore provider (duration)
 |===
 
 
@@ -766,7 +766,7 @@ ImageSpec defines the image for the component
 | *`name`* __string__ | Docker repository of the image
 | *`tag`* __string__ | Image tag
 | *`pullSecretName`* __string__ | Name of the Secret that holds quay.io credentials to access the image repository
-| *`pullPolicy`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#pullpolicy-v1-core[$$PullPolicy$$]__ | Pull policy for the image
+| *`pullPolicy`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#pullpolicy-v1-core[$$PullPolicy$$]__ | Pull policy for the image
 |===
 
 
@@ -813,8 +813,8 @@ ListenerSpec is the configuration for Backend Listener
 | *`endpoint`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-endpoint[$$Endpoint$$]__ | The external endpoint/s for the component
 | *`marin3r`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]__ | Marin3r configures the Marin3r sidecars for the component
 | *`loadBalancer`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-nlbloadbalancerspec[$$NLBLoadBalancerSpec$$]__ | Configures the AWS Network load balancer for the component
-| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
-| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 | *`canary`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
 |===
 
@@ -859,7 +859,7 @@ MappingService is the Schema for the mappingservices API
 | Field | Description
 | *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
 | *`kind`* __string__ | `MappingService`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
 | *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]__ | 
 | *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicestatus[$$MappingServiceStatus$$]__ | 
@@ -899,9 +899,9 @@ MappingServiceList contains a list of MappingService
 | Field | Description
 | *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
 | *`kind`* __string__ | `MappingServiceList`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
-| *`items`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservice[$$MappingService$$]__ | 
+| *`items`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservice[$$MappingService$$] array__ | 
 |===
 
 
@@ -927,8 +927,8 @@ MappingServiceSpec defines the desired state of MappingService
 | *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
 | *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
 | *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingserviceconfig[$$MappingServiceConfig$$]__ | Application specific configuration options for the component
-| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
-| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 |===
 
 
@@ -1087,8 +1087,8 @@ QueSpec is the configuration for Zync que
 | *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
 | *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
 | *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
-| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
-| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 |===
 
 
@@ -1143,7 +1143,7 @@ RedisShard is the Schema for the redisshards API
 | Field | Description
 | *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
 | *`kind`* __string__ | `RedisShard`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
 | *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshardspec[$$RedisShardSpec$$]__ | 
 | *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshardstatus[$$RedisShardStatus$$]__ | 
@@ -1162,9 +1162,9 @@ RedisShardList contains a list of RedisShard
 | Field | Description
 | *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
 | *`kind`* __string__ | `RedisShardList`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
-| *`items`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshard[$$RedisShard$$]__ | 
+| *`items`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshard[$$RedisShard$$] array__ | 
 |===
 
 
@@ -1268,8 +1268,8 @@ ResourceRequirementsSpec defines the resource requirements for the component
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`limits`* __object (keys:link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#resourcename-v1-core[$$ResourceName$$], values:Quantity)__ | Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
-| *`requests`* __object (keys:link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#resourcename-v1-core[$$ResourceName$$], values:Quantity)__ | Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
+| *`limits`* __object (keys:link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#resourcename-v1-core[$$ResourceName$$], values:Quantity)__ | Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
+| *`requests`* __object (keys:link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#resourcename-v1-core[$$ResourceName$$], values:Quantity)__ | Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
 |===
 
 
@@ -1360,7 +1360,7 @@ Sentinel is the Schema for the sentinels API
 | Field | Description
 | *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
 | *`kind`* __string__ | `Sentinel`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
 | *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelspec[$$SentinelSpec$$]__ | 
 | *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelstatus[$$SentinelStatus$$]__ | 
@@ -1399,9 +1399,9 @@ SentinelList contains a list of Sentinel
 | Field | Description
 | *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
 | *`kind`* __string__ | `SentinelList`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
-| *`items`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinel[$$Sentinel$$]__ | 
+| *`items`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinel[$$Sentinel$$] array__ | 
 |===
 
 
@@ -1425,8 +1425,8 @@ SentinelSpec defines the desired state of Sentinel
 | *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
 | *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
 | *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
-| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
-| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 | *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelconfig[$$SentinelConfig$$]__ | Config configures the sentinel process
 |===
 
@@ -1537,7 +1537,7 @@ System is the Schema for the systems API
 | Field | Description
 | *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
 | *`kind`* __string__ | `System`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
 | *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]__ | 
 | *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemstatus[$$SystemStatus$$]__ | 
@@ -1564,8 +1564,8 @@ SystemAppSpec configures the App component of System
 | *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
 | *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
 | *`marin3r`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]__ | Marin3r configures the Marin3r sidecars for the component
-| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
-| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 | *`canary`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
 |===
 
@@ -1644,9 +1644,9 @@ SystemList contains a list of System
 | Field | Description
 | *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
 | *`kind`* __string__ | `SystemList`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
-| *`items`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-system[$$System$$]__ | 
+| *`items`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-system[$$System$$] array__ | 
 |===
 
 
@@ -1664,8 +1664,8 @@ SystemRailsConsoleSpec configures the App component of System
 |===
 | Field | Description
 | *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
-| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
-| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 |===
 
 
@@ -1727,8 +1727,8 @@ SystemSidekiqSpec configures the Sidekiq component of System
 | *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
 | *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
 | *`marin3r`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]__ | Marin3r configures the Marin3r sidecars for the component
-| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
-| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 | *`canary`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
 |===
 
@@ -1777,8 +1777,8 @@ SystemSphinxSpec configures the App component of System
 | *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
 | *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
 | *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
-| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
-| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 |===
 
 
@@ -1834,7 +1834,7 @@ TwemproxyConfig is the Schema for the twemproxyconfigs API
 | Field | Description
 | *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
 | *`kind`* __string__ | `TwemproxyConfig`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
 | *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfigspec[$$TwemproxyConfigSpec$$]__ | 
 | *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfigstatus[$$TwemproxyConfigStatus$$]__ | 
@@ -1853,9 +1853,9 @@ TwemproxyConfigList contains a list of TwemproxyConfig
 | Field | Description
 | *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
 | *`kind`* __string__ | `TwemproxyConfigList`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
-| *`items`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfig[$$TwemproxyConfig$$]__ | 
+| *`items`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfig[$$TwemproxyConfig$$] array__ | 
 |===
 
 
@@ -1896,7 +1896,7 @@ TwemproxyConfigSpec defines the desired state of TwemproxyConfig
 | Field | Description
 | *`logLevel`* __integer__ | Set logging level to N. (default: 5, min: 0, max: 11)
 | *`metricsAddress`* __integer__ | Set stats monitoring port to port.  (default: 22222)
-| *`statsInterval`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#duration-v1-meta[$$Duration$$]__ | Set stats aggregation interval in msec to interval.  (default: 30s)
+| *`statsInterval`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#duration-v1-meta[$$Duration$$]__ | Set stats aggregation interval in msec to interval.  (default: 30s)
 |===
 
 
@@ -2002,8 +2002,8 @@ WorkerSpec is the configuration for Backend Worker
 | *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
 | *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
 | *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
-| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
-| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#toleration-v1-core[$$Toleration$$]__ | If specified, the pod's tolerations.
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 | *`canary`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
 |===
 
@@ -2023,7 +2023,7 @@ Zync is the Schema for the zyncs API
 | Field | Description
 | *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
 | *`kind`* __string__ | `Zync`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
 | *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]__ | 
 | *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncstatus[$$ZyncStatus$$]__ | 
@@ -2064,9 +2064,9 @@ ZyncList contains a list of Zync
 | Field | Description
 | *`apiVersion`* __string__ | `saas.3scale.net/v1alpha1`
 | *`kind`* __string__ | `ZyncList`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
-| *`items`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zync[$$Zync$$]__ | 
+| *`items`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zync[$$Zync$$] array__ | 
 |===
 
 

@@ -49,7 +49,7 @@ func (gen *Generator) statefulSet() func() *appsv1.StatefulSet {
 									pod.ContainerPortTCP("redis-server", 6379),
 								),
 								ReadinessProbe: &corev1.Probe{
-									Handler: corev1.Handler{Exec: &corev1.ExecAction{
+									ProbeHandler: corev1.ProbeHandler{Exec: &corev1.ExecAction{
 										Command: strings.Split("/bin/sh /redis-readiness/ready.sh", " "),
 									}},
 									FailureThreshold:    3,

@@ -43,7 +43,7 @@ func AddTwemproxySidecar(dep appsv1.Deployment, spec *saasv1alpha1.TwemproxySpec
 			TerminationMessagePath:   corev1.TerminationMessagePathDefault,
 			TerminationMessagePolicy: corev1.TerminationMessageReadFile,
 			Lifecycle: &corev1.Lifecycle{
-				PreStop: &corev1.Handler{
+				PreStop: &corev1.LifecycleHandler{
 					Exec: &corev1.ExecAction{
 						Command: []string{"pre-stop", TwemproxyConfigFile},
 					},

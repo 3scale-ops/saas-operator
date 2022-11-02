@@ -57,7 +57,7 @@ func (gen *Generator) statefulSet() func() *appsv1.StatefulSet {
 								Image:           fmt.Sprintf("%s:%s", *gen.Spec.Image.Name, *gen.Spec.Image.Tag),
 								ImagePullPolicy: *gen.Spec.Image.PullPolicy,
 								LivenessProbe: &corev1.Probe{
-									Handler: corev1.Handler{Exec: &corev1.ExecAction{
+									ProbeHandler: corev1.ProbeHandler{Exec: &corev1.ExecAction{
 										Command: strings.Split(healthCommand, " ")}},
 									FailureThreshold:    3,
 									InitialDelaySeconds: 30,
@@ -70,7 +70,7 @@ func (gen *Generator) statefulSet() func() *appsv1.StatefulSet {
 									pod.ContainerPortTCP(gen.GetComponent(), int32(saasv1alpha1.SentinelPort)),
 								),
 								ReadinessProbe: &corev1.Probe{
-									Handler: corev1.Handler{Exec: &corev1.ExecAction{
+									ProbeHandler: corev1.ProbeHandler{Exec: &corev1.ExecAction{
 										Command: strings.Split(healthCommand, " ")}},
 									FailureThreshold:    3,
 									InitialDelaySeconds: 30,

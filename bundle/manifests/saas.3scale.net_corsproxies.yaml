@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.1
+    controller-gen.kubebuilder.io/version: v0.9.2
   creationTimestamp: null
   name: corsproxies.saas.3scale.net
 spec:
@@ -258,6 +258,7 @@ spec:
                                 type: object
                               type: array
                           type: object
+                          x-kubernetes-map-type: atomic
                         weight:
                           description: Weight associated with matching the corresponding
                             nodeSelectorTerm, in the range 1-100.
@@ -353,10 +354,12 @@ spec:
                                 type: object
                               type: array
                           type: object
+                          x-kubernetes-map-type: atomic
                         type: array
                     required:
                     - nodeSelectorTerms
                     type: object
+                    x-kubernetes-map-type: atomic
                 type: object
               pdb:
                 description: Pod Disruption Budget for the component
@@ -495,5 +498,5 @@ status:
   acceptedNames:
     kind: ""
     plural: ""
-  conditions: []
-  storedVersions: []
+  conditions: null
+  storedVersions: null

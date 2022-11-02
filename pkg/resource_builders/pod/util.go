@@ -15,7 +15,7 @@ func HTTPProbe(path string, port intstr.IntOrString, scheme corev1.URIScheme, cf
 		return nil
 	}
 	return &corev1.Probe{
-		Handler: corev1.Handler{
+		ProbeHandler: corev1.ProbeHandler{
 			HTTPGet: &corev1.HTTPGetAction{
 				Path:   path,
 				Port:   port,
@@ -49,7 +49,7 @@ func TCPProbe(port intstr.IntOrString, cfg saasv1alpha1.ProbeSpec) *corev1.Probe
 		return nil
 	}
 	return &corev1.Probe{
-		Handler: corev1.Handler{
+		ProbeHandler: corev1.ProbeHandler{
 			TCPSocket: &corev1.TCPSocketAction{
 				Port: port,
 			},
@@ -68,7 +68,7 @@ func ExecProbe(command string, cfg saasv1alpha1.ProbeSpec) *corev1.Probe {
 		return nil
 	}
 	return &corev1.Probe{
-		Handler: corev1.Handler{Exec: &corev1.ExecAction{
+		ProbeHandler: corev1.ProbeHandler{Exec: &corev1.ExecAction{
 			Command: strings.Split(command, " "),
 		}},
 		InitialDelaySeconds: *cfg.InitialDelaySeconds,
