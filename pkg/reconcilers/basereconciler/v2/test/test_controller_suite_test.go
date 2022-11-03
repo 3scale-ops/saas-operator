@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
-	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -166,7 +166,7 @@ var _ = Describe("Test controller", func() {
 					pdb,
 				)
 			}, timeout, poll).ShouldNot(HaveOccurred())
-			hpa := &autoscalingv2beta2.HorizontalPodAutoscaler{}
+			hpa := &autoscalingv2.HorizontalPodAutoscaler{}
 			Eventually(func() error {
 				return k8sClient.Get(
 					context.Background(),

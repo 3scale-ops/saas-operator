@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
-	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -87,7 +87,7 @@ var _ = Describe("Test controller", func() {
 				Expect(alice.Spec.Template.GetLabels()).
 					To(Equal(map[string]string{"alice-lkey1": "alice-lvalue1", "deployment": "alice", "traffic": "yes", "orig-key": "orig-value"}))
 
-				hpa := &autoscalingv2beta2.HorizontalPodAutoscaler{}
+				hpa := &autoscalingv2.HorizontalPodAutoscaler{}
 				Eventually(func() error {
 					return k8sClient.Get(
 						context.Background(),
@@ -123,7 +123,7 @@ var _ = Describe("Test controller", func() {
 				Expect(bob.Spec.Template.GetLabels()).
 					To(Equal(map[string]string{"bob-lkey1": "bob-lvalue1", "deployment": "bob", "traffic": "yes", "orig-key": "orig-value"}))
 
-				hpa := &autoscalingv2beta2.HorizontalPodAutoscaler{}
+				hpa := &autoscalingv2.HorizontalPodAutoscaler{}
 				Eventually(func() error {
 					return k8sClient.Get(
 						context.Background(),

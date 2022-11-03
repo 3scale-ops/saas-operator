@@ -9,7 +9,7 @@ import (
 	"github.com/go-test/deep"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
-	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -544,14 +544,14 @@ func TestHorizontalPodAutoscalerTemplate_ApplyMeta(t *testing.T) {
 		name string
 		hpat HorizontalPodAutoscalerTemplate
 		args args
-		want *autoscalingv2beta2.HorizontalPodAutoscaler
+		want *autoscalingv2.HorizontalPodAutoscaler
 	}{
 		{
 			name: "Adds meta to HPA",
 			hpat: HorizontalPodAutoscalerTemplate{
 				HorizontalPodAutoscalerTemplate: basereconciler_resources.HorizontalPodAutoscalerTemplate{
-					Template: func() *autoscalingv2beta2.HorizontalPodAutoscaler {
-						return &autoscalingv2beta2.HorizontalPodAutoscaler{}
+					Template: func() *autoscalingv2.HorizontalPodAutoscaler {
+						return &autoscalingv2.HorizontalPodAutoscaler{}
 					},
 					IsEnabled: false,
 				},
@@ -565,14 +565,14 @@ func TestHorizontalPodAutoscalerTemplate_ApplyMeta(t *testing.T) {
 					TSelector:  nil,
 				},
 			},
-			want: &autoscalingv2beta2.HorizontalPodAutoscaler{
+			want: &autoscalingv2.HorizontalPodAutoscaler{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test",
 					Namespace: "ns",
 					Labels:    map[string]string{"key": "value"},
 				},
-				Spec: autoscalingv2beta2.HorizontalPodAutoscalerSpec{
-					ScaleTargetRef: autoscalingv2beta2.CrossVersionObjectReference{
+				Spec: autoscalingv2.HorizontalPodAutoscalerSpec{
+					ScaleTargetRef: autoscalingv2.CrossVersionObjectReference{
 						Kind:       "Deployment",
 						Name:       "test",
 						APIVersion: "apps/v1",

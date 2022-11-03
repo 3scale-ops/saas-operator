@@ -13,7 +13,7 @@ import (
 	. "github.com/onsi/gomega"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
-	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -254,7 +254,7 @@ var _ = Describe("Backend controller", func() {
 					rvs["deployment/backend-listener"] = testutil.GetResourceVersion(
 						k8sClient, &appsv1.Deployment{}, "backend-listener", namespace, timeout, poll)
 					rvs["hpa/backend-worker"] = testutil.GetResourceVersion(
-						k8sClient, &autoscalingv2beta2.HorizontalPodAutoscaler{}, "backend-worker", namespace, timeout, poll)
+						k8sClient, &autoscalingv2.HorizontalPodAutoscaler{}, "backend-worker", namespace, timeout, poll)
 					rvs["deployment/backend-cron"] = testutil.GetResourceVersion(
 						k8sClient, &appsv1.Deployment{}, "backend-cron", namespace, timeout, poll)
 					rvs["externalsecret/backend-internal-api"] = testutil.GetResourceVersion(
@@ -330,7 +330,7 @@ var _ = Describe("Backend controller", func() {
 				Expect(svc.Spec.Selector["deployment"]).To(Equal("backend-listener"))
 				Expect(svc.GetAnnotations()["service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled"]).To(Equal("false"))
 
-				hpa := &autoscalingv2beta2.HorizontalPodAutoscaler{}
+				hpa := &autoscalingv2.HorizontalPodAutoscaler{}
 				By("updating the backend-worker workload",
 					(&testutil.ExpectedResource{
 						Name:        "backend-worker",

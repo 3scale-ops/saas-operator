@@ -14,7 +14,7 @@ import (
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	operatorutils "github.com/redhat-cop/operator-utils/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
-	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -36,7 +36,7 @@ var SupportedListTypes = []client.ObjectList{
 	&appsv1.StatefulSetList{},
 	&externalsecretsv1beta1.ExternalSecretList{},
 	&grafanav1alpha1.GrafanaDashboardList{},
-	&autoscalingv2beta2.HorizontalPodAutoscalerList{},
+	&autoscalingv2.HorizontalPodAutoscalerList{},
 	&policyv1.PodDisruptionBudgetList{},
 	&monitoringv1.PodMonitorList{},
 }

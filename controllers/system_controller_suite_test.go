@@ -13,7 +13,7 @@ import (
 	. "github.com/onsi/gomega"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
-	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -348,7 +348,7 @@ var _ = Describe("System controller", func() {
 					(&testutil.ExpectedResource{Name: "system-console", Namespace: namespace, Missing: true}).
 						Assert(k8sClient, pdb, timeout, poll))
 
-				hpa := &autoscalingv2beta2.HorizontalPodAutoscaler{}
+				hpa := &autoscalingv2.HorizontalPodAutoscaler{}
 				By("ensuring the system-console HPA",
 					(&testutil.ExpectedResource{Name: "system-console", Namespace: namespace, Missing: true}).
 						Assert(k8sClient, hpa, timeout, poll))

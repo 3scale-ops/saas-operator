@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
-	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -17,7 +17,7 @@ var _ basereconciler.Resource = HorizontalPodAutoscalerTemplate{}
 
 // HorizontalPodAutoscalerTemplate has methods to generate and reconcile a HorizontalPodAutoscaler
 type HorizontalPodAutoscalerTemplate struct {
-	Template  func() *autoscalingv2beta2.HorizontalPodAutoscaler
+	Template  func() *autoscalingv2.HorizontalPodAutoscaler
 	IsEnabled bool
 }
 
@@ -36,9 +36,9 @@ func (hpat HorizontalPodAutoscalerTemplate) ResourceReconciler(ctx context.Conte
 	logger := log.FromContext(ctx, "kind", "HorizontalPodAutoscaler", "resource", obj.GetName())
 
 	needsUpdate := false
-	desired := obj.(*autoscalingv2beta2.HorizontalPodAutoscaler)
+	desired := obj.(*autoscalingv2.HorizontalPodAutoscaler)
 
-	instance := &autoscalingv2beta2.HorizontalPodAutoscaler{}
+	instance := &autoscalingv2.HorizontalPodAutoscaler{}
 	err := cl.Get(ctx, types.NamespacedName{Name: desired.GetName(), Namespace: desired.GetNamespace()}, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {

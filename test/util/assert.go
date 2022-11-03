@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
-	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	policyv1 "k8s.io/api/policy/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/pointer"
@@ -59,7 +59,7 @@ func (ew *ExpectedWorkload) Assert(c client.Client, dep *appsv1.Deployment, time
 			Expect(dep.Spec.Template.Spec.Containers[0].Args).To(Equal(ew.ContainterArgs))
 		}
 
-		hpa := &autoscalingv2beta2.HorizontalPodAutoscaler{}
+		hpa := &autoscalingv2.HorizontalPodAutoscaler{}
 		By(fmt.Sprintf("%s workload HPA", ew.Name),
 			(&ExpectedResource{
 				Name:      ew.Name,
