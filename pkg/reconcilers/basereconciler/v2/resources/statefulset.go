@@ -119,16 +119,14 @@ func (sts StatefulSetTemplate) ResourceReconciler(ctx context.Context, cl client
 
 	/* Reconcile the Selector */
 	if !equality.Semantic.DeepEqual(instance.Spec.Selector, desired.Spec.Selector) {
-		return fmt.Errorf(
-			"unable to update object: StatefulSet Selector updates are forbidden",
-		)
+		instance.Spec.Selector = desired.Spec.Selector
+		needsUpdate = true
 	}
 
 	/* Reconcile the ServiceName */
 	if !equality.Semantic.DeepEqual(instance.Spec.ServiceName, desired.Spec.ServiceName) {
-		return fmt.Errorf(
-			"unable to update object: StatefulSet ServiceName updates are forbidden",
-		)
+		instance.Spec.ServiceName = desired.Spec.ServiceName
+		needsUpdate = true
 	}
 
 	/* Reconcile the Template Labels */
