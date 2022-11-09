@@ -149,42 +149,9 @@ func (sts StatefulSetTemplate) ResourceReconciler(ctx context.Context, cl client
 	}
 
 	/* Reconcile the VolumeClaimTemplates */
-
-	vctDrift := false
-
-	if len(instance.Spec.VolumeClaimTemplates) == len(desired.Spec.VolumeClaimTemplates) {
-	for _, dvct := range desired.Spec.VolumeClaimTemplates {
-			desiredClaimExists := false
-		for _, vct := range instance.Spec.VolumeClaimTemplates {
-			if dvct.ObjectMeta.Name == vct.ObjectMeta.Name {
-					desiredClaimExists = true
-					vctDrift = !equality.Semantic.DeepEqual(dvct.Spec, vct.Spec) ||
-						!equality.Semantic.DeepEqual(dvct.ObjectMeta.Labels, vct.ObjectMeta.Labels)
-					break
-				}
-			}
-			if !desiredClaimExists {
-				vctDrift = true
-			}
-		}
-		for _, vct := range instance.Spec.VolumeClaimTemplates {
-			undesiredClaimExists := true
-			for _, dvct := range desired.Spec.VolumeClaimTemplates {
-				if dvct.ObjectMeta.Name == vct.ObjectMeta.Name {
-					undesiredClaimExists = false
-					break
-				}
-				}
-			if undesiredClaimExists {
-				vctDrift = true
-			}
-		}
-	} else {
-		vctDrift = true
-		}
-
-	if vctDrift {
+	if !equality.Semantic.DeepEqual(instance.Spec.VolumeClaimTemplates, desired.Spec.VolumeClaimTemplates) {
 		instance.Spec.VolumeClaimTemplates = desired.Spec.VolumeClaimTemplates
+		needsUpdate = true
 	}
 
 	if needsUpdate {
