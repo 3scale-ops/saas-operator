@@ -127,10 +127,6 @@ func (gen *Generator) statefulSet() func() *appsv1.StatefulSet {
 					},
 				},
 				VolumeClaimTemplates: []corev1.PersistentVolumeClaim{{
-					TypeMeta: metav1.TypeMeta{
-						Kind:       "PersistentVolumeClaim",
-						APIVersion: corev1.SchemeGroupVersion.String(),
-					},
 					ObjectMeta: metav1.ObjectMeta{
 						Name: gen.GetComponent() + "-config-rw",
 					},

@@ -72,10 +72,6 @@ func (gen *SphinxGenerator) statefulset() func() *appsv1.StatefulSet {
 					},
 				},
 				VolumeClaimTemplates: []corev1.PersistentVolumeClaim{{
-					TypeMeta: metav1.TypeMeta{
-						Kind:       "PersistentVolumeClaim",
-						APIVersion: corev1.SchemeGroupVersion.String(),
-					},
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "system-sphinx-database",
 					},
