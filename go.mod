@@ -3,7 +3,7 @@ module github.com/3scale/saas-operator
 go 1.18
 
 require (
-	github.com/3scale-ops/marin3r v0.0.0-20221102171130-b886ba8ff1dd
+	github.com/3scale-ops/marin3r v0.0.0-20221110195400-b2830042094b
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/davecgh/go-spew v1.1.1

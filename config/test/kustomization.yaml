@@ -7,6 +7,7 @@ resources:
 - external-apis/podmonitors.monitoring.coreos.com.yaml
 - external-apis/servicemonitors.monitoring.coreos.com.yaml
 - external-apis/externalsecrets.external-secrets.io.yaml
+- github.com/3scale-ops/marin3r/config/crd?ref=v0.11.0
 patches:
   - target:
       group: apps

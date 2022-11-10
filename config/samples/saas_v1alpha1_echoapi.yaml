@@ -4,7 +4,7 @@ metadata:
   name: example
 spec:
   image:
-    tag: latest 
+    tag: latest
   marin3r:
     ports:
       - name: echo-api-http
@@ -13,6 +13,23 @@ spec:
         port: 38443
       - name: envoy-metrics
         port: 9901
+    envoyResources:
+      - name: test
+        testRaw:
+          name: listener1
+          address:
+            socket_address:
+              address: 0.0.0.0
+              port_value: 8443
+          filter_chains:
+            - transport_socket:
+                name: envoy.transport_sockets.tls
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.DownstreamTlsContext
+                  common_tls_context:
+                    tls_certificate_sds_secret_configs:
+                      - name: secret
+                        sds_config: {ads: {}, resource_api_version: "V3"}
   endpoint:
     dns:
       - echoapi.example.com

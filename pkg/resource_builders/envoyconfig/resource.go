@@ -2,10 +2,13 @@ package envoyconfig
 
 import (
 	"fmt"
+	"reflect"
 
 	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
 	"github.com/3scale-ops/marin3r/pkg/envoy"
 	envoy_serializer "github.com/3scale-ops/marin3r/pkg/envoy/serializer"
+	envoy_serializer_v3 "github.com/3scale-ops/marin3r/pkg/envoy/serializer/v3"
+	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	envoy_config_cluster_v3 "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
 	envoy_config_listener_v3 "github.com/envoyproxy/go-control-plane/envoy/config/listener/v3"
 	envoy_config_route_v3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
@@ -16,18 +19,81 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-func New(key types.NamespacedName, nodeID string, resources ...envoy.Resource) (func() *marin3rv1alpha1.EnvoyConfig, error) {
+var generator = envoyResourceFactory{
+	"ListenerHttp_v1":       ListenerHTTP_v1,
+	"Cluster_v1":            Cluster_v1,
+	"RouteConfiguration_v1": RouteConfiguration_v1,
+	"Runtime_v1":            Runtime_v1,
+}
+
+func New(key types.NamespacedName, nodeID string, resources ...saasv1alpha1.EnvoyResource) (func() *marin3rv1alpha1.EnvoyConfig, error) {
+	protos := []envoy.Resource{}
+
+	for _, res := range resources {
+
+		fn, descriptor := inspect(&res)
+		proto, err := generator.newResource(res.Name, fn, descriptor)
+		if err != nil {
+			return nil, err
+		}
+		protos = append(protos, proto)
+	}
+
+	return newFromProtos(key, nodeID, protos)
+}
+
+type envoyResourceDescriptor interface {
+	GetGeneratorVersion() string
+}
+
+type envoyResourceGeneratorFn func(string, envoyResourceDescriptor) (envoy.Resource, error)
+
+type envoyResourceFactory map[string]envoyResourceGeneratorFn
+
+func (erf envoyResourceFactory) newResource(resourceName, functionName string, descriptor envoyResourceDescriptor) (envoy.Resource, error) {
+
+	fn, ok := erf[functionName]
+	if !ok {
+		return nil, fmt.Errorf("unregistered function %s", functionName)
+	}
+
+	resource, err := fn(resourceName, descriptor)
+	if err != nil {
+		return nil, err
+	}
+	return resource, nil
+}
+
+func inspect(v *saasv1alpha1.EnvoyResource) (string, envoyResourceDescriptor) {
+	val := reflect.Indirect(reflect.ValueOf(v))
+	for i := 0; i < val.Type().NumField(); i++ {
+		field := val.Type().Field(i)
+		if field.Name != "Name" {
+			if !val.Field(i).IsNil() {
+				descriptor, ok := val.Field(i).Interface().(envoyResourceDescriptor)
+				if !ok {
+					// this error cannot occur at runtime
+					panic("not an EnvoyResourceDescriptor")
+				}
+				generatorFnName := field.Name + "_" + descriptor.GetGeneratorVersion()
+				return generatorFnName, descriptor
+			}
+		}
+	}
+
+	return "", nil
+}
+
+func newFromProtos(key types.NamespacedName, nodeID string, resources []envoy.Resource) (func() *marin3rv1alpha1.EnvoyConfig, error) {
 
 	clusters := []marin3rv1alpha1.EnvoyResource{}
 	routes := []marin3rv1alpha1.EnvoyResource{}
 	listeners := []marin3rv1alpha1.EnvoyResource{}
 	runtimes := []marin3rv1alpha1.EnvoyResource{}
 
-	s := envoy_serializer.NewResourceMarshaller(envoy_serializer.JSON, envoy.APIv3)
-
 	for i := range resources {
 
-		j, err := s.Marshal(resources[i])
+		j, err := envoy_serializer_v3.JSON{}.Marshal(resources[i])
 		if err != nil {
 			return nil, err
 		}

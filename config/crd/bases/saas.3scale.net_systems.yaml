@@ -133,6 +133,101 @@ spec:
                       envoyImage:
                         description: The Envoy iamge to use
                         type: string
+                      envoyResources:
+                        items:
+                          description: kubebuilder:validation:MinProperties:=2 kubebuilder:validation:MaxProperties:=2
+                          properties:
+                            cluster:
+                              properties:
+                                generatorVersion:
+                                  default: v1
+                                  type: string
+                                host:
+                                  type: string
+                                isHttp2:
+                                  default: false
+                                  type: boolean
+                                port:
+                                  format: int32
+                                  type: integer
+                              required:
+                              - host
+                              - port
+                              type: object
+                            listenerHttp:
+                              properties:
+                                certificateSecretName:
+                                  type: string
+                                defaultHostForHttp10:
+                                  type: string
+                                enableHttp2:
+                                  default: false
+                                  type: boolean
+                                generatorVersion:
+                                  default: v1
+                                  type: string
+                                port:
+                                  format: int32
+                                  type: integer
+                                rateLimitOptions:
+                                  properties:
+                                    domain:
+                                      type: string
+                                    failureModeDeny:
+                                      default: false
+                                      type: boolean
+                                    rateLimitService:
+                                      type: string
+                                    timeout:
+                                      description: A Duration represents the elapsed
+                                        time between two instants as an int64 nanosecond
+                                        count. The representation limits the largest
+                                        representable duration to approximately 290
+                                        years.
+                                      format: int64
+                                      type: integer
+                                  required:
+                                  - domain
+                                  - rateLimitService
+                                  - timeout
+                                  type: object
+                                routeConfigName:
+                                  type: string
+                              required:
+                              - port
+                              - routeConfigName
+                              type: object
+                            name:
+                              type: string
+                            routeConfiguration:
+                              properties:
+                                generatorVersion:
+                                  default: v1
+                                  type: string
+                                virtualHosts:
+                                  items:
+                                    type: object
+                                    x-kubernetes-preserve-unknown-fields: true
+                                  type: array
+                              required:
+                              - virtualHosts
+                              type: object
+                            runtime:
+                              properties:
+                                generatorVersion:
+                                  default: v1
+                                  type: string
+                                listenerNames:
+                                  items:
+                                    type: string
+                                  type: array
+                              required:
+                              - listenerNames
+                              type: object
+                          required:
+                          - name
+                          type: object
+                        type: array
                       extraPodAnnotations:
                         additionalProperties:
                           type: string
@@ -1672,6 +1767,101 @@ spec:
                       envoyImage:
                         description: The Envoy iamge to use
                         type: string
+                      envoyResources:
+                        items:
+                          description: kubebuilder:validation:MinProperties:=2 kubebuilder:validation:MaxProperties:=2
+                          properties:
+                            cluster:
+                              properties:
+                                generatorVersion:
+                                  default: v1
+                                  type: string
+                                host:
+                                  type: string
+                                isHttp2:
+                                  default: false
+                                  type: boolean
+                                port:
+                                  format: int32
+                                  type: integer
+                              required:
+                              - host
+                              - port
+                              type: object
+                            listenerHttp:
+                              properties:
+                                certificateSecretName:
+                                  type: string
+                                defaultHostForHttp10:
+                                  type: string
+                                enableHttp2:
+                                  default: false
+                                  type: boolean
+                                generatorVersion:
+                                  default: v1
+                                  type: string
+                                port:
+                                  format: int32
+                                  type: integer
+                                rateLimitOptions:
+                                  properties:
+                                    domain:
+                                      type: string
+                                    failureModeDeny:
+                                      default: false
+                                      type: boolean
+                                    rateLimitService:
+                                      type: string
+                                    timeout:
+                                      description: A Duration represents the elapsed
+                                        time between two instants as an int64 nanosecond
+                                        count. The representation limits the largest
+                                        representable duration to approximately 290
+                                        years.
+                                      format: int64
+                                      type: integer
+                                  required:
+                                  - domain
+                                  - rateLimitService
+                                  - timeout
+                                  type: object
+                                routeConfigName:
+                                  type: string
+                              required:
+                              - port
+                              - routeConfigName
+                              type: object
+                            name:
+                              type: string
+                            routeConfiguration:
+                              properties:
+                                generatorVersion:
+                                  default: v1
+                                  type: string
+                                virtualHosts:
+                                  items:
+                                    type: object
+                                    x-kubernetes-preserve-unknown-fields: true
+                                  type: array
+                              required:
+                              - virtualHosts
+                              type: object
+                            runtime:
+                              properties:
+                                generatorVersion:
+                                  default: v1
+                                  type: string
+                                listenerNames:
+                                  items:
+                                    type: string
+                                  type: array
+                              required:
+                              - listenerNames
+                              type: object
+                          required:
+                          - name
+                          type: object
+                        type: array
                       extraPodAnnotations:
                         additionalProperties:
                           type: string
@@ -2183,6 +2373,101 @@ spec:
                       envoyImage:
                         description: The Envoy iamge to use
                         type: string
+                      envoyResources:
+                        items:
+                          description: kubebuilder:validation:MinProperties:=2 kubebuilder:validation:MaxProperties:=2
+                          properties:
+                            cluster:
+                              properties:
+                                generatorVersion:
+                                  default: v1
+                                  type: string
+                                host:
+                                  type: string
+                                isHttp2:
+                                  default: false
+                                  type: boolean
+                                port:
+                                  format: int32
+                                  type: integer
+                              required:
+                              - host
+                              - port
+                              type: object
+                            listenerHttp:
+                              properties:
+                                certificateSecretName:
+                                  type: string
+                                defaultHostForHttp10:
+                                  type: string
+                                enableHttp2:
+                                  default: false
+                                  type: boolean
+                                generatorVersion:
+                                  default: v1
+                                  type: string
+                                port:
+                                  format: int32
+                                  type: integer
+                                rateLimitOptions:
+                                  properties:
+                                    domain:
+                                      type: string
+                                    failureModeDeny:
+                                      default: false
+                                      type: boolean
+                                    rateLimitService:
+                                      type: string
+                                    timeout:
+                                      description: A Duration represents the elapsed
+                                        time between two instants as an int64 nanosecond
+                                        count. The representation limits the largest
+                                        representable duration to approximately 290
+                                        years.
+                                      format: int64
+                                      type: integer
+                                  required:
+                                  - domain
+                                  - rateLimitService
+                                  - timeout
+                                  type: object
+                                routeConfigName:
+                                  type: string
+                              required:
+                              - port
+                              - routeConfigName
+                              type: object
+                            name:
+                              type: string
+                            routeConfiguration:
+                              properties:
+                                generatorVersion:
+                                  default: v1
+                                  type: string
+                                virtualHosts:
+                                  items:
+                                    type: object
+                                    x-kubernetes-preserve-unknown-fields: true
+                                  type: array
+                              required:
+                              - virtualHosts
+                              type: object
+                            runtime:
+                              properties:
+                                generatorVersion:
+                                  default: v1
+                                  type: string
+                                listenerNames:
+                                  items:
+                                    type: string
+                                  type: array
+                              required:
+                              - listenerNames
+                              type: object
+                          required:
+                          - name
+                          type: object
+                        type: array
                       extraPodAnnotations:
                         additionalProperties:
                           type: string
@@ -2694,6 +2979,101 @@ spec:
                       envoyImage:
                         description: The Envoy iamge to use
                         type: string
+                      envoyResources:
+                        items:
+                          description: kubebuilder:validation:MinProperties:=2 kubebuilder:validation:MaxProperties:=2
+                          properties:
+                            cluster:
+                              properties:
+                                generatorVersion:
+                                  default: v1
+                                  type: string
+                                host:
+                                  type: string
+                                isHttp2:
+                                  default: false
+                                  type: boolean
+                                port:
+                                  format: int32
+                                  type: integer
+                              required:
+                              - host
+                              - port
+                              type: object
+                            listenerHttp:
+                              properties:
+                                certificateSecretName:
+                                  type: string
+                                defaultHostForHttp10:
+                                  type: string
+                                enableHttp2:
+                                  default: false
+                                  type: boolean
+                                generatorVersion:
+                                  default: v1
+                                  type: string
+                                port:
+                                  format: int32
+                                  type: integer
+                                rateLimitOptions:
+                                  properties:
+                                    domain:
+                                      type: string
+                                    failureModeDeny:
+                                      default: false
+                                      type: boolean
+                                    rateLimitService:
+                                      type: string
+                                    timeout:
+                                      description: A Duration represents the elapsed
+                                        time between two instants as an int64 nanosecond
+                                        count. The representation limits the largest
+                                        representable duration to approximately 290
+                                        years.
+                                      format: int64
+                                      type: integer
+                                  required:
+                                  - domain
+                                  - rateLimitService
+                                  - timeout
+                                  type: object
+                                routeConfigName:
+                                  type: string
+                              required:
+                              - port
+                              - routeConfigName
+                              type: object
+                            name:
+                              type: string
+                            routeConfiguration:
+                              properties:
+                                generatorVersion:
+                                  default: v1
+                                  type: string
+                                virtualHosts:
+                                  items:
+                                    type: object
+                                    x-kubernetes-preserve-unknown-fields: true
+                                  type: array
+                              required:
+                              - virtualHosts
+                              type: object
+                            runtime:
+                              properties:
+                                generatorVersion:
+                                  default: v1
+                                  type: string
+                                listenerNames:
+                                  items:
+                                    type: string
+                                  type: array
+                              required:
+                              - listenerNames
+                              type: object
+                          required:
+                          - name
+                          type: object
+                        type: array
                       extraPodAnnotations:
                         additionalProperties:
                           type: string
