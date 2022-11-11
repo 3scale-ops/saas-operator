@@ -421,6 +421,18 @@ Canary allows the definition of a canary Deployment
 |===
 
 
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-cluster"]
+==== Cluster 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoyresource[$$EnvoyResource$$]
+****
+
+
+
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-cronspec"]
 ==== CronSpec 
 
@@ -508,6 +520,29 @@ Endpoint sets the external endpoint for the component
 | Field | Description
 | *`dns`* __string array__ | The list of dns records that will point to the component
 |===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoyresource"]
+==== EnvoyResource 
+
+kubebuilder:validation:MinProperties:=2 kubebuilder:validation:MaxProperties:=2
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`name`* __string__ | 
+| *`listenerHttp`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerhttp[$$ListenerHttp$$]__ | 
+| *`routeConfiguration`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-routeconfiguration[$$RouteConfiguration$$]__ | 
+| *`cluster`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-cluster[$$Cluster$$]__ | 
+| *`runtime`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-runtime[$$Runtime$$]__ | 
+|===
+
+
 
 
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-externalsecret"]
@@ -675,6 +710,18 @@ ListenerConfig configures app behavior for Backend Listener
 |===
 
 
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerhttp"]
+==== ListenerHttp 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoyresource[$$EnvoyResource$$]
+****
+
+
+
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec"]
 ==== ListenerSpec 
 
@@ -823,6 +870,7 @@ Marin3rSidecarSpec defines the marin3r sidecar for the component
 | *`shtdnmgrPort`* __integer__ | The port where Marin3r's shutdown manager listens
 | *`shtdnmgrExtraLifecycleHooks`* __string array__ | Extra containers to sync with the shutdown manager upon pod termination
 | *`extraPodAnnotations`* __object (keys:string, values:string)__ | Extra annotations to pass the Pod to further configure the sidecar container.
+| *`envoyResources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoyresource[$$EnvoyResource$$] array__ | 
 |===
 
 
@@ -954,6 +1002,8 @@ QueSpec is the configuration for Zync que
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 |===
+
+
 
 
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redhatcustomerportalspec"]
@@ -1107,6 +1157,30 @@ ResourceRequirementsSpec defines the resource requirements for the component
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsphinxspec[$$SystemSphinxSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyspec[$$TwemproxySpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
+****
+
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-routeconfiguration"]
+==== RouteConfiguration 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoyresource[$$EnvoyResource$$]
+****
+
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-runtime"]
+==== Runtime 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoyresource[$$EnvoyResource$$]
 ****
 
 
