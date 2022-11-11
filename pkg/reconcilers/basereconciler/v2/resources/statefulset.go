@@ -181,6 +181,14 @@ func (sts StatefulSetTemplate) ResourceReconciler(ctx context.Context, cl client
 	}
 
 	/* Reconcile the Template Spec */
+
+	if desired.Spec.Template.Spec.SchedulerName == "" {
+		desired.Spec.Template.Spec.SchedulerName = instance.Spec.Template.Spec.SchedulerName
+	}
+	if desired.Spec.Template.Spec.DNSPolicy == "" {
+		desired.Spec.Template.Spec.DNSPolicy = instance.Spec.Template.Spec.DNSPolicy
+	}
+
 	if !equality.Semantic.DeepEqual(instance.Spec.Template.Spec, desired.Spec.Template.Spec) {
 		logger.Info("Resource update required due differences in Spec.Template.Spec.")
 		logger.V(1).Info(
