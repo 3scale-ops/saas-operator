@@ -67,8 +67,11 @@ func (gen *SphinxGenerator) statefulset() func() *appsv1.StatefulSet {
 								}},
 							},
 						},
-						Affinity:    pod.Affinity(gen.GetSelector(), gen.Spec.NodeAffinity),
-						Tolerations: gen.Spec.Tolerations,
+						Affinity:                      pod.Affinity(gen.GetSelector(), gen.Spec.NodeAffinity),
+						RestartPolicy:                 corev1.RestartPolicyAlways,
+						SecurityContext:               &corev1.PodSecurityContext{},
+						Tolerations:                   gen.Spec.Tolerations,
+						TerminationGracePeriodSeconds: pointer.Int64(30),
 					},
 				},
 				VolumeClaimTemplates: []corev1.PersistentVolumeClaim{{
