@@ -42,16 +42,24 @@ func workloadResources(workload DeploymentWorkload) []basereconciler.Resource {
 
 	dep := NewDeploymentTemplate(workload.Deployment()).ApplyMeta(workload)
 
-	// if workload implements TrafficManager add the TrafficSelector
-	if workloadWithTraffic, ok := workload.(WithTraffic); ok {
-		dep = dep.ApplyTrafficSelector(workloadWithTraffic)
+	// if workload implements WithTraffic add the TrafficSelector
+	if w, ok := workload.(WithTraffic); ok {
+		dep = dep.ApplyTrafficSelector(w)
 	}
 
 	hpa := NewHorizontalPodAutoscalerTemplateFromSpec(*workload.HPASpec()).ApplyMeta(workload)
 	pdb := NewPodDisruptionBudgetTemplateFromSpec(*workload.PDBSpec()).ApplyMeta(workload)
 	pm := NewPodMonitorTemplateFromEndpoints(workload.MonitoredEndpoints()...).ApplyMeta(workload)
 
-	return []basereconciler.Resource{dep, hpa, pdb, pm}
+	resources := []basereconciler.Resource{dep, hpa, pdb, pm}
+
+	// if workload implements WithEnvoySidecar add the EnvoyConfig
+	if w, ok := workload.(WithEnvoySidecar); ok {
+		resources = append(resources,
+			NewEnvoyConfigTemplateFromEnvoyResources(w.EnvoyDynamicConfigurations()).ApplyMeta(w).SetNodeID(w))
+	}
+
+	return resources
 }
 
 func unwrapNil(w DeploymentWorkload) DeploymentWorkload {
