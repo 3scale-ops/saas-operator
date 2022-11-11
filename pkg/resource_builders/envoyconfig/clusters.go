@@ -14,11 +14,11 @@ import (
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
-func Cluster_v1(name string, desc envoyResourceDescriptor) (envoy.Resource, error) {
+func Cluster_v1(desc envoyDynamicConfigDescriptor) (envoy.Resource, error) {
 	opts := desc.(*saasv1alpha1.Cluster)
 
 	cluster := &envoy_config_cluster_v3.Cluster{
-		Name:           name,
+		Name:           desc.GetName(),
 		ConnectTimeout: durationpb.New(1 * time.Second),
 		ClusterDiscoveryType: &envoy_config_cluster_v3.Cluster_Type{
 			Type: envoy_config_cluster_v3.Cluster_STRICT_DNS,
@@ -26,7 +26,7 @@ func Cluster_v1(name string, desc envoyResourceDescriptor) (envoy.Resource, erro
 		DnsLookupFamily: envoy_config_cluster_v3.Cluster_V4_ONLY,
 		LbPolicy:        envoy_config_cluster_v3.Cluster_ROUND_ROBIN,
 		LoadAssignment: &envoy_config_endpoint_v3.ClusterLoadAssignment{
-			ClusterName: name,
+			ClusterName: desc.GetName(),
 			Endpoints: []*envoy_config_endpoint_v3.LocalityLbEndpoints{
 				{
 					LbEndpoints: []*envoy_config_endpoint_v3.LbEndpoint{

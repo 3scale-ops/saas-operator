@@ -8,11 +8,11 @@ import (
 	envoy_config_route_v3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 )
 
-func RouteConfiguration_v1(name string, desc envoyResourceDescriptor) (envoy.Resource, error) {
+func RouteConfiguration_v1(desc envoyDynamicConfigDescriptor) (envoy.Resource, error) {
 	opts := desc.(*saasv1alpha1.RouteConfiguration)
 
 	rc := &envoy_config_route_v3.RouteConfiguration{
-		Name:         name,
+		Name:         desc.GetName(),
 		VirtualHosts: []*envoy_config_route_v3.VirtualHost{},
 	}
 

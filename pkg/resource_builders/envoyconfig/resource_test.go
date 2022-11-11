@@ -28,7 +28,7 @@ func TestNew(t *testing.T) {
 	type args struct {
 		key       types.NamespacedName
 		nodeID    string
-		resources []saasv1alpha1.EnvoyResource
+		resources []saasv1alpha1.EnvoyDynamicConfig
 	}
 	tests := []struct {
 		name    string
@@ -41,11 +41,11 @@ func TestNew(t *testing.T) {
 			args: args{
 				key:    types.NamespacedName{Name: "test", Namespace: "default"},
 				nodeID: "test",
-				resources: []saasv1alpha1.EnvoyResource{
+				resources: []saasv1alpha1.EnvoyDynamicConfig{
 					{
-						Name: "my_cluster",
 						Cluster: &saasv1alpha1.Cluster{
-							EnvoyResourceGeneratorMeta: saasv1alpha1.EnvoyResourceGeneratorMeta{
+							EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
+								Name:             "my_cluster",
 								GeneratorVersion: pointer.String("v1"),
 							},
 							Host:    "localhost",
@@ -54,9 +54,9 @@ func TestNew(t *testing.T) {
 						},
 					},
 					{
-						Name: "my_listener",
 						ListenerHttp: &saasv1alpha1.ListenerHttp{
-							EnvoyResourceGeneratorMeta: saasv1alpha1.EnvoyResourceGeneratorMeta{
+							EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
+								Name:             "my_listener",
 								GeneratorVersion: pointer.String("v1"),
 							}, Port: 0,
 							RouteConfigName: "routeconfig",
@@ -161,13 +161,12 @@ func TestNew(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := New(tt.args.key, tt.args.nodeID, tt.args.resources...)
+			got, err := New(tt.args.key, tt.args.nodeID, tt.args.resources...)()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("New() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			ec := got()
-			if diff := deep.Equal(ec, tt.want); len(diff) > 0 {
+			if diff := deep.Equal(got, tt.want); len(diff) > 0 {
 				t.Errorf("New() = got diff %v", diff)
 			}
 		})
@@ -286,12 +285,11 @@ func Test_newFromProtos(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fn, err := newFromProtos(tt.args.key, tt.args.nodeID, tt.args.resources)
+			got, err := newFromProtos(tt.args.key, tt.args.nodeID, tt.args.resources)()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("newFromProtos() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			got := fn()
 			if diff := deep.Equal(got, tt.want); len(diff) > 0 {
 				t.Errorf("newFromProtos() = diff %v", diff)
 			}
@@ -301,7 +299,7 @@ func Test_newFromProtos(t *testing.T) {
 
 func Test_inspect(t *testing.T) {
 	type args struct {
-		v *saasv1alpha1.EnvoyResource
+		v *saasv1alpha1.EnvoyDynamicConfig
 	}
 	tests := []struct {
 		name  string
@@ -312,10 +310,10 @@ func Test_inspect(t *testing.T) {
 		{
 			name: "",
 			args: args{
-				v: &saasv1alpha1.EnvoyResource{
-					Name: "test",
+				v: &saasv1alpha1.EnvoyDynamicConfig{
 					ListenerHttp: &saasv1alpha1.ListenerHttp{
-						EnvoyResourceGeneratorMeta: saasv1alpha1.EnvoyResourceGeneratorMeta{
+						EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
+							Name:             "test",
 							GeneratorVersion: pointer.String("v1"),
 						},
 					},
@@ -323,7 +321,8 @@ func Test_inspect(t *testing.T) {
 			},
 			want: "ListenerHttp_v1",
 			want1: &saasv1alpha1.ListenerHttp{
-				EnvoyResourceGeneratorMeta: saasv1alpha1.EnvoyResourceGeneratorMeta{
+				EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
+					Name:             "test",
 					GeneratorVersion: pointer.String("v1"),
 				},
 			},
@@ -345,11 +344,11 @@ func Test_envoyResourceFactory_newResource(t *testing.T) {
 	type args struct {
 		resourceName string
 		functionName string
-		descriptor   envoyResourceDescriptor
+		descriptor   envoyDynamicConfigDescriptor
 	}
 	tests := []struct {
 		name    string
-		erf     envoyResourceFactory
+		erf     envoyDynamicConfigFactory
 		args    args
 		want    envoy.Resource
 		wantErr bool
@@ -358,10 +357,10 @@ func Test_envoyResourceFactory_newResource(t *testing.T) {
 			name: "Generates a resource proto",
 			erf:  generator,
 			args: args{
-				resourceName: "test",
 				functionName: "Runtime_v1",
 				descriptor: &saasv1alpha1.Runtime{
-					ListenerNames: []string{"http", "https"},
+					EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{Name: "test"},
+					ListenerNames:          []string{"http", "https"},
 				},
 			},
 			want: func() envoy.Resource {
@@ -403,7 +402,7 @@ func Test_envoyResourceFactory_newResource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.erf.newResource(tt.args.resourceName, tt.args.functionName, tt.args.descriptor)
+			got, err := tt.erf.newResource(tt.args.functionName, tt.args.descriptor)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("envoyResourceFactory.newResource() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -198,6 +198,9 @@ var _ workloads.DeploymentWorkload = &ListenerGenerator{}
 // Validate that ListenerGenerator implements workloads.WithTraffic interface
 var _ workloads.WithTraffic = &ListenerGenerator{}
 
+// Validate that ListenerGenerator implements workloads.WithEnvoySidecar interface
+var _ workloads.WithEnvoySidecar = &ListenerGenerator{}
+
 func (gen *ListenerGenerator) Labels() map[string]string {
 	return gen.GetLabels()
 }
@@ -244,6 +247,9 @@ func (gen *ListenerGenerator) TrafficSelector() map[string]string {
 		// by the same generator so traffic can be sent to all of them at the same time
 		fmt.Sprintf("%s/traffic", saasv1alpha1.GroupVersion.Group): fmt.Sprintf("%s-%s", component, listener),
 	}
+}
+func (gen *ListenerGenerator) EnvoyDynamicConfigurations() []saasv1alpha1.EnvoyDynamicConfig {
+	return gen.ListenerSpec.Marin3r.EnvoyResources
 }
 
 // WorkerGenerator has methods to generate resources for a

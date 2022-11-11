@@ -20,11 +20,11 @@ import (
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
-func ListenerHTTP_v1(name string, desc envoyResourceDescriptor) (envoy.Resource, error) {
+func ListenerHTTP_v1(desc envoyDynamicConfigDescriptor) (envoy.Resource, error) {
 	opts := desc.(*saasv1alpha1.ListenerHttp)
 
 	listener := &envoy_config_listener_v3.Listener{
-		Name:            name,
+		Name:            desc.GetName(),
 		Address:         Address_v1("0.0.0.0", opts.Port),
 		ListenerFilters: ListenerFilters_v1(opts.CertificateSecretName != nil),
 		FilterChains: []*envoy_config_listener_v3.FilterChain{{
@@ -34,7 +34,7 @@ func ListenerHTTP_v1(name string, desc envoyResourceDescriptor) (envoy.Resource,
 					TypedConfig: func() *anypb.Any {
 						any, err := anypb.New(
 							&http_connection_manager_v3.HttpConnectionManager{
-								AccessLog: AccessLogConfig_v1(name, opts.CertificateSecretName != nil),
+								AccessLog: AccessLogConfig_v1(desc.GetName(), opts.CertificateSecretName != nil),
 								CommonHttpProtocolOptions: &envoy_config_core_v3.HttpProtocolOptions{
 									IdleTimeout:           durationpb.New(3600 * time.Second),
 									MaxConnectionDuration: durationpb.New(900 * time.Second),
@@ -59,7 +59,7 @@ func ListenerHTTP_v1(name string, desc envoyResourceDescriptor) (envoy.Resource,
 								},
 								RequestTimeout:    durationpb.New(300 * time.Second),
 								RouteSpecifier:    RouteConfigFromAds_v1(opts.RouteConfigName),
-								StatPrefix:        name,
+								StatPrefix:        desc.GetName(),
 								StreamIdleTimeout: durationpb.New(300 * time.Second),
 								UseRemoteAddress:  wrapperspb.Bool(true),
 							})

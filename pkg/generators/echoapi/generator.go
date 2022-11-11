@@ -28,6 +28,9 @@ var _ workloads.DeploymentWorkload = &Generator{}
 // Validate that Generator implements workloads.WithTraffic interface
 var _ workloads.WithTraffic = &Generator{}
 
+// Validate that Generator implements workloads.WithEnvoySidecar interface
+var _ workloads.WithEnvoySidecar = &Generator{}
+
 // NewGenerator returns a new Options struct
 func NewGenerator(instance, namespace string, spec saasv1alpha1.EchoAPISpec) Generator {
 	return Generator{
@@ -57,9 +60,6 @@ func (gen *Generator) TrafficSelector() map[string]string {
 	}
 }
 
-// Validate that Generator implements workloads.DeploymentWorkload interface
-var _ workloads.DeploymentWorkload = &Generator{}
-
 func (gen *Generator) Deployment() basereconciler_resources.DeploymentTemplate {
 	return basereconciler_resources.DeploymentTemplate{
 		Template:        gen.deployment(),
@@ -80,4 +80,8 @@ func (gen *Generator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint {
 	return []monitoringv1.PodMetricsEndpoint{
 		podmonitor.PodMetricsEndpoint("/stats/prometheus", "envoy-metrics", 60),
 	}
+}
+
+func (gen *Generator) EnvoyDynamicConfigurations() []saasv1alpha1.EnvoyDynamicConfig {
+	return gen.Spec.Marin3r.EnvoyResources
 }

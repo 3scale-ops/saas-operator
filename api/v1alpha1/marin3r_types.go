@@ -54,7 +54,7 @@ type Marin3rSidecarSpec struct {
 	ExtraPodAnnotations map[string]string `json:"extraPodAnnotations,omitempty"`
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	EnvoyResources []EnvoyResource `json:"envoyResources,omitempty"`
+	EnvoyResources []EnvoyDynamicConfig `json:"envoyResources,omitempty"`
 }
 
 type defaultMarin3rSidecarSpec struct {
@@ -104,11 +104,9 @@ func InitializeMarin3rSidecarSpec(spec *Marin3rSidecarSpec, def defaultMarin3rSi
 	return spec
 }
 
-// kubebuilder:validation:MinProperties:=2
-// kubebuilder:validation:MaxProperties:=2
-type EnvoyResource struct {
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	Name string `json:"name"`
+// +kubebuilder:validation:MinProperties:=1
+// +kubebuilder:validation:MaxProperties:=1
+type EnvoyDynamicConfig struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	ListenerHttp *ListenerHttp `json:"listenerHttp,omitempty"`
@@ -123,19 +121,25 @@ type EnvoyResource struct {
 	Runtime *Runtime `json:"runtime,omitempty"`
 }
 
-type EnvoyResourceGeneratorMeta struct {
+type EnvoyDynamicConfigMeta struct {
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	Name string `json:"name"`
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +kubebuilder:default:=v1
 	// +optional
 	GeneratorVersion *string `json:"generatorVersion,omitempty"`
 }
 
-func (meta *EnvoyResourceGeneratorMeta) GetGeneratorVersion() string {
+func (meta *EnvoyDynamicConfigMeta) GetName() string {
+	return meta.Name
+}
+
+func (meta *EnvoyDynamicConfigMeta) GetGeneratorVersion() string {
 	return *meta.GeneratorVersion
 }
 
 type ListenerHttp struct {
-	EnvoyResourceGeneratorMeta `json:",inline"`
+	EnvoyDynamicConfigMeta `json:",inline"`
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Port uint32 `json:"port"`
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
@@ -169,7 +173,7 @@ type RateLimitOptions struct {
 }
 
 type Cluster struct {
-	EnvoyResourceGeneratorMeta `json:",inline"`
+	EnvoyDynamicConfigMeta `json:",inline"`
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Host string `json:"host"`
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
@@ -181,13 +185,13 @@ type Cluster struct {
 }
 
 type RouteConfiguration struct {
-	EnvoyResourceGeneratorMeta `json:",inline"`
+	EnvoyDynamicConfigMeta `json:",inline"`
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	VirtualHosts []runtime.RawExtension `json:"virtualHosts"`
 }
 
 type Runtime struct {
-	EnvoyResourceGeneratorMeta `json:",inline"`
+	EnvoyDynamicConfigMeta `json:",inline"`
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	ListenerNames []string `json:"listenerNames"`
 }

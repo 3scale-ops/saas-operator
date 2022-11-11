@@ -147,7 +147,8 @@ spec:
                     type: string
                   envoyResources:
                     items:
-                      description: kubebuilder:validation:MinProperties:=2 kubebuilder:validation:MaxProperties:=2
+                      maxProperties: 1
+                      minProperties: 1
                       properties:
                         cluster:
                           properties:
@@ -159,11 +160,14 @@ spec:
                             isHttp2:
                               default: false
                               type: boolean
+                            name:
+                              type: string
                             port:
                               format: int32
                               type: integer
                           required:
                           - host
+                          - name
                           - port
                           type: object
                         listenerHttp:
@@ -177,6 +181,8 @@ spec:
                               type: boolean
                             generatorVersion:
                               default: v1
+                              type: string
+                            name:
                               type: string
                             port:
                               format: int32
@@ -205,15 +211,16 @@ spec:
                             routeConfigName:
                               type: string
                           required:
+                          - name
                           - port
                           - routeConfigName
                           type: object
-                        name:
-                          type: string
                         routeConfiguration:
                           properties:
                             generatorVersion:
                               default: v1
+                              type: string
+                            name:
                               type: string
                             virtualHosts:
                               items:
@@ -221,6 +228,7 @@ spec:
                                 x-kubernetes-preserve-unknown-fields: true
                               type: array
                           required:
+                          - name
                           - virtualHosts
                           type: object
                         runtime:
@@ -232,11 +240,12 @@ spec:
                               items:
                                 type: string
                               type: array
+                            name:
+                              type: string
                           required:
                           - listenerNames
+                          - name
                           type: object
-                      required:
-                      - name
                       type: object
                     type: array
                   extraPodAnnotations:

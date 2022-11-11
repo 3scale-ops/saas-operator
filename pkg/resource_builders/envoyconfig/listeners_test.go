@@ -13,7 +13,6 @@ import (
 
 func TestListenerHTTP_v1(t *testing.T) {
 	type args struct {
-		name string
 		opts *saasv1alpha1.ListenerHttp
 	}
 	tests := []struct {
@@ -24,11 +23,11 @@ func TestListenerHTTP_v1(t *testing.T) {
 		{
 			name: "Generates https listener",
 			args: args{
-				name: "test",
 				opts: &saasv1alpha1.ListenerHttp{
-					Port:                  8080,
-					RouteConfigName:       "my_route",
-					CertificateSecretName: pointer.String("my_certificate"),
+					EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{Name: "test"},
+					Port:                   8080,
+					RouteConfigName:        "my_route",
+					CertificateSecretName:  pointer.String("my_certificate"),
 					RateLimitOptions: &saasv1alpha1.RateLimitOptions{
 						Domain:           "test_domain",
 						FailureModeDeny:  pointer.Bool(true),
@@ -131,10 +130,10 @@ func TestListenerHTTP_v1(t *testing.T) {
 		{
 			name: "Generates http listener",
 			args: args{
-				name: "test",
 				opts: &saasv1alpha1.ListenerHttp{
-					Port:            8080,
-					RouteConfigName: "my_route",
+					EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{Name: "test"},
+					Port:                   8080,
+					RouteConfigName:        "my_route",
 					RateLimitOptions: &saasv1alpha1.RateLimitOptions{
 						Domain:           "test_domain",
 						FailureModeDeny:  pointer.Bool(false),
@@ -219,7 +218,7 @@ func TestListenerHTTP_v1(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, _ := ListenerHTTP_v1(tt.args.name, tt.args.opts)
+			got, _ := ListenerHTTP_v1(tt.args.opts)
 			j, err := envoy_serializer_v3.JSON{}.Marshal(got)
 			if err != nil {
 				t.Error(err)

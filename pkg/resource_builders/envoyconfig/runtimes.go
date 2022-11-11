@@ -7,7 +7,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
-func Runtime_v1(name string, desc envoyResourceDescriptor) (envoy.Resource, error) {
+func Runtime_v1(desc envoyDynamicConfigDescriptor) (envoy.Resource, error) {
 	opts := desc.(*saasv1alpha1.Runtime)
 
 	layer, _ := structpb.NewStruct(map[string]interface{}{
@@ -30,7 +30,7 @@ func Runtime_v1(name string, desc envoyResourceDescriptor) (envoy.Resource, erro
 	})
 
 	return &envoy_service_runtime_v3.Runtime{
-		Name:  name,
+		Name:  desc.GetName(),
 		Layer: layer,
 	}, nil
 }

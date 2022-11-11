@@ -12,7 +12,6 @@ import (
 
 func TestCluster_v1(t *testing.T) {
 	type args struct {
-		name string
 		opts *saasv1alpha1.Cluster
 	}
 	tests := []struct {
@@ -23,11 +22,11 @@ func TestCluster_v1(t *testing.T) {
 		{
 			name: "Generates http 1.1 cluster",
 			args: args{
-				name: "my_cluster",
 				opts: &saasv1alpha1.Cluster{
-					Host:    "localhost",
-					Port:    8080,
-					IsHttp2: pointer.Bool(false),
+					EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{Name: "my_cluster"},
+					Host:                   "localhost",
+					Port:                   8080,
+					IsHttp2:                pointer.Bool(false),
 				},
 			},
 			want: heredoc.Doc(`
@@ -49,11 +48,11 @@ func TestCluster_v1(t *testing.T) {
 		{
 			name: "Generates http 1.1 cluster",
 			args: args{
-				name: "my_cluster",
 				opts: &saasv1alpha1.Cluster{
-					Host:    "localhost",
-					Port:    8080,
-					IsHttp2: pointer.Bool(true),
+					EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{Name: "my_cluster"},
+					Host:                   "localhost",
+					Port:                   8080,
+					IsHttp2:                pointer.Bool(true),
 				},
 			},
 			want: heredoc.Doc(`
@@ -82,7 +81,7 @@ func TestCluster_v1(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, _ := Cluster_v1(tt.args.name, tt.args.opts)
+			got, _ := Cluster_v1(tt.args.opts)
 			j, err := envoy_serializer_v3.JSON{}.Marshal(got)
 			if err != nil {
 				t.Error(err)

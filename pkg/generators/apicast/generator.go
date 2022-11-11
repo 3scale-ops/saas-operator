@@ -165,6 +165,9 @@ var _ workloads.DeploymentWorkload = &EnvGenerator{}
 // Validate that EnvGenerator implements workloads.WithTraffic interface
 var _ workloads.WithTraffic = &EnvGenerator{}
 
+// Validate that EnvGenerator implements workloads.WithEnvoySidecar interface
+var _ workloads.WithEnvoySidecar = &EnvGenerator{}
+
 func (gen *EnvGenerator) Labels() map[string]string {
 	return gen.GetLabels()
 }
@@ -202,4 +205,7 @@ func (gen *EnvGenerator) TrafficSelector() map[string]string {
 		// by the same generator so traffic can be sent to all of them at the same time
 		fmt.Sprintf("%s/traffic", saasv1alpha1.GroupVersion.Group): gen.GetComponent(),
 	}
+}
+func (gen *EnvGenerator) EnvoyDynamicConfigurations() []saasv1alpha1.EnvoyDynamicConfig {
+	return gen.Spec.Marin3r.EnvoyResources
 }

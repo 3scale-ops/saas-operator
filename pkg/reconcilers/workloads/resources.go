@@ -247,7 +247,7 @@ func NewEnvoyConfigTemplate(t basereconciler_resources.EnvoyConfigTemplate) Envo
 	return EnvoyConfigTemplate{EnvoyConfigTemplate: t}
 }
 
-func NewEnvoyConfigTemplateFromEnvoyResources(eres []saasv1alpha1.EnvoyResource) EnvoyConfigTemplate {
+func NewEnvoyConfigTemplateFromEnvoyResources(eres []saasv1alpha1.EnvoyDynamicConfig) EnvoyConfigTemplate {
 	return NewEnvoyConfigTemplate(basereconciler_resources.EnvoyConfigTemplate{
 		Template:  envoyconfig.New(EmptyKey, EmptyKey.Name, eres...),
 		IsEnabled: len(eres) > 0,
