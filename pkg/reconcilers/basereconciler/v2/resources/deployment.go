@@ -2,12 +2,17 @@ package resources
 
 import (
 	"context"
+	"fmt"
 
 	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
+	"github.com/3scale/saas-operator/pkg/util"
+	"github.com/go-test/deep"
 	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 var (
@@ -59,6 +64,159 @@ func (dt DeploymentTemplate) Build(ctx context.Context, cl client.Client) (clien
 
 func (dt DeploymentTemplate) Enabled() bool {
 	return dt.IsEnabled
+}
+
+func (dep DeploymentTemplate) ResourceReconciler(ctx context.Context, cl client.Client, obj client.Object) error {
+	logger := log.FromContext(ctx,
+		"ResourceReconciler", "Deployment",
+		"Resource", obj.GetName(),
+	)
+
+	needsUpdate := false
+	desired := obj.(*appsv1.Deployment)
+
+	instance := &appsv1.Deployment{}
+	err := cl.Get(ctx, types.NamespacedName{Name: desired.GetName(), Namespace: desired.GetNamespace()}, instance)
+	if err != nil {
+		if errors.IsNotFound(err) {
+
+			if dep.Enabled() {
+				err = cl.Create(ctx, desired)
+				if err != nil {
+					return fmt.Errorf("unable to create object: " + err.Error())
+				}
+				logger.Info("Resource created")
+				return nil
+
+			} else {
+				return nil
+			}
+		}
+
+		return err
+	}
+
+	/* Delete and return if not enabled */
+	if !dep.Enabled() {
+		err := cl.Delete(ctx, instance)
+		if err != nil {
+			return fmt.Errorf("unable to delete object: " + err.Error())
+		}
+		logger.Info("Resource deleted")
+		return nil
+	}
+
+	/* Reconcile metadata */
+
+	desired.ObjectMeta.Annotations = util.MergeMaps(
+		map[string]string{},
+		desired.GetAnnotations(),
+		map[string]string{"deployment.kubernetes.io/revision": instance.GetAnnotations()["deployment.kubernetes.io/revision"]},
+	)
+
+	if !equality.Semantic.DeepEqual(instance.GetAnnotations(), desired.GetAnnotations()) {
+		logger.Info("Resource update required due differences in Annotations.")
+		logger.V(1).Info(
+			fmt.Sprintf("Annotations differences: %s",
+				deep.Equal(instance.GetAnnotations(), desired.GetAnnotations())),
+		)
+		instance.ObjectMeta.Annotations = desired.GetAnnotations()
+		needsUpdate = true
+	}
+	if !equality.Semantic.DeepEqual(instance.GetLabels(), desired.GetLabels()) {
+		logger.Info("Resource update required due differences in Labels.")
+		logger.V(1).Info(
+			fmt.Sprintf("Labels differences: %s",
+				deep.Equal(instance.GetLabels(), desired.GetLabels())),
+		)
+		instance.ObjectMeta.Labels = desired.GetLabels()
+		needsUpdate = true
+	}
+
+	/* Reconcile the MinReadySeconds */
+	if !equality.Semantic.DeepEqual(instance.Spec.MinReadySeconds, desired.Spec.MinReadySeconds) {
+		logger.Info("Resource update required due differences in Spec.MinReadySeconds.")
+		logger.V(1).Info(
+			fmt.Sprintf("Spec.MinReadySeconds differences: %s",
+				deep.Equal(instance.Spec.MinReadySeconds, desired.Spec.MinReadySeconds)),
+		)
+		instance.Spec.MinReadySeconds = desired.Spec.MinReadySeconds
+		needsUpdate = true
+	}
+
+	/* Reconcile the Replicas */
+	if !equality.Semantic.DeepEqual(instance.Spec.Replicas, desired.Spec.Replicas) {
+		logger.Info("Resource update required due differences in Spec.Replicas.")
+		logger.V(1).Info(
+			fmt.Sprintf("Spec.Replicas differences: %s",
+				deep.Equal(instance.Spec.Replicas, desired.Spec.Replicas)),
+		)
+		instance.Spec.Replicas = desired.Spec.Replicas
+		needsUpdate = true
+	}
+
+	/* Reconcile the Selector */
+	if !equality.Semantic.DeepEqual(instance.Spec.Selector, desired.Spec.Selector) {
+		logger.Info("Resource update required due differences in Spec.Selector.")
+		logger.V(1).Info(
+			fmt.Sprintf("Spec.Selector differences: %s",
+				deep.Equal(instance.Spec.Selector, desired.Spec.Selector)),
+		)
+		instance.Spec.Selector = desired.Spec.Selector
+		needsUpdate = true
+	}
+
+	/* Reconcile the Strategy */
+	if !equality.Semantic.DeepEqual(instance.Spec.Strategy, desired.Spec.Strategy) {
+		logger.Info("Resource update required due differences in Spec.Strategy.")
+		logger.V(1).Info(
+			fmt.Sprintf("Spec.Strategy differences: %s",
+				deep.Equal(instance.Spec.Strategy, desired.Spec.Strategy)),
+		)
+		instance.Spec.Strategy = desired.Spec.Strategy
+		needsUpdate = true
+	}
+
+	/* Reconcile the Template Labels */
+	if !equality.Semantic.DeepEqual(
+		instance.Spec.Template.ObjectMeta.Labels, desired.Spec.Template.ObjectMeta.Labels) {
+		logger.Info("Resource update required due differences in Spec.Template.ObjectMeta.Labels.")
+		logger.V(1).Info(
+			fmt.Sprintf("Spec.Template.ObjectMeta.Labels differences: %s",
+				deep.Equal(instance.Spec.Template.ObjectMeta.Labels, desired.Spec.Template.ObjectMeta.Labels)),
+		)
+		instance.Spec.Template.ObjectMeta.Labels = desired.Spec.Template.ObjectMeta.Labels
+		needsUpdate = true
+	}
+
+	/* Inherit some values usually defaulted by the cluster if not defined on the template */
+	if desired.Spec.Template.Spec.DNSPolicy == "" {
+		desired.Spec.Template.Spec.DNSPolicy = instance.Spec.Template.Spec.DNSPolicy
+	}
+	if desired.Spec.Template.Spec.SchedulerName == "" {
+		desired.Spec.Template.Spec.SchedulerName = instance.Spec.Template.Spec.SchedulerName
+	}
+
+	/* Reconcile the Template Spec */
+	if !equality.Semantic.DeepEqual(instance.Spec.Template.Spec, desired.Spec.Template.Spec) {
+		logger.Info("Resource update required due differences in Spec.Template.Spec.")
+		logger.V(1).Info(
+			fmt.Sprintf("Spec.Template.Spec differences: %s",
+				deep.Equal(instance.Spec.Template.Spec, desired.Spec.Template.Spec)),
+		)
+		instance.Spec.Template.Spec = desired.Spec.Template.Spec
+		needsUpdate = true
+	}
+
+	if needsUpdate {
+		err := cl.Update(ctx, instance)
+		if err != nil {
+			return err
+		}
+		logger.Info("Resource updated")
+	}
+
+	return nil
 }
 
 // reconcileDeploymentReplicas reconciles the number of replicas of a Deployment
