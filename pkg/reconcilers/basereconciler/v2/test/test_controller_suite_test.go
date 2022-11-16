@@ -259,11 +259,6 @@ var _ = Describe("Test controller", func() {
 				return false
 			}, timeout, poll).Should(BeTrue())
 
-			// All owned resources should have been deleted
-			Expect(k8sClient.Get(context.Background(),
-				types.NamespacedName{Name: "deployment", Namespace: namespace}, &appsv1.Deployment{})).To(HaveOccurred())
-			Expect(k8sClient.Get(context.Background(),
-				types.NamespacedName{Name: "external-secret", Namespace: namespace}, &externalsecretsv1beta1.ExternalSecret{})).To(HaveOccurred())
 		})
 
 		It("updates service annotations", func() {
