@@ -20,53 +20,45 @@ import (
 )
 
 var generator = envoyDynamicConfigFactory{
-	"ListenerHttp_v1":       ListenerHTTP_v1,
-	"Cluster_v1":            Cluster_v1,
-	"RouteConfiguration_v1": RouteConfiguration_v1,
-	"Runtime_v1":            Runtime_v1,
-}
-
-func New(key types.NamespacedName, nodeID string, resources ...saasv1alpha1.EnvoyDynamicConfig) func() (*marin3rv1alpha1.EnvoyConfig, error) {
-
-	return func() (*marin3rv1alpha1.EnvoyConfig, error) {
-		protos := []envoy.Resource{}
-
-		for _, res := range resources {
-
-			fn, descriptor := inspect(&res)
-			proto, err := generator.newResource(fn, descriptor)
-			if err != nil {
-				return nil, err
-			}
-			protos = append(protos, proto)
-		}
-
-		ec, err := newFromProtos(key, nodeID, protos)()
-		if err != nil {
-			return nil, err
-		}
-
-		return ec, nil
-	}
+	"ListenerHttp_v1":       {ListenerHTTP_v1, &envoy_config_listener_v3.Listener{}},
+	"Cluster_v1":            {Cluster_v1, &envoy_config_cluster_v3.Cluster{}},
+	"RouteConfiguration_v1": {RouteConfiguration_v1, &envoy_config_route_v3.RouteConfiguration{}},
+	"Runtime_v1":            {Runtime_v1, &envoy_service_runtime_v3.Runtime{}},
 }
 
 type envoyDynamicConfigDescriptor interface {
 	GetGeneratorVersion() string
 	GetName() string
+	GetRawConfig() []byte
 }
 
 type envoyDynamicConfigGeneratorFn func(envoyDynamicConfigDescriptor) (envoy.Resource, error)
 
-type envoyDynamicConfigFactory map[string]envoyDynamicConfigGeneratorFn
+type envoyDynamicConfigClass struct {
+	Function envoyDynamicConfigGeneratorFn
+	Produces envoy.Resource
+}
+
+type envoyDynamicConfigFactory map[string]envoyDynamicConfigClass
 
 func (erf envoyDynamicConfigFactory) newResource(functionName string, descriptor envoyDynamicConfigDescriptor) (envoy.Resource, error) {
 
-	fn, ok := erf[functionName]
+	class, ok := erf[functionName]
 	if !ok {
-		return nil, fmt.Errorf("unregistered function %s", functionName)
+		return nil, fmt.Errorf("unregistered class %s", functionName)
 	}
 
-	resource, err := fn(descriptor)
+	if raw := descriptor.GetRawConfig(); raw != nil {
+
+		err := envoy_serializer_v3.JSON{}.Unmarshal(string(raw), class.Produces)
+		if err != nil {
+			return nil, err
+		}
+
+		return class.Produces, nil
+	}
+
+	resource, err := class.Function(descriptor)
 	if err != nil {
 		return nil, err
 	}
@@ -149,5 +141,29 @@ func newFromProtos(key types.NamespacedName, nodeID string, resources []envoy.Re
 			},
 		}, nil
 
+	}
+}
+
+func New(key types.NamespacedName, nodeID string, resources ...saasv1alpha1.EnvoyDynamicConfig) func() (*marin3rv1alpha1.EnvoyConfig, error) {
+
+	return func() (*marin3rv1alpha1.EnvoyConfig, error) {
+		protos := []envoy.Resource{}
+
+		for _, res := range resources {
+
+			fn, descriptor := inspect(&res)
+			proto, err := generator.newResource(fn, descriptor)
+			if err != nil {
+				return nil, err
+			}
+			protos = append(protos, proto)
+		}
+
+		ec, err := newFromProtos(key, nodeID, protos)()
+		if err != nil {
+			return nil, err
+		}
+
+		return ec, nil
 	}
 }

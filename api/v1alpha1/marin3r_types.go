@@ -138,8 +138,22 @@ func (meta *EnvoyDynamicConfigMeta) GetGeneratorVersion() string {
 	return *meta.GeneratorVersion
 }
 
+type EnvoyDynamicConfigRaw struct {
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	RawConfig *runtime.RawExtension `json:"rawConfig,omitempty"`
+}
+
+func (raw *EnvoyDynamicConfigRaw) GetRawConfig() []byte {
+	if raw != nil && raw.RawConfig != nil && raw.RawConfig.Raw != nil {
+		return raw.RawConfig.Raw
+	}
+	return nil
+}
+
 type ListenerHttp struct {
 	EnvoyDynamicConfigMeta `json:",inline"`
+	EnvoyDynamicConfigRaw  `json:",inline"`
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Port uint32 `json:"port"`
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
@@ -174,6 +188,7 @@ type RateLimitOptions struct {
 
 type Cluster struct {
 	EnvoyDynamicConfigMeta `json:",inline"`
+	EnvoyDynamicConfigRaw  `json:",inline"`
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Host string `json:"host"`
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
@@ -186,12 +201,14 @@ type Cluster struct {
 
 type RouteConfiguration struct {
 	EnvoyDynamicConfigMeta `json:",inline"`
+	EnvoyDynamicConfigRaw  `json:",inline"`
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	VirtualHosts []runtime.RawExtension `json:"virtualHosts"`
 }
 
 type Runtime struct {
 	EnvoyDynamicConfigMeta `json:",inline"`
+	EnvoyDynamicConfigRaw  `json:",inline"`
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	ListenerNames []string `json:"listenerNames"`
 }

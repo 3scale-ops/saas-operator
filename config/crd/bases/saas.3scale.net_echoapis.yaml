@@ -165,6 +165,9 @@ spec:
                             port:
                               format: int32
                               type: integer
+                            rawConfig:
+                              type: object
+                              x-kubernetes-preserve-unknown-fields: true
                           required:
                           - host
                           - name
@@ -208,6 +211,9 @@ spec:
                               - rateLimitService
                               - timeout
                               type: object
+                            rawConfig:
+                              type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             routeConfigName:
                               type: string
                           required:
@@ -222,6 +228,9 @@ spec:
                               type: string
                             name:
                               type: string
+                            rawConfig:
+                              type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             virtualHosts:
                               items:
                                 type: object
@@ -242,6 +251,9 @@ spec:
                               type: array
                             name:
                               type: string
+                            rawConfig:
+                              type: object
+                              x-kubernetes-preserve-unknown-fields: true
                           required:
                           - listenerNames
                           - name

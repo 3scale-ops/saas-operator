@@ -17,9 +17,11 @@ import (
 	envoy_config_route_v3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	envoy_service_runtime_v3 "github.com/envoyproxy/go-control-plane/envoy/service/runtime/v3"
 	"github.com/go-test/deep"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/structpb"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/pointer"
 )
@@ -342,7 +344,6 @@ func Test_inspect(t *testing.T) {
 }
 func Test_envoyResourceFactory_newResource(t *testing.T) {
 	type args struct {
-		resourceName string
 		functionName string
 		descriptor   envoyDynamicConfigDescriptor
 	}
@@ -359,8 +360,11 @@ func Test_envoyResourceFactory_newResource(t *testing.T) {
 			args: args{
 				functionName: "Runtime_v1",
 				descriptor: &saasv1alpha1.Runtime{
-					EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{Name: "test"},
-					ListenerNames:          []string{"http", "https"},
+					EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
+						Name:             "test",
+						GeneratorVersion: pointer.String("v1"),
+					},
+					ListenerNames: []string{"http", "https"},
 				},
 			},
 			want: func() envoy.Resource {
@@ -389,10 +393,42 @@ func Test_envoyResourceFactory_newResource(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Unregistered function",
+			name: "Returns raw configuration",
 			erf:  generator,
 			args: args{
-				resourceName: "test",
+				functionName: "Cluster_v1",
+				descriptor: &saasv1alpha1.Cluster{
+					EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
+						Name:             "test",
+						GeneratorVersion: pointer.String("v1"),
+					},
+					EnvoyDynamicConfigRaw: saasv1alpha1.EnvoyDynamicConfigRaw{
+						RawConfig: &runtime.RawExtension{
+							Raw: []byte(heredoc.Doc(`
+								{
+								  "load_assignment": {
+								    "cluster_name": "cluster1"
+								  },
+								  "name": "cluster1"
+								}
+							`)),
+						},
+					},
+				},
+			},
+			want: &envoy_config_cluster_v3.Cluster{
+				Name: "cluster1",
+				LoadAssignment: &envoy_config_endpoint_v3.ClusterLoadAssignment{
+					ClusterName: "cluster1",
+					Endpoints:   []*envoy_config_endpoint_v3.LocalityLbEndpoints{},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Unregistered class",
+			erf:  generator,
+			args: args{
 				functionName: "Runtime_xx",
 				descriptor:   nil,
 			},
@@ -407,8 +443,8 @@ func Test_envoyResourceFactory_newResource(t *testing.T) {
 				t.Errorf("envoyResourceFactory.newResource() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("envoyResourceFactory.newResource() = %v, want %v", got, tt.want)
+			if !proto.Equal(got, tt.want) {
+				t.Errorf("envoyResourceFactory.newResource() = %+v, want %+v", got, tt.want)
 			}
 		})
 	}

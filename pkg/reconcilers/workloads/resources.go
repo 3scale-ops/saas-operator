@@ -243,6 +243,19 @@ func (ect EnvoyConfigTemplate) ApplyMeta(w WithWorkloadMeta) EnvoyConfigTemplate
 	return ect
 }
 
+func (ect EnvoyConfigTemplate) SetNodeID(w WithWorkloadMeta) EnvoyConfigTemplate {
+	fn := ect.Template
+	ect.Template = func() (*marin3r.EnvoyConfig, error) {
+		ec, err := fn()
+		if err != nil {
+			return nil, err
+		}
+		ec.Spec.NodeID = w.GetKey().Name
+		return ec, nil
+	}
+	return ect
+}
+
 func NewEnvoyConfigTemplate(t basereconciler_resources.EnvoyConfigTemplate) EnvoyConfigTemplate {
 	return EnvoyConfigTemplate{EnvoyConfigTemplate: t}
 }

@@ -6,6 +6,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 func TestMarin3rSidecarSpec_Default(t *testing.T) {
@@ -214,6 +215,45 @@ func TestInitializeMarin3rSidecarSpec(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := InitializeMarin3rSidecarSpec(tt.args.spec, tt.args.def); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("InitializeMarin3rSidecarSpec() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestEnvoyDynamicConfigRaw_GetRawConfig(t *testing.T) {
+	type fields struct {
+		RawConfig *runtime.RawExtension
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   []byte
+	}{
+		{
+			name: "returns the raw config",
+			fields: fields{
+				RawConfig: &runtime.RawExtension{
+					Raw:    []byte("whatever"),
+					Object: nil,
+				},
+			},
+			want: []byte("whatever"),
+		},
+		{
+			name: "returns nil",
+			fields: fields{
+				RawConfig: nil,
+			},
+			want: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			raw := &EnvoyDynamicConfigRaw{
+				RawConfig: tt.fields.RawConfig,
+			}
+			if got := raw.GetRawConfig(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("EnvoyDynamicConfigRaw.GetRawConfig() = %v, want %v", got, tt.want)
 			}
 		})
 	}
