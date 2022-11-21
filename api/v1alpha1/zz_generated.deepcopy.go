@@ -2535,7 +2535,11 @@ func (in *SystemConfig) DeepCopyInto(out *SystemConfig) {
 	in.EventsSharedSecret.DeepCopyInto(&out.EventsSharedSecret)
 	in.Recaptcha.DeepCopyInto(&out.Recaptcha)
 	in.SecretKeyBase.DeepCopyInto(&out.SecretKeyBase)
-	in.AccessCode.DeepCopyInto(&out.AccessCode)
+	if in.AccessCode != nil {
+		in, out := &in.AccessCode, &out.AccessCode
+		*out = new(SecretReference)
+		(*in).DeepCopyInto(*out)
+	}
 	in.Segment.DeepCopyInto(&out.Segment)
 	in.Github.DeepCopyInto(&out.Github)
 	in.RedHatCustomerPortal.DeepCopyInto(&out.RedHatCustomerPortal)

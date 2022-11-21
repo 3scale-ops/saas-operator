@@ -333,7 +333,8 @@ type SystemConfig struct {
 	SecretKeyBase SecretReference `json:"secretKeyBase"`
 	// AccessCode to protect admin urls
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	AccessCode SecretReference `json:"accessCode"`
+	// +optional
+	AccessCode *SecretReference `json:"accessCode,omitempty"`
 	// Options for Segment integration
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Segment SegmentSpec `json:"segment"`

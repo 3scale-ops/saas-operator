@@ -66,7 +66,7 @@ var _ = Describe("System controller", func() {
 							PrivateKey: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 						},
 						SecretKeyBase: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-						AccessCode:    saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
+						AccessCode:    &saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 						Segment: saasv1alpha1.SegmentSpec{
 							DeletionWorkspace: "value",
 							DeletionToken:     saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},

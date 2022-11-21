@@ -1195,7 +1195,6 @@ spec:
                         type: string
                     type: object
                 required:
-                - accessCode
                 - assets
                 - backend
                 - databaseDSN

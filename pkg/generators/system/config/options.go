@@ -134,7 +134,6 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 		AssetsAWSRegion:          &pod.ClearTextValue{Value: spec.Config.Assets.Region},
 
 		AppSecretKeyBase:                 &pod.SecretValue{Value: spec.Config.SecretKeyBase},
-		AccessCode:                       &pod.SecretValue{Value: spec.Config.AccessCode},
 		SegmentDeletionToken:             &pod.SecretValue{Value: spec.Config.Segment.DeletionToken},
 		SegmentDeletionWorkspace:         &pod.ClearTextValue{Value: spec.Config.Segment.DeletionWorkspace},
 		SegmentWriteKey:                  &pod.SecretValue{Value: spec.Config.Segment.WriteKey},
@@ -155,6 +154,10 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 		opts.AssetsHost = &pod.ClearTextValue{Value: ""}
 	} else {
 		opts.AssetsHost = &pod.ClearTextValue{Value: *spec.Config.Assets.Host}
+	}
+
+	if spec.Config.AccessCode != nil {
+		opts.AccessCode = &pod.SecretValue{Value: *spec.Config.AccessCode}
 	}
 
 	return opts
