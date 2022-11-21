@@ -1517,8 +1517,6 @@ SphinxConfig has configuration options for System's sphinx
 |===
 | Field | Description
 | *`thinking`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-thinkingspec[$$ThinkingSpec$$]__ | Thinking configuration for sphinx
-| *`deltaIndexInterval`* __integer__ | Interval used for adding chunks of brand new documents to the primary index at certain intervals without having to do a full re-index
-| *`fullReindexInterval`* __integer__ | Interval used to do a full re-index
 |===
 
 

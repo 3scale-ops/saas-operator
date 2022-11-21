@@ -3058,16 +3058,6 @@ spec:
                   config:
                     description: Configuration options for System's sphinx
                     properties:
-                      deltaIndexInterval:
-                        description: Interval used for adding chunks of brand new
-                          documents to the primary index at certain intervals without
-                          having to do a full re-index
-                        format: int32
-                        type: integer
-                      fullReindexInterval:
-                        description: Interval used to do a full re-index
-                        format: int32
-                        type: integer
                       thinking:
                         description: Thinking configuration for sphinx
                         properties:

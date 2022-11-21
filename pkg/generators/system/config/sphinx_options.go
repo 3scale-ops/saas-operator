@@ -13,8 +13,6 @@ type SphinxOptions struct {
 	SphinxPort              pod.EnvVarValue `env:"THINKING_SPHINX_PORT"`
 	SphinxPIDFile           pod.EnvVarValue `env:"THINKING_SPHINX_PID_FILE"`
 	SphinxConfigurationFile pod.EnvVarValue `env:"THINKING_SPHINX_CONFIGURATION_FILE"`
-	DeltaIndexInterval      pod.EnvVarValue `env:"DELTA_INDEX_INTERVAL"`
-	FUllReindexInterval     pod.EnvVarValue `env:"FULL_REINDEX_INTERVAL"`
 
 	RailsEnvironment pod.EnvVarValue `env:"RAILS_ENV"`
 	SecretKeyBase    pod.EnvVarValue `env:"SECRET_KEY_BASE"`
@@ -34,8 +32,6 @@ func NewSphinxOptions(spec saasv1alpha1.SystemSpec) SphinxOptions {
 		SphinxPort:              &pod.ClearTextValue{Value: fmt.Sprintf("%d", *spec.Sphinx.Config.Thinking.Port)},
 		SphinxPIDFile:           &pod.ClearTextValue{Value: *spec.Sphinx.Config.Thinking.PIDFile},
 		SphinxConfigurationFile: &pod.ClearTextValue{Value: *spec.Sphinx.Config.Thinking.ConfigFile},
-		DeltaIndexInterval:      &pod.ClearTextValue{Value: fmt.Sprintf("%d", *spec.Sphinx.Config.DeltaIndexInterval)},
-		FUllReindexInterval:     &pod.ClearTextValue{Value: fmt.Sprintf("%d", *spec.Sphinx.Config.FullReindexInterval)},
 		RailsEnvironment:        &pod.ClearTextValue{Value: *spec.Config.Rails.Environment},
 		SecretKeyBase:           &pod.ClearTextValue{Value: "dummy"}, // https://github.com/rails/rails/issues/32947
 		DatabaseURL:             &pod.SecretValue{Value: spec.Config.DatabaseDSN},

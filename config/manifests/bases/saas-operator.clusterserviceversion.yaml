@@ -3306,13 +3306,6 @@ spec:
       - description: Configuration options for System's sphinx
         displayName: Config
         path: sphinx.config
-      - description: Interval used for adding chunks of brand new documents to the
-          primary index at certain intervals without having to do a full re-index
-        displayName: Delta Index Interval
-        path: sphinx.config.deltaIndexInterval
-      - description: Interval used to do a full re-index
-        displayName: Full Reindex Interval
-        path: sphinx.config.fullReindexInterval
       - description: Thinking configuration for sphinx
         displayName: Thinking
         path: sphinx.config.thinking

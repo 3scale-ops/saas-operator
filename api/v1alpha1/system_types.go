@@ -158,8 +158,6 @@ var (
 	}
 
 	// Sphinx
-	systemDefaultSphinxDeltaIndexInterval  int32                           = 5
-	systemDefaultSphinxFullReindexInterval int32                           = 60
 	systemDefaultSphinxPort                int32                           = 9306
 	systemDefaultSphinxBindAddress         string                          = "0.0.0.0"
 	systemDefaultSphinxConfigFile          string                          = "/opt/system/db/sphinx/sphinx.conf"
@@ -758,15 +756,6 @@ type SphinxConfig struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Thinking *ThinkingSpec `json:"thinking,omitempty"`
-	// Interval used for adding chunks of brand new documents to the primary
-	// index at certain intervals without having to do a full re-index
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	DeltaIndexInterval *int32 `json:"deltaIndexInterval,omitempty"`
-	// Interval used to do a full re-index
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	FullReindexInterval *int32 `json:"fullReindexInterval,omitempty"`
 }
 
 // Default implements defaulting for SphinxConfig
@@ -775,8 +764,6 @@ func (sc *SphinxConfig) Default() {
 		sc.Thinking = &ThinkingSpec{}
 	}
 	sc.Thinking.Default()
-	sc.DeltaIndexInterval = intOrDefault(sc.DeltaIndexInterval, pointer.Int32Ptr(systemDefaultSphinxDeltaIndexInterval))
-	sc.FullReindexInterval = intOrDefault(sc.FullReindexInterval, pointer.Int32Ptr(systemDefaultSphinxFullReindexInterval))
 }
 
 // ThinkingSpec configures the thinking library for sphinx
