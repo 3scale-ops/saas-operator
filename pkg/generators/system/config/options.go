@@ -13,7 +13,7 @@ type Options struct {
 	ForceSSL                      pod.EnvVarValue `env:"FORCE_SSL"`
 	ProviderPlan                  pod.EnvVarValue `env:"PROVIDER_PLAN"`
 	SSLCertDir                    pod.EnvVarValue `env:"SSL_CERT_DIR"`
-	SandboxProxyOpensslVeridyMode pod.EnvVarValue `env:"THREESCALE_SANDBOX_PROXY_OPENSSL_VERIFY_MODE"`
+	SandboxProxyOpensslVerifyMode pod.EnvVarValue `env:"THREESCALE_SANDBOX_PROXY_OPENSSL_VERIFY_MODE"`
 	Superdomain                   pod.EnvVarValue `env:"THREESCALE_SUPERDOMAIN"`
 
 	RailsEnvironment pod.EnvVarValue `env:"RAILS_ENV"`
@@ -39,10 +39,10 @@ type Options struct {
 	RedisSentinelRole   pod.EnvVarValue `env:"REDIS_SENTINEL_ROLE"`
 
 	SMTPAddress           pod.EnvVarValue `env:"SMTP_ADDRESS"`
-	SMPTUserName          pod.EnvVarValue `env:"SMTP_USER_NAME" secret:"system-smtp"`
+	SMTPUserName          pod.EnvVarValue `env:"SMTP_USER_NAME" secret:"system-smtp"`
 	SMTPPassword          pod.EnvVarValue `env:"SMTP_PASSWORD" secret:"system-smtp"`
 	SMTPPort              pod.EnvVarValue `env:"SMTP_PORT"`
-	SMPTAuthentication    pod.EnvVarValue `env:"SMTP_AUTHENTICATION"`
+	SMTPAuthentication    pod.EnvVarValue `env:"SMTP_AUTHENTICATION"`
 	SMTPOpensslVerifyMode pod.EnvVarValue `env:"SMTP_OPENSSL_VERIFY_MODE"`
 	SMTPSTARTTLSAuto      pod.EnvVarValue `env:"SMTP_STARTTLS_AUTO"`
 
@@ -84,7 +84,7 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 		ForceSSL:                      &pod.ClearTextValue{Value: fmt.Sprintf("%t", *spec.Config.ForceSSL)},
 		ProviderPlan:                  &pod.ClearTextValue{Value: *spec.Config.ThreescaleProviderPlan},
 		SSLCertDir:                    &pod.ClearTextValue{Value: *spec.Config.SSLCertsDir},
-		SandboxProxyOpensslVeridyMode: &pod.ClearTextValue{Value: *spec.Config.SandboxProxyOpensslVerifyMode},
+		SandboxProxyOpensslVerifyMode: &pod.ClearTextValue{Value: *spec.Config.SandboxProxyOpensslVerifyMode},
 		Superdomain:                   &pod.ClearTextValue{Value: *spec.Config.ThreescaleSuperdomain},
 
 		RailsEnvironment: &pod.ClearTextValue{Value: *spec.Config.Rails.Environment},
@@ -110,10 +110,10 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 		RedisSentinelRole:   &pod.ClearTextValue{Value: ""},
 
 		SMTPAddress:           &pod.ClearTextValue{Value: spec.Config.SMTP.Address},
-		SMPTUserName:          &pod.SecretValue{Value: spec.Config.SMTP.User},
+		SMTPUserName:          &pod.SecretValue{Value: spec.Config.SMTP.User},
 		SMTPPassword:          &pod.SecretValue{Value: spec.Config.SMTP.Password},
 		SMTPPort:              &pod.ClearTextValue{Value: fmt.Sprintf("%d", spec.Config.SMTP.Port)},
-		SMPTAuthentication:    &pod.ClearTextValue{Value: spec.Config.SMTP.AuthProtocol},
+		SMTPAuthentication:    &pod.ClearTextValue{Value: spec.Config.SMTP.AuthProtocol},
 		SMTPOpensslVerifyMode: &pod.ClearTextValue{Value: spec.Config.SMTP.OpenSSLVerifyMode},
 		SMTPSTARTTLSAuto:      &pod.ClearTextValue{Value: fmt.Sprintf("%t", spec.Config.SMTP.STARTTLSAuto)},
 
