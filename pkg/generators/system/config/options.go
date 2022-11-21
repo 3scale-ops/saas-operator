@@ -32,11 +32,10 @@ type Options struct {
 
 	EventsHookPassword pod.EnvVarValue `env:"EVENTS_SHARED_SECRET" secret:"system-events-hook"`
 
-	RedisURL            pod.EnvVarValue `env:"REDIS_URL"`
-	RedisActionCableURL pod.EnvVarValue `env:"ACTION_CABLE_REDIS_URL"`
-	RedisNamespace      pod.EnvVarValue `env:"REDIS_NAMESPACE"`
-	RedisSentinelHosts  pod.EnvVarValue `env:"REDIS_SENTINEL_HOSTS"`
-	RedisSentinelRole   pod.EnvVarValue `env:"REDIS_SENTINEL_ROLE"`
+	RedisURL           pod.EnvVarValue `env:"REDIS_URL"`
+	RedisNamespace     pod.EnvVarValue `env:"REDIS_NAMESPACE"`
+	RedisSentinelHosts pod.EnvVarValue `env:"REDIS_SENTINEL_HOSTS"`
+	RedisSentinelRole  pod.EnvVarValue `env:"REDIS_SENTINEL_ROLE"`
 
 	SMTPAddress           pod.EnvVarValue `env:"SMTP_ADDRESS"`
 	SMTPUserName          pod.EnvVarValue `env:"SMTP_USER_NAME" secret:"system-smtp"`
@@ -103,11 +102,10 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 
 		EventsHookPassword: &pod.SecretValue{Value: spec.Config.EventsSharedSecret},
 
-		RedisURL:            &pod.ClearTextValue{Value: spec.Config.Redis.QueuesDSN},
-		RedisActionCableURL: &pod.ClearTextValue{Value: ""},
-		RedisNamespace:      &pod.ClearTextValue{Value: ""},
-		RedisSentinelHosts:  &pod.ClearTextValue{Value: ""},
-		RedisSentinelRole:   &pod.ClearTextValue{Value: ""},
+		RedisURL:           &pod.ClearTextValue{Value: spec.Config.Redis.QueuesDSN},
+		RedisNamespace:     &pod.ClearTextValue{Value: ""},
+		RedisSentinelHosts: &pod.ClearTextValue{Value: ""},
+		RedisSentinelRole:  &pod.ClearTextValue{Value: ""},
 
 		SMTPAddress:           &pod.ClearTextValue{Value: spec.Config.SMTP.Address},
 		SMTPUserName:          &pod.SecretValue{Value: spec.Config.SMTP.User},
