@@ -462,6 +462,10 @@ type RedHatCustomerPortalSpec struct {
 	// Client secret
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	ClientSecret SecretReference `json:"clientSecret"`
+	// Realm
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Realm *SecretReference `json:"realm,omitempty"`
 }
 
 // RedisSpec holds redis configuration

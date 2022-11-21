@@ -2611,6 +2611,22 @@ spec:
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.redhatCustomerPortal.clientSecret.override
+      - description: Realm
+        displayName: Realm
+        path: config.redhatCustomerPortal.realm
+      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+          Vault
+        displayName: From Vault
+        path: config.redhatCustomerPortal.realm.fromVault
+      - description: The Vault key of the secret
+        displayName: Key
+        path: config.redhatCustomerPortal.realm.fromVault.key
+      - description: The Vault path where the secret is located
+        displayName: Path
+        path: config.redhatCustomerPortal.realm.fromVault.path
+      - description: Override allows to directly specify a string value.
+        displayName: Override
+        path: config.redhatCustomerPortal.realm.override
       - description: Redis configuration options
         displayName: Redis
         path: config.redis

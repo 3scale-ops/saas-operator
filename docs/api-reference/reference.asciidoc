@@ -1107,6 +1107,7 @@ RedHatCustomerPortalSpec has configuration for integration with Red Hat Customer
 | Field | Description
 | *`clientID`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Client ID
 | *`clientSecret`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Client secret
+| *`realm`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Realm
 |===
 
 

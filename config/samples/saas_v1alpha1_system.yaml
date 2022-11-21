@@ -96,6 +96,10 @@ spec:
         fromVault:
           path: secret/data/path/system-app
           key: RH_CUSTOMER_PORTAL_CLIENT_SECRET
+      realm:
+        fromVault:
+          path: secret/data/path/system-app
+          key: RH_CUSTOMER_PORTAL_REALM
     bugsnag:
       apiKey:
         fromVault:
