@@ -152,7 +152,7 @@ var (
 	}
 	systemDefaultSidekiqConfigLow defaultSidekiqConfig = defaultSidekiqConfig{
 		Queues: []string{
-			"mailers", "low",
+			"mailers", "low", "bulk_indexing",
 		},
 		MaxThreads: pointer.Int32Ptr(15),
 	}

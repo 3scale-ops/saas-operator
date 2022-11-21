@@ -203,7 +203,7 @@ var _ = Describe("System controller", func() {
 					Namespace:      namespace,
 					Replicas:       2,
 					ContainerName:  "system-sidekiq",
-					ContainterArgs: []string{"sidekiq", "--queue", "mailers", "--queue", "low"},
+					ContainterArgs: []string{"sidekiq", "--queue", "mailers", "--queue", "low", "--queue", "bulk_indexing"},
 					PDB:            true,
 					HPA:            true,
 					PodMonitor:     true,
@@ -469,7 +469,7 @@ var _ = Describe("System controller", func() {
 						Namespace:      namespace,
 						Replicas:       2,
 						ContainerName:  "system-sidekiq",
-						ContainterArgs: []string{"sidekiq", "--queue", "mailers", "--queue", "low"},
+						ContainterArgs: []string{"sidekiq", "--queue", "mailers", "--queue", "low", "--queue", "bulk_indexing"},
 						PodMonitor:     true,
 					}).Assert(k8sClient, dep, timeout, poll))
 
