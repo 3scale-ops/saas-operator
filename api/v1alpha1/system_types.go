@@ -495,6 +495,10 @@ type SMTPSpec struct {
 	// OpenSSL verify mode
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	OpenSSLVerifyMode string `json:"opensslVerifyMode"`
+	// Enable/disable STARTTLS
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	STARTTLS *bool `json:"starttls,omitempty"`
 	// Enable/disable auto STARTTLS
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional

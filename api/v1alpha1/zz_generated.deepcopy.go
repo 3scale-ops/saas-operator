@@ -2059,6 +2059,11 @@ func (in *SMTPSpec) DeepCopyInto(out *SMTPSpec) {
 	*out = *in
 	in.User.DeepCopyInto(&out.User)
 	in.Password.DeepCopyInto(&out.Password)
+	if in.STARTTLS != nil {
+		in, out := &in.STARTTLS, &out.STARTTLS
+		*out = new(bool)
+		**out = **in
+	}
 	if in.STARTTLSAuto != nil {
 		in, out := &in.STARTTLSAuto, &out.STARTTLSAuto
 		*out = new(bool)

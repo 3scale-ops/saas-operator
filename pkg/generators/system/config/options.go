@@ -43,6 +43,7 @@ type Options struct {
 	SMTPPort              pod.EnvVarValue `env:"SMTP_PORT"`
 	SMTPAuthentication    pod.EnvVarValue `env:"SMTP_AUTHENTICATION"`
 	SMTPOpensslVerifyMode pod.EnvVarValue `env:"SMTP_OPENSSL_VERIFY_MODE"`
+	SMTPSTARTTLS          pod.EnvVarValue `env:"SMTP_STARTTLS"`
 	SMTPSTARTTLSAuto      pod.EnvVarValue `env:"SMTP_STARTTLS_AUTO"`
 
 	MappingServiceAccessToken pod.EnvVarValue `env:"APICAST_ACCESS_TOKEN" secret:"system-master-apicast"`
@@ -162,6 +163,10 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 
 	if spec.Config.RedHatCustomerPortal.Realm != nil {
 		opts.RedHatCustomerPortalRealm = &pod.SecretValue{Value: *spec.Config.RedHatCustomerPortal.Realm}
+	}
+
+	if spec.Config.SMTP.STARTTLS != nil {
+		opts.SMTPSTARTTLS = &pod.ClearTextValue{Value: fmt.Sprintf("%t", *spec.Config.SMTP.STARTTLS)}
 	}
 
 	if spec.Config.SMTP.STARTTLSAuto != nil {

@@ -96,7 +96,7 @@ var _ = Describe("System controller", func() {
 							Port:              1000,
 							AuthProtocol:      "value",
 							OpenSSLVerifyMode: "value",
-							STARTTLSAuto:      pointer.BoolPtr(false),
+							STARTTLS:          pointer.BoolPtr(false),
 						},
 						MappingServiceAccessToken: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 						ZyncAuthToken:             saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},

@@ -1293,6 +1293,7 @@ SMTPSpec has options to configure system's SMTP
 | *`port`* __integer__ | Port
 | *`authProtocol`* __string__ | Authentication protocol
 | *`opensslVerifyMode`* __string__ | OpenSSL verify mode
+| *`starttls`* __boolean__ | Enable/disable STARTTLS
 | *`starttlsAuto`* __boolean__ | Enable/disable auto STARTTLS
 |===
 

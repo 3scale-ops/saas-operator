@@ -483,7 +483,7 @@ metadata:
                   }
                 },
                 "port": 25,
-                "starttlsAuto": false,
+                "starttls": false,
                 "user": {
                   "fromVault": {
                     "key": "username",
@@ -3150,6 +3150,9 @@ spec:
       - description: Port
         displayName: Port
         path: config.smtp.port
+      - description: Enable/disable STARTTLS
+        displayName: STARTTLS
+        path: config.smtp.starttls
       - description: Enable/disable auto STARTTLS
         displayName: STARTTLSAuto
         path: config.smtp.starttlsAuto

@@ -121,7 +121,7 @@ spec:
       port: 25
       authProtocol: none
       opensslVerifyMode: none
-      starttlsAuto: false
+      starttls: false
     apicastAccessToken:
       fromVault:
         path: secret/data/path/system-master-apicast

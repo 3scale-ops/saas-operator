@@ -1152,6 +1152,9 @@ spec:
                         description: Port
                         format: int32
                         type: integer
+                      starttls:
+                        description: Enable/disable STARTTLS
+                        type: boolean
                       starttlsAuto:
                         description: Enable/disable auto STARTTLS
                         type: boolean
