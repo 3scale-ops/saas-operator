@@ -497,7 +497,8 @@ type SMTPSpec struct {
 	OpenSSLVerifyMode string `json:"opensslVerifyMode"`
 	// Enable/disable auto STARTTLS
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	STARTTLSAuto bool `json:"starttlsAuto"`
+	// +optional
+	STARTTLSAuto *bool `json:"starttlsAuto,omitempty"`
 }
 
 // SystemBackendSpec has configuration options for backend

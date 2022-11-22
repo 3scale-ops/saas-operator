@@ -1182,7 +1182,6 @@ spec:
                     - opensslVerifyMode
                     - password
                     - port
-                    - starttlsAuto
                     - user
                     type: object
                   sslCertsDir:

@@ -114,7 +114,6 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 		SMTPPort:              &pod.ClearTextValue{Value: fmt.Sprintf("%d", spec.Config.SMTP.Port)},
 		SMTPAuthentication:    &pod.ClearTextValue{Value: spec.Config.SMTP.AuthProtocol},
 		SMTPOpensslVerifyMode: &pod.ClearTextValue{Value: spec.Config.SMTP.OpenSSLVerifyMode},
-		SMTPSTARTTLSAuto:      &pod.ClearTextValue{Value: fmt.Sprintf("%t", spec.Config.SMTP.STARTTLSAuto)},
 
 		MappingServiceAccessToken: &pod.SecretValue{Value: spec.Config.MappingServiceAccessToken},
 
@@ -163,6 +162,10 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 
 	if spec.Config.RedHatCustomerPortal.Realm != nil {
 		opts.RedHatCustomerPortalRealm = &pod.SecretValue{Value: *spec.Config.RedHatCustomerPortal.Realm}
+	}
+
+	if spec.Config.SMTP.STARTTLSAuto != nil {
+		opts.SMTPSTARTTLSAuto = &pod.ClearTextValue{Value: fmt.Sprintf("%t", *spec.Config.SMTP.STARTTLSAuto)}
 	}
 
 	return opts
