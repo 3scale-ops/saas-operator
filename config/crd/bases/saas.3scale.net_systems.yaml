@@ -1234,7 +1234,6 @@ spec:
                 - secretKeyBase
                 - segment
                 - smtp
-                - zyncAuthToken
                 type: object
               console:
                 description: Console specific configuration options

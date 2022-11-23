@@ -118,7 +118,7 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 
 		MappingServiceAccessToken: &pod.SecretValue{Value: spec.Config.MappingServiceAccessToken},
 
-		ZyncAuthenticationToken: &pod.SecretValue{Value: spec.Config.ZyncAuthToken},
+		ZyncAuthenticationToken: &pod.SecretValue{Value: *spec.Config.ZyncAuthToken},
 
 		BackendRedisURL:            &pod.ClearTextValue{Value: spec.Config.Backend.RedisDSN},
 		BackendRedisSentinelHosts:  &pod.ClearTextValue{Value: ""},

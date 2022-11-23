@@ -2567,7 +2567,11 @@ func (in *SystemConfig) DeepCopyInto(out *SystemConfig) {
 	out.Redis = in.Redis
 	in.SMTP.DeepCopyInto(&out.SMTP)
 	in.MappingServiceAccessToken.DeepCopyInto(&out.MappingServiceAccessToken)
-	in.ZyncAuthToken.DeepCopyInto(&out.ZyncAuthToken)
+	if in.ZyncAuthToken != nil {
+		in, out := &in.ZyncAuthToken, &out.ZyncAuthToken
+		*out = new(SecretReference)
+		(*in).DeepCopyInto(*out)
+	}
 	in.Backend.DeepCopyInto(&out.Backend)
 	in.Assets.DeepCopyInto(&out.Assets)
 }

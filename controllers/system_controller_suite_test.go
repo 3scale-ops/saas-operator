@@ -99,7 +99,7 @@ var _ = Describe("System controller", func() {
 							STARTTLS:          pointer.BoolPtr(false),
 						},
 						MappingServiceAccessToken: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-						ZyncAuthToken:             saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
+						ZyncAuthToken:             &saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 						Backend: saasv1alpha1.SystemBackendSpec{
 							ExternalEndpoint:    "value",
 							InternalEndpoint:    "value",
