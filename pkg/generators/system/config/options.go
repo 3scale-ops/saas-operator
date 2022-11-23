@@ -48,6 +48,7 @@ type Options struct {
 
 	MappingServiceAccessToken pod.EnvVarValue `env:"APICAST_ACCESS_TOKEN" secret:"system-master-apicast"`
 
+	ZyncEndpoint            pod.EnvVarValue `env:"ZYNC_ENDPOINT"`
 	ZyncAuthenticationToken pod.EnvVarValue `env:"ZYNC_AUTHENTICATION_TOKEN" secret:"system-zync"`
 
 	BackendRedisURL            pod.EnvVarValue `env:"BACKEND_REDIS_URL"`
@@ -118,8 +119,6 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 
 		MappingServiceAccessToken: &pod.SecretValue{Value: spec.Config.MappingServiceAccessToken},
 
-		ZyncAuthenticationToken: &pod.SecretValue{Value: *spec.Config.ZyncAuthToken},
-
 		BackendRedisURL:            &pod.ClearTextValue{Value: spec.Config.Backend.RedisDSN},
 		BackendRedisSentinelHosts:  &pod.ClearTextValue{Value: ""},
 		BackendRedisSentinelRole:   &pod.ClearTextValue{Value: ""},
@@ -171,6 +170,13 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 
 	if spec.Config.SMTP.STARTTLSAuto != nil {
 		opts.SMTPSTARTTLSAuto = &pod.ClearTextValue{Value: fmt.Sprintf("%t", *spec.Config.SMTP.STARTTLSAuto)}
+	}
+
+	if spec.Config.Zync != nil {
+		opts.ZyncEndpoint = &pod.ClearTextValue{Value: spec.Config.Zync.Endpoint}
+		opts.ZyncAuthenticationToken = &pod.SecretValue{Value: spec.Config.Zync.AuthToken}
+	} else {
+		opts.ZyncAuthenticationToken = &pod.SecretValue{Value: *spec.Config.ZyncAuthToken}
 	}
 
 	return opts

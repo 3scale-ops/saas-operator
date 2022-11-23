@@ -2752,6 +2752,28 @@ spec:
       - description: 3scale superdomain
         displayName: Threescale Superdomain
         path: config.threescaleSuperdomain
+      - description: Zync has configuration options for system to contact zync
+        displayName: Zync
+        path: config.zync
+      - description: Zync authentication token
+        displayName: Auth Token
+        path: config.zync.authToken
+      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+          Vault
+        displayName: From Vault
+        path: config.zync.authToken.fromVault
+      - description: The Vault key of the secret
+        displayName: Key
+        path: config.zync.authToken.fromVault.key
+      - description: The Vault path where the secret is located
+        displayName: Path
+        path: config.zync.authToken.fromVault.path
+      - description: Override allows to directly specify a string value.
+        displayName: Override
+        path: config.zync.authToken.override
+      - description: Zync endpoint
+        displayName: Endpoint
+        path: config.zync.endpoint
       - description: Zync authentication token
         displayName: Zync Auth Token
         path: config.zyncAuthToken

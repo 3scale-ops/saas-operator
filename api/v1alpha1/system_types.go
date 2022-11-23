@@ -367,6 +367,10 @@ type SystemConfig struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	ZyncAuthToken *SecretReference `json:"zyncAuthToken,omitempty"`
+	// Zync has configuration options for system to contact zync
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Zync *SystemZyncSpec `json:"zync,omitempty"`
 	// Backend has configuration options for system to contact backend
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Backend SystemBackendSpec `json:"backend"`
@@ -504,6 +508,16 @@ type SMTPSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	STARTTLSAuto *bool `json:"starttlsAuto,omitempty"`
+}
+
+// SystemZyncSpec has configuration options for zync
+type SystemZyncSpec struct {
+	// Zync authentication token
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	AuthToken SecretReference `json:"authToken"`
+	// Zync endpoint
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	Endpoint string `json:"endpoint"`
 }
 
 // SystemBackendSpec has configuration options for backend
