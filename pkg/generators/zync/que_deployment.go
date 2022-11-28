@@ -10,6 +10,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/utils/pointer"
 )
 
 // deployment returns a function that will return a *appsv1.Deployment for zync-que
@@ -79,10 +80,11 @@ func (gen *QueGenerator) deployment() func() *appsv1.Deployment {
 								TerminationMessagePolicy: corev1.TerminationMessageReadFile,
 							},
 						},
-						RestartPolicy:   corev1.RestartPolicyAlways,
-						SecurityContext: &corev1.PodSecurityContext{},
-						Affinity:        pod.Affinity(gen.GetSelector(), gen.QueSpec.NodeAffinity),
-						Tolerations:     gen.QueSpec.Tolerations,
+						RestartPolicy:                 corev1.RestartPolicyAlways,
+						SecurityContext:               &corev1.PodSecurityContext{},
+						Affinity:                      pod.Affinity(gen.GetSelector(), gen.QueSpec.NodeAffinity),
+						Tolerations:                   gen.QueSpec.Tolerations,
+						TerminationGracePeriodSeconds: pointer.Int64(30),
 					},
 				},
 			},

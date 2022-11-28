@@ -8,6 +8,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/utils/pointer"
 )
 
 // Deployment returns a function that will return a Deployment
@@ -41,10 +42,11 @@ func (gen *CronGenerator) deployment() func() *appsv1.Deployment {
 								TerminationMessagePolicy: corev1.TerminationMessageReadFile,
 							},
 						},
-						RestartPolicy:   corev1.RestartPolicyAlways,
-						SecurityContext: &corev1.PodSecurityContext{},
-						Affinity:        pod.Affinity(gen.GetSelector(), gen.CronSpec.NodeAffinity),
-						Tolerations:     gen.CronSpec.Tolerations,
+						RestartPolicy:                 corev1.RestartPolicyAlways,
+						SecurityContext:               &corev1.PodSecurityContext{},
+						Affinity:                      pod.Affinity(gen.GetSelector(), gen.CronSpec.NodeAffinity),
+						Tolerations:                   gen.CronSpec.Tolerations,
+						TerminationGracePeriodSeconds: pointer.Int64(30),
 					},
 				},
 			},
