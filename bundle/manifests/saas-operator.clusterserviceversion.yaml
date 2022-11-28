@@ -493,7 +493,7 @@ metadata:
                     "path": "secret/data/path/zync"
                   }
                 },
-                "endpoint": "https://zync:8080"
+                "endpoint": "http://zync:8080"
               }
             },
             "image": {

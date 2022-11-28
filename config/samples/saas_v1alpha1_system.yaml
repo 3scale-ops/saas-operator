@@ -124,7 +124,7 @@ spec:
         path: secret/data/path/system-master-apicast
         key: ACCESS_TOKEN
     zync:
-      endpoint: https://zync:8080
+      endpoint: http://zync:8080
       authToken:
         fromVault:
           path: secret/data/path/zync
