@@ -109,7 +109,10 @@ func (gen *Generator) statefulSet() func() *appsv1.StatefulSet {
 								},
 							},
 						},
-						Tolerations: gen.Spec.Tolerations,
+						RestartPolicy:                 corev1.RestartPolicyAlways,
+						SecurityContext:               &corev1.PodSecurityContext{},
+						Tolerations:                   gen.Spec.Tolerations,
+						TerminationGracePeriodSeconds: pointer.Int64(30),
 						Volumes: []corev1.Volume{
 							{
 								Name: gen.GetComponent() + "-gen-config",
