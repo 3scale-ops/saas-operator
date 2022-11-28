@@ -63,7 +63,7 @@ func (r *ZyncReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 
 	instance := &saasv1alpha1.Zync{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx, key, instance, saasv1alpha1.Finalizer, nil)
+	result, err := r.GetInstance(ctx, key, instance, nil, nil)
 	if result != nil || err != nil {
 		return *result, err
 	}

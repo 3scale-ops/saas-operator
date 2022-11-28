@@ -3,6 +3,7 @@ package basereconciler
 import (
 	"context"
 
+	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/go-logr/logr"
 	"github.com/redhat-cop/operator-utils/pkg/util"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -36,7 +37,7 @@ func NewFromManager(mgr manager.Manager) Reconciler {
 // GetInstance tries to retrieve the custom resource instance and perform some standard
 // tasks like initialization and cleanup when required.
 func (r *Reconciler) GetInstance(ctx context.Context, key types.NamespacedName,
-	instance client.Object, finalizer string, cleanupFns []func()) (*ctrl.Result, error) {
+	instance client.Object, finalizer *string, cleanupFns []func()) (*ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 
 	err := r.Client.Get(ctx, key, instance)
@@ -49,21 +50,28 @@ func (r *Reconciler) GetInstance(ctx context.Context, key types.NamespacedName,
 	}
 
 	if util.IsBeingDeleted(instance) {
-		if !util.HasFinalizer(instance, finalizer) {
-			return &ctrl.Result{}, nil
-		}
-		err := r.ManageCleanupLogic(instance, cleanupFns, logger)
-		if err != nil {
-			logger.Error(err, "unable to delete instance")
-			result, err := ctrl.Result{}, err
-			return &result, err
-		}
-		util.RemoveFinalizer(instance, finalizer)
-		err = r.Client.Update(ctx, instance)
-		if err != nil {
-			logger.Error(err, "unable to update instance")
-			result, err := ctrl.Result{}, err
-			return &result, err
+
+		// finalizer logic is only triggered if the controller
+		// sets a finalizer, otherwise there's notihng to be done
+		if finalizer != nil {
+
+			if !util.HasFinalizer(instance, *finalizer) {
+				return &ctrl.Result{}, nil
+			}
+			err := r.ManageCleanupLogic(instance, cleanupFns, logger)
+			if err != nil {
+				logger.Error(err, "unable to delete instance")
+				result, err := ctrl.Result{}, err
+				return &result, err
+			}
+			util.RemoveFinalizer(instance, *finalizer)
+			err = r.Client.Update(ctx, instance)
+			if err != nil {
+				logger.Error(err, "unable to update instance")
+				result, err := ctrl.Result{}, err
+				return &result, err
+			}
+
 		}
 		return &ctrl.Result{}, nil
 	}
@@ -82,12 +90,19 @@ func (r *Reconciler) GetInstance(ctx context.Context, key types.NamespacedName,
 
 // IsInitialized can be used to check if instance is correctly initialized.
 // Returns false if it isn't.
-func (r *Reconciler) IsInitialized(instance client.Object, finalizer string) bool {
+func (r *Reconciler) IsInitialized(instance client.Object, finalizer *string) bool {
 	ok := true
-	// ensure the finalizers are removed, they are no longer required
-	// as we have dropped usage the lockedresources reconciler
-	if util.HasFinalizer(instance, finalizer) {
-		util.RemoveFinalizer(instance, finalizer)
+	if finalizer != nil && !util.HasFinalizer(instance, *finalizer) {
+		util.AddFinalizer(instance, *finalizer)
+		ok = false
+	}
+
+	// this is temporary code to update existent custom resources:
+	//    ensure the finalizers are removed, they are no longer required
+	//    for most custom resources as we have dropped usage the lockedresources
+	//    reconciler
+	if finalizer == nil && util.HasFinalizer(instance, saasv1alpha1.Finalizer) {
+		util.RemoveFinalizer(instance, saasv1alpha1.Finalizer)
 		ok = false
 	}
 	return ok
