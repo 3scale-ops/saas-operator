@@ -79,7 +79,7 @@ var _ = Describe("System controller", func() {
 						RedHatCustomerPortal: saasv1alpha1.RedHatCustomerPortalSpec{
 							ClientID:     saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 							ClientSecret: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-							Realm:        &saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
+							Realm:        pointer.StringPtr("sso.example.net"),
 						},
 						Bugsnag: &saasv1alpha1.BugsnagSpec{
 							APIKey: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},

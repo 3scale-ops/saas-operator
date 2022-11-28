@@ -75,7 +75,7 @@ type Options struct {
 	GithubClientSecret               pod.EnvVarValue `env:"GITHUB_CLIENT_SECRET" secret:"system-app"`
 	RedHatCustomerPortalClientID     pod.EnvVarValue `env:"RH_CUSTOMER_PORTAL_CLIENT_ID" secret:"system-app"`
 	RedHatCustomerPortalClientSecret pod.EnvVarValue `env:"RH_CUSTOMER_PORTAL_CLIENT_SECRET" secret:"system-app"`
-	RedHatCustomerPortalRealm        pod.EnvVarValue `env:"RH_CUSTOMER_PORTAL_REALM" secret:"system-app"`
+	RedHatCustomerPortalRealm        pod.EnvVarValue `env:"RH_CUSTOMER_PORTAL_REALM"`
 	BugsnagAPIKey                    pod.EnvVarValue `env:"BUGSNAG_API_KEY" secret:"system-app"`
 	DatabaseSecret                   pod.EnvVarValue `env:"DB_SECRET" secret:"system-app"`
 }
@@ -161,7 +161,7 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 	}
 
 	if spec.Config.RedHatCustomerPortal.Realm != nil {
-		opts.RedHatCustomerPortalRealm = &pod.SecretValue{Value: *spec.Config.RedHatCustomerPortal.Realm}
+		opts.RedHatCustomerPortalRealm = &pod.ClearTextValue{Value: *spec.Config.RedHatCustomerPortal.Realm}
 	}
 
 	if spec.Config.SMTP.STARTTLS != nil {

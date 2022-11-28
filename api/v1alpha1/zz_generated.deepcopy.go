@@ -1839,8 +1839,8 @@ func (in *RedHatCustomerPortalSpec) DeepCopyInto(out *RedHatCustomerPortalSpec) 
 	in.ClientSecret.DeepCopyInto(&out.ClientSecret)
 	if in.Realm != nil {
 		in, out := &in.Realm, &out.Realm
-		*out = new(SecretReference)
-		(*in).DeepCopyInto(*out)
+		*out = new(string)
+		**out = **in
 	}
 }
 
