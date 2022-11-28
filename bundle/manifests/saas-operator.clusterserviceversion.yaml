@@ -440,7 +440,8 @@ metadata:
                     "key": "RH_CUSTOMER_PORTAL_CLIENT_SECRET",
                     "path": "secret/data/path/system-app"
                   }
-                }
+                },
+                "realm": "sso.example.net"
               },
               "redis": {
                 "queuesDSN": "redis://system-redis:6379/1"
@@ -477,7 +478,7 @@ metadata:
                   }
                 },
                 "port": 25,
-                "starttlsAuto": false,
+                "starttls": false,
                 "user": {
                   "fromVault": {
                     "key": "username",
@@ -485,11 +486,14 @@ metadata:
                   }
                 }
               },
-              "zyncAuthToken": {
-                "fromVault": {
-                  "key": "ZYNC_AUTHENTICATION_TOKEN",
-                  "path": "secret/data/path/zync"
-                }
+              "zync": {
+                "authToken": {
+                  "fromVault": {
+                    "key": "ZYNC_AUTHENTICATION_TOKEN",
+                    "path": "secret/data/path/zync"
+                  }
+                },
+                "endpoint": "http://zync:8080"
               }
             },
             "image": {
@@ -570,7 +574,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/3scale/saas-operator
     support: Red Hat
-  name: saas-operator.v0.17.1-alpha.3
+  name: saas-operator.v0.17.1-alpha.5
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -3034,6 +3038,9 @@ spec:
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.redhatCustomerPortal.clientSecret.override
+      - description: Realm
+        displayName: Realm
+        path: config.redhatCustomerPortal.realm
       - description: Redis configuration options
         displayName: Redis
         path: config.redis
@@ -3128,6 +3135,9 @@ spec:
       - description: Port
         displayName: Port
         path: config.smtp.port
+      - description: Enable/disable STARTTLS
+        displayName: STARTTLS
+        path: config.smtp.starttls
       - description: Enable/disable auto STARTTLS
         displayName: STARTTLSAuto
         path: config.smtp.starttlsAuto
@@ -3156,6 +3166,28 @@ spec:
       - description: 3scale superdomain
         displayName: Threescale Superdomain
         path: config.threescaleSuperdomain
+      - description: Zync has configuration options for system to contact zync
+        displayName: Zync
+        path: config.zync
+      - description: Zync authentication token
+        displayName: Auth Token
+        path: config.zync.authToken
+      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+          Vault
+        displayName: From Vault
+        path: config.zync.authToken.fromVault
+      - description: The Vault key of the secret
+        displayName: Key
+        path: config.zync.authToken.fromVault.key
+      - description: The Vault path where the secret is located
+        displayName: Path
+        path: config.zync.authToken.fromVault.path
+      - description: Override allows to directly specify a string value.
+        displayName: Override
+        path: config.zync.authToken.override
+      - description: Zync endpoint
+        displayName: Endpoint
+        path: config.zync.endpoint
       - description: Zync authentication token
         displayName: Zync Auth Token
         path: config.zyncAuthToken
@@ -3729,13 +3761,6 @@ spec:
       - description: Configuration options for System's sphinx
         displayName: Config
         path: sphinx.config
-      - description: Interval used for adding chunks of brand new documents to the
-          primary index at certain intervals without having to do a full re-index
-        displayName: Delta Index Interval
-        path: sphinx.config.deltaIndexInterval
-      - description: Interval used to do a full re-index
-        displayName: Full Reindex Interval
-        path: sphinx.config.fullReindexInterval
       - description: Thinking configuration for sphinx
         displayName: Thinking
         path: sphinx.config.thinking
@@ -4368,7 +4393,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/3scale/saas-operator:v0.17.1-alpha.3
+                image: quay.io/3scale/saas-operator:v0.17.1-alpha.5
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -4870,4 +4895,4 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
-  version: 0.17.1-alpha.3
+  version: 0.17.1-alpha.5

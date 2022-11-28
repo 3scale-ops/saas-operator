@@ -96,6 +96,7 @@ spec:
         fromVault:
           path: secret/data/path/system-app
           key: RH_CUSTOMER_PORTAL_CLIENT_SECRET
+      realm: "sso.example.net"
     bugsnag:
       apiKey:
         fromVault:
@@ -117,15 +118,17 @@ spec:
       port: 25
       authProtocol: none
       opensslVerifyMode: none
-      starttlsAuto: false
+      starttls: false
     apicastAccessToken:
       fromVault:
         path: secret/data/path/system-master-apicast
         key: ACCESS_TOKEN
-    zyncAuthToken:
-      fromVault:
-        path: secret/data/path/zync
-        key: ZYNC_AUTHENTICATION_TOKEN
+    zync:
+      endpoint: http://zync:8080
+      authToken:
+        fromVault:
+          path: secret/data/path/zync
+          key: ZYNC_AUTHENTICATION_TOKEN
     backend:
       externalEndpoint: https://backend.example.com
       internalEndpoint: http://backend-listener-internal

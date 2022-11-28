@@ -152,14 +152,12 @@ var (
 	}
 	systemDefaultSidekiqConfigLow defaultSidekiqConfig = defaultSidekiqConfig{
 		Queues: []string{
-			"mailers", "low",
+			"mailers", "low", "bulk_indexing",
 		},
 		MaxThreads: pointer.Int32Ptr(15),
 	}
 
 	// Sphinx
-	systemDefaultSphinxDeltaIndexInterval  int32                           = 5
-	systemDefaultSphinxFullReindexInterval int32                           = 60
 	systemDefaultSphinxPort                int32                           = 9306
 	systemDefaultSphinxBindAddress         string                          = "0.0.0.0"
 	systemDefaultSphinxConfigFile          string                          = "/opt/system/db/sphinx/sphinx.conf"
@@ -335,7 +333,8 @@ type SystemConfig struct {
 	SecretKeyBase SecretReference `json:"secretKeyBase"`
 	// AccessCode to protect admin urls
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	AccessCode SecretReference `json:"accessCode"`
+	// +optional
+	AccessCode *SecretReference `json:"accessCode,omitempty"`
 	// Options for Segment integration
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Segment SegmentSpec `json:"segment"`
@@ -366,7 +365,12 @@ type SystemConfig struct {
 	MappingServiceAccessToken SecretReference `json:"mappingServiceAccessToken"`
 	// Zync authentication token
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	ZyncAuthToken SecretReference `json:"zyncAuthToken"`
+	// +optional
+	ZyncAuthToken *SecretReference `json:"zyncAuthToken,omitempty"`
+	// Zync has configuration options for system to contact zync
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Zync *SystemZyncSpec `json:"zync,omitempty"`
 	// Backend has configuration options for system to contact backend
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Backend SystemBackendSpec `json:"backend"`
@@ -463,6 +467,10 @@ type RedHatCustomerPortalSpec struct {
 	// Client secret
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	ClientSecret SecretReference `json:"clientSecret"`
+	// Realm
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Realm *string `json:"realm,omitempty"`
 }
 
 // RedisSpec holds redis configuration
@@ -492,9 +500,24 @@ type SMTPSpec struct {
 	// OpenSSL verify mode
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	OpenSSLVerifyMode string `json:"opensslVerifyMode"`
+	// Enable/disable STARTTLS
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	STARTTLS *bool `json:"starttls,omitempty"`
 	// Enable/disable auto STARTTLS
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	STARTTLSAuto bool `json:"starttlsAuto"`
+	// +optional
+	STARTTLSAuto *bool `json:"starttlsAuto,omitempty"`
+}
+
+// SystemZyncSpec has configuration options for zync
+type SystemZyncSpec struct {
+	// Zync authentication token
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	AuthToken SecretReference `json:"authToken"`
+	// Zync endpoint
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	Endpoint string `json:"endpoint"`
 }
 
 // SystemBackendSpec has configuration options for backend
@@ -758,15 +781,6 @@ type SphinxConfig struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Thinking *ThinkingSpec `json:"thinking,omitempty"`
-	// Interval used for adding chunks of brand new documents to the primary
-	// index at certain intervals without having to do a full re-index
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	DeltaIndexInterval *int32 `json:"deltaIndexInterval,omitempty"`
-	// Interval used to do a full re-index
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	FullReindexInterval *int32 `json:"fullReindexInterval,omitempty"`
 }
 
 // Default implements defaulting for SphinxConfig
@@ -775,8 +789,6 @@ func (sc *SphinxConfig) Default() {
 		sc.Thinking = &ThinkingSpec{}
 	}
 	sc.Thinking.Default()
-	sc.DeltaIndexInterval = intOrDefault(sc.DeltaIndexInterval, pointer.Int32Ptr(systemDefaultSphinxDeltaIndexInterval))
-	sc.FullReindexInterval = intOrDefault(sc.FullReindexInterval, pointer.Int32Ptr(systemDefaultSphinxFullReindexInterval))
 }
 
 // ThinkingSpec configures the thinking library for sphinx

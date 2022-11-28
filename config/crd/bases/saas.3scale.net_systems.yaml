@@ -999,6 +999,9 @@ spec:
                               value.
                             type: string
                         type: object
+                      realm:
+                        description: Realm
+                        type: string
                     required:
                     - clientID
                     - clientSecret
@@ -1130,6 +1133,9 @@ spec:
                         description: Port
                         format: int32
                         type: integer
+                      starttls:
+                        description: Enable/disable STARTTLS
+                        type: boolean
                       starttlsAuto:
                         description: Enable/disable auto STARTTLS
                         type: boolean
@@ -1161,7 +1167,6 @@ spec:
                     - opensslVerifyMode
                     - password
                     - port
-                    - starttlsAuto
                     - user
                     type: object
                   sslCertsDir:
@@ -1173,6 +1178,39 @@ spec:
                   threescaleSuperdomain:
                     description: 3scale superdomain
                     type: string
+                  zync:
+                    description: Zync has configuration options for system to contact
+                      zync
+                    properties:
+                      authToken:
+                        description: Zync authentication token
+                        properties:
+                          fromVault:
+                            description: VaultSecretReference is a reference to a
+                              secret stored in a Hashicorp Vault
+                            properties:
+                              key:
+                                description: The Vault key of the secret
+                                type: string
+                              path:
+                                description: The Vault path where the secret is located
+                                type: string
+                            required:
+                            - key
+                            - path
+                            type: object
+                          override:
+                            description: Override allows to directly specify a string
+                              value.
+                            type: string
+                        type: object
+                      endpoint:
+                        description: Zync endpoint
+                        type: string
+                    required:
+                    - authToken
+                    - endpoint
+                    type: object
                   zyncAuthToken:
                     description: Zync authentication token
                     properties:
@@ -1196,7 +1234,6 @@ spec:
                         type: string
                     type: object
                 required:
-                - accessCode
                 - assets
                 - backend
                 - databaseDSN
@@ -1211,7 +1248,6 @@ spec:
                 - secretKeyBase
                 - segment
                 - smtp
-                - zyncAuthToken
                 type: object
               console:
                 description: Console specific configuration options
@@ -3059,16 +3095,6 @@ spec:
                   config:
                     description: Configuration options for System's sphinx
                     properties:
-                      deltaIndexInterval:
-                        description: Interval used for adding chunks of brand new
-                          documents to the primary index at certain intervals without
-                          having to do a full re-index
-                        format: int32
-                        type: integer
-                      fullReindexInterval:
-                        description: Interval used to do a full re-index
-                        format: int32
-                        type: integer
                       thinking:
                         description: Thinking configuration for sphinx
                         properties:

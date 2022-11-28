@@ -13,7 +13,7 @@ type Options struct {
 	ForceSSL                      pod.EnvVarValue `env:"FORCE_SSL"`
 	ProviderPlan                  pod.EnvVarValue `env:"PROVIDER_PLAN"`
 	SSLCertDir                    pod.EnvVarValue `env:"SSL_CERT_DIR"`
-	SandboxProxyOpensslVeridyMode pod.EnvVarValue `env:"THREESCALE_SANDBOX_PROXY_OPENSSL_VERIFY_MODE"`
+	SandboxProxyOpensslVerifyMode pod.EnvVarValue `env:"THREESCALE_SANDBOX_PROXY_OPENSSL_VERIFY_MODE"`
 	Superdomain                   pod.EnvVarValue `env:"THREESCALE_SUPERDOMAIN"`
 
 	RailsEnvironment pod.EnvVarValue `env:"RAILS_ENV"`
@@ -32,22 +32,23 @@ type Options struct {
 
 	EventsHookPassword pod.EnvVarValue `env:"EVENTS_SHARED_SECRET" secret:"system-events-hook"`
 
-	RedisURL            pod.EnvVarValue `env:"REDIS_URL"`
-	RedisActionCableURL pod.EnvVarValue `env:"ACTION_CABLE_REDIS_URL"`
-	RedisNamespace      pod.EnvVarValue `env:"REDIS_NAMESPACE"`
-	RedisSentinelHosts  pod.EnvVarValue `env:"REDIS_SENTINEL_HOSTS"`
-	RedisSentinelRole   pod.EnvVarValue `env:"REDIS_SENTINEL_ROLE"`
+	RedisURL           pod.EnvVarValue `env:"REDIS_URL"`
+	RedisNamespace     pod.EnvVarValue `env:"REDIS_NAMESPACE"`
+	RedisSentinelHosts pod.EnvVarValue `env:"REDIS_SENTINEL_HOSTS"`
+	RedisSentinelRole  pod.EnvVarValue `env:"REDIS_SENTINEL_ROLE"`
 
 	SMTPAddress           pod.EnvVarValue `env:"SMTP_ADDRESS"`
-	SMPTUserName          pod.EnvVarValue `env:"SMTP_USER_NAME" secret:"system-smtp"`
+	SMTPUserName          pod.EnvVarValue `env:"SMTP_USER_NAME" secret:"system-smtp"`
 	SMTPPassword          pod.EnvVarValue `env:"SMTP_PASSWORD" secret:"system-smtp"`
 	SMTPPort              pod.EnvVarValue `env:"SMTP_PORT"`
-	SMPTAuthentication    pod.EnvVarValue `env:"SMTP_AUTHENTICATION"`
+	SMTPAuthentication    pod.EnvVarValue `env:"SMTP_AUTHENTICATION"`
 	SMTPOpensslVerifyMode pod.EnvVarValue `env:"SMTP_OPENSSL_VERIFY_MODE"`
+	SMTPSTARTTLS          pod.EnvVarValue `env:"SMTP_STARTTLS"`
 	SMTPSTARTTLSAuto      pod.EnvVarValue `env:"SMTP_STARTTLS_AUTO"`
 
 	MappingServiceAccessToken pod.EnvVarValue `env:"APICAST_ACCESS_TOKEN" secret:"system-master-apicast"`
 
+	ZyncEndpoint            pod.EnvVarValue `env:"ZYNC_ENDPOINT"`
 	ZyncAuthenticationToken pod.EnvVarValue `env:"ZYNC_AUTHENTICATION_TOKEN" secret:"system-zync"`
 
 	BackendRedisURL            pod.EnvVarValue `env:"BACKEND_REDIS_URL"`
@@ -74,6 +75,7 @@ type Options struct {
 	GithubClientSecret               pod.EnvVarValue `env:"GITHUB_CLIENT_SECRET" secret:"system-app"`
 	RedHatCustomerPortalClientID     pod.EnvVarValue `env:"RH_CUSTOMER_PORTAL_CLIENT_ID" secret:"system-app"`
 	RedHatCustomerPortalClientSecret pod.EnvVarValue `env:"RH_CUSTOMER_PORTAL_CLIENT_SECRET" secret:"system-app"`
+	RedHatCustomerPortalRealm        pod.EnvVarValue `env:"RH_CUSTOMER_PORTAL_REALM"`
 	BugsnagAPIKey                    pod.EnvVarValue `env:"BUGSNAG_API_KEY" secret:"system-app"`
 	DatabaseSecret                   pod.EnvVarValue `env:"DB_SECRET" secret:"system-app"`
 }
@@ -84,7 +86,7 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 		ForceSSL:                      &pod.ClearTextValue{Value: fmt.Sprintf("%t", *spec.Config.ForceSSL)},
 		ProviderPlan:                  &pod.ClearTextValue{Value: *spec.Config.ThreescaleProviderPlan},
 		SSLCertDir:                    &pod.ClearTextValue{Value: *spec.Config.SSLCertsDir},
-		SandboxProxyOpensslVeridyMode: &pod.ClearTextValue{Value: *spec.Config.SandboxProxyOpensslVerifyMode},
+		SandboxProxyOpensslVerifyMode: &pod.ClearTextValue{Value: *spec.Config.SandboxProxyOpensslVerifyMode},
 		Superdomain:                   &pod.ClearTextValue{Value: *spec.Config.ThreescaleSuperdomain},
 
 		RailsEnvironment: &pod.ClearTextValue{Value: *spec.Config.Rails.Environment},
@@ -103,23 +105,19 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 
 		EventsHookPassword: &pod.SecretValue{Value: spec.Config.EventsSharedSecret},
 
-		RedisURL:            &pod.ClearTextValue{Value: spec.Config.Redis.QueuesDSN},
-		RedisActionCableURL: &pod.ClearTextValue{Value: ""},
-		RedisNamespace:      &pod.ClearTextValue{Value: ""},
-		RedisSentinelHosts:  &pod.ClearTextValue{Value: ""},
-		RedisSentinelRole:   &pod.ClearTextValue{Value: ""},
+		RedisURL:           &pod.ClearTextValue{Value: spec.Config.Redis.QueuesDSN},
+		RedisNamespace:     &pod.ClearTextValue{Value: ""},
+		RedisSentinelHosts: &pod.ClearTextValue{Value: ""},
+		RedisSentinelRole:  &pod.ClearTextValue{Value: ""},
 
 		SMTPAddress:           &pod.ClearTextValue{Value: spec.Config.SMTP.Address},
-		SMPTUserName:          &pod.SecretValue{Value: spec.Config.SMTP.User},
+		SMTPUserName:          &pod.SecretValue{Value: spec.Config.SMTP.User},
 		SMTPPassword:          &pod.SecretValue{Value: spec.Config.SMTP.Password},
 		SMTPPort:              &pod.ClearTextValue{Value: fmt.Sprintf("%d", spec.Config.SMTP.Port)},
-		SMPTAuthentication:    &pod.ClearTextValue{Value: spec.Config.SMTP.AuthProtocol},
+		SMTPAuthentication:    &pod.ClearTextValue{Value: spec.Config.SMTP.AuthProtocol},
 		SMTPOpensslVerifyMode: &pod.ClearTextValue{Value: spec.Config.SMTP.OpenSSLVerifyMode},
-		SMTPSTARTTLSAuto:      &pod.ClearTextValue{Value: fmt.Sprintf("%t", spec.Config.SMTP.STARTTLSAuto)},
 
 		MappingServiceAccessToken: &pod.SecretValue{Value: spec.Config.MappingServiceAccessToken},
-
-		ZyncAuthenticationToken: &pod.SecretValue{Value: spec.Config.ZyncAuthToken},
 
 		BackendRedisURL:            &pod.ClearTextValue{Value: spec.Config.Backend.RedisDSN},
 		BackendRedisSentinelHosts:  &pod.ClearTextValue{Value: ""},
@@ -136,7 +134,6 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 		AssetsAWSRegion:          &pod.ClearTextValue{Value: spec.Config.Assets.Region},
 
 		AppSecretKeyBase:                 &pod.SecretValue{Value: spec.Config.SecretKeyBase},
-		AccessCode:                       &pod.SecretValue{Value: spec.Config.AccessCode},
 		SegmentDeletionToken:             &pod.SecretValue{Value: spec.Config.Segment.DeletionToken},
 		SegmentDeletionWorkspace:         &pod.ClearTextValue{Value: spec.Config.Segment.DeletionWorkspace},
 		SegmentWriteKey:                  &pod.SecretValue{Value: spec.Config.Segment.WriteKey},
@@ -157,6 +154,29 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 		opts.AssetsHost = &pod.ClearTextValue{Value: ""}
 	} else {
 		opts.AssetsHost = &pod.ClearTextValue{Value: *spec.Config.Assets.Host}
+	}
+
+	if spec.Config.AccessCode != nil {
+		opts.AccessCode = &pod.SecretValue{Value: *spec.Config.AccessCode}
+	}
+
+	if spec.Config.RedHatCustomerPortal.Realm != nil {
+		opts.RedHatCustomerPortalRealm = &pod.ClearTextValue{Value: *spec.Config.RedHatCustomerPortal.Realm}
+	}
+
+	if spec.Config.SMTP.STARTTLS != nil {
+		opts.SMTPSTARTTLS = &pod.ClearTextValue{Value: fmt.Sprintf("%t", *spec.Config.SMTP.STARTTLS)}
+	}
+
+	if spec.Config.SMTP.STARTTLSAuto != nil {
+		opts.SMTPSTARTTLSAuto = &pod.ClearTextValue{Value: fmt.Sprintf("%t", *spec.Config.SMTP.STARTTLSAuto)}
+	}
+
+	if spec.Config.Zync != nil {
+		opts.ZyncEndpoint = &pod.ClearTextValue{Value: spec.Config.Zync.Endpoint}
+		opts.ZyncAuthenticationToken = &pod.SecretValue{Value: spec.Config.Zync.AuthToken}
+	} else {
+		opts.ZyncAuthenticationToken = &pod.SecretValue{Value: *spec.Config.ZyncAuthToken}
 	}
 
 	return opts

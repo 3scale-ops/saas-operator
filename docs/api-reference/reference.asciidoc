@@ -1107,6 +1107,7 @@ RedHatCustomerPortalSpec has configuration for integration with Red Hat Customer
 | Field | Description
 | *`clientID`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Client ID
 | *`clientSecret`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Client secret
+| *`realm`* __string__ | Realm
 |===
 
 
@@ -1292,6 +1293,7 @@ SMTPSpec has options to configure system's SMTP
 | *`port`* __integer__ | Port
 | *`authProtocol`* __string__ | Authentication protocol
 | *`opensslVerifyMode`* __string__ | OpenSSL verify mode
+| *`starttls`* __boolean__ | Enable/disable STARTTLS
 | *`starttlsAuto`* __boolean__ | Enable/disable auto STARTTLS
 |===
 
@@ -1315,6 +1317,7 @@ SecretReference is a reference to a secret stored in some secrets engine
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systembackendspec[$$SystemBackendSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemrecaptchaspec[$$SystemRecaptchaSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemzyncspec[$$SystemZyncSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncconfig[$$ZyncConfig$$]
 ****
 
@@ -1517,8 +1520,6 @@ SphinxConfig has configuration options for System's sphinx
 |===
 | Field | Description
 | *`thinking`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-thinkingspec[$$ThinkingSpec$$]__ | Thinking configuration for sphinx
-| *`deltaIndexInterval`* __integer__ | Interval used for adding chunks of brand new documents to the primary index at certain intervals without having to do a full re-index
-| *`fullReindexInterval`* __integer__ | Interval used to do a full re-index
 |===
 
 
@@ -1627,6 +1628,7 @@ SystemConfig holds configuration for SystemApp component
 | *`smtp`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-smtpspec[$$SMTPSpec$$]__ | SMTP configuration options
 | *`mappingServiceAccessToken`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Mapping Service access token
 | *`zyncAuthToken`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Zync authentication token
+| *`zync`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemzyncspec[$$SystemZyncSpec$$]__ | Zync has configuration options for system to contact zync
 | *`backend`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systembackendspec[$$SystemBackendSpec$$]__ | Backend has configuration options for system to contact backend
 | *`assets`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-assetsspec[$$AssetsSpec$$]__ | Assets has configuration to access assets in AWS s3
 |===
@@ -1782,6 +1784,24 @@ SystemSphinxSpec configures the App component of System
 |===
 
 
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemzyncspec"]
+==== SystemZyncSpec 
+
+SystemZyncSpec has configuration options for zync
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`authToken`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Zync authentication token
+| *`endpoint`* __string__ | Zync endpoint
+|===
 
 
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-targetredisservers"]

@@ -66,7 +66,7 @@ var _ = Describe("System controller", func() {
 							PrivateKey: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 						},
 						SecretKeyBase: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-						AccessCode:    saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
+						AccessCode:    &saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 						Segment: saasv1alpha1.SegmentSpec{
 							DeletionWorkspace: "value",
 							DeletionToken:     saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
@@ -79,6 +79,7 @@ var _ = Describe("System controller", func() {
 						RedHatCustomerPortal: saasv1alpha1.RedHatCustomerPortalSpec{
 							ClientID:     saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 							ClientSecret: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
+							Realm:        pointer.StringPtr("sso.example.net"),
 						},
 						Bugsnag: &saasv1alpha1.BugsnagSpec{
 							APIKey: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
@@ -95,10 +96,13 @@ var _ = Describe("System controller", func() {
 							Port:              1000,
 							AuthProtocol:      "value",
 							OpenSSLVerifyMode: "value",
-							STARTTLSAuto:      false,
+							STARTTLS:          pointer.BoolPtr(false),
 						},
 						MappingServiceAccessToken: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-						ZyncAuthToken:             saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
+						Zync: &saasv1alpha1.SystemZyncSpec{
+							AuthToken: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
+							Endpoint:  "value",
+						},
 						Backend: saasv1alpha1.SystemBackendSpec{
 							ExternalEndpoint:    "value",
 							InternalEndpoint:    "value",
@@ -203,7 +207,7 @@ var _ = Describe("System controller", func() {
 					Namespace:      namespace,
 					Replicas:       2,
 					ContainerName:  "system-sidekiq",
-					ContainterArgs: []string{"sidekiq", "--queue", "mailers", "--queue", "low"},
+					ContainterArgs: []string{"sidekiq", "--queue", "mailers", "--queue", "low", "--queue", "bulk_indexing"},
 					PDB:            true,
 					HPA:            true,
 					PodMonitor:     true,
@@ -469,7 +473,7 @@ var _ = Describe("System controller", func() {
 						Namespace:      namespace,
 						Replicas:       2,
 						ContainerName:  "system-sidekiq",
-						ContainterArgs: []string{"sidekiq", "--queue", "mailers", "--queue", "low"},
+						ContainterArgs: []string{"sidekiq", "--queue", "mailers", "--queue", "low", "--queue", "bulk_indexing"},
 						PodMonitor:     true,
 					}).Assert(k8sClient, dep, timeout, poll))
 
