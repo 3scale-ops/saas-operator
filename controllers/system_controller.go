@@ -27,13 +27,13 @@ import (
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	"github.com/go-logr/logr"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
@@ -78,7 +78,7 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		instance.Spec,
 	)
 	if err != nil {
-		return r.ManageError(ctx, instance, err)
+		return ctrl.Result{}, err
 	}
 
 	// Shared resources
@@ -87,12 +87,12 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	// System APP
 	var app_resources []basereconciler.Resource
 	if instance.Spec.App.Canary != nil {
-		app_resources, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen.App, &gen.App, gen.CanaryApp)
+		app_resources, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, &gen.App, &gen.App, gen.CanaryApp)
 	} else {
-		app_resources, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen.App, &gen.App)
+		app_resources, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, &gen.App, &gen.App)
 	}
 	if err != nil {
-		return r.ManageError(ctx, instance, err)
+		return ctrl.Result{}, err
 	}
 
 	resources = append(resources, app_resources...)
@@ -100,36 +100,36 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	// Sidekiq Default resources
 	var sidekiq_default_resources []basereconciler.Resource
 	if instance.Spec.SidekiqDefault.Canary != nil {
-		sidekiq_default_resources, err = r.NewDeploymentWorkload(ctx, instance, r.GetScheme(), &gen.SidekiqDefault, gen.CanarySidekiqDefault)
+		sidekiq_default_resources, err = r.NewDeploymentWorkload(ctx, instance, &gen.SidekiqDefault, gen.CanarySidekiqDefault)
 	} else {
-		sidekiq_default_resources, err = r.NewDeploymentWorkload(ctx, instance, r.GetScheme(), &gen.SidekiqDefault)
+		sidekiq_default_resources, err = r.NewDeploymentWorkload(ctx, instance, &gen.SidekiqDefault)
 	}
 	if err != nil {
-		return r.ManageError(ctx, instance, err)
+		return ctrl.Result{}, err
 	}
 	resources = append(resources, sidekiq_default_resources...)
 
 	// Sidekiq Billing resources
 	var sidekiq_billing_resources []basereconciler.Resource
 	if instance.Spec.SidekiqBilling.Canary != nil {
-		sidekiq_billing_resources, err = r.NewDeploymentWorkload(ctx, instance, r.GetScheme(), &gen.SidekiqBilling, gen.CanarySidekiqBilling)
+		sidekiq_billing_resources, err = r.NewDeploymentWorkload(ctx, instance, &gen.SidekiqBilling, gen.CanarySidekiqBilling)
 	} else {
-		sidekiq_billing_resources, err = r.NewDeploymentWorkload(ctx, instance, r.GetScheme(), &gen.SidekiqBilling)
+		sidekiq_billing_resources, err = r.NewDeploymentWorkload(ctx, instance, &gen.SidekiqBilling)
 	}
 	if err != nil {
-		return r.ManageError(ctx, instance, err)
+		return ctrl.Result{}, err
 	}
 	resources = append(resources, sidekiq_billing_resources...)
 
 	// Sidekiq Low resources
 	var sidekiq_low_resources []basereconciler.Resource
 	if instance.Spec.SidekiqLow.Canary != nil {
-		sidekiq_low_resources, err = r.NewDeploymentWorkload(ctx, instance, r.GetScheme(), &gen.SidekiqLow, gen.CanarySidekiqLow)
+		sidekiq_low_resources, err = r.NewDeploymentWorkload(ctx, instance, &gen.SidekiqLow, gen.CanarySidekiqLow)
 	} else {
-		sidekiq_low_resources, err = r.NewDeploymentWorkload(ctx, instance, r.GetScheme(), &gen.SidekiqLow)
+		sidekiq_low_resources, err = r.NewDeploymentWorkload(ctx, instance, &gen.SidekiqLow)
 	}
 	if err != nil {
-		return r.ManageError(ctx, instance, err)
+		return ctrl.Result{}, err
 	}
 	resources = append(resources, sidekiq_low_resources...)
 
@@ -142,23 +142,24 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	err = r.ReconcileOwnedResources(ctx, instance, resources)
 	if err != nil {
 		logger.Error(err, "unable to update owned resources")
-		return r.ManageError(ctx, instance, err)
+		return ctrl.Result{}, err
 	}
 
-	return r.ManageSuccess(ctx, instance)
+	return ctrl.Result{}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *SystemReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&saasv1alpha1.System{}).
+		Owns(&appsv1.Deployment{}).
+		Owns(&appsv1.StatefulSet{}).
 		Owns(&corev1.Service{}).
 		Owns(&policyv1.PodDisruptionBudget{}).
 		Owns(&autoscalingv2beta2.HorizontalPodAutoscaler{}).
 		Owns(&monitoringv1.PodMonitor{}).
 		Owns(&externalsecretsv1beta1.ExternalSecret{}).
 		Owns(&grafanav1alpha1.GrafanaDashboard{}).
-		Watches(&source.Channel{Source: r.GetStatusChangeChannel()}, &handler.EnqueueRequestForObject{}).
 		Watches(&source.Kind{Type: &corev1.Secret{TypeMeta: metav1.TypeMeta{Kind: "Secret"}}},
 			r.SecretEventHandler(&saasv1alpha1.SystemList{}, r.Log)).
 		Complete(r)

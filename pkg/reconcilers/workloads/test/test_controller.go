@@ -20,6 +20,7 @@ import (
 	"context"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	externalsecretsv1beta1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1beta1"
 	"github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/resources"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads/test/api/v1alpha1"
@@ -27,13 +28,14 @@ import (
 	"github.com/go-logr/logr"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
+	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
@@ -81,17 +83,16 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		TSelector:  instance.Spec.Bob.Selector,
 	}
 
-	deployments, err := r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(),
-		tm, alice, bob)
+	deployments, err := r.NewDeploymentWorkloadWithTraffic(ctx, instance, tm, alice, bob)
 	if err != nil {
-		return r.ManageError(ctx, instance, err)
+		return ctrl.Result{}, err
 	}
 
 	// Reconcile all resources
 	err = r.ReconcileOwnedResources(ctx, instance, deployments)
 	if err != nil {
 		logger.Error(err, "unable to reconcile owned resources")
-		return r.ManageError(ctx, instance, err)
+		return ctrl.Result{}, err
 	}
 
 	return ctrl.Result{}, nil
@@ -101,7 +102,11 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha1.Test{}).
-		Watches(&source.Channel{Source: r.GetStatusChangeChannel()}, &handler.EnqueueRequestForObject{}).
+		Owns(&appsv1.Deployment{}).
+		Owns(&corev1.Service{}).
+		Owns(&policyv1.PodDisruptionBudget{}).
+		Owns(&autoscalingv2beta2.HorizontalPodAutoscaler{}).
+		Owns(&externalsecretsv1beta1.ExternalSecret{}).
 		Watches(&source.Kind{Type: &corev1.Secret{TypeMeta: metav1.TypeMeta{Kind: "Secret"}}},
 			r.SecretEventHandler(&v1alpha1.TestList{}, r.Log)).
 		Complete(r)

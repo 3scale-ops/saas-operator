@@ -5,11 +5,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/redhat-cop/operator-utils/pkg/util"
-	"github.com/redhat-cop/operator-utils/pkg/util/lockedresourcecontroller"
-	"github.com/redhat-cop/operator-utils/pkg/util/lockedresourcecontroller/lockedpatch"
-	"github.com/redhat-cop/operator-utils/pkg/util/lockedresourcecontroller/lockedresource"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -24,23 +20,17 @@ import (
 type Resource interface {
 	Build(ctx context.Context, cl client.Client) (client.Object, []string, error)
 	Enabled() bool
-}
-
-type ResourceWithCustomReconciler interface {
-	Resource
 	ResourceReconciler(context.Context, client.Client, client.Object) error
 }
 
 // Reconciler computes a list of resources that it needs to keep in place
 type Reconciler struct {
-	lockedresourcecontroller.EnforcingReconciler
+	client.Client
+	Scheme *runtime.Scheme
 }
 
-// NewFromManager constructs a new Reconciler from the given manager
-func NewFromManager(mgr manager.Manager, recorderName string, clusterWatchers bool) Reconciler {
-	return Reconciler{
-		EnforcingReconciler: lockedresourcecontroller.NewFromManager(mgr, recorderName, clusterWatchers, false),
-	}
+func NewFromManager(mgr manager.Manager) Reconciler {
+	return Reconciler{Client: mgr.GetClient(), Scheme: mgr.GetScheme()}
 }
 
 // GetInstance tries to retrieve the custom resource instance and perform some standard
@@ -49,7 +39,7 @@ func (r *Reconciler) GetInstance(ctx context.Context, key types.NamespacedName,
 	instance client.Object, finalizer string, cleanupFns []func()) (*ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 
-	err := r.GetClient().Get(ctx, key, instance)
+	err := r.Client.Get(ctx, key, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Return and don't requeue
@@ -62,27 +52,27 @@ func (r *Reconciler) GetInstance(ctx context.Context, key types.NamespacedName,
 		if !util.HasFinalizer(instance, finalizer) {
 			return &ctrl.Result{}, nil
 		}
-		err := r.ManageCleanUpLogic(instance, cleanupFns, logger)
+		err := r.ManageCleanupLogic(instance, cleanupFns, logger)
 		if err != nil {
 			logger.Error(err, "unable to delete instance")
-			result, err := r.ManageError(ctx, instance, err)
+			result, err := ctrl.Result{}, err
 			return &result, err
 		}
 		util.RemoveFinalizer(instance, finalizer)
-		err = r.GetClient().Update(ctx, instance)
+		err = r.Client.Update(ctx, instance)
 		if err != nil {
 			logger.Error(err, "unable to update instance")
-			result, err := r.ManageError(ctx, instance, err)
+			result, err := ctrl.Result{}, err
 			return &result, err
 		}
 		return &ctrl.Result{}, nil
 	}
 
 	if ok := r.IsInitialized(instance, finalizer); !ok {
-		err := r.GetClient().Update(ctx, instance)
+		err := r.Client.Update(ctx, instance)
 		if err != nil {
 			logger.Error(err, "unable to initialize instance")
-			result, err := r.ManageError(ctx, instance, err)
+			result, err := ctrl.Result{}, err
 			return &result, err
 		}
 		return &ctrl.Result{}, nil
@@ -94,27 +84,24 @@ func (r *Reconciler) GetInstance(ctx context.Context, key types.NamespacedName,
 // Returns false if it isn't.
 func (r *Reconciler) IsInitialized(instance client.Object, finalizer string) bool {
 	ok := true
-	if !util.HasFinalizer(instance, finalizer) {
-		util.AddFinalizer(instance, finalizer)
+	// ensure the finalizers are removed, they are no longer required
+	// as we have dropped usage the lockedresources reconciler
+	if util.HasFinalizer(instance, finalizer) {
+		util.RemoveFinalizer(instance, finalizer)
 		ok = false
 	}
 	return ok
 }
 
-// ManageCleanUpLogic contains finalization logic for the LockedResourcesReconciler
+// ManageCleanupLogic contains finalization logic for the LockedResourcesReconciler
 // Functionality can be extended by passing extra cleanup functions
-func (r *Reconciler) ManageCleanUpLogic(instance client.Object, fns []func(), log logr.Logger) error {
+func (r *Reconciler) ManageCleanupLogic(instance client.Object, fns []func(), log logr.Logger) error {
 
-	// Call any extra cleanup functions passed
+	// Call any cleanup functions passed
 	for _, fn := range fns {
 		fn()
 	}
 
-	err := r.Terminate(instance, true)
-	if err != nil {
-		log.Error(err, "unable to terminate locked resources reconciler")
-		return err
-	}
 	return nil
 }
 
@@ -122,57 +109,21 @@ func (r *Reconciler) ManageCleanUpLogic(instance client.Object, fns []func(), lo
 // all controllers
 func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.Object, resources []Resource) error {
 
-	lr := make([]lockedresource.LockedResource, 0, len(resources))
-
 	for _, res := range resources {
 
-		// If the resource implements a custom reconciler, call it and
-		// avoid the generic resource processing using operator-utils
-		if custom, ok := res.(ResourceWithCustomReconciler); ok {
-
-			object, _, err := res.Build(ctx, r.GetClient())
-			if err != nil {
-				return err
-			}
-
-			if err := controllerutil.SetControllerReference(owner, object, r.GetScheme()); err != nil {
-				return err
-			}
-
-			if err := custom.ResourceReconciler(ctx, r.GetClient(), object); err != nil {
-				return err
-			}
-
-		} else {
-
-			if res.Enabled() {
-
-				object, exclude, err := res.Build(ctx, r.GetClient())
-				if err != nil {
-					return err
-				}
-
-				if err := controllerutil.SetControllerReference(owner, object, r.GetScheme()); err != nil {
-					return err
-				}
-
-				u, err := runtime.DefaultUnstructuredConverter.ToUnstructured(object)
-				if err != nil {
-					return err
-				}
-
-				lr = append(lr, lockedresource.LockedResource{
-					Unstructured:  unstructured.Unstructured{Object: u},
-					ExcludedPaths: exclude,
-				})
-			}
-
+		object, _, err := res.Build(ctx, r.Client)
+		if err != nil {
+			return err
 		}
-	}
 
-	// Call UpdateLockedResources() to reconcile resource types controlled by operator-utils
-	if err := r.UpdateLockedResources(ctx, owner, lr, []lockedpatch.LockedPatch{}); err != nil {
-		return err
+		if err := controllerutil.SetControllerReference(owner, object, r.Scheme); err != nil {
+			return err
+		}
+
+		if err := res.ResourceReconciler(ctx, r.Client, object); err != nil {
+			return err
+		}
+
 	}
 
 	return nil
@@ -191,7 +142,7 @@ type ExtendedObjectList interface {
 func (r *Reconciler) SecretEventHandler(ol ExtendedObjectList, logger logr.Logger) handler.EventHandler {
 	return handler.EnqueueRequestsFromMapFunc(
 		func(o client.Object) []reconcile.Request {
-			if err := r.GetClient().List(context.TODO(), ol); err != nil {
+			if err := r.Client.List(context.TODO(), ol); err != nil {
 				logger.Error(err, "unable to retrieve the list of resources")
 				return []reconcile.Request{}
 			}

@@ -145,13 +145,13 @@ var _ = BeforeSuite(func() {
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&RedisShardReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr, "RedisShard", false),
+		Reconciler: basereconciler.NewFromManager(mgr),
 		Log:        ctrl.Log.WithName("controllers").WithName("RedisShard"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&SentinelReconciler{
-		Reconciler:     basereconciler.NewFromManager(mgr, "Sentinel", false),
+		Reconciler:     basereconciler.NewFromManager(mgr),
 		SentinelEvents: threads.NewManager(),
 		Metrics:        threads.NewManager(),
 		Log:            ctrl.Log.WithName("controllers").WithName("Sentinel"),

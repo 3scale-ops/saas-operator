@@ -62,12 +62,6 @@ var _ = Describe("Test controller", func() {
 
 		It("creates the required resources", func() {
 
-			Eventually(func() bool {
-				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, instance)
-				Expect(err).ToNot(HaveOccurred())
-				return len(instance.GetFinalizers()) > 0
-			}, timeout, poll).Should(BeTrue())
-
 			dep := &appsv1.Deployment{}
 			Eventually(func() error {
 				return k8sClient.Get(
@@ -214,11 +208,6 @@ var _ = Describe("Test controller", func() {
 
 		It("Deletes all owned resources when custom resource is deleted", func() {
 			// Wait for all resources to be created
-			Eventually(func() bool {
-				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, instance)
-				Expect(err).ToNot(HaveOccurred())
-				return len(instance.GetFinalizers()) > 0
-			}, timeout, poll).Should(BeTrue())
 
 			dep := &appsv1.Deployment{}
 			Eventually(func() error {
@@ -334,12 +323,6 @@ var _ = Describe("Test controller", func() {
 		})
 
 		It("creates the required deployment with proper labels and annotations", func() {
-
-			Eventually(func() bool {
-				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, instance)
-				Expect(err).ToNot(HaveOccurred())
-				return len(instance.GetFinalizers()) > 0
-			}, timeout, poll).Should(BeTrue())
 
 			dep := &appsv1.Deployment{}
 			Eventually(func() error {

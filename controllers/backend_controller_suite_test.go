@@ -101,11 +101,6 @@ var _ = Describe("Backend controller", func() {
 				return k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, backend)
 			}, timeout, poll).ShouldNot(HaveOccurred())
 
-			Eventually(func() bool {
-				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, backend)
-				Expect(err).ToNot(HaveOccurred())
-				return len(backend.GetFinalizers()) > 0
-			}, timeout, poll).Should(BeTrue())
 		})
 
 		It("creates the required backend workload resources", func() {

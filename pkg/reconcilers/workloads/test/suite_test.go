@@ -22,6 +22,8 @@ import (
 	"testing"
 	"time"
 
+	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	externalsecretsv1beta1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads/test/api/v1alpha1"
@@ -29,6 +31,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -73,12 +76,11 @@ var _ = BeforeSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 	Expect(cfg).NotTo(BeNil())
 
-	err = v1alpha1.AddToScheme(scheme.Scheme)
-	Expect(err).NotTo(HaveOccurred())
-	err = monitoringv1.AddToScheme(scheme.Scheme)
-	Expect(err).NotTo(HaveOccurred())
-	err = grafanav1alpha1.AddToScheme(scheme.Scheme)
-	Expect(err).NotTo(HaveOccurred())
+	utilruntime.Must(v1alpha1.AddToScheme(scheme.Scheme))
+	utilruntime.Must(saasv1alpha1.AddToScheme(scheme.Scheme))
+	utilruntime.Must(monitoringv1.AddToScheme(scheme.Scheme))
+	utilruntime.Must(grafanav1alpha1.AddToScheme(scheme.Scheme))
+	utilruntime.Must(externalsecretsv1beta1.AddToScheme(scheme.Scheme))
 
 	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
 		Scheme: scheme.Scheme,

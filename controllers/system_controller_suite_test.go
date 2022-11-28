@@ -126,12 +126,6 @@ var _ = Describe("System controller", func() {
 				return k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, system)
 			}, timeout, poll).ShouldNot(HaveOccurred())
 
-			Eventually(func() bool {
-				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, system)
-				Expect(err).ToNot(HaveOccurred())
-				return len(system.GetFinalizers()) > 0
-			}, timeout, poll).Should(BeTrue())
-
 		})
 
 		It("creates the required system-app resources", func() {

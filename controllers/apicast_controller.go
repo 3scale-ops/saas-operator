@@ -26,16 +26,13 @@ import (
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	"github.com/go-logr/logr"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
-	"github.com/redhat-cop/operator-utils/pkg/util"
+	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/builder"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 // ApicastReconciler reconciles a Apicast object
@@ -72,37 +69,37 @@ func (r *ApicastReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	gen, err := apicast.NewGenerator(instance.GetName(), instance.GetNamespace(), instance.Spec)
 	if err != nil {
-		return r.ManageError(ctx, instance, err)
+		return ctrl.Result{}, err
 	}
 
 	resources := gen.Resources()
 
 	var staging []basereconciler.Resource
 	if instance.Spec.Staging.Canary != nil {
-		staging, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen.Staging, &gen.Staging, gen.CanaryStaging)
+		staging, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, &gen.Staging, &gen.Staging, gen.CanaryStaging)
 	} else {
-		staging, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen.Staging, &gen.Staging)
+		staging, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, &gen.Staging, &gen.Staging)
 	}
 	if err != nil {
-		return r.ManageError(ctx, instance, err)
+		return ctrl.Result{}, err
 	}
 	resources = append(resources, staging...)
 
 	var production []basereconciler.Resource
 	if instance.Spec.Production.Canary != nil {
-		production, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen.Production, &gen.Production, gen.CanaryProduction)
+		production, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, &gen.Production, &gen.Production, gen.CanaryProduction)
 	} else {
-		production, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen.Production, &gen.Production)
+		production, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, &gen.Production, &gen.Production)
 	}
 	if err != nil {
-		return r.ManageError(ctx, instance, err)
+		return ctrl.Result{}, err
 	}
 	resources = append(resources, production...)
 
 	err = r.ReconcileOwnedResources(ctx, instance, resources)
 	if err != nil {
 		logger.Error(err, "unable to update owned resources")
-		return r.ManageError(ctx, instance, err)
+		return ctrl.Result{}, err
 	}
 
 	return ctrl.Result{}, nil
@@ -111,12 +108,12 @@ func (r *ApicastReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 // SetupWithManager sets up the controller with the Manager.
 func (r *ApicastReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&saasv1alpha1.Apicast{}, builder.WithPredicates(util.ResourceGenerationOrFinalizerChangedPredicate{})).
+		For(&saasv1alpha1.Apicast{}).
+		Owns(&appsv1.Deployment{}).
 		Owns(&corev1.Service{}).
 		Owns(&policyv1.PodDisruptionBudget{}).
 		Owns(&autoscalingv2beta2.HorizontalPodAutoscaler{}).
 		Owns(&monitoringv1.PodMonitor{}).
 		Owns(&grafanav1alpha1.GrafanaDashboard{}).
-		Watches(&source.Channel{Source: r.GetStatusChangeChannel()}, &handler.EnqueueRequestForObject{}).
 		Complete(r)
 }

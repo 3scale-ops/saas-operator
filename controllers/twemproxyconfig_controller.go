@@ -73,21 +73,21 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	// Generate the ConfigMap
 	gen, err := twemproxyconfig.NewGenerator(
-		ctx, instance, r.GetClient(), logger.WithName("generator"),
+		ctx, instance, r.Client, logger.WithName("generator"),
 	)
 
 	if err != nil {
-		return r.ManageError(ctx, instance, err)
+		return ctrl.Result{}, err
 	}
-	cm, _, err := gen.ConfigMap().Build(ctx, r.GetClient())
+	cm, _, err := gen.ConfigMap().Build(ctx, r.Client)
 	if err != nil {
-		return r.ManageError(ctx, instance, err)
+		return ctrl.Result{}, err
 	}
 
 	// Reconcile the ConfigMap
 	hash, err := r.reconcileConfigMap(ctx, instance, cm.(*corev1.ConfigMap), *instance.Spec.ReconcileServerPools, logger)
 	if err != nil {
-		return r.ManageError(ctx, instance, err)
+		return ctrl.Result{}, err
 	}
 
 	// Reconcile sync annotations in pods. This is done to force a change in the target
@@ -95,7 +95,7 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	// would re-sync the file asynchronously depending on its configured refresh time, which might
 	// take several seconds.
 	if err := r.reconcileSyncAnnotations(ctx, instance, hash, logger); err != nil {
-		return r.ManageError(ctx, instance, err)
+		return ctrl.Result{}, err
 	}
 
 	// Reconcile sentinel event watchers
@@ -112,7 +112,7 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	if err := r.ReconcileOwnedResources(
 		ctx, instance, []basereconciler.Resource{gen.GrafanaDashboard()},
 	); err != nil {
-		r.ManageError(ctx, instance, err)
+		return ctrl.Result{}, err
 	}
 
 	// Reconcile periodically in case some event is lost ...
@@ -123,14 +123,14 @@ func (r *TwemproxyConfigReconciler) reconcileConfigMap(ctx context.Context, owne
 	desired *corev1.ConfigMap, reconcileData bool, log logr.Logger) (string, error) {
 
 	current := &corev1.ConfigMap{}
-	err := r.GetClient().Get(ctx, util.ObjectKey(desired), current)
+	err := r.Client.Get(ctx, util.ObjectKey(desired), current)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Create
-			if err := controllerutil.SetControllerReference(owner, desired, r.GetScheme()); err != nil {
+			if err := controllerutil.SetControllerReference(owner, desired, r.Scheme); err != nil {
 				return "", err
 			}
-			if err := r.GetClient().Create(ctx, desired); err != nil {
+			if err := r.Client.Create(ctx, desired); err != nil {
 				return "", err
 			}
 			log.Info("created ConfigMap")
@@ -145,7 +145,7 @@ func (r *TwemproxyConfigReconciler) reconcileConfigMap(ctx context.Context, owne
 		// We use patch to avoid failures due to having an older version
 		// of the configmap so the config changes are propagated faster.
 		if !reflect.DeepEqual(desired.Data, current.Data) {
-			if err := r.GetClient().Patch(ctx, desired, client.MergeFrom(current)); err != nil {
+			if err := r.Client.Patch(ctx, desired, client.MergeFrom(current)); err != nil {
 				log.Error(err, "unable to patch ConfigMap")
 				return "", err
 			}
@@ -163,7 +163,7 @@ func (r *TwemproxyConfigReconciler) reconcileSyncAnnotations(ctx context.Context
 	instance *saasv1alpha1.TwemproxyConfig, hash string, log logr.Logger) error {
 
 	podList := &corev1.PodList{}
-	if err := r.GetClient().List(ctx, podList, instance.PodSyncSelector(),
+	if err := r.Client.List(ctx, podList, instance.PodSyncSelector(),
 		client.InNamespace(instance.GetNamespace())); err != nil {
 		return err
 	}
@@ -215,7 +215,7 @@ func (r *TwemproxyConfigReconciler) syncPod(ctx context.Context, pod corev1.Pod,
 			}
 		}
 
-		if err := r.GetClient().Patch(ctx, &pod, patch); err != nil {
+		if err := r.Client.Patch(ctx, &pod, patch); err != nil {
 			errCh <- err
 		}
 		log.V(1).Info(fmt.Sprintf("configmap re-sync forced in target pod %s", util.ObjectKey(&pod)))
