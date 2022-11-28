@@ -46,10 +46,12 @@ func (gen *ConsoleGenerator) statefulset() func() *appsv1.StatefulSet {
 						SecurityContext: &corev1.PodSecurityContext{},
 						Containers: []corev1.Container{
 							{
-								Name:                     strings.Join([]string{component, console}, "-"),
-								Image:                    fmt.Sprintf("%s:%s", *gen.Image.Name, *gen.Image.Tag),
-								Command:                  []string{"sleep"},
-								Args:                     []string{"infinity"},
+								Name:  strings.Join([]string{component, console}, "-"),
+								Image: fmt.Sprintf("%s:%s", *gen.Image.Name, *gen.Image.Tag),
+								Args: []string{
+									"sleep",
+									"infinity",
+								},
 								Env:                      pod.BuildEnvironment(gen.Options),
 								Ports:                    nil,
 								Resources:                corev1.ResourceRequirements(*gen.Spec.Resources),
