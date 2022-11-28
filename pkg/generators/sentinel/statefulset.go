@@ -109,6 +109,7 @@ func (gen *Generator) statefulSet() func() *appsv1.StatefulSet {
 								},
 							},
 						},
+						RestartPolicy:                 corev1.RestartPolicyAlways,
 						Tolerations:                   gen.Spec.Tolerations,
 						TerminationGracePeriodSeconds: pointer.Int64(30),
 						Volumes: []corev1.Volume{
