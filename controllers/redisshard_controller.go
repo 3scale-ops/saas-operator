@@ -27,14 +27,13 @@ import (
 	"github.com/3scale/saas-operator/pkg/redis"
 	"github.com/3scale/saas-operator/pkg/redis/crud/client"
 	"github.com/go-logr/logr"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 // RedisShardReconciler reconciles a RedisShard object
@@ -58,7 +57,7 @@ func (r *RedisShardReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	instance := &saasv1alpha1.RedisShard{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx, key, instance, saasv1alpha1.Finalizer, nil)
+	result, err := r.GetInstance(ctx, key, instance, nil, nil)
 	if result != nil || err != nil {
 		return *result, err
 	}
@@ -74,7 +73,7 @@ func (r *RedisShardReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	if err := r.ReconcileOwnedResources(ctx, instance, gen.Resources()); err != nil {
 		logger.Error(err, "unable to update owned resources")
-		return r.ManageError(ctx, instance, err)
+		return ctrl.Result{}, err
 	}
 
 	shard, result, err := r.setRedisRoles(ctx, types.NamespacedName{Name: req.Name, Namespace: req.Namespace},
@@ -98,9 +97,9 @@ func (r *RedisShardReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 func (r *RedisShardReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&saasv1alpha1.RedisShard{}).
+		Owns(&appsv1.StatefulSet{}).
 		Owns(&corev1.Service{}).
 		Owns(&corev1.ConfigMap{}).
-		Watches(&source.Channel{Source: r.GetStatusChangeChannel()}, &handler.EnqueueRequestForObject{}).
 		Complete(r)
 }
 
@@ -110,7 +109,7 @@ func (r *RedisShardReconciler) setRedisRoles(ctx context.Context, key types.Name
 	for i := 0; i < int(replicas); i++ {
 		pod := &corev1.Pod{}
 		key := types.NamespacedName{Name: fmt.Sprintf("%s-%d", serviceName, i), Namespace: key.Namespace}
-		err := r.GetClient().Get(ctx, key, pod)
+		err := r.Client.Get(ctx, key, pod)
 		if err != nil {
 			return &redis.Shard{Name: key.Name}, &ctrl.Result{}, err
 		}
@@ -147,7 +146,7 @@ func (r *RedisShardReconciler) updateStatus(ctx context.Context, shard *redis.Sh
 	}
 	if !equality.Semantic.DeepEqual(status, instance.Status) {
 		instance.Status = status
-		if err := r.GetClient().Status().Update(ctx, instance); err != nil {
+		if err := r.Client.Status().Update(ctx, instance); err != nil {
 			return err
 		}
 	}

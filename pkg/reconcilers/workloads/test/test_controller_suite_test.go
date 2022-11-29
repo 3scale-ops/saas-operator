@@ -72,12 +72,6 @@ var _ = Describe("Test controller", func() {
 
 		It("creates the required resources", func() {
 
-			Eventually(func() bool {
-				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: "instance", Namespace: namespace}, instance)
-				Expect(err).ToNot(HaveOccurred())
-				return len(instance.GetFinalizers()) > 0
-			}, timeout, poll).Should(BeTrue())
-
 			// alice Deployment
 			{
 				alice := &appsv1.Deployment{}

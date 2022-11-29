@@ -30,6 +30,7 @@ import (
 	"github.com/3scale/saas-operator/pkg/resource_builders/pdb"
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -37,7 +38,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
@@ -57,7 +57,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 
 	instance := &v1alpha1.Test{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx, key, instance, "finalizer.example.com", []func(){})
+	result, err := r.GetInstance(ctx, key, instance, nil, nil)
 	if result != nil || err != nil {
 		return *result, err
 	}
@@ -120,18 +120,21 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 
 	if err != nil {
 		logger.Error(err, "unable to reconcile owned resources")
-		return r.ManageError(ctx, instance, err)
+		return ctrl.Result{}, err
 	}
 
-	return r.ManageSuccess(ctx, instance)
+	return ctrl.Result{}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha1.Test{}).
-		Owns(&corev1.Service{}).Owns(&policyv1.PodDisruptionBudget{}).
-		Watches(&source.Channel{Source: r.GetStatusChangeChannel()}, &handler.EnqueueRequestForObject{}).
+		Owns(&appsv1.Deployment{}).
+		Owns(&corev1.Service{}).
+		Owns(&policyv1.PodDisruptionBudget{}).
+		Owns(&autoscalingv2beta2.HorizontalPodAutoscaler{}).
+		Owns(&externalsecretsv1beta1.ExternalSecret{}).
 		Watches(&source.Kind{Type: &corev1.Secret{TypeMeta: metav1.TypeMeta{Kind: "Secret"}}},
 			r.SecretEventHandler(&v1alpha1.TestList{}, r.Log)).
 		Complete(r)

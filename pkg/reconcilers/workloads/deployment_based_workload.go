@@ -4,7 +4,6 @@ import (
 	"context"
 
 	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
-	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
@@ -16,12 +15,12 @@ type WorkloadReconciler struct {
 // NewFromManager constructs a new Reconciler from the given manager
 func NewFromManager(mgr manager.Manager, recorderName string, clusterWatchers bool) WorkloadReconciler {
 	return WorkloadReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr, recorderName, clusterWatchers),
+		Reconciler: basereconciler.NewFromManager(mgr),
 	}
 }
 
 func (r *WorkloadReconciler) NewDeploymentWorkload(ctx context.Context, owner client.Object,
-	scheme *runtime.Scheme, workloads ...DeploymentWorkload) ([]basereconciler.Resource, error) {
+	workloads ...DeploymentWorkload) ([]basereconciler.Resource, error) {
 
 	resources := []basereconciler.Resource{}
 
@@ -38,7 +37,7 @@ func (r *WorkloadReconciler) NewDeploymentWorkload(ctx context.Context, owner cl
 }
 
 func (r *WorkloadReconciler) NewDeploymentWorkloadWithTraffic(ctx context.Context, owner client.Object,
-	scheme *runtime.Scheme, trafficManager TrafficManager, workloads ...DeploymentWorkloadWithTraffic) ([]basereconciler.Resource, error) {
+	trafficManager TrafficManager, workloads ...DeploymentWorkloadWithTraffic) ([]basereconciler.Resource, error) {
 
 	resources := []basereconciler.Resource{}
 

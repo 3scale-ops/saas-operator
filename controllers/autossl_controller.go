@@ -26,16 +26,13 @@ import (
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	"github.com/go-logr/logr"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
-	"github.com/redhat-cop/operator-utils/pkg/util"
+	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/builder"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 // AutoSSLReconciler reconciles a AutoSSL object
@@ -62,7 +59,7 @@ func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	instance := &saasv1alpha1.AutoSSL{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx, key, instance, saasv1alpha1.Finalizer, nil)
+	result, err := r.GetInstance(ctx, key, instance, nil, nil)
 	if result != nil || err != nil {
 		return *result, err
 	}
@@ -76,7 +73,7 @@ func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		instance.Spec,
 	)
 	if err != nil {
-		return r.ManageError(ctx, instance, err)
+		return ctrl.Result{}, err
 	}
 
 	// Shared resources
@@ -87,33 +84,33 @@ func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	// Workload resources
 	var workload []basereconciler.Resource
 	if instance.Spec.Canary != nil {
-		workload, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen, &gen, gen.Canary)
+		workload, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, &gen, &gen, gen.Canary)
 	} else {
-		workload, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen, &gen)
+		workload, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, &gen, &gen)
 	}
 	if err != nil {
-		return r.ManageError(ctx, instance, err)
+		return ctrl.Result{}, err
 	}
 	resources = append(resources, workload...)
 
 	err = r.ReconcileOwnedResources(ctx, instance, resources)
 	if err != nil {
 		logger.Error(err, "unable to update owned resources")
-		return r.ManageError(ctx, instance, err)
+		return ctrl.Result{}, err
 	}
 
-	return r.ManageSuccess(ctx, instance)
+	return ctrl.Result{}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *AutoSSLReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&saasv1alpha1.AutoSSL{}, builder.WithPredicates(util.ResourceGenerationOrFinalizerChangedPredicate{})).
+		For(&saasv1alpha1.AutoSSL{}).
+		Owns(&appsv1.Deployment{}).
 		Owns(&corev1.Service{}).
 		Owns(&policyv1.PodDisruptionBudget{}).
 		Owns(&autoscalingv2beta2.HorizontalPodAutoscaler{}).
 		Owns(&monitoringv1.PodMonitor{}).
 		Owns(&grafanav1alpha1.GrafanaDashboard{}).
-		Watches(&source.Channel{Source: r.GetStatusChangeChannel()}, &handler.EnqueueRequestForObject{}).
 		Complete(r)
 }

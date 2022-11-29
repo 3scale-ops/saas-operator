@@ -14,7 +14,6 @@ import (
 )
 
 var _ basereconciler.Resource = ServiceTemplate{}
-var _ basereconciler.ResourceWithCustomReconciler = ServiceTemplate{}
 
 // ServiceTemplate has methods to generate and reconcile a Service
 type ServiceTemplate struct {

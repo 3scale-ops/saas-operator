@@ -27,15 +27,13 @@ import (
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	"github.com/go-logr/logr"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
-	"github.com/redhat-cop/operator-utils/pkg/util"
+	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/builder"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
@@ -66,7 +64,7 @@ func (r *BackendReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	instance := &saasv1alpha1.Backend{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx, key, instance, saasv1alpha1.Finalizer, nil)
+	result, err := r.GetInstance(ctx, key, instance, nil, nil)
 	if result != nil || err != nil {
 		return *result, err
 	}
@@ -76,7 +74,7 @@ func (r *BackendReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	gen, err := backend.NewGenerator(instance.GetName(), instance.GetNamespace(), instance.Spec)
 	if err != nil {
-		return r.ManageError(ctx, instance, err)
+		return ctrl.Result{}, err
 	}
 
 	// Shared resources
@@ -85,31 +83,31 @@ func (r *BackendReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	// Listener resources
 	var listener_resources []basereconciler.Resource
 	if instance.Spec.Listener.Canary != nil {
-		listener_resources, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen.Listener, &gen.Listener, gen.CanaryListener)
+		listener_resources, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, &gen.Listener, &gen.Listener, gen.CanaryListener)
 	} else {
-		listener_resources, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, r.GetScheme(), &gen.Listener, &gen.Listener)
+		listener_resources, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, &gen.Listener, &gen.Listener)
 	}
 	if err != nil {
-		return r.ManageError(ctx, instance, err)
+		return ctrl.Result{}, err
 	}
 	resources = append(resources, listener_resources...)
 
 	// Worker resources
 	var worker_resources []basereconciler.Resource
 	if instance.Spec.Worker.Canary != nil {
-		worker_resources, err = r.NewDeploymentWorkload(ctx, instance, r.GetScheme(), &gen.Worker, gen.CanaryWorker)
+		worker_resources, err = r.NewDeploymentWorkload(ctx, instance, &gen.Worker, gen.CanaryWorker)
 	} else {
-		worker_resources, err = r.NewDeploymentWorkload(ctx, instance, r.GetScheme(), &gen.Worker)
+		worker_resources, err = r.NewDeploymentWorkload(ctx, instance, &gen.Worker)
 	}
 	if err != nil {
-		return r.ManageError(ctx, instance, err)
+		return ctrl.Result{}, err
 	}
 	resources = append(resources, worker_resources...)
 
 	// Cron resources
-	cron_resources, err := r.NewDeploymentWorkload(ctx, instance, r.GetScheme(), &gen.Cron)
+	cron_resources, err := r.NewDeploymentWorkload(ctx, instance, &gen.Cron)
 	if err != nil {
-		return r.ManageError(ctx, instance, err)
+		return ctrl.Result{}, err
 	}
 	resources = append(resources, cron_resources...)
 
@@ -117,7 +115,7 @@ func (r *BackendReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	err = r.ReconcileOwnedResources(ctx, instance, resources)
 	if err != nil {
 		logger.Error(err, "unable to reconcile owned resources")
-		return r.ManageError(ctx, instance, err)
+		return ctrl.Result{}, err
 	}
 
 	return ctrl.Result{}, nil
@@ -126,14 +124,14 @@ func (r *BackendReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 // SetupWithManager sets up the controller with the Manager.
 func (r *BackendReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&saasv1alpha1.Backend{}, builder.WithPredicates(util.ResourceGenerationOrFinalizerChangedPredicate{})).
+		For(&saasv1alpha1.Backend{}).
+		Owns(&appsv1.Deployment{}).
 		Owns(&corev1.Service{}).
 		Owns(&policyv1.PodDisruptionBudget{}).
 		Owns(&autoscalingv2beta2.HorizontalPodAutoscaler{}).
 		Owns(&monitoringv1.PodMonitor{}).
 		Owns(&externalsecretsv1beta1.ExternalSecret{}).
 		Owns(&grafanav1alpha1.GrafanaDashboard{}).
-		Watches(&source.Channel{Source: r.GetStatusChangeChannel()}, &handler.EnqueueRequestForObject{}).
 		Watches(&source.Kind{Type: &corev1.Secret{TypeMeta: metav1.TypeMeta{Kind: "Secret"}}},
 			r.SecretEventHandler(&saasv1alpha1.BackendList{}, r.Log)).
 		Complete(r)
