@@ -660,6 +660,10 @@ func InitializeExternalSecretSecretStoreReferenceSpec(spec *ExternalSecretSecret
 
 // BugsnagSpec has configuration for Bugsnag integration
 type BugsnagSpec struct {
+	// Release Stage to identify environment
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ReleaseStage *string `json:"releaseStage,omitempty"`
 	// API key
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	APIKey SecretReference `json:"apiKey"`

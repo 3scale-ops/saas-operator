@@ -72,6 +72,7 @@ var _ = Describe("Zync controller", func() {
 							},
 						},
 						Bugsnag: &saasv1alpha1.BugsnagSpec{
+							ReleaseStage: pointer.StringPtr("staging"),
 							APIKey: saasv1alpha1.SecretReference{
 								FromVault: &saasv1alpha1.VaultSecretReference{
 									Path: "some-path-bugsnag",

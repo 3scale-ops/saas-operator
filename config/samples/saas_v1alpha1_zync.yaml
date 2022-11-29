@@ -16,6 +16,7 @@ spec:
         path: secret/data/path/zync
         key: SECRET_KEY_BASE
     bugsnag:
+      releaseStage: development
       apiKey:
         fromVault:
           path: secret/data/path/zync

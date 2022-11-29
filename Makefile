@@ -3,7 +3,7 @@
 # To re-generate a bundle for another specific version without changing the standard setup, you can:
 # - use the VERSION as arg of the bundle target (e.g make bundle VERSION=0.0.2)
 # - use environment variables to overwrite this value (e.g export VERSION=0.0.2)
-VERSION ?= 0.17.1-alpha.11
+VERSION ?= 0.17.1-alpha.12
 
 # CHANNELS define the bundle channels used in the bundle.
 # Add a new line here if you would like to change its default config. (E.g CHANNELS = "candidate,fast,stable")
@@ -295,7 +295,7 @@ GOBINDATA ?= $(LOCALBIN)/go-bindata
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v3.8.7
-CONTROLLER_TOOLS_VERSION ?= v0.9.2
+CONTROLLER_TOOLS_VERSION ?= v0.10.0
 GINKGO_VERSION ?= v2.1.4
 CRD_REFDOCS_VERSION ?= v0.0.8
 KIND_VERSION ?= v0.16.0

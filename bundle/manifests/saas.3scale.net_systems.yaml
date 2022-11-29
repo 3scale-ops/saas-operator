@@ -708,6 +708,9 @@ spec:
                               value.
                             type: string
                         type: object
+                      releaseStage:
+                        description: Release Stage to identify environment
+                        type: string
                     required:
                     - apiKey
                     type: object
