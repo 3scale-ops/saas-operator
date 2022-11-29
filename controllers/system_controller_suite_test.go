@@ -82,7 +82,8 @@ var _ = Describe("System controller", func() {
 							Realm:        pointer.StringPtr("sso.example.net"),
 						},
 						Bugsnag: &saasv1alpha1.BugsnagSpec{
-							APIKey: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
+							ReleaseStage: pointer.StringPtr("staging"),
+							APIKey:       saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 						},
 						DatabaseSecret:   saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 						MemcachedServers: "value",

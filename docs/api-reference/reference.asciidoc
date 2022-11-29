@@ -398,6 +398,7 @@ BugsnagSpec has configuration for Bugsnag integration
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
+| *`releaseStage`* __string__ | Release Stage to identify environment
 | *`apiKey`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | API key
 |===
 

@@ -18,6 +18,7 @@ type APIOptions struct {
 	SecretKeyBase           pod.EnvVarValue `env:"SECRET_KEY_BASE" secret:"zync"`
 	ZyncAuthenticationToken pod.EnvVarValue `env:"ZYNC_AUTHENTICATION_TOKEN" secret:"zync"`
 	BugsnagAPIKey           pod.EnvVarValue `env:"BUGSNAG_API_KEY" secret:"zync"`
+	BugsnagReleaseStage     pod.EnvVarValue `env:"BUGSNAG_RELEASE_STAGE"`
 }
 
 // NewAPIOptions returns an Options struct for the given saasv1alpha1.ZyncSpec
@@ -35,6 +36,11 @@ func NewAPIOptions(spec saasv1alpha1.ZyncSpec) APIOptions {
 
 	if spec.Config.Bugsnag.Enabled() {
 		opts.BugsnagAPIKey = &pod.SecretValue{Value: spec.Config.Bugsnag.APIKey}
+
+		if spec.Config.Bugsnag.ReleaseStage != nil {
+			opts.BugsnagReleaseStage = &pod.ClearTextValue{Value: *spec.Config.Bugsnag.ReleaseStage}
+		}
+
 	} else {
 		opts.BugsnagAPIKey = &pod.SecretValue{Value: saasv1alpha1.SecretReference{Override: pointer.StringPtr("")}}
 	}

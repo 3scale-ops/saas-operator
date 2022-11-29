@@ -342,7 +342,8 @@ metadata:
                     "key": "BUGSNAG_API_KEY",
                     "path": "secret/data/path/system-app"
                   }
-                }
+                },
+                "releaseStage": "staging"
               },
               "configFiles": {
                 "files": [
@@ -530,7 +531,8 @@ metadata:
                     "key": "BUGSNAG_API_KEY",
                     "path": "secret/data/path/zync"
                   }
-                }
+                },
+                "releaseStage": "development"
               },
               "databaseDSN": {
                 "fromVault": {
@@ -2830,6 +2832,9 @@ spec:
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.bugsnag.apiKey.override
+      - description: Release Stage to identify environment
+        displayName: Release Stage
+        path: config.bugsnag.releaseStage
       - description: Secret containging system configuration files to be mounted in
           the pods
         displayName: Config Files Secret
@@ -4131,6 +4136,9 @@ spec:
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.bugsnag.apiKey.override
+      - description: Release Stage to identify environment
+        displayName: Release Stage
+        path: config.bugsnag.releaseStage
       - description: A reference to the secret holding the database DSN
         displayName: Database DSN
         path: config.databaseDSN

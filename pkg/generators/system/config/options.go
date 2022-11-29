@@ -77,6 +77,7 @@ type Options struct {
 	RedHatCustomerPortalClientSecret pod.EnvVarValue `env:"RH_CUSTOMER_PORTAL_CLIENT_SECRET" secret:"system-app"`
 	RedHatCustomerPortalRealm        pod.EnvVarValue `env:"RH_CUSTOMER_PORTAL_REALM"`
 	BugsnagAPIKey                    pod.EnvVarValue `env:"BUGSNAG_API_KEY" secret:"system-app"`
+	BugsnagReleaseStage              pod.EnvVarValue `env:"BUGSNAG_RELEASE_STAGE"`
 	DatabaseSecret                   pod.EnvVarValue `env:"DB_SECRET" secret:"system-app"`
 }
 
@@ -146,6 +147,11 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 
 	if spec.Config.Bugsnag.Enabled() {
 		opts.BugsnagAPIKey = &pod.SecretValue{Value: spec.Config.Bugsnag.APIKey}
+
+		if spec.Config.Bugsnag.ReleaseStage != nil {
+			opts.BugsnagReleaseStage = &pod.ClearTextValue{Value: *spec.Config.Bugsnag.ReleaseStage}
+		}
+
 	} else {
 		opts.BugsnagAPIKey = &pod.SecretValue{Value: saasv1alpha1.SecretReference{Override: pointer.StringPtr("")}}
 	}

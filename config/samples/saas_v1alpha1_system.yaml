@@ -98,6 +98,7 @@ spec:
           key: RH_CUSTOMER_PORTAL_CLIENT_SECRET
       realm: "sso.example.net"
     bugsnag:
+      releaseStage: staging
       apiKey:
         fromVault:
           path: secret/data/path/system-app
