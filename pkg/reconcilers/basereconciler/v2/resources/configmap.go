@@ -33,7 +33,7 @@ func (cmt ConfigMapTemplate) Enabled() bool {
 
 // ResourceReconciler implements a generic reconciler for ConfigMap resources
 func (cmt ConfigMapTemplate) ResourceReconciler(ctx context.Context, cl client.Client, obj client.Object) error {
-	logger := log.FromContext(ctx, "ResourceReconciler", "ConfigMap")
+	logger := log.FromContext(ctx, "kind", "ConfigMap", "resource", obj.GetName())
 
 	needsUpdate := false
 	desired := obj.(*corev1.ConfigMap)
@@ -48,7 +48,7 @@ func (cmt ConfigMapTemplate) ResourceReconciler(ctx context.Context, cl client.C
 				if err != nil {
 					return fmt.Errorf("unable to create object: " + err.Error())
 				}
-				logger.Info("Resource created")
+				logger.Info("resource created")
 				return nil
 
 			} else {
@@ -65,7 +65,7 @@ func (cmt ConfigMapTemplate) ResourceReconciler(ctx context.Context, cl client.C
 		if err != nil {
 			return fmt.Errorf("unable to delete object: " + err.Error())
 		}
-		logger.Info("Resource deleted")
+		logger.Info("resource deleted")
 		return nil
 	}
 

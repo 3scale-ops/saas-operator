@@ -45,10 +45,7 @@ func (dt DeploymentTemplate) Enabled() bool {
 }
 
 func (dep DeploymentTemplate) ResourceReconciler(ctx context.Context, cl client.Client, obj client.Object) error {
-	logger := log.FromContext(ctx,
-		"ResourceReconciler", "Deployment",
-		"Resource", obj.GetName(),
-	)
+	logger := log.FromContext(ctx, "kind", "Deployment", "resource", obj.GetName())
 
 	needsUpdate := false
 	desired := obj.(*appsv1.Deployment)
@@ -63,7 +60,7 @@ func (dep DeploymentTemplate) ResourceReconciler(ctx context.Context, cl client.
 				if err != nil {
 					return fmt.Errorf("unable to create object: " + err.Error())
 				}
-				logger.Info("Resource created")
+				logger.Info("resource created")
 				return nil
 
 			} else {
@@ -80,7 +77,7 @@ func (dep DeploymentTemplate) ResourceReconciler(ctx context.Context, cl client.
 		if err != nil {
 			return fmt.Errorf("unable to delete object: " + err.Error())
 		}
-		logger.Info("Resource deleted")
+		logger.Info("resource deleted")
 		return nil
 	}
 
@@ -93,18 +90,18 @@ func (dep DeploymentTemplate) ResourceReconciler(ctx context.Context, cl client.
 	)
 
 	if !equality.Semantic.DeepEqual(instance.GetAnnotations(), desired.GetAnnotations()) {
-		logger.Info("Resource update required due differences in Annotations.")
+		logger.Info("resource update required due to differences in metadata.annotations.")
 		logger.V(1).Info(
-			fmt.Sprintf("Annotations differences: %s",
+			fmt.Sprintf("metadata.annotations differences: %s",
 				deep.Equal(instance.GetAnnotations(), desired.GetAnnotations())),
 		)
 		instance.ObjectMeta.Annotations = desired.GetAnnotations()
 		needsUpdate = true
 	}
 	if !equality.Semantic.DeepEqual(instance.GetLabels(), desired.GetLabels()) {
-		logger.Info("Resource update required due differences in Labels.")
+		logger.Info("resource update required due to differences in metadata.labels.")
 		logger.V(1).Info(
-			fmt.Sprintf("Labels differences: %s",
+			fmt.Sprintf("metadata.labels differences: %s",
 				deep.Equal(instance.GetLabels(), desired.GetLabels())),
 		)
 		instance.ObjectMeta.Labels = desired.GetLabels()
@@ -113,9 +110,9 @@ func (dep DeploymentTemplate) ResourceReconciler(ctx context.Context, cl client.
 
 	/* Reconcile the MinReadySeconds */
 	if !equality.Semantic.DeepEqual(instance.Spec.MinReadySeconds, desired.Spec.MinReadySeconds) {
-		logger.Info("Resource update required due differences in Spec.MinReadySeconds.")
+		logger.Info("resource update required due to differences in spec.minReadySeconds.")
 		logger.V(1).Info(
-			fmt.Sprintf("Spec.MinReadySeconds differences: %s",
+			fmt.Sprintf("spec.minReadySeconds differences: %s",
 				deep.Equal(instance.Spec.MinReadySeconds, desired.Spec.MinReadySeconds)),
 		)
 		instance.Spec.MinReadySeconds = desired.Spec.MinReadySeconds
@@ -124,9 +121,9 @@ func (dep DeploymentTemplate) ResourceReconciler(ctx context.Context, cl client.
 
 	/* Reconcile the Replicas */
 	if !equality.Semantic.DeepEqual(instance.Spec.Replicas, desired.Spec.Replicas) {
-		logger.Info("Resource update required due differences in Spec.Replicas.")
+		logger.Info("resource update required due to differences in spec.replicas.")
 		logger.V(1).Info(
-			fmt.Sprintf("Spec.Replicas differences: %s",
+			fmt.Sprintf("spec.replicas differences: %s",
 				deep.Equal(instance.Spec.Replicas, desired.Spec.Replicas)),
 		)
 		instance.Spec.Replicas = desired.Spec.Replicas
@@ -135,9 +132,9 @@ func (dep DeploymentTemplate) ResourceReconciler(ctx context.Context, cl client.
 
 	/* Reconcile the Selector */
 	if !equality.Semantic.DeepEqual(instance.Spec.Selector, desired.Spec.Selector) {
-		logger.Info("Resource update required due differences in Spec.Selector.")
+		logger.Info("resource update required due to differences in spec.selector.")
 		logger.V(1).Info(
-			fmt.Sprintf("Spec.Selector differences: %s",
+			fmt.Sprintf("spec.selector differences: %s",
 				deep.Equal(instance.Spec.Selector, desired.Spec.Selector)),
 		)
 		instance.Spec.Selector = desired.Spec.Selector
@@ -146,9 +143,9 @@ func (dep DeploymentTemplate) ResourceReconciler(ctx context.Context, cl client.
 
 	/* Reconcile the Strategy */
 	if !equality.Semantic.DeepEqual(instance.Spec.Strategy, desired.Spec.Strategy) {
-		logger.Info("Resource update required due differences in Spec.Strategy.")
+		logger.Info("resource update required due to differences in spec.strategy.")
 		logger.V(1).Info(
-			fmt.Sprintf("Spec.Strategy differences: %s",
+			fmt.Sprintf("spec.strategy differences: %s",
 				deep.Equal(instance.Spec.Strategy, desired.Spec.Strategy)),
 		)
 		instance.Spec.Strategy = desired.Spec.Strategy
@@ -158,9 +155,9 @@ func (dep DeploymentTemplate) ResourceReconciler(ctx context.Context, cl client.
 	/* Reconcile the Template Labels */
 	if !equality.Semantic.DeepEqual(
 		instance.Spec.Template.ObjectMeta.Labels, desired.Spec.Template.ObjectMeta.Labels) {
-		logger.Info("Resource update required due differences in Spec.Template.ObjectMeta.Labels.")
+		logger.Info("resource update required due to differences in spec.template.metadata.labels.")
 		logger.V(1).Info(
-			fmt.Sprintf("Spec.Template.ObjectMeta.Labels differences: %s",
+			fmt.Sprintf("spec.template.metadata.labels differences: %s",
 				deep.Equal(instance.Spec.Template.ObjectMeta.Labels, desired.Spec.Template.ObjectMeta.Labels)),
 		)
 		instance.Spec.Template.ObjectMeta.Labels = desired.Spec.Template.ObjectMeta.Labels
@@ -170,9 +167,9 @@ func (dep DeploymentTemplate) ResourceReconciler(ctx context.Context, cl client.
 	/* Reconcile the Template Annotations */
 	if !equality.Semantic.DeepEqual(
 		instance.Spec.Template.ObjectMeta.Annotations, desired.Spec.Template.ObjectMeta.Annotations) {
-		logger.Info("Resource update required due differences in Spec.Template.ObjectMeta.Annotations.")
+		logger.Info("resource update required due differences in spec.template.metadata.annotations.")
 		logger.V(1).Info(
-			fmt.Sprintf("Spec.Template.ObjectMeta.Annotations differences: %s",
+			fmt.Sprintf("spec.template.metadata.annotations differences: %s",
 				deep.Equal(instance.Spec.Template.ObjectMeta.Annotations, desired.Spec.Template.ObjectMeta.Annotations)),
 		)
 		instance.Spec.Template.ObjectMeta.Annotations = desired.Spec.Template.ObjectMeta.Annotations
@@ -189,9 +186,9 @@ func (dep DeploymentTemplate) ResourceReconciler(ctx context.Context, cl client.
 
 	/* Reconcile the Template Spec */
 	if !equality.Semantic.DeepEqual(instance.Spec.Template.Spec, desired.Spec.Template.Spec) {
-		logger.Info("Resource update required due differences in Spec.Template.Spec.")
+		logger.Info("resource update required due to differences in spec.template.spec.")
 		logger.V(1).Info(
-			fmt.Sprintf("Spec.Template.Spec differences: %s",
+			fmt.Sprintf("spec.template.spec differences: %s",
 				deep.Equal(instance.Spec.Template.Spec, desired.Spec.Template.Spec)),
 		)
 		instance.Spec.Template.Spec = desired.Spec.Template.Spec
@@ -203,7 +200,7 @@ func (dep DeploymentTemplate) ResourceReconciler(ctx context.Context, cl client.
 		if err != nil {
 			return err
 		}
-		logger.Info("Resource updated")
+		logger.Info("resource updated")
 	}
 
 	return nil
