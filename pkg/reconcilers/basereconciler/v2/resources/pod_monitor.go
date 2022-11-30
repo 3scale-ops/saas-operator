@@ -33,7 +33,7 @@ func (pmt PodMonitorTemplate) Enabled() bool {
 
 // ResourceReconciler implements a generic reconciler for PodMonitor resources
 func (pmt PodMonitorTemplate) ResourceReconciler(ctx context.Context, cl client.Client, obj client.Object) error {
-	logger := log.FromContext(ctx, "ResourceReconciler", "PodMonitor")
+	logger := log.FromContext(ctx, "kind", "PodMonitor", "resource", obj.GetName())
 
 	needsUpdate := false
 	desired := obj.(*monitoringv1.PodMonitor)
@@ -48,7 +48,7 @@ func (pmt PodMonitorTemplate) ResourceReconciler(ctx context.Context, cl client.
 				if err != nil {
 					return fmt.Errorf("unable to create object: " + err.Error())
 				}
-				logger.Info("Resource created")
+				logger.Info("resource created")
 				return nil
 
 			} else {
@@ -65,7 +65,7 @@ func (pmt PodMonitorTemplate) ResourceReconciler(ctx context.Context, cl client.
 		if err != nil {
 			return fmt.Errorf("unable to delete object: " + err.Error())
 		}
-		logger.Info("Resource deleted")
+		logger.Info("resource deleted")
 		return nil
 	}
 
@@ -86,7 +86,7 @@ func (pmt PodMonitorTemplate) ResourceReconciler(ctx context.Context, cl client.
 		if err != nil {
 			return err
 		}
-		logger.Info("Resource updated")
+		logger.Info("resource updated")
 	}
 
 	return nil

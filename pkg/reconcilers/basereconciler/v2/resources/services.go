@@ -40,7 +40,7 @@ func (dt ServiceTemplate) Enabled() bool {
 
 // ResourceReconciler implements a generic reconciler for Service resources
 func (st ServiceTemplate) ResourceReconciler(ctx context.Context, cl client.Client, obj client.Object) error {
-	logger := log.FromContext(ctx, "ResourceReconciler", "Service")
+	logger := log.FromContext(ctx, "kind", "Service", "resource", obj.GetName())
 
 	needsUpdate := false
 	desired := obj.(*corev1.Service)
@@ -53,7 +53,7 @@ func (st ServiceTemplate) ResourceReconciler(ctx context.Context, cl client.Clie
 			if err != nil {
 				return fmt.Errorf("unable to create object: " + err.Error())
 			}
-			logger.Info("Resource created")
+			logger.Info("resource created")
 			return nil
 		}
 		return err
@@ -86,7 +86,7 @@ func (st ServiceTemplate) ResourceReconciler(ctx context.Context, cl client.Clie
 		if err != nil {
 			return err
 		}
-		logger.Info("Resource updated")
+		logger.Info("resource updated")
 	}
 
 	return nil
