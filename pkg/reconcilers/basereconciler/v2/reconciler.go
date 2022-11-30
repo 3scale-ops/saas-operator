@@ -2,6 +2,8 @@ package basereconciler
 
 import (
 	"context"
+	"fmt"
+	"reflect"
 	"strconv"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
@@ -28,7 +30,7 @@ import (
 )
 
 var SupportedListTypes = []client.ObjectList{
-	&corev1.ServiceAccountList{},
+	&corev1.ServiceList{},
 	&corev1.ConfigMapList{},
 	&appsv1.DeploymentList{},
 	&appsv1.StatefulSetList{},
@@ -165,7 +167,7 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 		managedResources = append(managedResources, util.ObjectKey(object))
 	}
 
-	if value, ok := owner.GetAnnotations()["saas.3scale.net/prune"]; ok {
+	if value, ok := owner.GetAnnotations()[fmt.Sprintf("%s/prune", saasv1alpha1.GroupVersion.Group)]; ok {
 		prune, err := strconv.ParseBool(value)
 		if err != nil {
 			return err
@@ -183,7 +185,7 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 }
 
 func (r *Reconciler) PruneOrphaned(ctx context.Context, owner client.Object, list client.ObjectList, managed []types.NamespacedName) error {
-
+	logger := log.FromContext(ctx)
 	err := r.Client.List(ctx, list, client.InNamespace(owner.GetNamespace()))
 	if err != nil {
 		return err
@@ -196,6 +198,7 @@ func (r *Reconciler) PruneOrphaned(ctx context.Context, owner client.Object, lis
 			if err != nil {
 				return err
 			}
+			logger.Info("resource deleted", "kind", reflect.TypeOf(obj).Elem().Name(), "resource", obj.GetName())
 		}
 	}
 
