@@ -12,7 +12,7 @@ type WorkloadReconciler struct {
 }
 
 // NewFromManager constructs a new Reconciler from the given manager
-func NewFromManager(mgr manager.Manager, recorderName string, clusterWatchers bool) WorkloadReconciler {
+func NewFromManager(mgr manager.Manager) WorkloadReconciler {
 	return WorkloadReconciler{
 		Reconciler: basereconciler.NewFromManager(mgr),
 	}

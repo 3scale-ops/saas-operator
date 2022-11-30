@@ -106,19 +106,15 @@ func main() {
 		Namespace:              watchNamespace, // namespaced-scope when the value is not an empty string
 	}
 
-	var clusterWatch bool
 	if strings.Contains(watchNamespace, ",") {
 		setupLog.Info(fmt.Sprintf("manager in MultiNamespaced mode will be watching namespaces %q", watchNamespace))
 		options.NewCache = cache.MultiNamespacedCacheBuilder(strings.Split(watchNamespace, ","))
-		clusterWatch = false
 	} else if watchNamespace != "" {
 		setupLog.Info(fmt.Sprintf("manager in Namespaced mode will be watching namespace %q", watchNamespace))
 		options.Namespace = watchNamespace
-		clusterWatch = false
 	} else {
 		setupLog.Info("manager in cluster mode will be watching all namespaces")
 		options.Namespace = ""
-		clusterWatch = true
 	}
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), options)
@@ -157,7 +153,7 @@ func main() {
 	/* WORKLOADS RECONCILER BASED CONTROLLERS*/
 
 	if err = (&controllers.ApicastReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, "Apicast", clusterWatch),
+		WorkloadReconciler: workloads.NewFromManager(mgr),
 		Log:                ctrl.Log.WithName("controllers").WithName("Apicast"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Apicast")
@@ -165,7 +161,7 @@ func main() {
 	}
 
 	if err = (&controllers.ZyncReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, "Zync", clusterWatch),
+		WorkloadReconciler: workloads.NewFromManager(mgr),
 		Log:                ctrl.Log.WithName("controllers").WithName("Zync"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Zync")
@@ -173,7 +169,7 @@ func main() {
 	}
 
 	if err = (&controllers.MappingServiceReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, "MappingService", clusterWatch),
+		WorkloadReconciler: workloads.NewFromManager(mgr),
 		Log:                ctrl.Log.WithName("controllers").WithName("MappingService"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "MappingService")
@@ -181,7 +177,7 @@ func main() {
 	}
 
 	if err = (&controllers.CORSProxyReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, "CORSProxy", clusterWatch),
+		WorkloadReconciler: workloads.NewFromManager(mgr),
 		Log:                ctrl.Log.WithName("controllers").WithName("CORSProxy"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "CORSProxy")
@@ -189,7 +185,7 @@ func main() {
 	}
 
 	if err = (&controllers.AutoSSLReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, "AutoSSL", clusterWatch),
+		WorkloadReconciler: workloads.NewFromManager(mgr),
 		Log:                ctrl.Log.WithName("controllers").WithName("AutoSSL"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "AutoSSL")
@@ -197,7 +193,7 @@ func main() {
 	}
 
 	if err = (&controllers.EchoAPIReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, "EchoAPI", clusterWatch),
+		WorkloadReconciler: workloads.NewFromManager(mgr),
 		Log:                ctrl.Log.WithName("controllers").WithName("EchoAPI"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "EchoAPI")
@@ -205,7 +201,7 @@ func main() {
 	}
 
 	if err = (&controllers.BackendReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, "Backend", clusterWatch),
+		WorkloadReconciler: workloads.NewFromManager(mgr),
 		Log:                ctrl.Log.WithName("controllers").WithName("Backend"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Backend")
@@ -213,7 +209,7 @@ func main() {
 	}
 
 	if err = (&controllers.SystemReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, "System", clusterWatch),
+		WorkloadReconciler: workloads.NewFromManager(mgr),
 		Log:                ctrl.Log.WithName("controllers").WithName("System"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "System")
