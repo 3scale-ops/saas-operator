@@ -113,9 +113,10 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	}
 	r.SentinelEvents.ReconcileThreads(ctx, instance, eventWatchers, logger.WithName("event-watcher"))
 
-	if err := r.ReconcileOwnedResources(
-		ctx, instance, []basereconciler.Resource{gen.GrafanaDashboard()},
-	); err != nil {
+	t := gen.GrafanaDashboard()
+	gd, _ := t.Build(ctx, r.Client)
+	controllerutil.SetControllerReference(instance, gd, r.Scheme)
+	if err := t.ResourceReconciler(ctx, r.Client, gd); err != nil {
 		return ctrl.Result{}, err
 	}
 
