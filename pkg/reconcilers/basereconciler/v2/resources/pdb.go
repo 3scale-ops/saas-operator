@@ -22,11 +22,8 @@ type PodDisruptionBudgetTemplate struct {
 }
 
 // Build returns a PodDisruptionBudget resource
-func (pdbt PodDisruptionBudgetTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
-
-	pdb := pdbt.Template()
-	pdb.GetObjectKind().SetGroupVersionKind(policyv1.SchemeGroupVersion.WithKind("PodDisruptionBudget"))
-	return pdb.DeepCopy(), DefaultExcludedPaths, nil
+func (pdbt PodDisruptionBudgetTemplate) Build(ctx context.Context, cl client.Client) (client.Object, error) {
+	return pdbt.Template().DeepCopy(), nil
 }
 
 // Enabled indicates if the resource should be present or not

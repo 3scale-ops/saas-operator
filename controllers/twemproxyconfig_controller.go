@@ -83,7 +83,7 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	cm, _, err := gen.ConfigMap().Build(ctx, r.Client)
+	cm, err := gen.ConfigMap().Build(ctx, r.Client)
 	if err != nil {
 		return ctrl.Result{}, err
 	}

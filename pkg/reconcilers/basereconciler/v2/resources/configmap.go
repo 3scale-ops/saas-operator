@@ -22,11 +22,8 @@ type ConfigMapTemplate struct {
 }
 
 // Build returns a ConfigMap resource
-func (cmt ConfigMapTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
-
-	cm := cmt.Template()
-	cm.GetObjectKind().SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("ConfigMap"))
-	return cm.DeepCopy(), DefaultExcludedPaths, nil
+func (cmt ConfigMapTemplate) Build(ctx context.Context, cl client.Client) (client.Object, error) {
+	return cmt.Template().DeepCopy(), nil
 }
 
 // Enabled indicates if the resource should be present or not

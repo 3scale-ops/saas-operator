@@ -40,7 +40,7 @@ var SupportedListTypes = []client.ObjectList{
 }
 
 type Resource interface {
-	Build(ctx context.Context, cl client.Client) (client.Object, []string, error)
+	Build(ctx context.Context, cl client.Client) (client.Object, error)
 	Enabled() bool
 	ResourceReconciler(context.Context, client.Client, client.Object) error
 }
@@ -149,7 +149,7 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 
 	for _, res := range resources {
 
-		object, _, err := res.Build(ctx, r.Client)
+		object, err := res.Build(ctx, r.Client)
 		if err != nil {
 			return err
 		}

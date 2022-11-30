@@ -22,11 +22,8 @@ type PodMonitorTemplate struct {
 }
 
 // Build returns a PodMonitor resource
-func (pmt PodMonitorTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
-
-	pm := pmt.Template()
-	pm.GetObjectKind().SetGroupVersionKind(monitoringv1.SchemeGroupVersion.WithKind("PodMonitor"))
-	return pm.DeepCopy(), DefaultExcludedPaths, nil
+func (pmt PodMonitorTemplate) Build(ctx context.Context, cl client.Client) (client.Object, error) {
+	return pmt.Template().DeepCopy(), nil
 }
 
 // Enabled indicates if the resource should be present or not

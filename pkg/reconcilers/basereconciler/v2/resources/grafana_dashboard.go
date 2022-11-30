@@ -22,11 +22,8 @@ type GrafanaDashboardTemplate struct {
 }
 
 // Build returns a GrafanaDashboard resource
-func (gdt GrafanaDashboardTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
-
-	gd := gdt.Template()
-	gd.GetObjectKind().SetGroupVersionKind(grafanav1alpha1.GroupVersion.WithKind("GrafanaDashboard"))
-	return gd.DeepCopy(), DefaultExcludedPaths, nil
+func (gdt GrafanaDashboardTemplate) Build(ctx context.Context, cl client.Client) (client.Object, error) {
+	return gdt.Template().DeepCopy(), nil
 }
 
 // Enabled indicates if the resource should be present or not

@@ -14,20 +14,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-var (
-	// StatefulSetExcludedPaths is a list fo path to ignore for StatefulSet resources
-	StatefulSetExcludedPaths []string = []string{
-		"/metadata",
-		"/status",
-		"/spec/revisionHistoryLimit",
-		"/spec/template/spec/dnsPolicy",
-		"/spec/template/spec/restartPolicy",
-		"/spec/template/spec/schedulerName",
-		"/spec/template/spec/securityContext",
-		"/spec/template/spec/terminationGracePeriodSeconds",
-	}
-)
-
 var _ basereconciler.Resource = StatefulSetTemplate{}
 
 // StatefulSet specifies a StatefulSet resource and its rollout triggers
@@ -37,16 +23,15 @@ type StatefulSetTemplate struct {
 	IsEnabled       bool
 }
 
-func (sst StatefulSetTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
+func (sst StatefulSetTemplate) Build(ctx context.Context, cl client.Client) (client.Object, error) {
 
 	ss := sst.Template()
-	ss.GetObjectKind().SetGroupVersionKind(appsv1.SchemeGroupVersion.WithKind("StatefulSet"))
 
 	if err := sst.reconcileRolloutTriggers(ctx, cl, ss); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	return ss.DeepCopy(), StatefulSetExcludedPaths, nil
+	return ss.DeepCopy(), nil
 }
 
 func (sst StatefulSetTemplate) Enabled() bool {

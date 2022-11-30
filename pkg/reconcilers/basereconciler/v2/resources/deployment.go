@@ -15,22 +15,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-var (
-	// DeploymentExcludedPaths is a list fo path to ignore for Deployment resources
-	DeploymentExcludedPaths []string = []string{
-		"/metadata",
-		"/status",
-		"/spec/progressDeadlineSeconds",
-		"/spec/revisionHistoryLimit",
-		"/spec/template/metadata/creationTimestamp",
-		"/spec/template/spec/dnsPolicy",
-		"/spec/template/spec/restartPolicy",
-		"/spec/template/spec/schedulerName",
-		"/spec/template/spec/securityContext",
-		"/spec/template/spec/terminationGracePeriodSeconds",
-	}
-)
-
 var _ basereconciler.Resource = DeploymentTemplate{}
 
 // DeploymentTemplate specifies a Deployment resource and its rollout triggers
@@ -41,25 +25,19 @@ type DeploymentTemplate struct {
 	IsEnabled       bool
 }
 
-func (dt DeploymentTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
+func (dt DeploymentTemplate) Build(ctx context.Context, cl client.Client) (client.Object, error) {
 
 	dep := dt.Template()
-	dep.GetObjectKind().SetGroupVersionKind(appsv1.SchemeGroupVersion.WithKind("Deployment"))
 
 	if err := dt.reconcileDeploymentReplicas(ctx, cl, dep); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	if err := dt.reconcileRolloutTriggers(ctx, cl, dep); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	if dt.EnforceReplicas {
-		return dep.DeepCopy(), DeploymentExcludedPaths, nil
-
-	} else {
-		return dep.DeepCopy(), append(DeploymentExcludedPaths, "/spec/replicas"), nil
-	}
+	return dep.DeepCopy(), nil
 }
 
 func (dt DeploymentTemplate) Enabled() bool {
