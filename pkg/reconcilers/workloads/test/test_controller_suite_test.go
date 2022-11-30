@@ -49,13 +49,13 @@ var _ = Describe("Test controller", func() {
 				ObjectMeta: metav1.ObjectMeta{Name: "instance", Namespace: namespace},
 				Spec: v1alpha1.TestSpec{
 					TrafficSelector: map[string]string{"traffic": "yes"},
-					Alice: v1alpha1.Workload{
+					Main: v1alpha1.Workload{
 						Name:     "alice",
 						Traffic:  true,
 						Selector: map[string]string{"deployment": "alice"},
 						Labels:   map[string]string{"alice-lkey1": "alice-lvalue1"},
 					},
-					Bob: v1alpha1.Workload{
+					Canary: v1alpha1.Workload{
 						Name:     "bob",
 						Traffic:  true,
 						Selector: map[string]string{"deployment": "bob"},
@@ -257,7 +257,7 @@ var _ = Describe("Test controller", func() {
 					types.NamespacedName{Name: "instance", Namespace: namespace}, instance); err != nil {
 					return err
 				}
-				instance.Spec.Alice.Traffic = false
+				instance.Spec.Main.Traffic = false
 				return k8sClient.Update(context.Background(), instance)
 			}, timeout, poll).ShouldNot(HaveOccurred())
 
@@ -282,7 +282,7 @@ var _ = Describe("Test controller", func() {
 					types.NamespacedName{Name: "instance", Namespace: namespace}, instance); err != nil {
 					return err
 				}
-				instance.Spec.Alice.Traffic = true
+				instance.Spec.Main.Traffic = true
 				return k8sClient.Update(context.Background(), instance)
 			}, timeout, poll).ShouldNot(HaveOccurred())
 

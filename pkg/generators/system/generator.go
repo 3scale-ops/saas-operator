@@ -354,11 +354,11 @@ type AppGenerator struct {
 	TwemproxySpec     *saasv1alpha1.TwemproxySpec
 }
 
-// Validate that AppGenerator implements workloads.DeploymentWorkloadWithTraffic interface
-var _ workloads.DeploymentWorkloadWithTraffic = &AppGenerator{}
+// Validate that AppGenerator implements workloads.DeploymentWorkload interface
+var _ workloads.DeploymentWorkload = &AppGenerator{}
 
-// Validate that AppGenerator implements workloads.TrafficManager interface
-var _ workloads.TrafficManager = &AppGenerator{}
+// Validate that AppGenerator implements workloads.WithTraffic interface
+var _ workloads.WithTraffic = &AppGenerator{}
 
 func (gen *AppGenerator) Services() []basereconciler_resources.ServiceTemplate {
 	return []basereconciler_resources.ServiceTemplate{

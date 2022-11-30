@@ -82,12 +82,7 @@ func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	// Workload resources
-	var workload []basereconciler.Resource
-	if instance.Spec.Canary != nil {
-		workload, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, &gen, &gen, gen.Canary)
-	} else {
-		workload, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, &gen, &gen)
-	}
+	workload, err := r.NewDeploymentWorkload(&gen, gen.Canary)
 	if err != nil {
 		return ctrl.Result{}, err
 	}

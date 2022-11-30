@@ -22,6 +22,12 @@ type Generator struct {
 	Traffic bool
 }
 
+// Validate that Generator implements workloads.DeploymentWorkload interface
+var _ workloads.DeploymentWorkload = &Generator{}
+
+// Validate that Generator implements workloads.WithTraffic interface
+var _ workloads.WithTraffic = &Generator{}
+
 // NewGenerator returns a new Options struct
 func NewGenerator(instance, namespace string, spec saasv1alpha1.EchoAPISpec) Generator {
 	return Generator{
@@ -39,9 +45,6 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.EchoAPISpec) Gen
 	}
 }
 
-// Validate that Generator implements workloads.TrafficManager interface
-var _ workloads.TrafficManager = &Generator{}
-
 func (gen *Generator) Services() []basereconciler_resources.ServiceTemplate {
 	return []basereconciler_resources.ServiceTemplate{
 		{Template: gen.service(), IsEnabled: true},
@@ -55,7 +58,7 @@ func (gen *Generator) TrafficSelector() map[string]string {
 }
 
 // Validate that Generator implements workloads.DeploymentWorkload interface
-var _ workloads.DeploymentWorkloadWithTraffic = &Generator{}
+var _ workloads.DeploymentWorkload = &Generator{}
 
 func (gen *Generator) Deployment() basereconciler_resources.DeploymentTemplate {
 	return basereconciler_resources.DeploymentTemplate{

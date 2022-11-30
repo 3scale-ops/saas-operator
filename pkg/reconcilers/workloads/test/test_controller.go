@@ -60,30 +60,25 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		return *result, err
 	}
 
-	tm := &TestTrafficManagerGenerator{
-		TName:            req.Name,
+	main := &TestWorkloadGenerator{
+		TName:            instance.Spec.Main.Name,
 		TNamespace:       req.Namespace,
-		TLabels:          map[string]string{},
+		TTraffic:         instance.Spec.Main.Traffic,
+		TLabels:          instance.Spec.Main.Labels,
+		TSelector:        instance.Spec.Main.Selector,
 		TTrafficSelector: instance.Spec.TrafficSelector,
 	}
 
-	alice := &TestWorkloadGenerator{
-		TName:      instance.Spec.Alice.Name,
-		TNamespace: req.Namespace,
-		TTraffic:   instance.Spec.Alice.Traffic,
-		TLabels:    instance.Spec.Alice.Labels,
-		TSelector:  instance.Spec.Alice.Selector,
+	canary := &TestWorkloadGenerator{
+		TName:            instance.Spec.Canary.Name,
+		TNamespace:       req.Namespace,
+		TTraffic:         instance.Spec.Canary.Traffic,
+		TLabels:          instance.Spec.Canary.Labels,
+		TSelector:        instance.Spec.Canary.Selector,
+		TTrafficSelector: instance.Spec.TrafficSelector,
 	}
 
-	bob := &TestWorkloadGenerator{
-		TName:      instance.Spec.Bob.Name,
-		TNamespace: req.Namespace,
-		TTraffic:   instance.Spec.Bob.Traffic,
-		TLabels:    instance.Spec.Bob.Labels,
-		TSelector:  instance.Spec.Bob.Selector,
-	}
-
-	deployments, err := r.NewDeploymentWorkloadWithTraffic(ctx, instance, tm, alice, bob)
+	deployments, err := r.NewDeploymentWorkload(main, canary)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -112,16 +107,19 @@ func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-var _ workloads.TrafficManager = &TestTrafficManagerGenerator{}
+var _ workloads.WithTraffic = &TestWorkloadGenerator{}
+var _ workloads.DeploymentWorkload = &TestWorkloadGenerator{}
 
-type TestTrafficManagerGenerator struct {
+type TestWorkloadGenerator struct {
 	TName            string
 	TNamespace       string
+	TTraffic         bool
 	TLabels          map[string]string
+	TSelector        map[string]string
 	TTrafficSelector map[string]string
 }
 
-func (gen *TestTrafficManagerGenerator) Services() []resources.ServiceTemplate {
+func (gen *TestWorkloadGenerator) Services() []resources.ServiceTemplate {
 	return []resources.ServiceTemplate{{
 		Template: func() *corev1.Service {
 			return &corev1.Service{
@@ -143,22 +141,8 @@ func (gen *TestTrafficManagerGenerator) Services() []resources.ServiceTemplate {
 	}
 }
 
-func (gen *TestTrafficManagerGenerator) GetKey() types.NamespacedName {
-	return types.NamespacedName{Name: "", Namespace: gen.TNamespace}
-}
-func (gen *TestTrafficManagerGenerator) GetLabels() map[string]string { return gen.TLabels }
-func (gen *TestTrafficManagerGenerator) TrafficSelector() map[string]string {
+func (gen *TestWorkloadGenerator) TrafficSelector() map[string]string {
 	return gen.TTrafficSelector
-}
-
-var _ workloads.DeploymentWorkloadWithTraffic = &TestWorkloadGenerator{}
-
-type TestWorkloadGenerator struct {
-	TName      string
-	TNamespace string
-	TTraffic   bool
-	TLabels    map[string]string
-	TSelector  map[string]string
 }
 
 func (gen *TestWorkloadGenerator) Deployment() resources.DeploymentTemplate {

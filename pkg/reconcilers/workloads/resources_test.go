@@ -20,12 +20,16 @@ import (
 
 // TEST GENERATORS
 type TestWorkloadGenerator struct {
-	TName      string
-	TNamespace string
-	TTraffic   bool
-	TLabels    map[string]string
-	TSelector  map[string]string
+	TName            string
+	TNamespace       string
+	TTraffic         bool
+	TLabels          map[string]string
+	TSelector        map[string]string
+	TTrafficSelector map[string]string
 }
+
+var _ DeploymentWorkload = &TestWorkloadGenerator{}
+var _ WithTraffic = &TestWorkloadGenerator{}
 
 func (gen *TestWorkloadGenerator) Deployment() basereconciler_resources.DeploymentTemplate {
 	return basereconciler_resources.DeploymentTemplate{
@@ -81,13 +85,7 @@ func (gen *TestWorkloadGenerator) PDBSpec() *saasv1alpha1.PodDisruptionBudgetSpe
 }
 func (gen *TestWorkloadGenerator) SendTraffic() bool { return gen.TTraffic }
 
-type TestTrafficManagerGenerator struct {
-	TNamespace       string
-	TLabels          map[string]string
-	TTrafficSelector map[string]string
-}
-
-func (gen *TestTrafficManagerGenerator) Services() []basereconciler_resources.ServiceTemplate {
+func (gen *TestWorkloadGenerator) Services() []basereconciler_resources.ServiceTemplate {
 	return []basereconciler_resources.ServiceTemplate{{
 		Template: func() *corev1.Service {
 			return &corev1.Service{
@@ -104,13 +102,10 @@ func (gen *TestTrafficManagerGenerator) Services() []basereconciler_resources.Se
 		IsEnabled: true,
 	}}
 }
-func (gen *TestTrafficManagerGenerator) GetKey() types.NamespacedName {
-	return types.NamespacedName{Name: "", Namespace: gen.TNamespace}
-}
-func (gen *TestTrafficManagerGenerator) TrafficSelector() map[string]string {
+
+func (gen *TestWorkloadGenerator) TrafficSelector() map[string]string {
 	return gen.TTrafficSelector
 }
-func (gen *TestTrafficManagerGenerator) GetLabels() map[string]string { return gen.TLabels }
 
 // TESTS START HERE
 func TestDeploymentTemplate_ApplyMeta(t *testing.T) {
@@ -215,7 +210,7 @@ func TestDeploymentTemplate_ApplyMeta(t *testing.T) {
 
 func TestDeploymentTemplate_ApplyTrafficSelector(t *testing.T) {
 	type args struct {
-		tm TrafficManager
+		wt WithTraffic
 	}
 	tests := []struct {
 		name string
@@ -236,9 +231,7 @@ func TestDeploymentTemplate_ApplyTrafficSelector(t *testing.T) {
 				},
 			},
 			args: args{
-				tm: &TestTrafficManagerGenerator{
-					TNamespace:       "testtm",
-					TLabels:          nil,
+				wt: &TestWorkloadGenerator{
 					TTrafficSelector: map[string]string{"tskey": "tsvalue"},
 				},
 			},
@@ -273,9 +266,7 @@ func TestDeploymentTemplate_ApplyTrafficSelector(t *testing.T) {
 				},
 			},
 			args: args{
-				tm: &TestTrafficManagerGenerator{
-					TNamespace:       "testtm",
-					TLabels:          nil,
+				wt: &TestWorkloadGenerator{
 					TTrafficSelector: map[string]string{"tskey": "tsvalue"},
 				},
 			},
@@ -292,7 +283,7 @@ func TestDeploymentTemplate_ApplyTrafficSelector(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if diff := deep.Equal(tt.dt.ApplyTrafficSelector(tt.args.tm).Template(), tt.want); len(diff) > 0 {
+			if diff := deep.Equal(tt.dt.ApplyTrafficSelector(tt.args.wt).Template(), tt.want); len(diff) > 0 {
 				t.Errorf("DeploymentTemplate.ApplyTrafficSelector() = diff %v", diff)
 			}
 		})
@@ -301,7 +292,7 @@ func TestDeploymentTemplate_ApplyTrafficSelector(t *testing.T) {
 
 func TestServiceTemplate_ApplyMeta(t *testing.T) {
 	type args struct {
-		tm TrafficManager
+		wt WithTraffic
 	}
 	tests := []struct {
 		name string
@@ -320,10 +311,9 @@ func TestServiceTemplate_ApplyMeta(t *testing.T) {
 				},
 			},
 			args: args{
-				tm: &TestTrafficManagerGenerator{
-					TNamespace:       "ns",
-					TLabels:          map[string]string{"key": "value"},
-					TTrafficSelector: nil,
+				wt: &TestWorkloadGenerator{
+					TNamespace: "ns",
+					TLabels:    map[string]string{"key": "value"},
 				},
 			},
 			want: &corev1.Service{
@@ -346,10 +336,9 @@ func TestServiceTemplate_ApplyMeta(t *testing.T) {
 				},
 			},
 			args: args{
-				tm: &TestTrafficManagerGenerator{
-					TNamespace:       "ns",
-					TLabels:          map[string]string{"key": "value"},
-					TTrafficSelector: nil,
+				wt: &TestWorkloadGenerator{
+					TNamespace: "ns",
+					TLabels:    map[string]string{"key": "value"},
 				},
 			},
 			want: &corev1.Service{
@@ -362,7 +351,7 @@ func TestServiceTemplate_ApplyMeta(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if diff := deep.Equal(tt.st.ApplyMeta(tt.args.tm).Template(), tt.want); len(diff) > 0 {
+			if diff := deep.Equal(tt.st.ApplyMeta(tt.args.wt).Template(), tt.want); len(diff) > 0 {
 				t.Errorf("ServiceTemplate.ApplyMeta() = diff %v", diff)
 			}
 		})
@@ -371,8 +360,8 @@ func TestServiceTemplate_ApplyMeta(t *testing.T) {
 
 func TestServiceTemplate_ApplyTrafficSelector(t *testing.T) {
 	type args struct {
-		tm TrafficManager
-		w  []WithTraffic
+		main   WithTraffic
+		canary WithTraffic
 	}
 	tests := []struct {
 		name string
@@ -391,26 +380,21 @@ func TestServiceTemplate_ApplyTrafficSelector(t *testing.T) {
 				},
 			},
 			args: args{
-				tm: &TestTrafficManagerGenerator{
+				main: &TestWorkloadGenerator{
+					TName:            "w1",
 					TNamespace:       "ns",
+					TTraffic:         true,
 					TLabels:          nil,
+					TSelector:        map[string]string{"name": "w1"},
 					TTrafficSelector: map[string]string{"aaa": "aaa"},
 				},
-				w: []WithTraffic{
-					&TestWorkloadGenerator{
-						TName:      "w1",
-						TNamespace: "ns",
-						TTraffic:   true,
-						TLabels:    nil,
-						TSelector:  map[string]string{"name": "w1"},
-					},
-					&TestWorkloadGenerator{
-						TName:      "w2",
-						TNamespace: "ns",
-						TTraffic:   false,
-						TLabels:    map[string]string{},
-						TSelector:  map[string]string{"name": "w2"},
-					},
+				canary: &TestWorkloadGenerator{
+					TName:            "w2",
+					TNamespace:       "ns",
+					TTraffic:         false,
+					TLabels:          nil,
+					TSelector:        map[string]string{"name": "w2"},
+					TTrafficSelector: map[string]string{"aaa": "aaa"},
 				},
 			},
 			want: &corev1.Service{
@@ -425,7 +409,7 @@ func TestServiceTemplate_ApplyTrafficSelector(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if diff := deep.Equal(tt.st.ApplyTrafficSelector(tt.args.tm, tt.args.w...).Template(), tt.want); len(diff) > 0 {
+			if diff := deep.Equal(tt.st.ApplyTrafficSelector(tt.args.main, tt.args.canary).Template(), tt.want); len(diff) > 0 {
 				t.Errorf("ServiceTemplate.ApplyTrafficSelector() = diff %v", diff)
 			}
 		})
@@ -434,8 +418,8 @@ func TestServiceTemplate_ApplyTrafficSelector(t *testing.T) {
 
 func Test_trafficSwitcher(t *testing.T) {
 	type args struct {
-		tm TrafficManager
-		w  []WithTraffic
+		main   TestWorkloadGenerator
+		canary TestWorkloadGenerator
 	}
 	tests := []struct {
 		name string
@@ -445,37 +429,31 @@ func Test_trafficSwitcher(t *testing.T) {
 		{
 			name: "Returns selector for a single Deployment",
 			args: args{
-				tm: &TestTrafficManagerGenerator{
+				main: TestWorkloadGenerator{
+					TTraffic:         true,
+					TSelector:        map[string]string{"selector": "main"},
 					TTrafficSelector: map[string]string{"traffic": "yes"},
 				},
-				w: []WithTraffic{
-					&TestWorkloadGenerator{
-						TTraffic:  true,
-						TSelector: map[string]string{"selector": "dep1"},
-					},
-					&TestWorkloadGenerator{
-						TTraffic:  false,
-						TSelector: map[string]string{"selector": "dep2"},
-					},
+				canary: TestWorkloadGenerator{
+					TTraffic:         false,
+					TSelector:        map[string]string{"selector": "canary"},
+					TTrafficSelector: map[string]string{"traffic": "yes"},
 				},
 			},
-			want: map[string]string{"selector": "dep1", "traffic": "yes"},
+			want: map[string]string{"selector": "main", "traffic": "yes"},
 		},
 		{
 			name: "Returns selector for all Deployments",
 			args: args{
-				tm: &TestTrafficManagerGenerator{
+				main: TestWorkloadGenerator{
+					TTraffic:         true,
+					TSelector:        map[string]string{"selector": "main"},
 					TTrafficSelector: map[string]string{"traffic": "yes"},
 				},
-				w: []WithTraffic{
-					&TestWorkloadGenerator{
-						TTraffic:  true,
-						TSelector: map[string]string{"selector": "dep1"},
-					},
-					&TestWorkloadGenerator{
-						TTraffic:  true,
-						TSelector: map[string]string{"selector": "dep2"},
-					},
+				canary: TestWorkloadGenerator{
+					TTraffic:         true,
+					TSelector:        map[string]string{"selector": "canary"},
+					TTrafficSelector: map[string]string{"traffic": "yes"},
 				},
 			},
 			want: map[string]string{"traffic": "yes"},
@@ -483,18 +461,15 @@ func Test_trafficSwitcher(t *testing.T) {
 		{
 			name: "Returns an empty map",
 			args: args{
-				tm: &TestTrafficManagerGenerator{
+				main: TestWorkloadGenerator{
+					TTraffic:         false,
+					TSelector:        map[string]string{"selector": "main"},
 					TTrafficSelector: map[string]string{"traffic": "yes"},
 				},
-				w: []WithTraffic{
-					&TestWorkloadGenerator{
-						TTraffic:  false,
-						TSelector: map[string]string{"selector": "dep1"},
-					},
-					&TestWorkloadGenerator{
-						TTraffic:  false,
-						TSelector: map[string]string{"selector": "dep2"},
-					},
+				canary: TestWorkloadGenerator{
+					TTraffic:         false,
+					TSelector:        map[string]string{"selector": "canary"},
+					TTrafficSelector: map[string]string{"traffic": "yes"},
 				},
 			},
 			want: map[string]string{},
@@ -502,7 +477,7 @@ func Test_trafficSwitcher(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if diff := deep.Equal(trafficSwitcher(tt.args.tm, tt.args.w...), tt.want); len(diff) > 0 {
+			if diff := deep.Equal(trafficSwitcher(&tt.args.main, &tt.args.canary), tt.want); len(diff) > 0 {
 				t.Errorf("trafficSwitcher() = diff %v", diff)
 			}
 		})

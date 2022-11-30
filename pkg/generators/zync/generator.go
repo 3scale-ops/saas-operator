@@ -108,11 +108,11 @@ type APIGenerator struct {
 	Traffic bool
 }
 
-// Validate that APIGenerator implements workloads.DeploymentWorkloadWithTraffic interface
-var _ workloads.DeploymentWorkloadWithTraffic = &APIGenerator{}
+// Validate that APIGenerator implements workloads.DeploymentWorkload interface
+var _ workloads.DeploymentWorkload = &APIGenerator{}
 
-// Validate that APIGenerator implements workloads.TrafficManager interface
-var _ workloads.TrafficManager = &APIGenerator{}
+// Validate that APIGenerator implements workloads.WithTraffic interface
+var _ workloads.WithTraffic = &APIGenerator{}
 
 func (gen *APIGenerator) Labels() map[string]string {
 	return gen.GetLabels()

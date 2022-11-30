@@ -81,14 +81,14 @@ func (r *ZyncReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	resources := gen.Resources()
 
 	// Api resources
-	api_resources, err := r.NewDeploymentWorkloadWithTraffic(ctx, instance, &gen.API, &gen.API)
+	api_resources, err := r.NewDeploymentWorkload(&gen.API, nil)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 	resources = append(resources, api_resources...)
 
 	// Que resources
-	que_resources, err := r.NewDeploymentWorkload(ctx, instance, &gen.Que)
+	que_resources, err := r.NewDeploymentWorkload(&gen.Que, nil)
 	if err != nil {
 		return ctrl.Result{}, err
 	}

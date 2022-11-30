@@ -1,10 +1,9 @@
 package workloads
 
 import (
-	"context"
+	"reflect"
 
 	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
@@ -19,51 +18,52 @@ func NewFromManager(mgr manager.Manager, recorderName string, clusterWatchers bo
 	}
 }
 
-func (r *WorkloadReconciler) NewDeploymentWorkload(ctx context.Context, owner client.Object,
-	workloads ...DeploymentWorkload) ([]basereconciler.Resource, error) {
+func (r *WorkloadReconciler) NewDeploymentWorkload(
+	main DeploymentWorkload, canary DeploymentWorkload) ([]basereconciler.Resource, error) {
 
-	resources := []basereconciler.Resource{}
+	resources := workloadResources(main)
 
-	for _, workload := range workloads {
-		resources = append(resources,
-			NewDeploymentTemplate(workload.Deployment()).ApplyMeta(workload),
-			NewHorizontalPodAutoscalerTemplateFromSpec(*workload.HPASpec()).ApplyMeta(workload),
-			NewPodDisruptionBudgetTemplateFromSpec(*workload.PDBSpec()).ApplyMeta(workload),
-			NewPodMonitorTemplateFromEndpoints(workload.MonitoredEndpoints()...).ApplyMeta(workload),
-		)
+	if unwrapNil(canary) != nil {
+		resources = append(resources, workloadResources(canary)...)
+	}
+
+	// Generate services if the workload implements WithTraffic interface
+	if _, ok := main.(WithTraffic); ok {
+		for _, svct := range main.(WithTraffic).Services() {
+			resources = append(resources, NewServiceTemplate(svct).ApplyMeta(main.(WithTraffic)).
+				ApplyTrafficSelector(main.(WithTraffic), toWithTraffic(canary)))
+		}
 	}
 
 	return resources, nil
 }
 
-func (r *WorkloadReconciler) NewDeploymentWorkloadWithTraffic(ctx context.Context, owner client.Object,
-	trafficManager TrafficManager, workloads ...DeploymentWorkloadWithTraffic) ([]basereconciler.Resource, error) {
+func workloadResources(workload DeploymentWorkload) []basereconciler.Resource {
 
-	resources := []basereconciler.Resource{}
+	dep := NewDeploymentTemplate(workload.Deployment()).ApplyMeta(workload)
 
-	for _, workload := range workloads {
-		resources = append(resources,
-			NewDeploymentTemplate(workload.Deployment()).ApplyMeta(workload).ApplyTrafficSelector(trafficManager),
-			NewHorizontalPodAutoscalerTemplateFromSpec(*workload.HPASpec()).ApplyMeta(workload),
-			NewPodDisruptionBudgetTemplateFromSpec(*workload.PDBSpec()).ApplyMeta(workload),
-			NewPodMonitorTemplateFromEndpoints(workload.MonitoredEndpoints()...).ApplyMeta(workload),
-		)
+	// if workload implements TrafficManager add the TrafficSelector
+	if workloadWithTraffic, ok := workload.(WithTraffic); ok {
+		dep = dep.ApplyTrafficSelector(workloadWithTraffic)
 	}
 
-	for _, svct := range trafficManager.Services() {
-		resources = append(resources, NewServiceTemplate(svct).ApplyMeta(trafficManager).
-			ApplyTrafficSelector(trafficManager, sliceDeploymentWorkloadWithTraffic_to_sliceWithTraffic(workloads)...))
-	}
+	hpa := NewHorizontalPodAutoscalerTemplateFromSpec(*workload.HPASpec()).ApplyMeta(workload)
+	pdb := NewPodDisruptionBudgetTemplateFromSpec(*workload.PDBSpec()).ApplyMeta(workload)
+	pm := NewPodMonitorTemplateFromEndpoints(workload.MonitoredEndpoints()...).ApplyMeta(workload)
 
-	return resources, nil
+	return []basereconciler.Resource{dep, hpa, pdb, pm}
 }
 
-func sliceDeploymentWorkloadWithTraffic_to_sliceWithTraffic(a []DeploymentWorkloadWithTraffic) []WithTraffic {
-	// Go does not automatically convert []DeploymentWorkloadWithTraffic to []WithTraffic
-	// even though all the elements implement both interfaces. Conversion must be manually performed.
-	b := make([]WithTraffic, 0, len(a))
-	for _, item := range a {
-		b = append(b, WithTraffic(item))
+func unwrapNil(w DeploymentWorkload) DeploymentWorkload {
+	if w == nil || reflect.ValueOf(w).IsNil() {
+		return nil
 	}
-	return b
+	return w
+}
+
+func toWithTraffic(w DeploymentWorkload) WithTraffic {
+	if w == nil || reflect.ValueOf(w).IsNil() {
+		return nil
+	}
+	return w.(WithTraffic)
 }
