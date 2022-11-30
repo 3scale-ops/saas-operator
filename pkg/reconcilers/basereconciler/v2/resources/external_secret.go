@@ -22,11 +22,8 @@ type ExternalSecretTemplate struct {
 }
 
 // Build returns an ExternalSecret resource
-func (est ExternalSecretTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
-
-	es := est.Template()
-	es.GetObjectKind().SetGroupVersionKind(externalsecretsv1beta1.SchemeGroupVersion.WithKind(externalsecretsv1beta1.ExtSecretKind))
-	return es.DeepCopy(), DefaultExcludedPaths, nil
+func (est ExternalSecretTemplate) Build(ctx context.Context, cl client.Client) (client.Object, error) {
+	return est.Template().DeepCopy(), nil
 }
 
 // Enabled indicates if the resource should be present or not

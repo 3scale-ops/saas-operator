@@ -293,23 +293,3 @@ func Test_findPort(t *testing.T) {
 		})
 	}
 }
-
-func Test_serviceExcludes(t *testing.T) {
-	type args struct {
-		svc *corev1.Service
-	}
-	tests := []struct {
-		name string
-		args args
-		want []string
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := serviceExcludes(tt.args.svc); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("serviceExcludes() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}

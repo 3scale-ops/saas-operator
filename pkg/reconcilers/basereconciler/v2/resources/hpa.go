@@ -22,11 +22,8 @@ type HorizontalPodAutoscalerTemplate struct {
 }
 
 // Build returns a HorizontalPodAutoscaler resource
-func (hpat HorizontalPodAutoscalerTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
-
-	hpa := hpat.Template()
-	hpa.GetObjectKind().SetGroupVersionKind(autoscalingv2beta2.SchemeGroupVersion.WithKind("HorizontalPodAutoscaler"))
-	return hpa.DeepCopy(), []string{}, nil
+func (hpat HorizontalPodAutoscalerTemplate) Build(ctx context.Context, cl client.Client) (client.Object, error) {
+	return hpat.Template().DeepCopy(), nil
 }
 
 // Enabled indicates if the resource should be present or not
