@@ -23,7 +23,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/pointer"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var (
@@ -169,16 +168,6 @@ type CORSProxyList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []CORSProxy `json:"items"`
-}
-
-// GetItem returns a client.Objectfrom a CORSProxyList
-func (cpl *CORSProxyList) GetItem(idx int) client.Object {
-	return &cpl.Items[idx]
-}
-
-// CountItems returns the item count in CORSProxyList.Items
-func (cpl *CORSProxyList) CountItems() int {
-	return len(cpl.Items)
 }
 
 func init() {

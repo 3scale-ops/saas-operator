@@ -2,10 +2,19 @@ package basereconciler
 
 import (
 	"context"
+	"strconv"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	externalsecretsv1beta1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1beta1"
+	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
+	"github.com/3scale/saas-operator/pkg/util"
 	"github.com/go-logr/logr"
-	"github.com/redhat-cop/operator-utils/pkg/util"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	operatorutils "github.com/redhat-cop/operator-utils/pkg/util"
+	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
+	corev1 "k8s.io/api/core/v1"
+	policyv1 "k8s.io/api/policy/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -17,6 +26,18 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
+
+var SupportedListTypes = []client.ObjectList{
+	&corev1.ServiceAccountList{},
+	&corev1.ConfigMapList{},
+	&appsv1.DeploymentList{},
+	&appsv1.StatefulSetList{},
+	&externalsecretsv1beta1.ExternalSecretList{},
+	&grafanav1alpha1.GrafanaDashboardList{},
+	&autoscalingv2beta2.HorizontalPodAutoscalerList{},
+	&policyv1.PodDisruptionBudgetList{},
+	&monitoringv1.PodMonitorList{},
+}
 
 type Resource interface {
 	Build(ctx context.Context, cl client.Client) (client.Object, []string, error)
@@ -49,13 +70,13 @@ func (r *Reconciler) GetInstance(ctx context.Context, key types.NamespacedName,
 		return &ctrl.Result{}, err
 	}
 
-	if util.IsBeingDeleted(instance) {
+	if operatorutils.IsBeingDeleted(instance) {
 
 		// finalizer logic is only triggered if the controller
 		// sets a finalizer, otherwise there's notihng to be done
 		if finalizer != nil {
 
-			if !util.HasFinalizer(instance, *finalizer) {
+			if !operatorutils.HasFinalizer(instance, *finalizer) {
 				return &ctrl.Result{}, nil
 			}
 			err := r.ManageCleanupLogic(instance, cleanupFns, logger)
@@ -64,7 +85,7 @@ func (r *Reconciler) GetInstance(ctx context.Context, key types.NamespacedName,
 				result, err := ctrl.Result{}, err
 				return &result, err
 			}
-			util.RemoveFinalizer(instance, *finalizer)
+			operatorutils.RemoveFinalizer(instance, *finalizer)
 			err = r.Client.Update(ctx, instance)
 			if err != nil {
 				logger.Error(err, "unable to update instance")
@@ -92,8 +113,8 @@ func (r *Reconciler) GetInstance(ctx context.Context, key types.NamespacedName,
 // Returns false if it isn't.
 func (r *Reconciler) IsInitialized(instance client.Object, finalizer *string) bool {
 	ok := true
-	if finalizer != nil && !util.HasFinalizer(instance, *finalizer) {
-		util.AddFinalizer(instance, *finalizer)
+	if finalizer != nil && !operatorutils.HasFinalizer(instance, *finalizer) {
+		operatorutils.AddFinalizer(instance, *finalizer)
 		ok = false
 	}
 
@@ -101,8 +122,8 @@ func (r *Reconciler) IsInitialized(instance client.Object, finalizer *string) bo
 	//    ensure the finalizers are removed, they are no longer required
 	//    for most custom resources as we have dropped usage the lockedresources
 	//    reconciler
-	if finalizer == nil && util.HasFinalizer(instance, saasv1alpha1.Finalizer) {
-		util.RemoveFinalizer(instance, saasv1alpha1.Finalizer)
+	if finalizer == nil && operatorutils.HasFinalizer(instance, saasv1alpha1.Finalizer) {
+		operatorutils.RemoveFinalizer(instance, saasv1alpha1.Finalizer)
 		ok = false
 	}
 	return ok
@@ -124,6 +145,8 @@ func (r *Reconciler) ManageCleanupLogic(instance client.Object, fns []func(), lo
 // all controllers
 func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.Object, resources []Resource) error {
 
+	managedResources := []types.NamespacedName{}
+
 	for _, res := range resources {
 
 		object, _, err := res.Build(ctx, r.Client)
@@ -139,37 +162,80 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 			return err
 		}
 
+		managedResources = append(managedResources, util.ObjectKey(object))
+	}
+
+	if value, ok := owner.GetAnnotations()["saas.3scale.net/prune"]; ok {
+		prune, err := strconv.ParseBool(value)
+		if err != nil {
+			return err
+		}
+		if !prune {
+			return nil
+		}
+	}
+
+	for _, list := range SupportedListTypes {
+		r.PruneOrphaned(ctx, owner, list, managedResources)
 	}
 
 	return nil
 }
 
-// ExtendedObjectList is an extension of client.ObjectList with methods
-// to manipulate generically the objects in the list
-type ExtendedObjectList interface {
-	client.ObjectList
-	GetItem(int) client.Object
-	CountItems() int
+func (r *Reconciler) PruneOrphaned(ctx context.Context, owner client.Object, list client.ObjectList, managed []types.NamespacedName) error {
+
+	err := r.Client.List(ctx, list, client.InNamespace(owner.GetNamespace()))
+	if err != nil {
+		return err
+	}
+
+	for _, obj := range util.GetItems(list) {
+
+		if isOwned(owner, obj) && !operatorutils.IsBeingDeleted(obj) && !isManaged(obj.GetName(), obj.GetNamespace(), managed) {
+			err := r.Client.Delete(ctx, obj)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
-// SecretEventHandler returns an EventHandler for the specific ExtendedObjectList
+func isOwned(owner client.Object, owned client.Object) bool {
+	refs := owned.GetOwnerReferences()
+	for _, ref := range refs {
+		if ref.Kind == owner.GetObjectKind().GroupVersionKind().Kind && ref.Name == owner.GetName() {
+			return true
+		}
+	}
+	return false
+}
+
+func isManaged(name, namespace string, managed []types.NamespacedName) bool {
+	for _, m := range managed {
+		if m.Name == name && m.Namespace == namespace {
+			return true
+		}
+	}
+	return false
+}
+
+// SecretEventHandler returns an EventHandler for the specific client.ObjectList
 // list object passed as parameter
-func (r *Reconciler) SecretEventHandler(ol ExtendedObjectList, logger logr.Logger) handler.EventHandler {
+func (r *Reconciler) SecretEventHandler(ol client.ObjectList, logger logr.Logger) handler.EventHandler {
 	return handler.EnqueueRequestsFromMapFunc(
 		func(o client.Object) []reconcile.Request {
 			if err := r.Client.List(context.TODO(), ol); err != nil {
 				logger.Error(err, "unable to retrieve the list of resources")
 				return []reconcile.Request{}
 			}
-			if ol.CountItems() == 0 {
+			items := util.GetItems(ol)
+			if len(items) == 0 {
 				return []reconcile.Request{}
 			}
 
-			key := types.NamespacedName{
-				Name:      ol.GetItem(0).GetName(),
-				Namespace: ol.GetItem(0).GetNamespace(),
-			}
-			return []reconcile.Request{{NamespacedName: key}}
+			return []reconcile.Request{{NamespacedName: util.ObjectKey(items[0])}}
 		},
 	)
 }
