@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
@@ -10,6 +11,7 @@ import (
 	testutil "github.com/3scale/saas-operator/test/util"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
@@ -401,7 +403,18 @@ var _ = Describe("System controller", func() {
 							ImageTag:  pointer.StringPtr("newTag"),
 							Replicas:  pointer.Int32Ptr(2)},
 					}
-					return k8sClient.Patch(context.Background(), system, patch)
+					// return k8sClient.Patch(context.Background(), system, patch)
+
+					if err := k8sClient.Patch(context.Background(), system, patch); err != nil {
+						return err
+					}
+
+					// waiting for on of the Deployments is enough ...
+					if testutil.GetResourceVersion(k8sClient, &appsv1.Deployment{}, "system-app-canary", namespace, timeout, poll) == "" {
+						return fmt.Errorf("not ready")
+					}
+
+					return nil
 				}, timeout, poll).ShouldNot(HaveOccurred())
 			})
 
@@ -517,6 +530,60 @@ var _ = Describe("System controller", func() {
 
 				})
 
+			})
+
+			When("disabling the canary", func() {
+
+				BeforeEach(func() {
+
+					Eventually(func() error {
+						system := &saasv1alpha1.System{}
+						if err := k8sClient.Get(
+							context.Background(),
+							types.NamespacedName{Name: "instance", Namespace: namespace},
+							system,
+						); err != nil {
+							return err
+						}
+						patch := client.MergeFrom(system.DeepCopy())
+						system.Spec.App.Canary = nil
+						system.Spec.SidekiqDefault.Canary = nil
+						system.Spec.SidekiqBilling.Canary = nil
+						system.Spec.SidekiqLow.Canary = nil
+						return k8sClient.Patch(context.Background(), system, patch)
+					}, timeout, poll).ShouldNot(HaveOccurred())
+				})
+
+				It("deletes the canary resources", func() {
+
+					dep := &appsv1.Deployment{}
+					By("removing the system-app-canary Deployment",
+						(&testutil.ExpectedResource{
+							Name: "system-app-canary", Namespace: namespace, Missing: true}).Assert(k8sClient, dep, timeout, poll))
+					By("removing the system-sidekiq-default-canary Deployment",
+						(&testutil.ExpectedResource{
+							Name: "system-sidekiq-default-canary", Namespace: namespace, Missing: true}).Assert(k8sClient, dep, timeout, poll))
+					By("removing the system-sidekiq-billing-canary Deployment",
+						(&testutil.ExpectedResource{
+							Name: "system-sidekiq-billing-canary", Namespace: namespace, Missing: true}).Assert(k8sClient, dep, timeout, poll))
+					By("removing the system-sidekiq-low-canary Deployment",
+						(&testutil.ExpectedResource{
+							Name: "system-sidekiq-low-canary", Namespace: namespace, Missing: true}).Assert(k8sClient, dep, timeout, poll))
+
+					pm := &monitoringv1.PodMonitor{}
+					By("removing the system-app-canary PodMonitor",
+						(&testutil.ExpectedResource{
+							Name: "system-app-canary", Namespace: namespace, Missing: true}).Assert(k8sClient, pm, timeout, poll))
+					By("removing the system-sidekiq-default-canary PodMonitor",
+						(&testutil.ExpectedResource{
+							Name: "system-sidekiq-default-canary", Namespace: namespace, Missing: true}).Assert(k8sClient, pm, timeout, poll))
+					By("removing the system-sidekiq-billing-canary PodMonitor",
+						(&testutil.ExpectedResource{
+							Name: "system-sidekiq-billing-canary", Namespace: namespace, Missing: true}).Assert(k8sClient, pm, timeout, poll))
+					By("removing the system-sidekiq-low-canary PodMonitor",
+						(&testutil.ExpectedResource{
+							Name: "system-sidekiq-low-canary", Namespace: namespace, Missing: true}).Assert(k8sClient, pm, timeout, poll))
+				})
 			})
 		})
 

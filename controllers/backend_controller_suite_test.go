@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
@@ -10,6 +11,7 @@ import (
 	testutil "github.com/3scale/saas-operator/test/util"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
@@ -447,7 +449,18 @@ var _ = Describe("Backend controller", func() {
 							},
 						},
 					}
-					return k8sClient.Patch(context.Background(), backend, patch)
+					if err := k8sClient.Patch(context.Background(), backend, patch); err != nil {
+						return err
+					}
+
+					if testutil.GetResourceVersion(k8sClient, &appsv1.Deployment{}, "backend-listener-canary", namespace, timeout, poll) == "" {
+						return fmt.Errorf("not ready")
+					}
+					if testutil.GetResourceVersion(k8sClient, &appsv1.Deployment{}, "backend-worker-canary", namespace, timeout, poll) == "" {
+						return fmt.Errorf("not ready")
+					}
+
+					return nil
 
 				}, timeout, poll).ShouldNot(HaveOccurred())
 			})
@@ -588,6 +601,45 @@ var _ = Describe("Backend controller", func() {
 
 			})
 
+			When("disabling the canary", func() {
+
+				BeforeEach(func() {
+
+					Eventually(func() error {
+						backend := &saasv1alpha1.Backend{}
+						if err := k8sClient.Get(
+							context.Background(),
+							types.NamespacedName{Name: "instance", Namespace: namespace},
+							backend,
+						); err != nil {
+							return err
+						}
+						patch := client.MergeFrom(backend.DeepCopy())
+						backend.Spec.Listener.Canary = nil
+						backend.Spec.Worker.Canary = nil
+						return k8sClient.Patch(context.Background(), backend, patch)
+					}, timeout, poll).ShouldNot(HaveOccurred())
+				})
+
+				It("deletes the canary resources", func() {
+
+					dep := &appsv1.Deployment{}
+					By("removing the backend-listener-canary Deployment",
+						(&testutil.ExpectedResource{
+							Name: "backend-listener-canary", Namespace: namespace, Missing: true}).Assert(k8sClient, dep, timeout, poll))
+					By("removing the backend-worker-canary Deployment",
+						(&testutil.ExpectedResource{
+							Name: "backend-worker-canary", Namespace: namespace, Missing: true}).Assert(k8sClient, dep, timeout, poll))
+
+					pm := &monitoringv1.PodMonitor{}
+					By("removing the backend-listener-canary PodMonitor",
+						(&testutil.ExpectedResource{
+							Name: "backend-listener-canary", Namespace: namespace, Missing: true}).Assert(k8sClient, pm, timeout, poll))
+					By("removing the backend-worker-canary PodMonitor",
+						(&testutil.ExpectedResource{
+							Name: "backend-worker-canary", Namespace: namespace, Missing: true}).Assert(k8sClient, pm, timeout, poll))
+				})
+			})
 		})
 
 		When("updating a backend resource with twemproxyconfig", func() {
