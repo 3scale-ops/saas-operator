@@ -38,7 +38,9 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 // TwemproxyConfigReconciler reconciles a TwemproxyConfig object
@@ -124,6 +126,7 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 func (r *TwemproxyConfigReconciler) reconcileConfigMap(ctx context.Context, owner client.Object,
 	desired *corev1.ConfigMap, reconcileData bool, log logr.Logger) (string, error) {
+	logger := log.WithValues("kind", "ConfigMap", "resource", desired.GetName())
 
 	current := &corev1.ConfigMap{}
 	err := r.Client.Get(ctx, util.ObjectKey(desired), current)
@@ -136,30 +139,28 @@ func (r *TwemproxyConfigReconciler) reconcileConfigMap(ctx context.Context, owne
 			if err := r.Client.Create(ctx, desired); err != nil {
 				return "", err
 			}
-			log.Info("created ConfigMap")
+			logger.Info("created ConfigMap")
 			return util.Hash(desired.Data), nil
 		}
 		return "", err
 	}
 
-	var hash string
 	if reconcileData {
 		// Compare .data field of both ConfigMaps and patch if required.
 		// We use patch to avoid failures due to having an older version
 		// of the configmap so the config changes are propagated faster.
 		if !reflect.DeepEqual(desired.Data, current.Data) {
-			if err := r.Client.Patch(ctx, desired, client.MergeFrom(current)); err != nil {
-				log.Error(err, "unable to patch ConfigMap")
+			patch := client.MergeFrom(current.DeepCopy())
+			current.Data = desired.Data
+			if err := r.Client.Patch(ctx, current, patch); err != nil {
+				logger.Error(err, "unable to patch ConfigMap")
 				return "", err
 			}
-			log.Info("updated ConfigMap")
+			logger.Info("patched ConfigMap")
 		}
-		hash = util.Hash(desired.Data)
-	} else {
-		hash = util.Hash(current.Data)
 	}
 
-	return hash, nil
+	return util.Hash(current.Data), nil
 }
 
 func (r *TwemproxyConfigReconciler) reconcileSyncAnnotations(ctx context.Context,
@@ -231,5 +232,6 @@ func (r *TwemproxyConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&saasv1alpha1.TwemproxyConfig{}).
 		Owns(&corev1.ConfigMap{}).
 		Owns(&grafanav1alpha1.GrafanaDashboard{}).
+		Watches(&source.Channel{Source: r.SentinelEvents.GetChannel()}, &handler.EnqueueRequestForObject{}).
 		Complete(r)
 }
