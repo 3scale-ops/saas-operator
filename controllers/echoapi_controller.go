@@ -71,7 +71,7 @@ func (r *EchoAPIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		instance.Spec,
 	)
 
-	resources, err := r.NewDeploymentWorkloadWithTraffic(ctx, instance, &gen, &gen)
+	resources, err := r.NewDeploymentWorkload(&gen, nil)
 	if err != nil {
 		return ctrl.Result{}, err
 	}

@@ -42,17 +42,9 @@ type WithHorizontalPodAutoscaler interface {
 }
 
 type WithTraffic interface {
+	WithWorkloadMeta
 	WithSelector
 	SendTraffic() bool
-}
-
-/* --------- */
-/* WORKLOADS */
-/* --------- */
-
-type TrafficManager interface {
-	WithKey
-	WithLabels
 	TrafficSelector() map[string]string
 	Services() []resources.ServiceTemplate
 }
@@ -63,9 +55,4 @@ type DeploymentWorkload interface {
 	WithHorizontalPodAutoscaler
 	WithPodDisruptionBadget
 	Deployment() resources.DeploymentTemplate
-}
-
-type DeploymentWorkloadWithTraffic interface {
-	DeploymentWorkload
-	WithTraffic
 }

@@ -23,7 +23,6 @@ import (
 	externalsecretsv1beta1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators/system"
-	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	"github.com/go-logr/logr"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
@@ -85,49 +84,28 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	resources := append(gen.ExternalSecrets(), gen.GrafanaDashboard())
 
 	// System APP
-	var app_resources []basereconciler.Resource
-	if instance.Spec.App.Canary != nil {
-		app_resources, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, &gen.App, &gen.App, gen.CanaryApp)
-	} else {
-		app_resources, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, &gen.App, &gen.App)
-	}
+	app_resources, err := r.NewDeploymentWorkload(&gen.App, gen.CanaryApp)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-
 	resources = append(resources, app_resources...)
 
 	// Sidekiq Default resources
-	var sidekiq_default_resources []basereconciler.Resource
-	if instance.Spec.SidekiqDefault.Canary != nil {
-		sidekiq_default_resources, err = r.NewDeploymentWorkload(ctx, instance, &gen.SidekiqDefault, gen.CanarySidekiqDefault)
-	} else {
-		sidekiq_default_resources, err = r.NewDeploymentWorkload(ctx, instance, &gen.SidekiqDefault)
-	}
+	sidekiq_default_resources, err := r.NewDeploymentWorkload(&gen.SidekiqDefault, gen.CanarySidekiqDefault)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 	resources = append(resources, sidekiq_default_resources...)
 
 	// Sidekiq Billing resources
-	var sidekiq_billing_resources []basereconciler.Resource
-	if instance.Spec.SidekiqBilling.Canary != nil {
-		sidekiq_billing_resources, err = r.NewDeploymentWorkload(ctx, instance, &gen.SidekiqBilling, gen.CanarySidekiqBilling)
-	} else {
-		sidekiq_billing_resources, err = r.NewDeploymentWorkload(ctx, instance, &gen.SidekiqBilling)
-	}
+	sidekiq_billing_resources, err := r.NewDeploymentWorkload(&gen.SidekiqBilling, gen.CanarySidekiqBilling)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 	resources = append(resources, sidekiq_billing_resources...)
 
 	// Sidekiq Low resources
-	var sidekiq_low_resources []basereconciler.Resource
-	if instance.Spec.SidekiqLow.Canary != nil {
-		sidekiq_low_resources, err = r.NewDeploymentWorkload(ctx, instance, &gen.SidekiqLow, gen.CanarySidekiqLow)
-	} else {
-		sidekiq_low_resources, err = r.NewDeploymentWorkload(ctx, instance, &gen.SidekiqLow)
-	}
+	sidekiq_low_resources, err := r.NewDeploymentWorkload(&gen.SidekiqLow, gen.CanarySidekiqLow)
 	if err != nil {
 		return ctrl.Result{}, err
 	}

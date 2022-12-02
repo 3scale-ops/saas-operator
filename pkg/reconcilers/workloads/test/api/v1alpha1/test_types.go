@@ -40,12 +40,12 @@ var (
 // NOTE: execute the following commands whenever you modify this file
 //
 // $ bin/controller-gen object:headerFile=hack/boilerplate.go.txt paths=./pkg/reconcilers/workloads/test/api/v1alpha1
-// $ bin/controller-gen crd:trivialVersions=true,preserveUnknownFields=false paths=./pkg/reconcilers/workloads/test/api/v1alpha1 output:crd:artifacts:config=./pkg/basereconciler/test/deployment_workload_controller/api/v1alpha1
+// $ bin/controller-gen crd paths=./pkg/reconcilers/workloads/test/api/v1alpha1 output:crd:artifacts:config=./pkg/reconcilers/workloads/test/api/v1alpha1
 
 // TestSpec defines the desired state of Test
 type TestSpec struct {
-	Alice           Workload          `json:"alice"`
-	Bob             Workload          `json:"bob"`
+	Main            Workload          `json:"main"`
+	Canary          Workload          `json:"canary"`
 	TrafficSelector map[string]string `json:"trafficSelector"`
 }
 

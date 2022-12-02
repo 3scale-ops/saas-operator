@@ -23,7 +23,6 @@ import (
 	externalsecretsv1beta1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators/backend"
-	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	"github.com/go-logr/logr"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
@@ -81,31 +80,21 @@ func (r *BackendReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	resources := gen.Resources()
 
 	// Listener resources
-	var listener_resources []basereconciler.Resource
-	if instance.Spec.Listener.Canary != nil {
-		listener_resources, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, &gen.Listener, &gen.Listener, gen.CanaryListener)
-	} else {
-		listener_resources, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, &gen.Listener, &gen.Listener)
-	}
+	listener_resources, err := r.NewDeploymentWorkload(&gen.Listener, gen.CanaryListener)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 	resources = append(resources, listener_resources...)
 
 	// Worker resources
-	var worker_resources []basereconciler.Resource
-	if instance.Spec.Worker.Canary != nil {
-		worker_resources, err = r.NewDeploymentWorkload(ctx, instance, &gen.Worker, gen.CanaryWorker)
-	} else {
-		worker_resources, err = r.NewDeploymentWorkload(ctx, instance, &gen.Worker)
-	}
+	worker_resources, err := r.NewDeploymentWorkload(&gen.Worker, gen.CanaryWorker)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 	resources = append(resources, worker_resources...)
 
 	// Cron resources
-	cron_resources, err := r.NewDeploymentWorkload(ctx, instance, &gen.Cron)
+	cron_resources, err := r.NewDeploymentWorkload(&gen.Cron, nil)
 	if err != nil {
 		return ctrl.Result{}, err
 	}

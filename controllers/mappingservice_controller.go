@@ -83,8 +83,7 @@ func (r *MappingServiceReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		gen.ExternalSecret(),
 	}
 
-	var workload []basereconciler.Resource
-	workload, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, &gen, &gen)
+	workload, err := r.NewDeploymentWorkload(&gen, nil)
 	if err != nil {
 		return ctrl.Result{}, err
 	}

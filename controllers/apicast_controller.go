@@ -22,7 +22,6 @@ import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators/apicast"
-	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	"github.com/go-logr/logr"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
@@ -74,23 +73,13 @@ func (r *ApicastReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	resources := gen.Resources()
 
-	var staging []basereconciler.Resource
-	if instance.Spec.Staging.Canary != nil {
-		staging, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, &gen.Staging, &gen.Staging, gen.CanaryStaging)
-	} else {
-		staging, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, &gen.Staging, &gen.Staging)
-	}
+	staging, err := r.NewDeploymentWorkload(&gen.Staging, gen.CanaryStaging)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 	resources = append(resources, staging...)
 
-	var production []basereconciler.Resource
-	if instance.Spec.Production.Canary != nil {
-		production, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, &gen.Production, &gen.Production, gen.CanaryProduction)
-	} else {
-		production, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, &gen.Production, &gen.Production)
-	}
+	production, err := r.NewDeploymentWorkload(&gen.Production, gen.CanaryProduction)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
