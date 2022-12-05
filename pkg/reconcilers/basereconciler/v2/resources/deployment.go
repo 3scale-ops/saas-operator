@@ -189,6 +189,18 @@ func (dep DeploymentTemplate) ResourceReconciler(ctx context.Context, cl client.
 		needsUpdate = true
 	}
 
+	/* Reconcile the Template Annotations */
+	if !equality.Semantic.DeepEqual(
+		instance.Spec.Template.ObjectMeta.Annotations, desired.Spec.Template.ObjectMeta.Annotations) {
+		logger.Info("Resource update required due differences in Spec.Template.ObjectMeta.Annotations.")
+		logger.V(1).Info(
+			fmt.Sprintf("Spec.Template.ObjectMeta.Annotations differences: %s",
+				deep.Equal(instance.Spec.Template.ObjectMeta.Annotations, desired.Spec.Template.ObjectMeta.Annotations)),
+		)
+		instance.Spec.Template.ObjectMeta.Annotations = desired.Spec.Template.ObjectMeta.Annotations
+		needsUpdate = true
+	}
+
 	/* Inherit some values usually defaulted by the cluster if not defined on the template */
 	if desired.Spec.Template.Spec.DNSPolicy == "" {
 		desired.Spec.Template.Spec.DNSPolicy = instance.Spec.Template.Spec.DNSPolicy

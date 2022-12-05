@@ -110,6 +110,7 @@ var _ = Describe("Test controller", func() {
 					dep,
 				)
 			}, timeout, poll).ShouldNot(HaveOccurred())
+
 			// Annotations should be empty when Secret does not exists
 			value, ok := dep.Spec.Template.ObjectMeta.Annotations["saas.3scale.net/secret.secret-hash"]
 			Expect(ok).To(BeTrue())
@@ -134,7 +135,7 @@ var _ = Describe("Test controller", func() {
 				Expect(ok).To(BeTrue())
 				// Value of the annotation should be the hash of the Secret contents
 				return value == util.Hash(secret.Data)
-			}, timeout, poll).ShouldNot(BeTrue())
+			}, timeout, poll).Should(BeTrue())
 
 			patch := client.MergeFrom(secret.DeepCopy())
 			secret.Data = map[string][]byte{"KEY": []byte("new-value")}
@@ -152,7 +153,7 @@ var _ = Describe("Test controller", func() {
 				Expect(ok).To(BeTrue())
 				// Value of the annotation should be the hash of the Secret new contents
 				return value == util.Hash(secret.Data)
-			}, timeout, poll).ShouldNot(BeTrue())
+			}, timeout, poll).Should(BeTrue())
 		})
 
 		It("Deletes specific resources when disabled", func() {

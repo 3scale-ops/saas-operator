@@ -180,6 +180,18 @@ func (sts StatefulSetTemplate) ResourceReconciler(ctx context.Context, cl client
 		needsUpdate = true
 	}
 
+	/* Reconcile the Template Annotations */
+	if !equality.Semantic.DeepEqual(
+		instance.Spec.Template.ObjectMeta.Annotations, desired.Spec.Template.ObjectMeta.Annotations) {
+		logger.Info("Resource update required due differences in Spec.Template.ObjectMeta.Annotations.")
+		logger.V(1).Info(
+			fmt.Sprintf("Spec.Template.ObjectMeta.Annotations differences: %s",
+				deep.Equal(instance.Spec.Template.ObjectMeta.Annotations, desired.Spec.Template.ObjectMeta.Annotations)),
+		)
+		instance.Spec.Template.ObjectMeta.Annotations = desired.Spec.Template.ObjectMeta.Annotations
+		needsUpdate = true
+	}
+
 	/* Reconcile the Template Spec */
 
 	if desired.Spec.Template.Spec.SchedulerName == "" {
