@@ -22,11 +22,8 @@ type PodDisruptionBudgetTemplate struct {
 }
 
 // Build returns a PodDisruptionBudget resource
-func (pdbt PodDisruptionBudgetTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
-
-	pdb := pdbt.Template()
-	pdb.GetObjectKind().SetGroupVersionKind(policyv1.SchemeGroupVersion.WithKind("PodDisruptionBudget"))
-	return pdb.DeepCopy(), DefaultExcludedPaths, nil
+func (pdbt PodDisruptionBudgetTemplate) Build(ctx context.Context, cl client.Client) (client.Object, error) {
+	return pdbt.Template().DeepCopy(), nil
 }
 
 // Enabled indicates if the resource should be present or not
@@ -36,7 +33,7 @@ func (pdbt PodDisruptionBudgetTemplate) Enabled() bool {
 
 // ResourceReconciler implements a generic reconciler for PodDisruptionBudget resources
 func (pdbt PodDisruptionBudgetTemplate) ResourceReconciler(ctx context.Context, cl client.Client, obj client.Object) error {
-	logger := log.FromContext(ctx, "ResourceReconciler", "PodDisruptionBudget")
+	logger := log.FromContext(ctx, "kind", "PodDisruptionBudget", "resource", obj.GetName())
 
 	needsUpdate := false
 	desired := obj.(*policyv1.PodDisruptionBudget)
@@ -51,7 +48,7 @@ func (pdbt PodDisruptionBudgetTemplate) ResourceReconciler(ctx context.Context, 
 				if err != nil {
 					return fmt.Errorf("unable to create object: " + err.Error())
 				}
-				logger.Info("Resource created")
+				logger.Info("resource created")
 				return nil
 
 			} else {
@@ -68,7 +65,7 @@ func (pdbt PodDisruptionBudgetTemplate) ResourceReconciler(ctx context.Context, 
 		if err != nil {
 			return fmt.Errorf("unable to delete object: " + err.Error())
 		}
-		logger.Info("Resource deleted")
+		logger.Info("resource deleted")
 		return nil
 	}
 
@@ -103,7 +100,7 @@ func (pdbt PodDisruptionBudgetTemplate) ResourceReconciler(ctx context.Context, 
 		if err != nil {
 			return err
 		}
-		logger.Info("Resource updated")
+		logger.Info("resource updated")
 	}
 
 	return nil

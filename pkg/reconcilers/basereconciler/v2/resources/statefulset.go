@@ -14,20 +14,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-var (
-	// StatefulSetExcludedPaths is a list fo path to ignore for StatefulSet resources
-	StatefulSetExcludedPaths []string = []string{
-		"/metadata",
-		"/status",
-		"/spec/revisionHistoryLimit",
-		"/spec/template/spec/dnsPolicy",
-		"/spec/template/spec/restartPolicy",
-		"/spec/template/spec/schedulerName",
-		"/spec/template/spec/securityContext",
-		"/spec/template/spec/terminationGracePeriodSeconds",
-	}
-)
-
 var _ basereconciler.Resource = StatefulSetTemplate{}
 
 // StatefulSet specifies a StatefulSet resource and its rollout triggers
@@ -37,16 +23,15 @@ type StatefulSetTemplate struct {
 	IsEnabled       bool
 }
 
-func (sst StatefulSetTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
+func (sst StatefulSetTemplate) Build(ctx context.Context, cl client.Client) (client.Object, error) {
 
 	ss := sst.Template()
-	ss.GetObjectKind().SetGroupVersionKind(appsv1.SchemeGroupVersion.WithKind("StatefulSet"))
 
 	if err := sst.reconcileRolloutTriggers(ctx, cl, ss); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	return ss.DeepCopy(), StatefulSetExcludedPaths, nil
+	return ss.DeepCopy(), nil
 }
 
 func (sst StatefulSetTemplate) Enabled() bool {
@@ -54,10 +39,7 @@ func (sst StatefulSetTemplate) Enabled() bool {
 }
 
 func (sts StatefulSetTemplate) ResourceReconciler(ctx context.Context, cl client.Client, obj client.Object) error {
-	logger := log.FromContext(ctx,
-		"ResourceReconciler", "StatefulSet",
-		"Resource", obj.GetName(),
-	)
+	logger := log.FromContext(ctx, "kind", "StatefulSet", "resource", obj.GetName())
 
 	needsUpdate := false
 	desired := obj.(*appsv1.StatefulSet)
@@ -72,7 +54,7 @@ func (sts StatefulSetTemplate) ResourceReconciler(ctx context.Context, cl client
 				if err != nil {
 					return fmt.Errorf("unable to create object: " + err.Error())
 				}
-				logger.Info("Resource created")
+				logger.Info("resource created")
 				return nil
 
 			} else {
@@ -89,24 +71,24 @@ func (sts StatefulSetTemplate) ResourceReconciler(ctx context.Context, cl client
 		if err != nil {
 			return fmt.Errorf("unable to delete object: " + err.Error())
 		}
-		logger.Info("Resource deleted")
+		logger.Info("resource deleted")
 		return nil
 	}
 
 	/* Reconcile metadata */
 	if !equality.Semantic.DeepEqual(instance.GetAnnotations(), desired.GetAnnotations()) {
-		logger.Info("Resource update required due differences in Annotations.")
+		logger.Info("resource update required due to differences in metadata.annotations.")
 		logger.V(1).Info(
-			fmt.Sprintf("Annotations differences: %s",
+			fmt.Sprintf("metadata.annotations differences: %s",
 				deep.Equal(instance.GetAnnotations(), desired.GetAnnotations())),
 		)
 		instance.ObjectMeta.Annotations = desired.GetAnnotations()
 		needsUpdate = true
 	}
 	if !equality.Semantic.DeepEqual(instance.GetLabels(), desired.GetLabels()) {
-		logger.Info("Resource update required due differences in Labels.")
+		logger.Info("resource update required due to differences in metadata.labels.")
 		logger.V(1).Info(
-			fmt.Sprintf("Labels differences: %s",
+			fmt.Sprintf("metadala.labels differences: %s",
 				deep.Equal(instance.GetLabels(), desired.GetLabels())),
 		)
 		instance.ObjectMeta.Labels = desired.GetLabels()
@@ -115,9 +97,9 @@ func (sts StatefulSetTemplate) ResourceReconciler(ctx context.Context, cl client
 
 	/* Reconcile the MinReadySeconds */
 	if !equality.Semantic.DeepEqual(instance.Spec.MinReadySeconds, desired.Spec.MinReadySeconds) {
-		logger.Info("Resource update required due differences in Spec.MinReadySeconds.")
+		logger.Info("resource update required due to differences in spec.minReadySeconds.")
 		logger.V(1).Info(
-			fmt.Sprintf("Spec.MinReadySeconds differences: %s",
+			fmt.Sprintf("spec.minReadySeconds differences: %s",
 				deep.Equal(instance.Spec.MinReadySeconds, desired.Spec.MinReadySeconds)),
 		)
 		instance.Spec.MinReadySeconds = desired.Spec.MinReadySeconds
@@ -126,9 +108,9 @@ func (sts StatefulSetTemplate) ResourceReconciler(ctx context.Context, cl client
 
 	/* Reconcile the PersistentVolumeClaimRetentionPolicy */
 	if !equality.Semantic.DeepEqual(instance.Spec.PersistentVolumeClaimRetentionPolicy, desired.Spec.PersistentVolumeClaimRetentionPolicy) {
-		logger.Info("Resource update required due differences in Spec.PersistentVolumeClaimRetentionPolicy.")
+		logger.Info("resource update required due to differences in spec.persistentVolumeClaimRetentionPolicy.")
 		logger.V(1).Info(
-			fmt.Sprintf("Spec.PersistentVolumeClaimRetentionPolicy differences: %s",
+			fmt.Sprintf("spec.persistentVolumeClaimRetentionPolicy differences: %s",
 				deep.Equal(instance.Spec.PersistentVolumeClaimRetentionPolicy, desired.Spec.PersistentVolumeClaimRetentionPolicy)),
 		)
 		instance.Spec.PersistentVolumeClaimRetentionPolicy = desired.Spec.PersistentVolumeClaimRetentionPolicy
@@ -137,9 +119,9 @@ func (sts StatefulSetTemplate) ResourceReconciler(ctx context.Context, cl client
 
 	/* Reconcile the Replicas */
 	if !equality.Semantic.DeepEqual(instance.Spec.Replicas, desired.Spec.Replicas) {
-		logger.Info("Resource update required due differences in Spec.Replicas.")
+		logger.Info("resource update required due to differences in spec.replicas.")
 		logger.V(1).Info(
-			fmt.Sprintf("Spec.Replicas differences: %s",
+			fmt.Sprintf("spec.replicas differences: %s",
 				deep.Equal(instance.Spec.Replicas, desired.Spec.Replicas)),
 		)
 		instance.Spec.Replicas = desired.Spec.Replicas
@@ -148,9 +130,9 @@ func (sts StatefulSetTemplate) ResourceReconciler(ctx context.Context, cl client
 
 	/* Reconcile the Selector */
 	if !equality.Semantic.DeepEqual(instance.Spec.Selector, desired.Spec.Selector) {
-		logger.Info("Resource update required due differences in Spec.Selector.")
+		logger.Info("resource update required due to differences in spec.selector.")
 		logger.V(1).Info(
-			fmt.Sprintf("Spec.Selector differences: %s",
+			fmt.Sprintf("spec.selector differences: %s",
 				deep.Equal(instance.Spec.Selector, desired.Spec.Selector)),
 		)
 		instance.Spec.Selector = desired.Spec.Selector
@@ -159,9 +141,9 @@ func (sts StatefulSetTemplate) ResourceReconciler(ctx context.Context, cl client
 
 	/* Reconcile the ServiceName */
 	if !equality.Semantic.DeepEqual(instance.Spec.ServiceName, desired.Spec.ServiceName) {
-		logger.Info("Resource update required due differences in Spec.ServiceName.")
+		logger.Info("resource update required due to differences in spec.serviceName.")
 		logger.V(1).Info(
-			fmt.Sprintf("Spec.ServiceName differences: %s",
+			fmt.Sprintf("spec.serviceName differences: %s",
 				deep.Equal(instance.Spec.ServiceName, desired.Spec.ServiceName)),
 		)
 		instance.Spec.ServiceName = desired.Spec.ServiceName
@@ -171,9 +153,9 @@ func (sts StatefulSetTemplate) ResourceReconciler(ctx context.Context, cl client
 	/* Reconcile the Template Labels */
 	if !equality.Semantic.DeepEqual(
 		instance.Spec.Template.ObjectMeta.Labels, desired.Spec.Template.ObjectMeta.Labels) {
-		logger.Info("Resource update required due differences in Spec.Template.ObjectMeta.Labels.")
+		logger.Info("resource update required due to differences in spec.template.metadata.labels.")
 		logger.V(1).Info(
-			fmt.Sprintf("Spec.Template.ObjectMeta.Labels differences: %s",
+			fmt.Sprintf("spec.template.metadata.labels differences: %s",
 				deep.Equal(instance.Spec.Template.ObjectMeta.Labels, desired.Spec.Template.ObjectMeta.Labels)),
 		)
 		instance.Spec.Template.ObjectMeta.Labels = desired.Spec.Template.ObjectMeta.Labels
@@ -183,9 +165,9 @@ func (sts StatefulSetTemplate) ResourceReconciler(ctx context.Context, cl client
 	/* Reconcile the Template Annotations */
 	if !equality.Semantic.DeepEqual(
 		instance.Spec.Template.ObjectMeta.Annotations, desired.Spec.Template.ObjectMeta.Annotations) {
-		logger.Info("Resource update required due differences in Spec.Template.ObjectMeta.Annotations.")
+		logger.Info("resource update required due differences in spec.template.metadata.annotations.")
 		logger.V(1).Info(
-			fmt.Sprintf("Spec.Template.ObjectMeta.Annotations differences: %s",
+			fmt.Sprintf("spec.template.metadata.annotations differences: %s",
 				deep.Equal(instance.Spec.Template.ObjectMeta.Annotations, desired.Spec.Template.ObjectMeta.Annotations)),
 		)
 		instance.Spec.Template.ObjectMeta.Annotations = desired.Spec.Template.ObjectMeta.Annotations
@@ -202,9 +184,9 @@ func (sts StatefulSetTemplate) ResourceReconciler(ctx context.Context, cl client
 	}
 
 	if !equality.Semantic.DeepEqual(instance.Spec.Template.Spec, desired.Spec.Template.Spec) {
-		logger.Info("Resource update required due differences in Spec.Template.Spec.")
+		logger.Info("resource update required due to differences in spec.template.spec.")
 		logger.V(1).Info(
-			fmt.Sprintf("Spec.Template.Spec differences: %s",
+			fmt.Sprintf("spec.template.spec differences: %s",
 				deep.Equal(instance.Spec.Template.Spec, desired.Spec.Template.Spec)),
 		)
 		instance.Spec.Template.Spec = desired.Spec.Template.Spec
@@ -213,9 +195,9 @@ func (sts StatefulSetTemplate) ResourceReconciler(ctx context.Context, cl client
 
 	/* Reconcile the UpdateStrategy */
 	if !equality.Semantic.DeepEqual(instance.Spec.UpdateStrategy, desired.Spec.UpdateStrategy) {
-		logger.Info("Resource update required due differences in Spec.UpdateStrategy.")
+		logger.Info("resource update required due to differences in spec.updateStrategy.")
 		logger.V(1).Info(
-			fmt.Sprintf("Spec.UpdateStrategy differences: %s",
+			fmt.Sprintf("spec.updateStrategy differences: %s",
 				deep.Equal(instance.Spec.UpdateStrategy, desired.Spec.UpdateStrategy)),
 		)
 		instance.Spec.UpdateStrategy = desired.Spec.UpdateStrategy
@@ -224,9 +206,9 @@ func (sts StatefulSetTemplate) ResourceReconciler(ctx context.Context, cl client
 
 	/* Reconcile the VolumeClaimTemplates */
 	if !equality.Semantic.DeepEqual(instance.Spec.VolumeClaimTemplates, desired.Spec.VolumeClaimTemplates) {
-		logger.Info("Resource update required due differences in Spec.VolumeClaimTemplates.")
+		logger.Info("resource update required due to differences in spec.volumeClaimTemplates.")
 		logger.V(1).Info(
-			fmt.Sprintf("Spec.VolumeClaimTemplates differences: %s",
+			fmt.Sprintf("spec.volumeClaimTemplates differences: %s",
 				deep.Equal(instance.Spec.VolumeClaimTemplates, desired.Spec.VolumeClaimTemplates)),
 		)
 		instance.Spec.VolumeClaimTemplates = desired.Spec.VolumeClaimTemplates
@@ -238,7 +220,7 @@ func (sts StatefulSetTemplate) ResourceReconciler(ctx context.Context, cl client
 		if err != nil {
 			return err
 		}
-		logger.Info("Resource updated")
+		logger.Info("resource updated")
 	}
 
 	return nil

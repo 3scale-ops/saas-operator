@@ -22,11 +22,8 @@ type ConfigMapTemplate struct {
 }
 
 // Build returns a ConfigMap resource
-func (cmt ConfigMapTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
-
-	cm := cmt.Template()
-	cm.GetObjectKind().SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("ConfigMap"))
-	return cm.DeepCopy(), DefaultExcludedPaths, nil
+func (cmt ConfigMapTemplate) Build(ctx context.Context, cl client.Client) (client.Object, error) {
+	return cmt.Template().DeepCopy(), nil
 }
 
 // Enabled indicates if the resource should be present or not
@@ -36,7 +33,7 @@ func (cmt ConfigMapTemplate) Enabled() bool {
 
 // ResourceReconciler implements a generic reconciler for ConfigMap resources
 func (cmt ConfigMapTemplate) ResourceReconciler(ctx context.Context, cl client.Client, obj client.Object) error {
-	logger := log.FromContext(ctx, "ResourceReconciler", "ConfigMap")
+	logger := log.FromContext(ctx, "kind", "ConfigMap", "resource", obj.GetName())
 
 	needsUpdate := false
 	desired := obj.(*corev1.ConfigMap)
@@ -51,7 +48,7 @@ func (cmt ConfigMapTemplate) ResourceReconciler(ctx context.Context, cl client.C
 				if err != nil {
 					return fmt.Errorf("unable to create object: " + err.Error())
 				}
-				logger.Info("Resource created")
+				logger.Info("resource created")
 				return nil
 
 			} else {
@@ -68,7 +65,7 @@ func (cmt ConfigMapTemplate) ResourceReconciler(ctx context.Context, cl client.C
 		if err != nil {
 			return fmt.Errorf("unable to delete object: " + err.Error())
 		}
-		logger.Info("Resource deleted")
+		logger.Info("resource deleted")
 		return nil
 	}
 

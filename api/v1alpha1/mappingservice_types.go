@@ -23,7 +23,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/pointer"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var (
@@ -193,16 +192,6 @@ type MappingServiceList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []MappingService `json:"items"`
-}
-
-// GetItem returns a client.Objectfrom a MappingServiceList
-func (msl *MappingServiceList) GetItem(idx int) client.Object {
-	return &msl.Items[idx]
-}
-
-// CountItems returns the item count in MappingServiceList.Items
-func (msl *MappingServiceList) CountItems() int {
-	return len(msl.Items)
 }
 
 func init() {

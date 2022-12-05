@@ -22,11 +22,8 @@ type ExternalSecretTemplate struct {
 }
 
 // Build returns an ExternalSecret resource
-func (est ExternalSecretTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
-
-	es := est.Template()
-	es.GetObjectKind().SetGroupVersionKind(externalsecretsv1beta1.SchemeGroupVersion.WithKind(externalsecretsv1beta1.ExtSecretKind))
-	return es.DeepCopy(), DefaultExcludedPaths, nil
+func (est ExternalSecretTemplate) Build(ctx context.Context, cl client.Client) (client.Object, error) {
+	return est.Template().DeepCopy(), nil
 }
 
 // Enabled indicates if the resource should be present or not
@@ -36,7 +33,7 @@ func (est ExternalSecretTemplate) Enabled() bool {
 
 // ResourceReconciler implements a generic reconciler for ExternalSecret resources
 func (est ExternalSecretTemplate) ResourceReconciler(ctx context.Context, cl client.Client, obj client.Object) error {
-	logger := log.FromContext(ctx, "ResourceReconciler", "ExternalSecret")
+	logger := log.FromContext(ctx, "kind", "ExternalSecret", "resource", obj.GetName())
 
 	needsUpdate := false
 	desired := obj.(*externalsecretsv1beta1.ExternalSecret)
@@ -51,7 +48,7 @@ func (est ExternalSecretTemplate) ResourceReconciler(ctx context.Context, cl cli
 				if err != nil {
 					return fmt.Errorf("unable to create object: " + err.Error())
 				}
-				logger.Info("Resource created")
+				logger.Info("resource created")
 				return nil
 
 			} else {
@@ -68,7 +65,7 @@ func (est ExternalSecretTemplate) ResourceReconciler(ctx context.Context, cl cli
 		if err != nil {
 			return fmt.Errorf("unable to delete object: " + err.Error())
 		}
-		logger.Info("Resource deleted")
+		logger.Info("resource deleted")
 		return nil
 	}
 
@@ -89,7 +86,7 @@ func (est ExternalSecretTemplate) ResourceReconciler(ctx context.Context, cl cli
 		if err != nil {
 			return err
 		}
-		logger.Info("Resource updated")
+		logger.Info("resource updated")
 	}
 
 	return nil

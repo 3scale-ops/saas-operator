@@ -83,7 +83,7 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	cm, _, err := gen.ConfigMap().Build(ctx, r.Client)
+	cm, err := gen.ConfigMap().Build(ctx, r.Client)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -113,9 +113,10 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	}
 	r.SentinelEvents.ReconcileThreads(ctx, instance, eventWatchers, logger.WithName("event-watcher"))
 
-	if err := r.ReconcileOwnedResources(
-		ctx, instance, []basereconciler.Resource{gen.GrafanaDashboard()},
-	); err != nil {
+	t := gen.GrafanaDashboard()
+	gd, _ := t.Build(ctx, r.Client)
+	controllerutil.SetControllerReference(instance, gd, r.Scheme)
+	if err := t.ResourceReconciler(ctx, r.Client, gd); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -125,6 +126,7 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 func (r *TwemproxyConfigReconciler) reconcileConfigMap(ctx context.Context, owner client.Object,
 	desired *corev1.ConfigMap, reconcileData bool, log logr.Logger) (string, error) {
+	logger := log.WithValues("kind", "ConfigMap", "resource", desired.GetName())
 
 	current := &corev1.ConfigMap{}
 	err := r.Client.Get(ctx, util.ObjectKey(desired), current)
@@ -137,30 +139,28 @@ func (r *TwemproxyConfigReconciler) reconcileConfigMap(ctx context.Context, owne
 			if err := r.Client.Create(ctx, desired); err != nil {
 				return "", err
 			}
-			log.Info("created ConfigMap")
+			logger.Info("created ConfigMap")
 			return util.Hash(desired.Data), nil
 		}
 		return "", err
 	}
 
-	var hash string
 	if reconcileData {
 		// Compare .data field of both ConfigMaps and patch if required.
 		// We use patch to avoid failures due to having an older version
 		// of the configmap so the config changes are propagated faster.
 		if !reflect.DeepEqual(desired.Data, current.Data) {
-			if err := r.Client.Patch(ctx, desired, client.MergeFrom(current)); err != nil {
-				log.Error(err, "unable to patch ConfigMap")
+			patch := client.MergeFrom(current.DeepCopy())
+			current.Data = desired.Data
+			if err := r.Client.Patch(ctx, current, patch); err != nil {
+				logger.Error(err, "unable to patch ConfigMap")
 				return "", err
 			}
-			log.Info("updated ConfigMap")
+			logger.Info("patched ConfigMap")
 		}
-		hash = util.Hash(desired.Data)
-	} else {
-		hash = util.Hash(current.Data)
 	}
 
-	return hash, nil
+	return util.Hash(current.Data), nil
 }
 
 func (r *TwemproxyConfigReconciler) reconcileSyncAnnotations(ctx context.Context,

@@ -22,11 +22,8 @@ type GrafanaDashboardTemplate struct {
 }
 
 // Build returns a GrafanaDashboard resource
-func (gdt GrafanaDashboardTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
-
-	gd := gdt.Template()
-	gd.GetObjectKind().SetGroupVersionKind(grafanav1alpha1.GroupVersion.WithKind("GrafanaDashboard"))
-	return gd.DeepCopy(), DefaultExcludedPaths, nil
+func (gdt GrafanaDashboardTemplate) Build(ctx context.Context, cl client.Client) (client.Object, error) {
+	return gdt.Template().DeepCopy(), nil
 }
 
 // Enabled indicates if the resource should be present or not
@@ -36,7 +33,7 @@ func (gdt GrafanaDashboardTemplate) Enabled() bool {
 
 // ResourceReconciler implements a generic reconciler for GrafanaDashboard resources
 func (gdt GrafanaDashboardTemplate) ResourceReconciler(ctx context.Context, cl client.Client, obj client.Object) error {
-	logger := log.FromContext(ctx, "ResourceReconciler", "GrafanaDashboard")
+	logger := log.FromContext(ctx, "kind", "GrafanaDashboard", "resource", obj.GetName())
 
 	needsUpdate := false
 	desired := obj.(*grafanav1alpha1.GrafanaDashboard)
@@ -51,7 +48,7 @@ func (gdt GrafanaDashboardTemplate) ResourceReconciler(ctx context.Context, cl c
 				if err != nil {
 					return fmt.Errorf("unable to create object: " + err.Error())
 				}
-				logger.Info("Resource created")
+				logger.Info("resource created")
 				return nil
 
 			} else {
@@ -68,7 +65,7 @@ func (gdt GrafanaDashboardTemplate) ResourceReconciler(ctx context.Context, cl c
 		if err != nil {
 			return fmt.Errorf("unable to delete object: " + err.Error())
 		}
-		logger.Info("Resource deleted")
+		logger.Info("resource deleted")
 		return nil
 	}
 
@@ -89,7 +86,7 @@ func (gdt GrafanaDashboardTemplate) ResourceReconciler(ctx context.Context, cl c
 		if err != nil {
 			return err
 		}
-		logger.Info("Resource updated")
+		logger.Info("resource updated")
 	}
 
 	return nil

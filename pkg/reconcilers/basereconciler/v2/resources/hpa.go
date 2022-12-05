@@ -22,11 +22,8 @@ type HorizontalPodAutoscalerTemplate struct {
 }
 
 // Build returns a HorizontalPodAutoscaler resource
-func (hpat HorizontalPodAutoscalerTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
-
-	hpa := hpat.Template()
-	hpa.GetObjectKind().SetGroupVersionKind(autoscalingv2beta2.SchemeGroupVersion.WithKind("HorizontalPodAutoscaler"))
-	return hpa.DeepCopy(), []string{}, nil
+func (hpat HorizontalPodAutoscalerTemplate) Build(ctx context.Context, cl client.Client) (client.Object, error) {
+	return hpat.Template().DeepCopy(), nil
 }
 
 // Enabled indicates if the resource should be present or not
@@ -36,7 +33,7 @@ func (hpat HorizontalPodAutoscalerTemplate) Enabled() bool {
 
 // ResourceReconciler implements a generic reconciler for HorizontalPodAutoscaler resources
 func (hpat HorizontalPodAutoscalerTemplate) ResourceReconciler(ctx context.Context, cl client.Client, obj client.Object) error {
-	logger := log.FromContext(ctx, "ResourceReconciler", "HorizontalPodAutoscaler")
+	logger := log.FromContext(ctx, "kind", "HorizontalPodAutoscaler", "resource", obj.GetName())
 
 	needsUpdate := false
 	desired := obj.(*autoscalingv2beta2.HorizontalPodAutoscaler)
@@ -51,7 +48,7 @@ func (hpat HorizontalPodAutoscalerTemplate) ResourceReconciler(ctx context.Conte
 				if err != nil {
 					return fmt.Errorf("unable to create object: " + err.Error())
 				}
-				logger.Info("Resource created")
+				logger.Info("resource created")
 				return nil
 
 			} else {
@@ -68,7 +65,7 @@ func (hpat HorizontalPodAutoscalerTemplate) ResourceReconciler(ctx context.Conte
 		if err != nil {
 			return fmt.Errorf("unable to delete object: " + err.Error())
 		}
-		logger.Info("Resource deleted")
+		logger.Info("resource deleted")
 		return nil
 	}
 
@@ -107,7 +104,7 @@ func (hpat HorizontalPodAutoscalerTemplate) ResourceReconciler(ctx context.Conte
 		if err != nil {
 			return err
 		}
-		logger.Info("Resource updated")
+		logger.Info("resource updated")
 	}
 
 	return nil

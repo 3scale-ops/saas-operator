@@ -23,7 +23,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/pointer"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var (
@@ -163,16 +162,6 @@ type EchoAPIList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []EchoAPI `json:"items"`
-}
-
-// GetItem returns a client.Objectfrom a EchoAPIList
-func (bl *EchoAPIList) GetItem(idx int) client.Object {
-	return &bl.Items[idx]
-}
-
-// CountItems returns the item count in EchoAPIList.Items
-func (bl *EchoAPIList) CountItems() int {
-	return len(bl.Items)
 }
 
 func init() {

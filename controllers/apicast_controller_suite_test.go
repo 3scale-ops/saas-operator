@@ -2,12 +2,14 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
 	testutil "github.com/3scale/saas-operator/test/util"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -393,7 +395,19 @@ var _ = Describe("Apicast controller", func() {
 						Replicas:  pointer.Int32Ptr(1),
 					}
 
-					return k8sClient.Patch(context.Background(), apicast, patch)
+					if err := k8sClient.Patch(context.Background(), apicast, patch); err != nil {
+						return err
+					}
+
+					if testutil.GetResourceVersion(k8sClient, &appsv1.Deployment{}, "apicast-production-canary", namespace, timeout, poll) == "" {
+						return fmt.Errorf("not ready")
+					}
+					if testutil.GetResourceVersion(k8sClient, &appsv1.Deployment{}, "apicast-staging-canary", namespace, timeout, poll) == "" {
+						return fmt.Errorf("not ready")
+					}
+
+					return nil
+
 				}, timeout, poll).ShouldNot(HaveOccurred())
 			})
 
@@ -422,7 +436,6 @@ var _ = Describe("Apicast controller", func() {
 
 				By("deploying an Apicast-staging-canary workload",
 					(&testutil.ExpectedWorkload{
-
 						Name:          "apicast-staging-canary",
 						Namespace:     namespace,
 						Replicas:      1,
@@ -545,6 +558,45 @@ var _ = Describe("Apicast controller", func() {
 
 			})
 
+			When("disabling the canary", func() {
+
+				BeforeEach(func() {
+
+					Eventually(func() error {
+						apicast := &saasv1alpha1.Apicast{}
+						if err := k8sClient.Get(
+							context.Background(),
+							types.NamespacedName{Name: "instance", Namespace: namespace},
+							apicast,
+						); err != nil {
+							return err
+						}
+						patch := client.MergeFrom(apicast.DeepCopy())
+						apicast.Spec.Production.Canary = nil
+						apicast.Spec.Staging.Canary = nil
+						return k8sClient.Patch(context.Background(), apicast, patch)
+					}, timeout, poll).ShouldNot(HaveOccurred())
+				})
+
+				It("deletes the canary resources", func() {
+
+					dep := &appsv1.Deployment{}
+					By("removing the apicast-production-canary Deployment",
+						(&testutil.ExpectedResource{
+							Name: "apicast-production-canary", Namespace: namespace, Missing: true}).Assert(k8sClient, dep, timeout, poll))
+					By("removing the apicast-staging-canary Deployment",
+						(&testutil.ExpectedResource{
+							Name: "apicast-staging-canary", Namespace: namespace, Missing: true}).Assert(k8sClient, dep, timeout, poll))
+
+					pm := &monitoringv1.PodMonitor{}
+					By("removing the apicast-production-canary PodMonitor",
+						(&testutil.ExpectedResource{
+							Name: "apicast-production-canary", Namespace: namespace, Missing: true}).Assert(k8sClient, pm, timeout, poll))
+					By("removing the apicast-staging-canary PodMonitor",
+						(&testutil.ExpectedResource{
+							Name: "apicast-staging-canary", Namespace: namespace, Missing: true}).Assert(k8sClient, pm, timeout, poll))
+				})
+			})
 		})
 
 		When("removing the PDB and HPA from an Apicast instance", func() {

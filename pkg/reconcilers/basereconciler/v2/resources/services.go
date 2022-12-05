@@ -22,16 +22,15 @@ type ServiceTemplate struct {
 }
 
 // Build returns a Service resource
-func (st ServiceTemplate) Build(ctx context.Context, cl client.Client) (client.Object, []string, error) {
+func (st ServiceTemplate) Build(ctx context.Context, cl client.Client) (client.Object, error) {
 
 	svc := st.Template()
-	svc.GetObjectKind().SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("Service"))
 
 	if err := populateServiceSpecRuntimeValues(ctx, cl, svc); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	return svc.DeepCopy(), serviceExcludes(svc), nil
+	return svc.DeepCopy(), nil
 }
 
 // Enabled indicates if the resource should be present or not
@@ -41,7 +40,7 @@ func (dt ServiceTemplate) Enabled() bool {
 
 // ResourceReconciler implements a generic reconciler for Service resources
 func (st ServiceTemplate) ResourceReconciler(ctx context.Context, cl client.Client, obj client.Object) error {
-	logger := log.FromContext(ctx, "ResourceReconciler", "Service")
+	logger := log.FromContext(ctx, "kind", "Service", "resource", obj.GetName())
 
 	needsUpdate := false
 	desired := obj.(*corev1.Service)
@@ -54,7 +53,7 @@ func (st ServiceTemplate) ResourceReconciler(ctx context.Context, cl client.Clie
 			if err != nil {
 				return fmt.Errorf("unable to create object: " + err.Error())
 			}
-			logger.Info("Resource created")
+			logger.Info("resource created")
 			return nil
 		}
 		return err
@@ -87,7 +86,7 @@ func (st ServiceTemplate) ResourceReconciler(ctx context.Context, cl client.Clie
 		if err != nil {
 			return err
 		}
-		logger.Info("Resource updated")
+		logger.Info("resource updated")
 	}
 
 	return nil
@@ -138,13 +137,4 @@ func findPort(pNumber int32, pProtocol corev1.Protocol, ports []corev1.ServicePo
 	}
 	// not found
 	return nil
-}
-
-// serviceExcludes generates the list of excluded paths for a Service resource
-func serviceExcludes(svc *corev1.Service) []string {
-	paths := append(DefaultExcludedPaths, "/spec/clusterIP", "/spec/clusterIPs", "/spec/ipFamilies", "/spec/ipFamilyPolicy")
-	for idx := range svc.Spec.Ports {
-		paths = append(paths, fmt.Sprintf("/spec/ports/%d/nodePort", idx))
-	}
-	return paths
 }
