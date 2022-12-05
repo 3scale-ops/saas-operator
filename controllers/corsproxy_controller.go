@@ -83,8 +83,7 @@ func (r *CORSProxyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		gen.ExternalSecret(),
 	}
 
-	var workload []basereconciler.Resource
-	workload, err = r.NewDeploymentWorkloadWithTraffic(ctx, instance, &gen, &gen)
+	workload, err := r.NewDeploymentWorkload(&gen, nil)
 	if err != nil {
 		return ctrl.Result{}, err
 	}

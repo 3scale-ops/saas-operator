@@ -193,10 +193,10 @@ type ListenerGenerator struct {
 }
 
 // Validate that ListenerGenerator implements workloads.DeploymentWorkloadWithTraffic interface
-var _ workloads.DeploymentWorkloadWithTraffic = &ListenerGenerator{}
+var _ workloads.DeploymentWorkload = &ListenerGenerator{}
 
-// Validate that ListenerGenerator implements workloads.TrafficManager interface
-var _ workloads.TrafficManager = &ListenerGenerator{}
+// Validate that ListenerGenerator implements workloads.WithTraffic interface
+var _ workloads.WithTraffic = &ListenerGenerator{}
 
 func (gen *ListenerGenerator) Labels() map[string]string {
 	return gen.GetLabels()

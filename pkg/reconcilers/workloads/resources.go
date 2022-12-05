@@ -55,12 +55,12 @@ func (dt DeploymentTemplate) ApplyMeta(gen DeploymentWorkload) DeploymentTemplat
 	return dt
 }
 
-func (dt DeploymentTemplate) ApplyTrafficSelector(tm TrafficManager) DeploymentTemplate {
+func (dt DeploymentTemplate) ApplyTrafficSelector(wt WithTraffic) DeploymentTemplate {
 
 	fn := dt.Template
 	dt.Template = func() *appsv1.Deployment {
 		dep := fn()
-		dep.Spec.Template.ObjectMeta.Labels = util.MergeMaps(map[string]string{}, dep.Spec.Template.ObjectMeta.Labels, tm.TrafficSelector())
+		dep.Spec.Template.ObjectMeta.Labels = util.MergeMaps(map[string]string{}, dep.Spec.Template.ObjectMeta.Labels, wt.TrafficSelector())
 		return dep
 	}
 
@@ -76,33 +76,33 @@ func NewServiceTemplate(t basereconciler_resources.ServiceTemplate) ServiceTempl
 	return ServiceTemplate{ServiceTemplate: t}
 }
 
-func (st ServiceTemplate) ApplyMeta(tm TrafficManager) ServiceTemplate {
+func (st ServiceTemplate) ApplyMeta(wt WithTraffic) ServiceTemplate {
 	fn := st.Template
 	st.Template = func() *corev1.Service {
 		svc := fn()
 		// Do not enforce metadata.name:
 		//   Services are special because there can be more than one of them, so the Name
 		//   is relevant and must be provided by the service template
-		svc.SetNamespace(tm.GetKey().Namespace)
-		applyLabels(svc, tm)
+		svc.SetNamespace(wt.GetKey().Namespace)
+		applyLabels(svc, wt)
 		return svc
 	}
 
 	return st
 }
 
-func (st ServiceTemplate) ApplyTrafficSelector(tm TrafficManager, w ...WithTraffic) ServiceTemplate {
+func (st ServiceTemplate) ApplyTrafficSelector(main WithTraffic, canary WithTraffic) ServiceTemplate {
 	fn := st.Template
 	st.Template = func() *corev1.Service {
 		svc := fn()
-		svc.Spec.Selector = trafficSwitcher(tm, w...)
+		svc.Spec.Selector = trafficSwitcher(main, canary)
 		return svc
 	}
 
 	return st
 }
 
-func trafficSwitcher(tm TrafficManager, w ...WithTraffic) map[string]string {
+func trafficSwitcher(main WithTraffic, canary WithTraffic) map[string]string {
 
 	// NOTE: due to the fact that services do not yet support set-based selectors, only MatchLabels selectors
 	// can be used. This limits a lot what can be done in terms of deciding where to send traffic, as all
@@ -114,8 +114,8 @@ func trafficSwitcher(tm TrafficManager, w ...WithTraffic) map[string]string {
 	// There seems to be great demand for set-based selectors for Services but it is not yet implamented:
 	// https://github.com/kubernetes/kubernetes/issues/48528
 	enabledSelectors := []map[string]string{}
-	for _, workload := range w {
-		if workload.SendTraffic() {
+	for _, workload := range []WithTraffic{main, canary} {
+		if workload != nil && workload.SendTraffic() {
 			enabledSelectors = append(enabledSelectors, workload.GetSelector())
 		}
 	}
@@ -126,11 +126,11 @@ func trafficSwitcher(tm TrafficManager, w ...WithTraffic) map[string]string {
 	case 1:
 		// If there is only one Deployment with SendTraffic() active
 		// return its selector together with the shared traffic selector
-		return util.MergeMaps(enabledSelectors[0], tm.TrafficSelector())
+		return util.MergeMaps(enabledSelectors[0], main.TrafficSelector())
 	default:
 		// If there is more than one Deployment with SendTraffic() active
 		// send traffic to all Deployments by using the shared traffic selector
-		return tm.TrafficSelector()
+		return main.TrafficSelector()
 	}
 }
 

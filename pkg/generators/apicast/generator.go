@@ -159,11 +159,11 @@ type EnvGenerator struct {
 	Traffic bool
 }
 
-// Validate that EnvGenerator implements workloads.DeploymentWorkloadWithTraffic interface
-var _ workloads.DeploymentWorkloadWithTraffic = &EnvGenerator{}
+// Validate that EnvGenerator implements workloads.DeploymentWorkload interface
+var _ workloads.DeploymentWorkload = &EnvGenerator{}
 
-// Validate that EnvGenerator implements workloads.TrafficManager interface
-var _ workloads.TrafficManager = &EnvGenerator{}
+// Validate that EnvGenerator implements workloads.WithTraffic interface
+var _ workloads.WithTraffic = &EnvGenerator{}
 
 func (gen *EnvGenerator) Labels() map[string]string {
 	return gen.GetLabels()

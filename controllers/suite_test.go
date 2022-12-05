@@ -109,37 +109,37 @@ var _ = BeforeSuite(func() {
 
 	// Add controllers for testing
 	err = (&AutoSSLReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, "AutoSSL", false),
+		WorkloadReconciler: workloads.NewFromManager(mgr),
 		Log:                ctrl.Log.WithName("controllers").WithName("AutoSSL"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&ApicastReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, "Apicast", false),
+		WorkloadReconciler: workloads.NewFromManager(mgr),
 		Log:                ctrl.Log.WithName("controllers").WithName("Apicast"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&EchoAPIReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, "EchoAPI", false),
+		WorkloadReconciler: workloads.NewFromManager(mgr),
 		Log:                ctrl.Log.WithName("controllers").WithName("EchoAPI"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&MappingServiceReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, "MappingService", false),
+		WorkloadReconciler: workloads.NewFromManager(mgr),
 		Log:                ctrl.Log.WithName("controllers").WithName("MappingService"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&CORSProxyReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, "CORSProxy", false),
+		WorkloadReconciler: workloads.NewFromManager(mgr),
 		Log:                ctrl.Log.WithName("controllers").WithName("CORSProxy"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&BackendReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, "Backend", false),
+		WorkloadReconciler: workloads.NewFromManager(mgr),
 		Log:                ctrl.Log.WithName("controllers").WithName("Backend"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
@@ -159,13 +159,13 @@ var _ = BeforeSuite(func() {
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&SystemReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, "System", false),
+		WorkloadReconciler: workloads.NewFromManager(mgr),
 		Log:                ctrl.Log.WithName("controllers").WithName("System"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&ZyncReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr, "Zync", false),
+		WorkloadReconciler: workloads.NewFromManager(mgr),
 		Log:                ctrl.Log.WithName("controllers").WithName("Zync"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
