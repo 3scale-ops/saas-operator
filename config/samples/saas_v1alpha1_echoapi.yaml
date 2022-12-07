@@ -23,7 +23,7 @@ spec:
           routeConfigName: echo_api
       - listenerHttp:
           name: https
-          port: 38080
+          port: 38443
           routeConfigName: echo_api
           certificateSecretName: certificate
       - routeConfiguration:
