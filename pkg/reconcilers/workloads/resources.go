@@ -9,7 +9,7 @@ import (
 	"github.com/3scale/saas-operator/pkg/util"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
-	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -169,11 +169,11 @@ type HorizontalPodAutoscalerTemplate struct {
 
 func (hpat HorizontalPodAutoscalerTemplate) ApplyMeta(w WithWorkloadMeta) HorizontalPodAutoscalerTemplate {
 	fn := hpat.Template
-	hpat.Template = func() *autoscalingv2beta2.HorizontalPodAutoscaler {
+	hpat.Template = func() *autoscalingv2.HorizontalPodAutoscaler {
 		hpa := fn()
 		applyKey(hpa, w)
 		applyLabels(hpa, w)
-		hpa.Spec.ScaleTargetRef = autoscalingv2beta2.CrossVersionObjectReference{
+		hpa.Spec.ScaleTargetRef = autoscalingv2.CrossVersionObjectReference{
 			Kind:       "Deployment",
 			Name:       w.GetKey().Name,
 			APIVersion: appsv1.SchemeGroupVersion.String(),
