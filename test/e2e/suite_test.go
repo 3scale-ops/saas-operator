@@ -59,7 +59,7 @@ func TestAPIs(t *testing.T) {
 var _ = BeforeSuite(func() {
 	logf.SetLogger(zap.New(zap.WriteTo(GinkgoWriter), zap.UseDevMode(true)))
 
-	seed := time.Now().UTC().UnixNano()
+	seed := GinkgoRandomSeed() + int64(GinkgoParallelProcess())
 	nameGenerator = namegenerator.NewNameGenerator(seed)
 
 	By("bootstrapping test environment")

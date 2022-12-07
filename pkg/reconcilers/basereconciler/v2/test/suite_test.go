@@ -72,7 +72,7 @@ var _ = BeforeSuite(func() {
 		},
 	}
 
-	seed := time.Now().UTC().UnixNano()
+	seed := GinkgoRandomSeed() + int64(GinkgoParallelProcess())
 	nameGenerator = namegenerator.NewNameGenerator(seed)
 
 	cfg, err := testEnv.Start()
