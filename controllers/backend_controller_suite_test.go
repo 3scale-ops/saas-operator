@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	externalsecretsv1beta1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
@@ -233,6 +234,23 @@ var _ = Describe("Backend controller", func() {
 			}
 		})
 
+		It("doesn't create the non-default resources", func() {
+
+			dep := &appsv1.Deployment{}
+			By("ensuring an backend-listener-canary workload is not created",
+				(&testutil.ExpectedResource{Name: "backend-listener-canary", Namespace: namespace, Missing: true}).
+					Assert(k8sClient, dep, timeout, poll))
+			By("ensuring an backend-worker-canary workload is not created",
+				(&testutil.ExpectedResource{Name: "backend-worker-canary", Namespace: namespace, Missing: true}).
+					Assert(k8sClient, dep, timeout, poll))
+
+			ec := &marin3rv1alpha1.EnvoyConfig{}
+			By("ensuring an backend-listener envoyconfig is not created",
+				(&testutil.ExpectedResource{Name: "backend-listener", Namespace: namespace, Missing: true}).
+					Assert(k8sClient, ec, timeout, poll))
+
+		})
+
 		When("updating a backend resource with some customizations", func() {
 
 			rvs := make(map[string]string)
@@ -293,6 +311,21 @@ var _ = Describe("Backend controller", func() {
 					backend.Spec.Config.InternalAPIUser.FromVault.Path = "secret/data/updated-path-api"
 					backend.Spec.Config.SystemEventsHookPassword.FromVault.Path = "secret/data/updated-path-hook"
 					backend.Spec.Config.ErrorMonitoringKey.FromVault.Path = "secret/data/updated-path-error"
+
+					backend.Spec.Listener.Marin3r = &saasv1alpha1.Marin3rSidecarSpec{
+						NodeID: pointer.String("backend-listener"),
+						EnvoyResources: []saasv1alpha1.EnvoyDynamicConfig{{
+							ListenerHttp: &saasv1alpha1.ListenerHttp{
+								EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
+									Name:             "http",
+									GeneratorVersion: pointer.String("v1"),
+								},
+								Port:            8080,
+								RouteConfigName: "route",
+							},
+						}},
+					}
+
 					return k8sClient.Patch(context.Background(), backend, patch)
 
 				}, timeout, poll).ShouldNot(HaveOccurred())
@@ -317,6 +350,7 @@ var _ = Describe("Backend controller", func() {
 						},
 						PDB:         true,
 						PodMonitor:  true,
+						EnvoyConfig: true,
 						LastVersion: rvs["deployment/backend-listener"],
 					}).Assert(k8sClient, dep, timeout, poll))
 
@@ -336,8 +370,7 @@ var _ = Describe("Backend controller", func() {
 						Name:        "backend-worker",
 						Namespace:   namespace,
 						LastVersion: rvs["hpa/backend-worker"],
-					}).
-						Assert(k8sClient, hpa, timeout, poll))
+					}).Assert(k8sClient, hpa, timeout, poll))
 
 				Expect(hpa.Spec.MinReplicas).To(Equal(pointer.Int32(3)))
 
