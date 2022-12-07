@@ -362,6 +362,5 @@ refdocs: crd-ref-docs
 	$(CRD_REFDOCS) \
 		--source-path=api \
 		--config=docs/api-reference/config.yaml \
-		--templates-dir=docs/api-reference/templates/asciidoctor \
 		--renderer=asciidoctor \
 		--output-path=docs/api-reference/reference.asciidoc
