@@ -207,5 +207,5 @@ func (gen *EnvGenerator) TrafficSelector() map[string]string {
 	}
 }
 func (gen *EnvGenerator) EnvoyDynamicConfigurations() []saasv1alpha1.EnvoyDynamicConfig {
-	return gen.Spec.Marin3r.EnvoyResources
+	return gen.Spec.Marin3r.EnvoyDynamicConfig
 }

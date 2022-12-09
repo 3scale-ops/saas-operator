@@ -126,7 +126,7 @@ var _ = Describe("EchoAPI controller", func() {
 
 					echoapi.Spec.Marin3r = &saasv1alpha1.Marin3rSidecarSpec{
 						NodeID: pointer.String("echo-api"),
-						EnvoyResources: []saasv1alpha1.EnvoyDynamicConfig{{
+						EnvoyDynamicConfig: []saasv1alpha1.EnvoyDynamicConfig{{
 							ListenerHttp: &saasv1alpha1.ListenerHttp{
 								EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
 									Name:             "http",

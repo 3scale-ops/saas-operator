@@ -54,7 +54,7 @@ type Marin3rSidecarSpec struct {
 	ExtraPodAnnotations map[string]string `json:"extraPodAnnotations,omitempty"`
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	EnvoyResources []EnvoyDynamicConfig `json:"envoyResources,omitempty"`
+	EnvoyDynamicConfig []EnvoyDynamicConfig `json:"dynamicConfigs,omitempty"`
 }
 
 type defaultMarin3rSidecarSpec struct {
@@ -155,6 +155,7 @@ type ListenerHttp struct {
 	EnvoyDynamicConfigMeta `json:",inline"`
 	EnvoyDynamicConfigRaw  `json:",inline"`
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// test comment
 	Port uint32 `json:"port"`
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	RouteConfigName string `json:"routeConfigName"`

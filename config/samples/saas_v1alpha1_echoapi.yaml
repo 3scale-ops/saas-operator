@@ -16,7 +16,7 @@ spec:
         port: 38443
       - name: envoy-metrics
         port: 9901
-    envoyResources:
+    dynamicConfigs:
       - listenerHttp:
           name: http
           port: 38080

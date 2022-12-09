@@ -83,5 +83,5 @@ func (gen *Generator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint {
 }
 
 func (gen *Generator) EnvoyDynamicConfigurations() []saasv1alpha1.EnvoyDynamicConfig {
-	return gen.Spec.Marin3r.EnvoyResources
+	return gen.Spec.Marin3r.EnvoyDynamicConfig
 }

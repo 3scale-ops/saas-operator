@@ -125,15 +125,7 @@ spec:
                   marin3r:
                     description: Marin3r configures the Marin3r sidecars for the component
                     properties:
-                      envoyAPIVersion:
-                        description: The Envoy API version to use
-                        enum:
-                        - v3
-                        type: string
-                      envoyImage:
-                        description: The Envoy iamge to use
-                        type: string
-                      envoyResources:
+                      dynamicConfigs:
                         items:
                           maxProperties: 1
                           minProperties: 1
@@ -176,6 +168,7 @@ spec:
                                 name:
                                   type: string
                                 port:
+                                  description: test comment
                                   format: int32
                                   type: integer
                                 rateLimitOptions:
@@ -244,6 +237,14 @@ spec:
                               type: object
                           type: object
                         type: array
+                      envoyAPIVersion:
+                        description: The Envoy API version to use
+                        enum:
+                        - v3
+                        type: string
+                      envoyImage:
+                        description: The Envoy iamge to use
+                        type: string
                       extraPodAnnotations:
                         additionalProperties:
                           type: string
@@ -1775,15 +1776,7 @@ spec:
                   marin3r:
                     description: Marin3r configures the Marin3r sidecars for the component
                     properties:
-                      envoyAPIVersion:
-                        description: The Envoy API version to use
-                        enum:
-                        - v3
-                        type: string
-                      envoyImage:
-                        description: The Envoy iamge to use
-                        type: string
-                      envoyResources:
+                      dynamicConfigs:
                         items:
                           maxProperties: 1
                           minProperties: 1
@@ -1826,6 +1819,7 @@ spec:
                                 name:
                                   type: string
                                 port:
+                                  description: test comment
                                   format: int32
                                   type: integer
                                 rateLimitOptions:
@@ -1894,6 +1888,14 @@ spec:
                               type: object
                           type: object
                         type: array
+                      envoyAPIVersion:
+                        description: The Envoy API version to use
+                        enum:
+                        - v3
+                        type: string
+                      envoyImage:
+                        description: The Envoy iamge to use
+                        type: string
                       extraPodAnnotations:
                         additionalProperties:
                           type: string
@@ -2397,15 +2399,7 @@ spec:
                   marin3r:
                     description: Marin3r configures the Marin3r sidecars for the component
                     properties:
-                      envoyAPIVersion:
-                        description: The Envoy API version to use
-                        enum:
-                        - v3
-                        type: string
-                      envoyImage:
-                        description: The Envoy iamge to use
-                        type: string
-                      envoyResources:
+                      dynamicConfigs:
                         items:
                           maxProperties: 1
                           minProperties: 1
@@ -2448,6 +2442,7 @@ spec:
                                 name:
                                   type: string
                                 port:
+                                  description: test comment
                                   format: int32
                                   type: integer
                                 rateLimitOptions:
@@ -2516,6 +2511,14 @@ spec:
                               type: object
                           type: object
                         type: array
+                      envoyAPIVersion:
+                        description: The Envoy API version to use
+                        enum:
+                        - v3
+                        type: string
+                      envoyImage:
+                        description: The Envoy iamge to use
+                        type: string
                       extraPodAnnotations:
                         additionalProperties:
                           type: string
@@ -3019,15 +3022,7 @@ spec:
                   marin3r:
                     description: Marin3r configures the Marin3r sidecars for the component
                     properties:
-                      envoyAPIVersion:
-                        description: The Envoy API version to use
-                        enum:
-                        - v3
-                        type: string
-                      envoyImage:
-                        description: The Envoy iamge to use
-                        type: string
-                      envoyResources:
+                      dynamicConfigs:
                         items:
                           maxProperties: 1
                           minProperties: 1
@@ -3070,6 +3065,7 @@ spec:
                                 name:
                                   type: string
                                 port:
+                                  description: test comment
                                   format: int32
                                   type: integer
                                 rateLimitOptions:
@@ -3138,6 +3134,14 @@ spec:
                               type: object
                           type: object
                         type: array
+                      envoyAPIVersion:
+                        description: The Envoy API version to use
+                        enum:
+                        - v3
+                        type: string
+                      envoyImage:
+                        description: The Envoy iamge to use
+                        type: string
                       extraPodAnnotations:
                         additionalProperties:
                           type: string

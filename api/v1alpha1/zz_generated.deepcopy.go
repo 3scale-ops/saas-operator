@@ -1754,8 +1754,8 @@ func (in *Marin3rSidecarSpec) DeepCopyInto(out *Marin3rSidecarSpec) {
 			(*out)[key] = val
 		}
 	}
-	if in.EnvoyResources != nil {
-		in, out := &in.EnvoyResources, &out.EnvoyResources
+	if in.EnvoyDynamicConfig != nil {
+		in, out := &in.EnvoyDynamicConfig, &out.EnvoyDynamicConfig
 		*out = make([]EnvoyDynamicConfig, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])

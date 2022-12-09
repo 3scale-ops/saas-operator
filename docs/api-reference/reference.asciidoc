@@ -428,7 +428,7 @@ Canary allows the definition of a canary Deployment
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoyresource[$$EnvoyResource$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$]
 ****
 
 
@@ -522,10 +522,10 @@ Endpoint sets the external endpoint for the component
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoyresource"]
-==== EnvoyResource 
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfig"]
+==== EnvoyDynamicConfig 
 
-kubebuilder:validation:MinProperties:=2 kubebuilder:validation:MaxProperties:=2
+
 
 .Appears In:
 ****
@@ -535,12 +535,13 @@ kubebuilder:validation:MinProperties:=2 kubebuilder:validation:MaxProperties:=2
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`name`* __string__ | 
 | *`listenerHttp`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerhttp[$$ListenerHttp$$]__ | 
 | *`routeConfiguration`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-routeconfiguration[$$RouteConfiguration$$]__ | 
 | *`cluster`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-cluster[$$Cluster$$]__ | 
 | *`runtime`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-runtime[$$Runtime$$]__ | 
 |===
+
+
 
 
 
@@ -717,7 +718,7 @@ ListenerConfig configures app behavior for Backend Listener
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoyresource[$$EnvoyResource$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$]
 ****
 
 
@@ -870,7 +871,7 @@ Marin3rSidecarSpec defines the marin3r sidecar for the component
 | *`shtdnmgrPort`* __integer__ | The port where Marin3r's shutdown manager listens
 | *`shtdnmgrExtraLifecycleHooks`* __string array__ | Extra containers to sync with the shutdown manager upon pod termination
 | *`extraPodAnnotations`* __object (keys:string, values:string)__ | Extra annotations to pass the Pod to further configure the sidecar container.
-| *`envoyResources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoyresource[$$EnvoyResource$$] array__ | 
+| *`envoyResources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$] array__ | 
 |===
 
 
@@ -1168,7 +1169,7 @@ ResourceRequirementsSpec defines the resource requirements for the component
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoyresource[$$EnvoyResource$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$]
 ****
 
 
@@ -1180,7 +1181,7 @@ ResourceRequirementsSpec defines the resource requirements for the component
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoyresource[$$EnvoyResource$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$]
 ****
 
 

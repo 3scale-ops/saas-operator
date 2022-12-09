@@ -314,7 +314,7 @@ var _ = Describe("Backend controller", func() {
 
 					backend.Spec.Listener.Marin3r = &saasv1alpha1.Marin3rSidecarSpec{
 						NodeID: pointer.String("backend-listener"),
-						EnvoyResources: []saasv1alpha1.EnvoyDynamicConfig{{
+						EnvoyDynamicConfig: []saasv1alpha1.EnvoyDynamicConfig{{
 							ListenerHttp: &saasv1alpha1.ListenerHttp{
 								EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
 									Name:             "http",

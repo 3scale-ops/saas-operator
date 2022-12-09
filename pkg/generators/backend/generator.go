@@ -249,7 +249,7 @@ func (gen *ListenerGenerator) TrafficSelector() map[string]string {
 	}
 }
 func (gen *ListenerGenerator) EnvoyDynamicConfigurations() []saasv1alpha1.EnvoyDynamicConfig {
-	return gen.ListenerSpec.Marin3r.EnvoyResources
+	return gen.ListenerSpec.Marin3r.EnvoyDynamicConfig
 }
 
 // WorkerGenerator has methods to generate resources for a
