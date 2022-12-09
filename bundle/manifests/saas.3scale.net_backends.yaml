@@ -676,6 +676,117 @@ spec:
                       envoyImage:
                         description: The Envoy iamge to use
                         type: string
+                      envoyResources:
+                        items:
+                          maxProperties: 1
+                          minProperties: 1
+                          properties:
+                            cluster:
+                              properties:
+                                generatorVersion:
+                                  default: v1
+                                  type: string
+                                host:
+                                  type: string
+                                isHttp2:
+                                  default: false
+                                  type: boolean
+                                name:
+                                  type: string
+                                port:
+                                  format: int32
+                                  type: integer
+                                rawConfig:
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
+                              required:
+                              - host
+                              - name
+                              - port
+                              type: object
+                            listenerHttp:
+                              properties:
+                                certificateSecretName:
+                                  type: string
+                                defaultHostForHttp10:
+                                  type: string
+                                enableHttp2:
+                                  default: false
+                                  type: boolean
+                                generatorVersion:
+                                  default: v1
+                                  type: string
+                                name:
+                                  type: string
+                                port:
+                                  format: int32
+                                  type: integer
+                                rateLimitOptions:
+                                  properties:
+                                    domain:
+                                      type: string
+                                    failureModeDeny:
+                                      default: false
+                                      type: boolean
+                                    rateLimitCluster:
+                                      type: string
+                                    timeout:
+                                      format: duration
+                                      type: string
+                                  required:
+                                  - domain
+                                  - rateLimitCluster
+                                  - timeout
+                                  type: object
+                                rawConfig:
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
+                                routeConfigName:
+                                  type: string
+                              required:
+                              - name
+                              - port
+                              - routeConfigName
+                              type: object
+                            routeConfiguration:
+                              properties:
+                                generatorVersion:
+                                  default: v1
+                                  type: string
+                                name:
+                                  type: string
+                                rawConfig:
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
+                                virtualHosts:
+                                  items:
+                                    type: object
+                                    x-kubernetes-preserve-unknown-fields: true
+                                  type: array
+                              required:
+                              - name
+                              - virtualHosts
+                              type: object
+                            runtime:
+                              properties:
+                                generatorVersion:
+                                  default: v1
+                                  type: string
+                                listenerNames:
+                                  items:
+                                    type: string
+                                  type: array
+                                name:
+                                  type: string
+                                rawConfig:
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
+                              required:
+                              - listenerNames
+                              - name
+                              type: object
+                          type: object
+                        type: array
                       extraPodAnnotations:
                         additionalProperties:
                           type: string

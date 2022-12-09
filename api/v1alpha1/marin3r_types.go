@@ -2,8 +2,8 @@ package v1alpha1
 
 import (
 	"reflect"
-	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -181,9 +181,10 @@ type RateLimitOptions struct {
 	// +optional
 	FailureModeDeny *bool `json:"failureModeDeny,omitempty"`
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	Timeout time.Duration `json:"timeout"`
+	// +kubebuilder:validation:Format:=duration
+	Timeout metav1.Duration `json:"timeout"`
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	RateLimitService string `json:"rateLimitService"`
+	RateLimitCluster string `json:"rateLimitCluster"`
 }
 
 type Cluster struct {

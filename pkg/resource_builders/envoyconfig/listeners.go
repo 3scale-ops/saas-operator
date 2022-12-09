@@ -136,13 +136,13 @@ func HttpFilterRateLimit_v1(opts *saasv1alpha1.RateLimitOptions) *http_connectio
 				any, err := anypb.New(
 					&envoy_extensions_filters_http_ratelimit_v3.RateLimit{
 						Domain:          opts.Domain,
-						Timeout:         durationpb.New(opts.Timeout),
+						Timeout:         durationpb.New(opts.Timeout.Duration),
 						FailureModeDeny: *opts.FailureModeDeny,
 						RateLimitService: &envoy_config_ratelimit_v3.RateLimitServiceConfig{
 							GrpcService: &envoy_config_core_v3.GrpcService{
 								TargetSpecifier: &envoy_config_core_v3.GrpcService_EnvoyGrpc_{
 									EnvoyGrpc: &envoy_config_core_v3.GrpcService_EnvoyGrpc{
-										ClusterName: opts.RateLimitService,
+										ClusterName: opts.RateLimitCluster,
 									},
 								},
 							},

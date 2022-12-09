@@ -218,6 +218,66 @@ metadata:
               "tag": "latest"
             },
             "marin3r": {
+              "envoyResources": [
+                {
+                  "listenerHttp": {
+                    "name": "http",
+                    "port": 38080,
+                    "routeConfigName": "echo_api"
+                  }
+                },
+                {
+                  "listenerHttp": {
+                    "certificateSecretName": "certificate",
+                    "name": "https",
+                    "port": 38443,
+                    "rateLimitOptions": {
+                      "domain": "echo_api",
+                      "rateLimitCluster": "test",
+                      "timeout": "10ms"
+                    },
+                    "routeConfigName": "echo_api"
+                  }
+                },
+                {
+                  "routeConfiguration": {
+                    "name": "echo_api",
+                    "virtualHosts": [
+                      {
+                        "domains": [
+                          "*"
+                        ],
+                        "name": "echo_api",
+                        "routes": [
+                          {
+                            "match": {
+                              "prefix": "/"
+                            },
+                            "route": {
+                              "cluster": "echo_api"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "cluster": {
+                    "host": "127.0.0.1",
+                    "name": "echo_api",
+                    "port": 9292
+                  }
+                },
+                {
+                  "runtime": {
+                    "listenerNames": [
+                      "http"
+                    ],
+                    "name": "runtime"
+                  }
+                }
+              ],
               "ports": [
                 {
                   "name": "echo-api-http",
@@ -576,7 +636,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/3scale/saas-operator
     support: Red Hat
-  name: saas-operator.v0.17.3
+  name: saas-operator.v0.18.0-alpha.2
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -734,6 +794,70 @@ spec:
       - description: The Envoy iamge to use
         displayName: Envoy Image
         path: production.marin3r.envoyImage
+      - displayName: Envoy Resources
+        path: production.marin3r.envoyResources
+      - displayName: Cluster
+        path: production.marin3r.envoyResources[0].cluster
+      - displayName: Generator Version
+        path: production.marin3r.envoyResources[0].cluster.generatorVersion
+      - displayName: Host
+        path: production.marin3r.envoyResources[0].cluster.host
+      - displayName: Is Http2
+        path: production.marin3r.envoyResources[0].cluster.isHttp2
+      - displayName: Name
+        path: production.marin3r.envoyResources[0].cluster.name
+      - displayName: Port
+        path: production.marin3r.envoyResources[0].cluster.port
+      - displayName: Raw Config
+        path: production.marin3r.envoyResources[0].cluster.rawConfig
+      - displayName: Listener Http
+        path: production.marin3r.envoyResources[0].listenerHttp
+      - displayName: Certificate Secret Name
+        path: production.marin3r.envoyResources[0].listenerHttp.certificateSecretName
+      - displayName: Default Host For Http10
+        path: production.marin3r.envoyResources[0].listenerHttp.defaultHostForHttp10
+      - displayName: Enable Http2
+        path: production.marin3r.envoyResources[0].listenerHttp.enableHttp2
+      - displayName: Generator Version
+        path: production.marin3r.envoyResources[0].listenerHttp.generatorVersion
+      - displayName: Name
+        path: production.marin3r.envoyResources[0].listenerHttp.name
+      - displayName: Port
+        path: production.marin3r.envoyResources[0].listenerHttp.port
+      - displayName: Rate Limit Options
+        path: production.marin3r.envoyResources[0].listenerHttp.rateLimitOptions
+      - displayName: Domain
+        path: production.marin3r.envoyResources[0].listenerHttp.rateLimitOptions.domain
+      - displayName: Failure Mode Deny
+        path: production.marin3r.envoyResources[0].listenerHttp.rateLimitOptions.failureModeDeny
+      - displayName: Rate Limit Cluster
+        path: production.marin3r.envoyResources[0].listenerHttp.rateLimitOptions.rateLimitCluster
+      - displayName: Timeout
+        path: production.marin3r.envoyResources[0].listenerHttp.rateLimitOptions.timeout
+      - displayName: Raw Config
+        path: production.marin3r.envoyResources[0].listenerHttp.rawConfig
+      - displayName: Route Config Name
+        path: production.marin3r.envoyResources[0].listenerHttp.routeConfigName
+      - displayName: Route Configuration
+        path: production.marin3r.envoyResources[0].routeConfiguration
+      - displayName: Generator Version
+        path: production.marin3r.envoyResources[0].routeConfiguration.generatorVersion
+      - displayName: Name
+        path: production.marin3r.envoyResources[0].routeConfiguration.name
+      - displayName: Raw Config
+        path: production.marin3r.envoyResources[0].routeConfiguration.rawConfig
+      - displayName: Virtual Hosts
+        path: production.marin3r.envoyResources[0].routeConfiguration.virtualHosts
+      - displayName: Runtime
+        path: production.marin3r.envoyResources[0].runtime
+      - displayName: Generator Version
+        path: production.marin3r.envoyResources[0].runtime.generatorVersion
+      - displayName: Listener Names
+        path: production.marin3r.envoyResources[0].runtime.listenerNames
+      - displayName: Name
+        path: production.marin3r.envoyResources[0].runtime.name
+      - displayName: Raw Config
+        path: production.marin3r.envoyResources[0].runtime.rawConfig
       - description: Extra annotations to pass the Pod to further configure the sidecar
           container.
         displayName: Extra Pod Annotations
@@ -959,6 +1083,70 @@ spec:
       - description: The Envoy iamge to use
         displayName: Envoy Image
         path: staging.marin3r.envoyImage
+      - displayName: Envoy Resources
+        path: staging.marin3r.envoyResources
+      - displayName: Cluster
+        path: staging.marin3r.envoyResources[0].cluster
+      - displayName: Generator Version
+        path: staging.marin3r.envoyResources[0].cluster.generatorVersion
+      - displayName: Host
+        path: staging.marin3r.envoyResources[0].cluster.host
+      - displayName: Is Http2
+        path: staging.marin3r.envoyResources[0].cluster.isHttp2
+      - displayName: Name
+        path: staging.marin3r.envoyResources[0].cluster.name
+      - displayName: Port
+        path: staging.marin3r.envoyResources[0].cluster.port
+      - displayName: Raw Config
+        path: staging.marin3r.envoyResources[0].cluster.rawConfig
+      - displayName: Listener Http
+        path: staging.marin3r.envoyResources[0].listenerHttp
+      - displayName: Certificate Secret Name
+        path: staging.marin3r.envoyResources[0].listenerHttp.certificateSecretName
+      - displayName: Default Host For Http10
+        path: staging.marin3r.envoyResources[0].listenerHttp.defaultHostForHttp10
+      - displayName: Enable Http2
+        path: staging.marin3r.envoyResources[0].listenerHttp.enableHttp2
+      - displayName: Generator Version
+        path: staging.marin3r.envoyResources[0].listenerHttp.generatorVersion
+      - displayName: Name
+        path: staging.marin3r.envoyResources[0].listenerHttp.name
+      - displayName: Port
+        path: staging.marin3r.envoyResources[0].listenerHttp.port
+      - displayName: Rate Limit Options
+        path: staging.marin3r.envoyResources[0].listenerHttp.rateLimitOptions
+      - displayName: Domain
+        path: staging.marin3r.envoyResources[0].listenerHttp.rateLimitOptions.domain
+      - displayName: Failure Mode Deny
+        path: staging.marin3r.envoyResources[0].listenerHttp.rateLimitOptions.failureModeDeny
+      - displayName: Rate Limit Cluster
+        path: staging.marin3r.envoyResources[0].listenerHttp.rateLimitOptions.rateLimitCluster
+      - displayName: Timeout
+        path: staging.marin3r.envoyResources[0].listenerHttp.rateLimitOptions.timeout
+      - displayName: Raw Config
+        path: staging.marin3r.envoyResources[0].listenerHttp.rawConfig
+      - displayName: Route Config Name
+        path: staging.marin3r.envoyResources[0].listenerHttp.routeConfigName
+      - displayName: Route Configuration
+        path: staging.marin3r.envoyResources[0].routeConfiguration
+      - displayName: Generator Version
+        path: staging.marin3r.envoyResources[0].routeConfiguration.generatorVersion
+      - displayName: Name
+        path: staging.marin3r.envoyResources[0].routeConfiguration.name
+      - displayName: Raw Config
+        path: staging.marin3r.envoyResources[0].routeConfiguration.rawConfig
+      - displayName: Virtual Hosts
+        path: staging.marin3r.envoyResources[0].routeConfiguration.virtualHosts
+      - displayName: Runtime
+        path: staging.marin3r.envoyResources[0].runtime
+      - displayName: Generator Version
+        path: staging.marin3r.envoyResources[0].runtime.generatorVersion
+      - displayName: Listener Names
+        path: staging.marin3r.envoyResources[0].runtime.listenerNames
+      - displayName: Name
+        path: staging.marin3r.envoyResources[0].runtime.name
+      - displayName: Raw Config
+        path: staging.marin3r.envoyResources[0].runtime.rawConfig
       - description: Extra annotations to pass the Pod to further configure the sidecar
           container.
         displayName: Extra Pod Annotations
@@ -1550,6 +1738,70 @@ spec:
       - description: The Envoy iamge to use
         displayName: Envoy Image
         path: listener.marin3r.envoyImage
+      - displayName: Envoy Resources
+        path: listener.marin3r.envoyResources
+      - displayName: Cluster
+        path: listener.marin3r.envoyResources[0].cluster
+      - displayName: Generator Version
+        path: listener.marin3r.envoyResources[0].cluster.generatorVersion
+      - displayName: Host
+        path: listener.marin3r.envoyResources[0].cluster.host
+      - displayName: Is Http2
+        path: listener.marin3r.envoyResources[0].cluster.isHttp2
+      - displayName: Name
+        path: listener.marin3r.envoyResources[0].cluster.name
+      - displayName: Port
+        path: listener.marin3r.envoyResources[0].cluster.port
+      - displayName: Raw Config
+        path: listener.marin3r.envoyResources[0].cluster.rawConfig
+      - displayName: Listener Http
+        path: listener.marin3r.envoyResources[0].listenerHttp
+      - displayName: Certificate Secret Name
+        path: listener.marin3r.envoyResources[0].listenerHttp.certificateSecretName
+      - displayName: Default Host For Http10
+        path: listener.marin3r.envoyResources[0].listenerHttp.defaultHostForHttp10
+      - displayName: Enable Http2
+        path: listener.marin3r.envoyResources[0].listenerHttp.enableHttp2
+      - displayName: Generator Version
+        path: listener.marin3r.envoyResources[0].listenerHttp.generatorVersion
+      - displayName: Name
+        path: listener.marin3r.envoyResources[0].listenerHttp.name
+      - displayName: Port
+        path: listener.marin3r.envoyResources[0].listenerHttp.port
+      - displayName: Rate Limit Options
+        path: listener.marin3r.envoyResources[0].listenerHttp.rateLimitOptions
+      - displayName: Domain
+        path: listener.marin3r.envoyResources[0].listenerHttp.rateLimitOptions.domain
+      - displayName: Failure Mode Deny
+        path: listener.marin3r.envoyResources[0].listenerHttp.rateLimitOptions.failureModeDeny
+      - displayName: Rate Limit Cluster
+        path: listener.marin3r.envoyResources[0].listenerHttp.rateLimitOptions.rateLimitCluster
+      - displayName: Timeout
+        path: listener.marin3r.envoyResources[0].listenerHttp.rateLimitOptions.timeout
+      - displayName: Raw Config
+        path: listener.marin3r.envoyResources[0].listenerHttp.rawConfig
+      - displayName: Route Config Name
+        path: listener.marin3r.envoyResources[0].listenerHttp.routeConfigName
+      - displayName: Route Configuration
+        path: listener.marin3r.envoyResources[0].routeConfiguration
+      - displayName: Generator Version
+        path: listener.marin3r.envoyResources[0].routeConfiguration.generatorVersion
+      - displayName: Name
+        path: listener.marin3r.envoyResources[0].routeConfiguration.name
+      - displayName: Raw Config
+        path: listener.marin3r.envoyResources[0].routeConfiguration.rawConfig
+      - displayName: Virtual Hosts
+        path: listener.marin3r.envoyResources[0].routeConfiguration.virtualHosts
+      - displayName: Runtime
+        path: listener.marin3r.envoyResources[0].runtime
+      - displayName: Generator Version
+        path: listener.marin3r.envoyResources[0].runtime.generatorVersion
+      - displayName: Listener Names
+        path: listener.marin3r.envoyResources[0].runtime.listenerNames
+      - displayName: Name
+        path: listener.marin3r.envoyResources[0].runtime.name
+      - displayName: Raw Config
+        path: listener.marin3r.envoyResources[0].runtime.rawConfig
       - description: Extra annotations to pass the Pod to further configure the sidecar
           container.
         displayName: Extra Pod Annotations
@@ -2118,6 +2370,70 @@ spec:
       - description: The Envoy iamge to use
         displayName: Envoy Image
         path: marin3r.envoyImage
+      - displayName: Envoy Resources
+        path: marin3r.envoyResources
+      - displayName: Cluster
+        path: marin3r.envoyResources[0].cluster
+      - displayName: Generator Version
+        path: marin3r.envoyResources[0].cluster.generatorVersion
+      - displayName: Host
+        path: marin3r.envoyResources[0].cluster.host
+      - displayName: Is Http2
+        path: marin3r.envoyResources[0].cluster.isHttp2
+      - displayName: Name
+        path: marin3r.envoyResources[0].cluster.name
+      - displayName: Port
+        path: marin3r.envoyResources[0].cluster.port
+      - displayName: Raw Config
+        path: marin3r.envoyResources[0].cluster.rawConfig
+      - displayName: Listener Http
+        path: marin3r.envoyResources[0].listenerHttp
+      - displayName: Certificate Secret Name
+        path: marin3r.envoyResources[0].listenerHttp.certificateSecretName
+      - displayName: Default Host For Http10
+        path: marin3r.envoyResources[0].listenerHttp.defaultHostForHttp10
+      - displayName: Enable Http2
+        path: marin3r.envoyResources[0].listenerHttp.enableHttp2
+      - displayName: Generator Version
+        path: marin3r.envoyResources[0].listenerHttp.generatorVersion
+      - displayName: Name
+        path: marin3r.envoyResources[0].listenerHttp.name
+      - displayName: Port
+        path: marin3r.envoyResources[0].listenerHttp.port
+      - displayName: Rate Limit Options
+        path: marin3r.envoyResources[0].listenerHttp.rateLimitOptions
+      - displayName: Domain
+        path: marin3r.envoyResources[0].listenerHttp.rateLimitOptions.domain
+      - displayName: Failure Mode Deny
+        path: marin3r.envoyResources[0].listenerHttp.rateLimitOptions.failureModeDeny
+      - displayName: Rate Limit Cluster
+        path: marin3r.envoyResources[0].listenerHttp.rateLimitOptions.rateLimitCluster
+      - displayName: Timeout
+        path: marin3r.envoyResources[0].listenerHttp.rateLimitOptions.timeout
+      - displayName: Raw Config
+        path: marin3r.envoyResources[0].listenerHttp.rawConfig
+      - displayName: Route Config Name
+        path: marin3r.envoyResources[0].listenerHttp.routeConfigName
+      - displayName: Route Configuration
+        path: marin3r.envoyResources[0].routeConfiguration
+      - displayName: Generator Version
+        path: marin3r.envoyResources[0].routeConfiguration.generatorVersion
+      - displayName: Name
+        path: marin3r.envoyResources[0].routeConfiguration.name
+      - displayName: Raw Config
+        path: marin3r.envoyResources[0].routeConfiguration.rawConfig
+      - displayName: Virtual Hosts
+        path: marin3r.envoyResources[0].routeConfiguration.virtualHosts
+      - displayName: Runtime
+        path: marin3r.envoyResources[0].runtime
+      - displayName: Generator Version
+        path: marin3r.envoyResources[0].runtime.generatorVersion
+      - displayName: Listener Names
+        path: marin3r.envoyResources[0].runtime.listenerNames
+      - displayName: Name
+        path: marin3r.envoyResources[0].runtime.name
+      - displayName: Raw Config
+        path: marin3r.envoyResources[0].runtime.rawConfig
       - description: Extra annotations to pass the Pod to further configure the sidecar
           container.
         displayName: Extra Pod Annotations
@@ -2622,6 +2938,70 @@ spec:
       - description: The Envoy iamge to use
         displayName: Envoy Image
         path: app.marin3r.envoyImage
+      - displayName: Envoy Resources
+        path: app.marin3r.envoyResources
+      - displayName: Cluster
+        path: app.marin3r.envoyResources[0].cluster
+      - displayName: Generator Version
+        path: app.marin3r.envoyResources[0].cluster.generatorVersion
+      - displayName: Host
+        path: app.marin3r.envoyResources[0].cluster.host
+      - displayName: Is Http2
+        path: app.marin3r.envoyResources[0].cluster.isHttp2
+      - displayName: Name
+        path: app.marin3r.envoyResources[0].cluster.name
+      - displayName: Port
+        path: app.marin3r.envoyResources[0].cluster.port
+      - displayName: Raw Config
+        path: app.marin3r.envoyResources[0].cluster.rawConfig
+      - displayName: Listener Http
+        path: app.marin3r.envoyResources[0].listenerHttp
+      - displayName: Certificate Secret Name
+        path: app.marin3r.envoyResources[0].listenerHttp.certificateSecretName
+      - displayName: Default Host For Http10
+        path: app.marin3r.envoyResources[0].listenerHttp.defaultHostForHttp10
+      - displayName: Enable Http2
+        path: app.marin3r.envoyResources[0].listenerHttp.enableHttp2
+      - displayName: Generator Version
+        path: app.marin3r.envoyResources[0].listenerHttp.generatorVersion
+      - displayName: Name
+        path: app.marin3r.envoyResources[0].listenerHttp.name
+      - displayName: Port
+        path: app.marin3r.envoyResources[0].listenerHttp.port
+      - displayName: Rate Limit Options
+        path: app.marin3r.envoyResources[0].listenerHttp.rateLimitOptions
+      - displayName: Domain
+        path: app.marin3r.envoyResources[0].listenerHttp.rateLimitOptions.domain
+      - displayName: Failure Mode Deny
+        path: app.marin3r.envoyResources[0].listenerHttp.rateLimitOptions.failureModeDeny
+      - displayName: Rate Limit Cluster
+        path: app.marin3r.envoyResources[0].listenerHttp.rateLimitOptions.rateLimitCluster
+      - displayName: Timeout
+        path: app.marin3r.envoyResources[0].listenerHttp.rateLimitOptions.timeout
+      - displayName: Raw Config
+        path: app.marin3r.envoyResources[0].listenerHttp.rawConfig
+      - displayName: Route Config Name
+        path: app.marin3r.envoyResources[0].listenerHttp.routeConfigName
+      - displayName: Route Configuration
+        path: app.marin3r.envoyResources[0].routeConfiguration
+      - displayName: Generator Version
+        path: app.marin3r.envoyResources[0].routeConfiguration.generatorVersion
+      - displayName: Name
+        path: app.marin3r.envoyResources[0].routeConfiguration.name
+      - displayName: Raw Config
+        path: app.marin3r.envoyResources[0].routeConfiguration.rawConfig
+      - displayName: Virtual Hosts
+        path: app.marin3r.envoyResources[0].routeConfiguration.virtualHosts
+      - displayName: Runtime
+        path: app.marin3r.envoyResources[0].runtime
+      - displayName: Generator Version
+        path: app.marin3r.envoyResources[0].runtime.generatorVersion
+      - displayName: Listener Names
+        path: app.marin3r.envoyResources[0].runtime.listenerNames
+      - displayName: Name
+        path: app.marin3r.envoyResources[0].runtime.name
+      - displayName: Raw Config
+        path: app.marin3r.envoyResources[0].runtime.rawConfig
       - description: Extra annotations to pass the Pod to further configure the sidecar
           container.
         displayName: Extra Pod Annotations
@@ -3333,6 +3713,70 @@ spec:
       - description: The Envoy iamge to use
         displayName: Envoy Image
         path: sidekiqBilling.marin3r.envoyImage
+      - displayName: Envoy Resources
+        path: sidekiqBilling.marin3r.envoyResources
+      - displayName: Cluster
+        path: sidekiqBilling.marin3r.envoyResources[0].cluster
+      - displayName: Generator Version
+        path: sidekiqBilling.marin3r.envoyResources[0].cluster.generatorVersion
+      - displayName: Host
+        path: sidekiqBilling.marin3r.envoyResources[0].cluster.host
+      - displayName: Is Http2
+        path: sidekiqBilling.marin3r.envoyResources[0].cluster.isHttp2
+      - displayName: Name
+        path: sidekiqBilling.marin3r.envoyResources[0].cluster.name
+      - displayName: Port
+        path: sidekiqBilling.marin3r.envoyResources[0].cluster.port
+      - displayName: Raw Config
+        path: sidekiqBilling.marin3r.envoyResources[0].cluster.rawConfig
+      - displayName: Listener Http
+        path: sidekiqBilling.marin3r.envoyResources[0].listenerHttp
+      - displayName: Certificate Secret Name
+        path: sidekiqBilling.marin3r.envoyResources[0].listenerHttp.certificateSecretName
+      - displayName: Default Host For Http10
+        path: sidekiqBilling.marin3r.envoyResources[0].listenerHttp.defaultHostForHttp10
+      - displayName: Enable Http2
+        path: sidekiqBilling.marin3r.envoyResources[0].listenerHttp.enableHttp2
+      - displayName: Generator Version
+        path: sidekiqBilling.marin3r.envoyResources[0].listenerHttp.generatorVersion
+      - displayName: Name
+        path: sidekiqBilling.marin3r.envoyResources[0].listenerHttp.name
+      - displayName: Port
+        path: sidekiqBilling.marin3r.envoyResources[0].listenerHttp.port
+      - displayName: Rate Limit Options
+        path: sidekiqBilling.marin3r.envoyResources[0].listenerHttp.rateLimitOptions
+      - displayName: Domain
+        path: sidekiqBilling.marin3r.envoyResources[0].listenerHttp.rateLimitOptions.domain
+      - displayName: Failure Mode Deny
+        path: sidekiqBilling.marin3r.envoyResources[0].listenerHttp.rateLimitOptions.failureModeDeny
+      - displayName: Rate Limit Cluster
+        path: sidekiqBilling.marin3r.envoyResources[0].listenerHttp.rateLimitOptions.rateLimitCluster
+      - displayName: Timeout
+        path: sidekiqBilling.marin3r.envoyResources[0].listenerHttp.rateLimitOptions.timeout
+      - displayName: Raw Config
+        path: sidekiqBilling.marin3r.envoyResources[0].listenerHttp.rawConfig
+      - displayName: Route Config Name
+        path: sidekiqBilling.marin3r.envoyResources[0].listenerHttp.routeConfigName
+      - displayName: Route Configuration
+        path: sidekiqBilling.marin3r.envoyResources[0].routeConfiguration
+      - displayName: Generator Version
+        path: sidekiqBilling.marin3r.envoyResources[0].routeConfiguration.generatorVersion
+      - displayName: Name
+        path: sidekiqBilling.marin3r.envoyResources[0].routeConfiguration.name
+      - displayName: Raw Config
+        path: sidekiqBilling.marin3r.envoyResources[0].routeConfiguration.rawConfig
+      - displayName: Virtual Hosts
+        path: sidekiqBilling.marin3r.envoyResources[0].routeConfiguration.virtualHosts
+      - displayName: Runtime
+        path: sidekiqBilling.marin3r.envoyResources[0].runtime
+      - displayName: Generator Version
+        path: sidekiqBilling.marin3r.envoyResources[0].runtime.generatorVersion
+      - displayName: Listener Names
+        path: sidekiqBilling.marin3r.envoyResources[0].runtime.listenerNames
+      - displayName: Name
+        path: sidekiqBilling.marin3r.envoyResources[0].runtime.name
+      - displayName: Raw Config
+        path: sidekiqBilling.marin3r.envoyResources[0].runtime.rawConfig
       - description: Extra annotations to pass the Pod to further configure the sidecar
           container.
         displayName: Extra Pod Annotations
@@ -3503,6 +3947,70 @@ spec:
       - description: The Envoy iamge to use
         displayName: Envoy Image
         path: sidekiqDefault.marin3r.envoyImage
+      - displayName: Envoy Resources
+        path: sidekiqDefault.marin3r.envoyResources
+      - displayName: Cluster
+        path: sidekiqDefault.marin3r.envoyResources[0].cluster
+      - displayName: Generator Version
+        path: sidekiqDefault.marin3r.envoyResources[0].cluster.generatorVersion
+      - displayName: Host
+        path: sidekiqDefault.marin3r.envoyResources[0].cluster.host
+      - displayName: Is Http2
+        path: sidekiqDefault.marin3r.envoyResources[0].cluster.isHttp2
+      - displayName: Name
+        path: sidekiqDefault.marin3r.envoyResources[0].cluster.name
+      - displayName: Port
+        path: sidekiqDefault.marin3r.envoyResources[0].cluster.port
+      - displayName: Raw Config
+        path: sidekiqDefault.marin3r.envoyResources[0].cluster.rawConfig
+      - displayName: Listener Http
+        path: sidekiqDefault.marin3r.envoyResources[0].listenerHttp
+      - displayName: Certificate Secret Name
+        path: sidekiqDefault.marin3r.envoyResources[0].listenerHttp.certificateSecretName
+      - displayName: Default Host For Http10
+        path: sidekiqDefault.marin3r.envoyResources[0].listenerHttp.defaultHostForHttp10
+      - displayName: Enable Http2
+        path: sidekiqDefault.marin3r.envoyResources[0].listenerHttp.enableHttp2
+      - displayName: Generator Version
+        path: sidekiqDefault.marin3r.envoyResources[0].listenerHttp.generatorVersion
+      - displayName: Name
+        path: sidekiqDefault.marin3r.envoyResources[0].listenerHttp.name
+      - displayName: Port
+        path: sidekiqDefault.marin3r.envoyResources[0].listenerHttp.port
+      - displayName: Rate Limit Options
+        path: sidekiqDefault.marin3r.envoyResources[0].listenerHttp.rateLimitOptions
+      - displayName: Domain
+        path: sidekiqDefault.marin3r.envoyResources[0].listenerHttp.rateLimitOptions.domain
+      - displayName: Failure Mode Deny
+        path: sidekiqDefault.marin3r.envoyResources[0].listenerHttp.rateLimitOptions.failureModeDeny
+      - displayName: Rate Limit Cluster
+        path: sidekiqDefault.marin3r.envoyResources[0].listenerHttp.rateLimitOptions.rateLimitCluster
+      - displayName: Timeout
+        path: sidekiqDefault.marin3r.envoyResources[0].listenerHttp.rateLimitOptions.timeout
+      - displayName: Raw Config
+        path: sidekiqDefault.marin3r.envoyResources[0].listenerHttp.rawConfig
+      - displayName: Route Config Name
+        path: sidekiqDefault.marin3r.envoyResources[0].listenerHttp.routeConfigName
+      - displayName: Route Configuration
+        path: sidekiqDefault.marin3r.envoyResources[0].routeConfiguration
+      - displayName: Generator Version
+        path: sidekiqDefault.marin3r.envoyResources[0].routeConfiguration.generatorVersion
+      - displayName: Name
+        path: sidekiqDefault.marin3r.envoyResources[0].routeConfiguration.name
+      - displayName: Raw Config
+        path: sidekiqDefault.marin3r.envoyResources[0].routeConfiguration.rawConfig
+      - displayName: Virtual Hosts
+        path: sidekiqDefault.marin3r.envoyResources[0].routeConfiguration.virtualHosts
+      - displayName: Runtime
+        path: sidekiqDefault.marin3r.envoyResources[0].runtime
+      - displayName: Generator Version
+        path: sidekiqDefault.marin3r.envoyResources[0].runtime.generatorVersion
+      - displayName: Listener Names
+        path: sidekiqDefault.marin3r.envoyResources[0].runtime.listenerNames
+      - displayName: Name
+        path: sidekiqDefault.marin3r.envoyResources[0].runtime.name
+      - displayName: Raw Config
+        path: sidekiqDefault.marin3r.envoyResources[0].runtime.rawConfig
       - description: Extra annotations to pass the Pod to further configure the sidecar
           container.
         displayName: Extra Pod Annotations
@@ -3673,6 +4181,70 @@ spec:
       - description: The Envoy iamge to use
         displayName: Envoy Image
         path: sidekiqLow.marin3r.envoyImage
+      - displayName: Envoy Resources
+        path: sidekiqLow.marin3r.envoyResources
+      - displayName: Cluster
+        path: sidekiqLow.marin3r.envoyResources[0].cluster
+      - displayName: Generator Version
+        path: sidekiqLow.marin3r.envoyResources[0].cluster.generatorVersion
+      - displayName: Host
+        path: sidekiqLow.marin3r.envoyResources[0].cluster.host
+      - displayName: Is Http2
+        path: sidekiqLow.marin3r.envoyResources[0].cluster.isHttp2
+      - displayName: Name
+        path: sidekiqLow.marin3r.envoyResources[0].cluster.name
+      - displayName: Port
+        path: sidekiqLow.marin3r.envoyResources[0].cluster.port
+      - displayName: Raw Config
+        path: sidekiqLow.marin3r.envoyResources[0].cluster.rawConfig
+      - displayName: Listener Http
+        path: sidekiqLow.marin3r.envoyResources[0].listenerHttp
+      - displayName: Certificate Secret Name
+        path: sidekiqLow.marin3r.envoyResources[0].listenerHttp.certificateSecretName
+      - displayName: Default Host For Http10
+        path: sidekiqLow.marin3r.envoyResources[0].listenerHttp.defaultHostForHttp10
+      - displayName: Enable Http2
+        path: sidekiqLow.marin3r.envoyResources[0].listenerHttp.enableHttp2
+      - displayName: Generator Version
+        path: sidekiqLow.marin3r.envoyResources[0].listenerHttp.generatorVersion
+      - displayName: Name
+        path: sidekiqLow.marin3r.envoyResources[0].listenerHttp.name
+      - displayName: Port
+        path: sidekiqLow.marin3r.envoyResources[0].listenerHttp.port
+      - displayName: Rate Limit Options
+        path: sidekiqLow.marin3r.envoyResources[0].listenerHttp.rateLimitOptions
+      - displayName: Domain
+        path: sidekiqLow.marin3r.envoyResources[0].listenerHttp.rateLimitOptions.domain
+      - displayName: Failure Mode Deny
+        path: sidekiqLow.marin3r.envoyResources[0].listenerHttp.rateLimitOptions.failureModeDeny
+      - displayName: Rate Limit Cluster
+        path: sidekiqLow.marin3r.envoyResources[0].listenerHttp.rateLimitOptions.rateLimitCluster
+      - displayName: Timeout
+        path: sidekiqLow.marin3r.envoyResources[0].listenerHttp.rateLimitOptions.timeout
+      - displayName: Raw Config
+        path: sidekiqLow.marin3r.envoyResources[0].listenerHttp.rawConfig
+      - displayName: Route Config Name
+        path: sidekiqLow.marin3r.envoyResources[0].listenerHttp.routeConfigName
+      - displayName: Route Configuration
+        path: sidekiqLow.marin3r.envoyResources[0].routeConfiguration
+      - displayName: Generator Version
+        path: sidekiqLow.marin3r.envoyResources[0].routeConfiguration.generatorVersion
+      - displayName: Name
+        path: sidekiqLow.marin3r.envoyResources[0].routeConfiguration.name
+      - displayName: Raw Config
+        path: sidekiqLow.marin3r.envoyResources[0].routeConfiguration.rawConfig
+      - displayName: Virtual Hosts
+        path: sidekiqLow.marin3r.envoyResources[0].routeConfiguration.virtualHosts
+      - displayName: Runtime
+        path: sidekiqLow.marin3r.envoyResources[0].runtime
+      - displayName: Generator Version
+        path: sidekiqLow.marin3r.envoyResources[0].runtime.generatorVersion
+      - displayName: Listener Names
+        path: sidekiqLow.marin3r.envoyResources[0].runtime.listenerNames
+      - displayName: Name
+        path: sidekiqLow.marin3r.envoyResources[0].runtime.name
+      - displayName: Raw Config
+        path: sidekiqLow.marin3r.envoyResources[0].runtime.rawConfig
       - description: Extra annotations to pass the Pod to further configure the sidecar
           container.
         displayName: Extra Pod Annotations
@@ -4401,7 +4973,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/3scale/saas-operator:v0.17.3
+                image: quay.io/3scale/saas-operator:v0.18.0-alpha.2
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -4558,6 +5130,18 @@ spec:
           - integreatly.org
           resources:
           - grafanadashboards
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - marin3r.3scale.net
+          resources:
+          - envoyconfigs
           verbs:
           - create
           - delete
@@ -4903,4 +5487,4 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
-  version: 0.17.3
+  version: 0.18.0-alpha.2

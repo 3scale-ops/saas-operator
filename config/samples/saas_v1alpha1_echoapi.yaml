@@ -26,6 +26,10 @@ spec:
           port: 38443
           routeConfigName: echo_api
           certificateSecretName: certificate
+          rateLimitOptions:
+            domain: echo_api
+            timeout: 10ms
+            rateLimitCluster: test
       - routeConfiguration:
           name: echo_api
           virtualHosts:
