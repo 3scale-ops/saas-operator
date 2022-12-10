@@ -91,6 +91,10 @@ func newFromProtos(key types.NamespacedName, nodeID string, resources []envoy.Re
 		routes := []marin3rv1alpha1.EnvoyResource{}
 		listeners := []marin3rv1alpha1.EnvoyResource{}
 		runtimes := []marin3rv1alpha1.EnvoyResource{}
+		secrets, err := generateSecrets(resources)
+		if err != nil {
+			return nil, err
+		}
 
 		for i := range resources {
 
@@ -137,6 +141,7 @@ func newFromProtos(key types.NamespacedName, nodeID string, resources []envoy.Re
 					Routes:    routes,
 					Listeners: listeners,
 					Runtimes:  runtimes,
+					Secrets:   secrets,
 				},
 			},
 		}, nil

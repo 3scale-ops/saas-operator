@@ -61,7 +61,9 @@ func TestNew(t *testing.T) {
 								Name:             "my_listener",
 								GeneratorVersion: pointer.String("v1"),
 							}, Port: 0,
-							RouteConfigName: "routeconfig",
+							RouteConfigName:       "routeconfig",
+							CertificateSecretName: pointer.String("certificate"),
+							EnableHttp2:           pointer.Bool(false),
 						},
 					},
 				},
@@ -95,66 +97,84 @@ func TestNew(t *testing.T) {
 						}},
 						Listeners: []marin3rv1alpha1.EnvoyResource{{
 							Value: heredoc.Doc(`
-                                address:
-                                  socket_address:
-                                    address: 0.0.0.0
-                                    port_value: 0
-                                filter_chains:
-                                - filters:
-                                  - name: envoy.filters.network.http_connection_manager
-                                    typed_config:
-                                      '@type': type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
-                                      access_log:
-                                      - name: envoy.access_loggers.file
-                                        typed_config:
-                                          '@type': type.googleapis.com/envoy.extensions.access_loggers.file.v3.FileAccessLog
-                                          log_format:
-                                            json_format:
-                                              authority: '%REQ(:AUTHORITY)%'
-                                              bytes_received: '%BYTES_RECEIVED%'
-                                              bytes_sent: '%BYTES_SENT%'
-                                              client_ip: '%REQ(X-ENVOY-EXTERNAL-ADDRESS)%'
-                                              duration: '%DURATION%'
-                                              listener: my_listener
-                                              method: '%REQ(:METHOD)%'
-                                              path: '%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%'
-                                              protocol: '%PROTOCOL%'
-                                              response_code: '%RESPONSE_CODE%'
-                                              response_code_details: '%RESPONSE_CODE_DETAILS%'
-                                              response_flags: '%RESPONSE_FLAGS%'
-                                              upstream_cluster: '%UPSTREAM_CLUSTER%'
-                                              upstream_service_time: '%RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%'
-                                              user_agent: '%REQ(USER-AGENT)%'
-                                          path: /dev/stdout
-                                      common_http_protocol_options:
-                                        idle_timeout: 3600s
-                                        max_connection_duration: 900s
-                                      http_filters:
-                                      - name: envoy.filters.http.router
-                                      http_protocol_options: {}
-                                      http2_protocol_options:
-                                        initial_connection_window_size: 1048576
-                                        initial_stream_window_size: 65536
-                                        max_concurrent_streams: 100
-                                      rds:
-                                        config_source:
+                              address:
+                                socket_address:
+                                  address: 0.0.0.0
+                                  port_value: 0
+                              filter_chains:
+                              - filters:
+                                - name: envoy.filters.network.http_connection_manager
+                                  typed_config:
+                                    '@type': type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                                    access_log:
+                                    - name: envoy.access_loggers.file
+                                      typed_config:
+                                        '@type': type.googleapis.com/envoy.extensions.access_loggers.file.v3.FileAccessLog
+                                        log_format:
+                                          json_format:
+                                            authority: '%REQ(:AUTHORITY)%'
+                                            bytes_received: '%BYTES_RECEIVED%'
+                                            bytes_sent: '%BYTES_SENT%'
+                                            client_ip: '%REQ(X-ENVOY-EXTERNAL-ADDRESS)%'
+                                            downstream_tls_cipher: '%DOWNSTREAM_TLS_CIPHER%'
+                                            downstream_tls_version: '%DOWNSTREAM_TLS_VERSION%'
+                                            duration: '%DURATION%'
+                                            listener: my_listener
+                                            method: '%REQ(:METHOD)%'
+                                            path: '%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%'
+                                            protocol: '%PROTOCOL%'
+                                            response_code: '%RESPONSE_CODE%'
+                                            response_code_details: '%RESPONSE_CODE_DETAILS%'
+                                            response_flags: '%RESPONSE_FLAGS%'
+                                            upstream_cluster: '%UPSTREAM_CLUSTER%'
+                                            upstream_service_time: '%RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%'
+                                            user_agent: '%REQ(USER-AGENT)%'
+                                        path: /dev/stdout
+                                    common_http_protocol_options:
+                                      idle_timeout: 3600s
+                                      max_connection_duration: 900s
+                                    http_filters:
+                                    - name: envoy.filters.http.router
+                                    http_protocol_options: {}
+                                    http2_protocol_options:
+                                      initial_connection_window_size: 1048576
+                                      initial_stream_window_size: 65536
+                                      max_concurrent_streams: 100
+                                    rds:
+                                      config_source:
+                                        ads: {}
+                                        resource_api_version: V3
+                                      route_config_name: routeconfig
+                                    request_timeout: 300s
+                                    stat_prefix: my_listener
+                                    stream_idle_timeout: 300s
+                                    use_remote_address: true
+                                transport_socket:
+                                  name: envoy.transport_sockets.tls
+                                  typed_config:
+                                    '@type': type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.DownstreamTlsContext
+                                    common_tls_context:
+                                      alpn_protocols:
+                                      - http/1.1
+                                      tls_certificate_sds_secret_configs:
+                                      - name: certificate
+                                        sds_config:
                                           ads: {}
                                           resource_api_version: V3
-                                        route_config_name: routeconfig
-                                      request_timeout: 300s
-                                      stat_prefix: my_listener
-                                      stream_idle_timeout: 300s
-                                      use_remote_address: true
-                                listener_filters:
-                                - name: envoy.filters.listener.proxy_protocol
-                                  typed_config:
-                                    '@type': type.googleapis.com/envoy.extensions.filters.listener.proxy_protocol.v3.ProxyProtocol
-                                name: my_listener
-                                per_connection_buffer_limit_bytes: 32768
+                                      tls_params:
+                                        tls_minimum_protocol_version: TLSv1_2
+                              listener_filters:
+                              - name: envoy.filters.listener.tls_inspector
+                              - name: envoy.filters.listener.proxy_protocol
+                                typed_config:
+                                  '@type': type.googleapis.com/envoy.extensions.filters.listener.proxy_protocol.v3.ProxyProtocol
+                              name: my_listener
+                              per_connection_buffer_limit_bytes: 32768
 							`),
 						}},
 						Routes:   []marin3rv1alpha1.EnvoyResource{},
 						Runtimes: []marin3rv1alpha1.EnvoyResource{},
+						Secrets:  []marin3rv1alpha1.EnvoySecretResource{{Name: "certificate"}},
 					},
 				},
 			},
@@ -233,7 +253,7 @@ func Test_newFromProtos(t *testing.T) {
 									PortSpecifier: &envoy_config_core_v3.SocketAddress_PortValue{
 										PortValue: 8443,
 									}}}},
-						FilterChains: []*envoy_config_listener_v3.FilterChain{},
+						FilterChains: []*envoy_config_listener_v3.FilterChain{{}},
 					},
 				},
 			},
@@ -271,6 +291,8 @@ func Test_newFromProtos(t *testing.T) {
 								  socket_address:
 								    address: 0.0.0.0
 								    port_value: 8443
+								filter_chains:
+								- {}
 								name: listener1
 						`)}},
 						Runtimes: []marin3rv1alpha1.EnvoyResource{{
@@ -279,6 +301,7 @@ func Test_newFromProtos(t *testing.T) {
 								  static_layer_0: value
 								name: runtime1
 						`)}},
+						Secrets: []marin3rv1alpha1.EnvoySecretResource{},
 					},
 				},
 			},
