@@ -424,13 +424,22 @@ Canary allows the definition of a canary Deployment
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-cluster"]
 ==== Cluster 
 
-
+Cluster contains options for an Envoy cluster protobuffer message
 
 .Appears In:
 ****
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$]
 ****
 
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`EnvoyDynamicConfigMeta`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfigmeta[$$EnvoyDynamicConfigMeta$$]__ | 
+| *`EnvoyDynamicConfigRaw`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfigraw[$$EnvoyDynamicConfigRaw$$]__ | 
+| *`host`* __string__ | The upstream host
+| *`port`* __integer__ | The upstream port
+| *`isHttp2`* __boolean__ | Specifies if the upstream cluster is http2 or not (default).
+|===
 
 
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-cronspec"]
@@ -535,15 +544,52 @@ Endpoint sets the external endpoint for the component
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`listenerHttp`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerhttp[$$ListenerHttp$$]__ | 
-| *`routeConfiguration`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-routeconfiguration[$$RouteConfiguration$$]__ | 
-| *`cluster`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-cluster[$$Cluster$$]__ | 
-| *`runtime`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-runtime[$$Runtime$$]__ | 
+| *`listenerHttp`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerhttp[$$ListenerHttp$$]__ | ListenerHttp contains options for an HTTP/HTTPS listener
+| *`routeConfiguration`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-routeconfiguration[$$RouteConfiguration$$]__ | RouteConfiguration contains options for an Envoy route_configuration protobuffer message
+| *`cluster`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-cluster[$$Cluster$$]__ | Cluster contains options for an Envoy cluster protobuffer message
+| *`runtime`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-runtime[$$Runtime$$]__ | Runtime contains options for an Envoy runtime protobuffer message
 |===
 
 
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfigmeta"]
+==== EnvoyDynamicConfigMeta 
 
 
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-cluster[$$Cluster$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerhttp[$$ListenerHttp$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-routeconfiguration[$$RouteConfiguration$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-runtime[$$Runtime$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`name`* __string__ | The name of the configuration/resource. The name is what allows a configuration to be used from wihin other configuration.
+| *`generatorVersion`* __string__ | GeneratorVersion specifies the version of a given template. "v1" is the default.
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfigraw"]
+==== EnvoyDynamicConfigRaw 
+
+EnvoyDynamicConfigRaw is a struct with methods to manage a configuration defined using directly the Envoy config API
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-cluster[$$Cluster$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerhttp[$$ListenerHttp$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-routeconfiguration[$$RouteConfiguration$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-runtime[$$Runtime$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`rawConfig`* __RawExtension__ | Allows defining configuration using directly envoy's config API. WARNING: no validation of this field's value is performed before writting the custom resource to etcd.
+|===
 
 
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-externalsecret"]
@@ -714,13 +760,25 @@ ListenerConfig configures app behavior for Backend Listener
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerhttp"]
 ==== ListenerHttp 
 
-
+ListenerHttp contains options for an HTTP/HTTPS listener
 
 .Appears In:
 ****
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$]
 ****
 
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`EnvoyDynamicConfigMeta`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfigmeta[$$EnvoyDynamicConfigMeta$$]__ | 
+| *`EnvoyDynamicConfigRaw`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfigraw[$$EnvoyDynamicConfigRaw$$]__ | 
+| *`port`* __integer__ | The port where the listener listens for new connections test comment
+| *`routeConfigName`* __string__ | The name of the RouteConfiguration to use in the listener
+| *`certificateSecretName`* __string__ | The name of the Secret containing a valid certificate. If unset the listener will be http, if set https
+| *`rateLimitOptions`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-ratelimitoptions[$$RateLimitOptions$$]__ | Rate limit options for the ratelimit filter of the HTTP connection manager
+| *`defaultHostForHttp10`* __string__ | If this filed is set, http 1.0 will be enabled and this will be the default hostname to use.
+| *`enableHttp2`* __boolean__ | Enable http2 in the listener.Disabled by default.
+|===
 
 
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec"]
@@ -871,7 +929,7 @@ Marin3rSidecarSpec defines the marin3r sidecar for the component
 | *`shtdnmgrPort`* __integer__ | The port where Marin3r's shutdown manager listens
 | *`shtdnmgrExtraLifecycleHooks`* __string array__ | Extra containers to sync with the shutdown manager upon pod termination
 | *`extraPodAnnotations`* __object (keys:string, values:string)__ | Extra annotations to pass the Pod to further configure the sidecar container.
-| *`envoyResources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$] array__ | 
+| *`dynamicConfigs`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$] array__ | Envoy dynamic configuration. Populating this field causes the operator to create a Marin3r EnvoyConfig resource, so Marin3r must be installed in the cluster.
 |===
 
 
@@ -1005,6 +1063,24 @@ QueSpec is the configuration for Zync que
 |===
 
 
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-ratelimitoptions"]
+==== RateLimitOptions 
+
+RateLimitOptions contains options for the ratelimit filter of the http connection manager
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerhttp[$$ListenerHttp$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`domain`* __string__ | The rate limit domain
+| *`failureModeDeny`* __boolean__ | Whether to allow requests or not if the rate limit service is unavailable
+| *`timeout`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#duration-v1-meta[$$Duration$$]__ | Max time to wait for a response from the rate limit service
+| *`rateLimitCluster`* __string__ | Location of the rate limit service. Must point to one of the defined clusters.
+|===
 
 
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redhatcustomerportalspec"]
@@ -1165,25 +1241,39 @@ ResourceRequirementsSpec defines the resource requirements for the component
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-routeconfiguration"]
 ==== RouteConfiguration 
 
-
+RouteConfiguration contains options for an Envoy route_configuration protobuffer message
 
 .Appears In:
 ****
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$]
 ****
 
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`EnvoyDynamicConfigMeta`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfigmeta[$$EnvoyDynamicConfigMeta$$]__ | 
+| *`EnvoyDynamicConfigRaw`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfigraw[$$EnvoyDynamicConfigRaw$$]__ | 
+| *`virtualHosts`* __xref:{anchor_prefix}-k8s-io-apimachinery-pkg-runtime-rawextension[$$RawExtension$$] array__ | The virtual_hosts definitions for this route configuration. Virtual hosts must be specified using directly Envoy's API
+|===
 
 
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-runtime"]
 ==== Runtime 
 
-
+Runtime contains options for an Envoy runtime protobuffer message
 
 .Appears In:
 ****
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$]
 ****
 
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`EnvoyDynamicConfigMeta`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfigmeta[$$EnvoyDynamicConfigMeta$$]__ | 
+| *`EnvoyDynamicConfigRaw`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfigraw[$$EnvoyDynamicConfigRaw$$]__ | 
+| *`listenerNames`* __string array__ | The list of listeners to apply overload protection limits to
+|===
 
 
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-smtpspec"]
@@ -1699,13 +1789,13 @@ ThinkingSpec configures the thinking library for sphinx
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`port`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-int32[$$int32$$]__ | The TCP port Sphinx will run its daemon on
-| *`bindAddress`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-string[$$string$$]__ | Allows setting the TCP host for Sphinx to a different address
-| *`configFile`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-string[$$string$$]__ | Sphinx configuration file path
-| *`databasePath`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-string[$$string$$]__ | Sphinx database path
+| *`port`* __integer__ | The TCP port Sphinx will run its daemon on
+| *`bindAddress`* __string__ | Allows setting the TCP host for Sphinx to a different address
+| *`configFile`* __string__ | Sphinx configuration file path
+| *`databasePath`* __string__ | Sphinx database path
 | *`databaseStorageSize`* __Quantity__ | Sphinx database storage size
-| *`databaseStorageClass`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-string[$$string$$]__ | Sphinx database storage type
-| *`pidFile`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-string[$$string$$]__ | Sphinx PID file path
+| *`databaseStorageClass`* __string__ | Sphinx database storage type
+| *`pidFile`* __string__ | Sphinx PID file path
 |===
 
 

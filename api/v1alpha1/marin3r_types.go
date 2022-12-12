@@ -52,6 +52,9 @@ type Marin3rSidecarSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	ExtraPodAnnotations map[string]string `json:"extraPodAnnotations,omitempty"`
+	// Envoy dynamic configuration. Populating this field causes the operator
+	// to create a Marin3r EnvoyConfig resource, so Marin3r must be installed
+	// in the cluster.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	EnvoyDynamicConfig []EnvoyDynamicConfig `json:"dynamicConfigs,omitempty"`
@@ -107,40 +110,56 @@ func InitializeMarin3rSidecarSpec(spec *Marin3rSidecarSpec, def defaultMarin3rSi
 // +kubebuilder:validation:MinProperties:=1
 // +kubebuilder:validation:MaxProperties:=1
 type EnvoyDynamicConfig struct {
+	// ListenerHttp contains options for an HTTP/HTTPS listener
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	ListenerHttp *ListenerHttp `json:"listenerHttp,omitempty"`
+	// RouteConfiguration contains options for an Envoy route_configuration
+	// protobuffer message
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	RouteConfiguration *RouteConfiguration `json:"routeConfiguration,omitempty"`
+	// Cluster contains options for an Envoy cluster protobuffer message
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Cluster *Cluster `json:"cluster,omitempty"`
+	// Runtime contains options for an Envoy runtime protobuffer message
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Runtime *Runtime `json:"runtime,omitempty"`
 }
 
 type EnvoyDynamicConfigMeta struct {
+	// The name of the configuration/resource. The name is what
+	// allows a configuration to be used from wihin other configuration.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Name string `json:"name"`
+	// GeneratorVersion specifies the version of a given template.
+	// "v1" is the default.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +kubebuilder:default:=v1
 	// +optional
 	GeneratorVersion *string `json:"generatorVersion,omitempty"`
 }
 
+// GetName returns the name
 func (meta *EnvoyDynamicConfigMeta) GetName() string {
 	return meta.Name
 }
 
+// GetGeneratorVersion returns the template's version
 func (meta *EnvoyDynamicConfigMeta) GetGeneratorVersion() string {
 	return *meta.GeneratorVersion
 }
 
+// EnvoyDynamicConfigRaw is a struct with methods to manage a
+// configuration defined using directly the Envoy config API
 type EnvoyDynamicConfigRaw struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
+	// Allows defining configuration using directly envoy's config API.
+	// WARNING: no validation of this field's value is performed before
+	// writting the custom resource to etcd.
 	RawConfig *runtime.RawExtension `json:"rawConfig,omitempty"`
 }
 
@@ -151,66 +170,94 @@ func (raw *EnvoyDynamicConfigRaw) GetRawConfig() []byte {
 	return nil
 }
 
+// ListenerHttp contains options for an HTTP/HTTPS listener
 type ListenerHttp struct {
 	EnvoyDynamicConfigMeta `json:",inline"`
 	EnvoyDynamicConfigRaw  `json:",inline"`
+	// The port where the listener listens for new connections
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// test comment
 	Port uint32 `json:"port"`
+	// The name of the RouteConfiguration to use in the listener
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	RouteConfigName string `json:"routeConfigName"`
+	// The name of the Secret containing a valid certificate. If unset
+	// the listener will be http, if set https
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	CertificateSecretName *string `json:"certificateSecretName,omitempty"`
+	// Rate limit options for the ratelimit filter of the HTTP connection
+	// manager
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	RateLimitOptions *RateLimitOptions `json:"rateLimitOptions,omitempty"`
+	// If this filed is set, http 1.0 will be enabled and this will be
+	// the default hostname to use.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	DefaultHostForHttp10 *string `json:"defaultHostForHttp10,omitempty"`
+	// Enable http2 in the listener.Disabled by default.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +kubebuilder:default:=false
 	// +optional
 	EnableHttp2 *bool `json:"enableHttp2,omitempty"`
 }
 
+// RateLimitOptions contains options for the ratelimit filter of the
+// http connection manager
 type RateLimitOptions struct {
+	// The rate limit domain
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Domain string `json:"domain"`
+	// Whether to allow requests or not if the rate limit service
+	// is unavailable
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +kubebuilder:default:=false
 	// +optional
 	FailureModeDeny *bool `json:"failureModeDeny,omitempty"`
+	// Max time to wait for a response from the rate limit service
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +kubebuilder:validation:Format:=duration
 	Timeout metav1.Duration `json:"timeout"`
+	// Location of the rate limit service. Must point to one of the
+	// defined clusters.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	RateLimitCluster string `json:"rateLimitCluster"`
 }
 
+// Cluster contains options for an Envoy cluster protobuffer message
 type Cluster struct {
 	EnvoyDynamicConfigMeta `json:",inline"`
 	EnvoyDynamicConfigRaw  `json:",inline"`
+	// The upstream host
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Host string `json:"host"`
+	// The upstream port
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Port uint32 `json:"port"`
+	// Specifies if the upstream cluster is http2 or not (default).
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +kubebuilder:default:=false
 	// +optional
 	IsHttp2 *bool `json:"isHttp2"`
 }
 
+// RouteConfiguration contains options for an Envoy route_configuration
+// protobuffer message
 type RouteConfiguration struct {
 	EnvoyDynamicConfigMeta `json:",inline"`
 	EnvoyDynamicConfigRaw  `json:",inline"`
+	// The virtual_hosts definitions for this route configuration.
+	// Virtual hosts must be specified using directly Envoy's API
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	VirtualHosts []runtime.RawExtension `json:"virtualHosts"`
 }
 
+// Runtime contains options for an Envoy runtime protobuffer message
 type Runtime struct {
 	EnvoyDynamicConfigMeta `json:",inline"`
 	EnvoyDynamicConfigRaw  `json:",inline"`
+	// The list of listeners to apply overload protection limits to
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	ListenerNames []string `json:"listenerNames"`
 }

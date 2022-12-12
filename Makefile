@@ -361,6 +361,7 @@ refdocs: ## Generates api reference documentation from code
 refdocs: crd-ref-docs
 	$(CRD_REFDOCS) \
 		--source-path=api \
+		--max-depth=10 \
 		--config=docs/api-reference/config.yaml \
 		--renderer=asciidoctor \
 		--output-path=docs/api-reference/reference.asciidoc
