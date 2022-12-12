@@ -137,26 +137,44 @@ spec:
                 description: Marin3r configures the Marin3r sidecars for the component
                 properties:
                   dynamicConfigs:
+                    description: Envoy dynamic configuration. Populating this field
+                      causes the operator to create a Marin3r EnvoyConfig resource,
+                      so Marin3r must be installed in the cluster.
                     items:
                       maxProperties: 1
                       minProperties: 1
                       properties:
                         cluster:
+                          description: Cluster contains options for an Envoy cluster
+                            protobuffer message
                           properties:
                             generatorVersion:
                               default: v1
+                              description: GeneratorVersion specifies the version
+                                of a given template. "v1" is the default.
                               type: string
                             host:
+                              description: The upstream host
                               type: string
                             isHttp2:
                               default: false
+                              description: Specifies if the upstream cluster is http2
+                                or not (default).
                               type: boolean
                             name:
+                              description: The name of the configuration/resource.
+                                The name is what allows a configuration to be used
+                                from wihin other configuration.
                               type: string
                             port:
+                              description: The upstream port
                               format: int32
                               type: integer
                             rawConfig:
+                              description: 'Allows defining configuration using directly
+                                envoy''s config API. WARNING: no validation of this
+                                field''s value is performed before writting the custom
+                                resource to etcd.'
                               type: object
                               x-kubernetes-preserve-unknown-fields: true
                           required:
@@ -165,33 +183,65 @@ spec:
                           - port
                           type: object
                         listenerHttp:
+                          description: ListenerHttp contains options for an HTTP/HTTPS
+                            listener
                           properties:
+                            allowHeadersWithUnderscores:
+                              default: true
+                              description: Allow headers with underscores
+                              type: boolean
                             certificateSecretName:
+                              description: The name of the Secret containing a valid
+                                certificate. If unset the listener will be http, if
+                                set https
                               type: string
                             defaultHostForHttp10:
+                              description: If this filed is set, http 1.0 will be
+                                enabled and this will be the default hostname to use.
                               type: string
                             enableHttp2:
                               default: false
+                              description: Enable http2 in the listener.Disabled by
+                                default.
                               type: boolean
                             generatorVersion:
                               default: v1
+                              description: GeneratorVersion specifies the version
+                                of a given template. "v1" is the default.
+                              type: string
+                            maxConnectionDuration:
+                              description: Max connection duration. If unset no max
+                                connection duration will be applied.
                               type: string
                             name:
+                              description: The name of the configuration/resource.
+                                The name is what allows a configuration to be used
+                                from wihin other configuration.
                               type: string
                             port:
-                              description: test comment
+                              description: The port where the listener listens for
+                                new connections test comment
                               format: int32
                               type: integer
                             rateLimitOptions:
+                              description: Rate limit options for the ratelimit filter
+                                of the HTTP connection manager
                               properties:
                                 domain:
+                                  description: The rate limit domain
                                   type: string
                                 failureModeDeny:
                                   default: false
+                                  description: Whether to allow requests or not if
+                                    the rate limit service is unavailable
                                   type: boolean
                                 rateLimitCluster:
+                                  description: Location of the rate limit service.
+                                    Must point to one of the defined clusters.
                                   type: string
                                 timeout:
+                                  description: Max time to wait for a response from
+                                    the rate limit service
                                   format: duration
                                   type: string
                               required:
@@ -200,9 +250,15 @@ spec:
                               - timeout
                               type: object
                             rawConfig:
+                              description: 'Allows defining configuration using directly
+                                envoy''s config API. WARNING: no validation of this
+                                field''s value is performed before writting the custom
+                                resource to etcd.'
                               type: object
                               x-kubernetes-preserve-unknown-fields: true
                             routeConfigName:
+                              description: The name of the RouteConfiguration to use
+                                in the listener
                               type: string
                           required:
                           - name
@@ -210,16 +266,30 @@ spec:
                           - routeConfigName
                           type: object
                         routeConfiguration:
+                          description: RouteConfiguration contains options for an
+                            Envoy route_configuration protobuffer message
                           properties:
                             generatorVersion:
                               default: v1
+                              description: GeneratorVersion specifies the version
+                                of a given template. "v1" is the default.
                               type: string
                             name:
+                              description: The name of the configuration/resource.
+                                The name is what allows a configuration to be used
+                                from wihin other configuration.
                               type: string
                             rawConfig:
+                              description: 'Allows defining configuration using directly
+                                envoy''s config API. WARNING: no validation of this
+                                field''s value is performed before writting the custom
+                                resource to etcd.'
                               type: object
                               x-kubernetes-preserve-unknown-fields: true
                             virtualHosts:
+                              description: The virtual_hosts definitions for this
+                                route configuration. Virtual hosts must be specified
+                                using directly Envoy's API
                               items:
                                 type: object
                                 x-kubernetes-preserve-unknown-fields: true
@@ -229,17 +299,30 @@ spec:
                           - virtualHosts
                           type: object
                         runtime:
+                          description: Runtime contains options for an Envoy runtime
+                            protobuffer message
                           properties:
                             generatorVersion:
                               default: v1
+                              description: GeneratorVersion specifies the version
+                                of a given template. "v1" is the default.
                               type: string
                             listenerNames:
+                              description: The list of listeners to apply overload
+                                protection limits to
                               items:
                                 type: string
                               type: array
                             name:
+                              description: The name of the configuration/resource.
+                                The name is what allows a configuration to be used
+                                from wihin other configuration.
                               type: string
                             rawConfig:
+                              description: 'Allows defining configuration using directly
+                                envoy''s config API. WARNING: no validation of this
+                                field''s value is performed before writting the custom
+                                resource to etcd.'
                               type: object
                               x-kubernetes-preserve-unknown-fields: true
                           required:
