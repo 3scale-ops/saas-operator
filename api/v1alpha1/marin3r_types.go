@@ -201,6 +201,15 @@ type ListenerHttp struct {
 	// +kubebuilder:default:=false
 	// +optional
 	EnableHttp2 *bool `json:"enableHttp2,omitempty"`
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +kubebuilder:default:=true
+	// +optional
+	// Allow headers with underscores
+	AllowHeadersWithUnderscores *bool `json:"allowHeadersWithUnderscores,omitempty"`
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	// Max connection duration. If unset no max connection duration will be applied.
+	MaxConnectionDuration *metav1.Duration `json:"maxConnectionDuration,omitempty"`
 }
 
 // RateLimitOptions contains options for the ratelimit filter of the

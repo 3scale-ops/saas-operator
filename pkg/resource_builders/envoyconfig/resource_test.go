@@ -9,6 +9,7 @@ import (
 	"github.com/3scale-ops/marin3r/pkg/envoy"
 	envoy_serializer "github.com/3scale-ops/marin3r/pkg/envoy/serializer"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	"github.com/3scale/saas-operator/pkg/util"
 	"github.com/MakeNowJust/heredoc"
 	envoy_config_cluster_v3 "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
 	envoy_config_core_v3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
@@ -61,9 +62,11 @@ func TestNew(t *testing.T) {
 								Name:             "my_listener",
 								GeneratorVersion: pointer.String("v1"),
 							}, Port: 0,
-							RouteConfigName:       "routeconfig",
-							CertificateSecretName: pointer.String("certificate"),
-							EnableHttp2:           pointer.Bool(false),
+							RouteConfigName:             "routeconfig",
+							CertificateSecretName:       pointer.String("certificate"),
+							EnableHttp2:                 pointer.Bool(false),
+							AllowHeadersWithUnderscores: pointer.Bool(true),
+							MaxConnectionDuration:       util.Metav1DurationPtr(900 * time.Second),
 						},
 					},
 				},

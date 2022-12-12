@@ -778,6 +778,8 @@ ListenerHttp contains options for an HTTP/HTTPS listener
 | *`rateLimitOptions`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-ratelimitoptions[$$RateLimitOptions$$]__ | Rate limit options for the ratelimit filter of the HTTP connection manager
 | *`defaultHostForHttp10`* __string__ | If this filed is set, http 1.0 will be enabled and this will be the default hostname to use.
 | *`enableHttp2`* __boolean__ | Enable http2 in the listener.Disabled by default.
+| *`allowHeadersWithUnderscores`* __boolean__ | Allow headers with underscores
+| *`maxConnectionDuration`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#duration-v1-meta[$$Duration$$]__ | Max connection duration. If unset no max connection duration will be applied.
 |===
 
 

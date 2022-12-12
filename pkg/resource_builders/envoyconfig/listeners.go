@@ -35,13 +35,21 @@ func ListenerHTTP_v1(desc envoyDynamicConfigDescriptor) (envoy.Resource, error) 
 						any, err := anypb.New(
 							&http_connection_manager_v3.HttpConnectionManager{
 								AccessLog: AccessLogConfig_v1(desc.GetName(), opts.CertificateSecretName != nil),
-								CommonHttpProtocolOptions: &envoy_config_core_v3.HttpProtocolOptions{
-									IdleTimeout:           durationpb.New(3600 * time.Second),
-									MaxConnectionDuration: durationpb.New(900 * time.Second),
-									// Recommendation is to set this to "REJECT_REQUEST", but set
-									// to ALLOW the keep backwards compatibility
-									HeadersWithUnderscoresAction: envoy_config_core_v3.HttpProtocolOptions_ALLOW,
-								},
+								CommonHttpProtocolOptions: func() *envoy_config_core_v3.HttpProtocolOptions {
+									po := &envoy_config_core_v3.HttpProtocolOptions{
+										IdleTimeout: durationpb.New(3600 * time.Second),
+									}
+									if opts.MaxConnectionDuration != nil {
+										po.MaxConnectionDuration = durationpb.New(opts.MaxConnectionDuration.Duration)
+									}
+									if opts.AllowHeadersWithUnderscores != nil && *opts.AllowHeadersWithUnderscores {
+										po.HeadersWithUnderscoresAction = envoy_config_core_v3.HttpProtocolOptions_ALLOW
+									} else {
+										po.HeadersWithUnderscoresAction = envoy_config_core_v3.HttpProtocolOptions_REJECT_REQUEST
+									}
+									return po
+								}(),
+
 								HttpFilters: HttpFilters_v1(opts.RateLimitOptions),
 								HttpProtocolOptions: func() *envoy_config_core_v3.Http1ProtocolOptions {
 									if opts.DefaultHostForHttp10 != nil {
@@ -103,6 +111,8 @@ func ListenerFilters_v1(tls bool) []*envoy_config_listener_v3.ListenerFilter {
 	})
 	return filters
 }
+
+func HTTPConnectionManager() {}
 
 func RouteConfigFromAds_v1(name string) *http_connection_manager_v3.HttpConnectionManager_Rds {
 	return &http_connection_manager_v3.HttpConnectionManager_Rds{

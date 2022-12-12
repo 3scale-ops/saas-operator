@@ -6,6 +6,7 @@ import (
 
 	envoy_serializer_v3 "github.com/3scale-ops/marin3r/pkg/envoy/serializer/v3"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	"github.com/3scale/saas-operator/pkg/util"
 	"github.com/MakeNowJust/heredoc"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/pointer"
@@ -35,8 +36,10 @@ func TestListenerHTTP_v1(t *testing.T) {
 						Timeout:          metav1.Duration{Duration: 10 * time.Millisecond},
 						RateLimitCluster: "ratelimit",
 					},
-					DefaultHostForHttp10: pointer.String("example.com"),
-					EnableHttp2:          pointer.Bool(false),
+					DefaultHostForHttp10:        pointer.String("example.com"),
+					EnableHttp2:                 pointer.Bool(false),
+					AllowHeadersWithUnderscores: pointer.Bool(true),
+					MaxConnectionDuration:       util.Metav1DurationPtr(900 * time.Second),
 				},
 			},
 			want: heredoc.Doc(`
@@ -141,8 +144,10 @@ func TestListenerHTTP_v1(t *testing.T) {
 						Timeout:          metav1.Duration{Duration: 10 * time.Millisecond},
 						RateLimitCluster: "ratelimit",
 					},
-					DefaultHostForHttp10: pointer.String("example.com"),
-					EnableHttp2:          pointer.Bool(false),
+					DefaultHostForHttp10:        pointer.String("example.com"),
+					EnableHttp2:                 pointer.Bool(false),
+					AllowHeadersWithUnderscores: pointer.Bool(true),
+					MaxConnectionDuration:       util.Metav1DurationPtr(900 * time.Second),
 				},
 			},
 			want: heredoc.Doc(`
