@@ -101,7 +101,6 @@ var (
 	systemDefaultAppPDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
 		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
 	}
-	systemDefaultAppMarin3rSpec defaultMarin3rSidecarSpec = defaultMarin3rSidecarSpec{}
 
 	// Sidekiq
 	systemDefaultSidekiqReplicas  int32                           = 2
@@ -609,10 +608,6 @@ type SystemAppSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	ReadinessProbe *ProbeSpec `json:"readinessProbe,omitempty"`
-	// Marin3r configures the Marin3r sidecars for the component
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	Marin3r *Marin3rSidecarSpec `json:"marin3r,omitempty"`
 	// Describes node affinity scheduling rules for the pod.
 	// +optional
 	NodeAffinity *corev1.NodeAffinity `json:"nodeAffinity,omitempty" protobuf:"bytes,1,opt,name=nodeAffinity"`
@@ -634,7 +629,6 @@ func (spec *SystemAppSpec) Default() {
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, systemDefaultAppResources)
 	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, systemDefaultAppLivenessProbe)
 	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, systemDefaultAppReadinessProbe)
-	spec.Marin3r = InitializeMarin3rSidecarSpec(spec.Marin3r, systemDefaultAppMarin3rSpec)
 }
 
 // SystemSidekiqSpec configures the Sidekiq component of System
@@ -667,10 +661,6 @@ type SystemSidekiqSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	ReadinessProbe *ProbeSpec `json:"readinessProbe,omitempty"`
-	// Marin3r configures the Marin3r sidecars for the component
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	Marin3r *Marin3rSidecarSpec `json:"marin3r,omitempty"`
 	// Describes node affinity scheduling rules for the pod.
 	// +optional
 	NodeAffinity *corev1.NodeAffinity `json:"nodeAffinity,omitempty" protobuf:"bytes,1,opt,name=nodeAffinity"`
@@ -717,7 +707,6 @@ func (spec *SystemSidekiqSpec) Default(sidekiqType systemSidekiqType) {
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, systemDefaultSidekiqResources)
 	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, systemDefaultSidekiqLivenessProbe)
 	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, systemDefaultSidekiqReadinessProbe)
-	spec.Marin3r = InitializeMarin3rSidecarSpec(spec.Marin3r, systemDefaultAppMarin3rSpec)
 	if spec.Config == nil {
 		spec.Config = &SidekiqConfig{}
 	}

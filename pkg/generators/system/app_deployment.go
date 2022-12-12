@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/3scale/saas-operator/pkg/resource_builders/marin3r"
 	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
 	"github.com/3scale/saas-operator/pkg/resource_builders/twemproxy"
 	"github.com/3scale/saas-operator/pkg/util"
@@ -110,10 +109,6 @@ func (gen *AppGenerator) deployment() func() *appsv1.Deployment {
 				MountPath: "/opt/system-extra-configs",
 			},
 		)
-
-		if !gen.Spec.Marin3r.IsDeactivated() {
-			dep = marin3r.EnableSidecar(*dep, *gen.Spec.Marin3r)
-		}
 
 		if gen.TwemproxySpec != nil {
 			dep = twemproxy.AddTwemproxySidecar(*dep, gen.TwemproxySpec)
