@@ -772,7 +772,7 @@ ListenerHttp contains options for an HTTP/HTTPS listener
 | Field | Description
 | *`EnvoyDynamicConfigMeta`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfigmeta[$$EnvoyDynamicConfigMeta$$]__ | 
 | *`EnvoyDynamicConfigRaw`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfigraw[$$EnvoyDynamicConfigRaw$$]__ | 
-| *`port`* __integer__ | The port where the listener listens for new connections test comment
+| *`port`* __integer__ | The port where the listener listens for new connections
 | *`routeConfigName`* __string__ | The name of the RouteConfiguration to use in the listener
 | *`certificateSecretName`* __string__ | The name of the Secret containing a valid certificate. If unset the listener will be http, if set https
 | *`rateLimitOptions`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-ratelimitoptions[$$RateLimitOptions$$]__ | Rate limit options for the ratelimit filter of the HTTP connection manager

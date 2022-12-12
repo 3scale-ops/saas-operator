@@ -176,7 +176,6 @@ type ListenerHttp struct {
 	EnvoyDynamicConfigRaw  `json:",inline"`
 	// The port where the listener listens for new connections
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// test comment
 	Port uint32 `json:"port"`
 	// The name of the RouteConfiguration to use in the listener
 	// +operator-sdk:csv:customresourcedefinitions:type=spec

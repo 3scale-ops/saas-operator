@@ -358,8 +358,7 @@ spec:
           a configuration to be used from wihin other configuration.
         displayName: Name
         path: production.marin3r.dynamicConfigs[0].listenerHttp.name
-      - description: The port where the listener listens for new connections test
-          comment
+      - description: The port where the listener listens for new connections
         displayName: Port
         path: production.marin3r.dynamicConfigs[0].listenerHttp.port
       - description: Rate limit options for the ratelimit filter of the HTTP connection
@@ -712,8 +711,7 @@ spec:
           a configuration to be used from wihin other configuration.
         displayName: Name
         path: staging.marin3r.dynamicConfigs[0].listenerHttp.name
-      - description: The port where the listener listens for new connections test
-          comment
+      - description: The port where the listener listens for new connections
         displayName: Port
         path: staging.marin3r.dynamicConfigs[0].listenerHttp.port
       - description: Rate limit options for the ratelimit filter of the HTTP connection
@@ -1432,8 +1430,7 @@ spec:
           a configuration to be used from wihin other configuration.
         displayName: Name
         path: listener.marin3r.dynamicConfigs[0].listenerHttp.name
-      - description: The port where the listener listens for new connections test
-          comment
+      - description: The port where the listener listens for new connections
         displayName: Port
         path: listener.marin3r.dynamicConfigs[0].listenerHttp.port
       - description: Rate limit options for the ratelimit filter of the HTTP connection
@@ -2129,8 +2126,7 @@ spec:
           a configuration to be used from wihin other configuration.
         displayName: Name
         path: marin3r.dynamicConfigs[0].listenerHttp.name
-      - description: The port where the listener listens for new connections test
-          comment
+      - description: The port where the listener listens for new connections
         displayName: Port
         path: marin3r.dynamicConfigs[0].listenerHttp.port
       - description: Rate limit options for the ratelimit filter of the HTTP connection

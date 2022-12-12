@@ -324,7 +324,7 @@ spec:
                                   type: string
                                 port:
                                   description: The port where the listener listens
-                                    for new connections test comment
+                                    for new connections
                                   format: int32
                                   type: integer
                                 rateLimitOptions:
@@ -1121,7 +1121,7 @@ spec:
                                   type: string
                                 port:
                                   description: The port where the listener listens
-                                    for new connections test comment
+                                    for new connections
                                   format: int32
                                   type: integer
                                 rateLimitOptions:
