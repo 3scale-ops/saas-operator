@@ -1,8 +1,10 @@
 package workloads
 
 import (
+	marin3r "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	basereconciler_resources "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/resources"
+	"github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig"
 	"github.com/3scale/saas-operator/pkg/resource_builders/hpa"
 	"github.com/3scale/saas-operator/pkg/resource_builders/pdb"
 	"github.com/3scale/saas-operator/pkg/resource_builders/podmonitor"
@@ -219,5 +221,48 @@ func NewPodMonitorTemplateFromEndpoints(endpoints ...monitoringv1.PodMetricsEndp
 	return NewPodMonitorTemplate(basereconciler_resources.PodMonitorTemplate{
 		Template:  podmonitor.New(EmptyKey, EmptyLabel, EmptySelector, endpoints...),
 		IsEnabled: len(endpoints) > 0,
+	})
+}
+
+// EnvoyConfigTemplate specifies a EnvoyConfig resource
+type EnvoyConfigTemplate struct {
+	basereconciler_resources.EnvoyConfigTemplate
+}
+
+func (ect EnvoyConfigTemplate) ApplyMeta(w WithWorkloadMeta) EnvoyConfigTemplate {
+	fn := ect.Template
+	ect.Template = func() (*marin3r.EnvoyConfig, error) {
+		ec, err := fn()
+		if err != nil {
+			return nil, err
+		}
+		applyKey(ec, w)
+		applyLabels(ec, w)
+		return ec, nil
+	}
+	return ect
+}
+
+func (ect EnvoyConfigTemplate) SetNodeID(w WithWorkloadMeta) EnvoyConfigTemplate {
+	fn := ect.Template
+	ect.Template = func() (*marin3r.EnvoyConfig, error) {
+		ec, err := fn()
+		if err != nil {
+			return nil, err
+		}
+		ec.Spec.NodeID = w.GetKey().Name
+		return ec, nil
+	}
+	return ect
+}
+
+func NewEnvoyConfigTemplate(t basereconciler_resources.EnvoyConfigTemplate) EnvoyConfigTemplate {
+	return EnvoyConfigTemplate{EnvoyConfigTemplate: t}
+}
+
+func NewEnvoyConfigTemplateFromEnvoyResources(eres []saasv1alpha1.EnvoyDynamicConfig) EnvoyConfigTemplate {
+	return NewEnvoyConfigTemplate(basereconciler_resources.EnvoyConfigTemplate{
+		Template:  envoyconfig.New(EmptyKey, EmptyKey.Name, eres...),
+		IsEnabled: len(eres) > 0,
 	})
 }

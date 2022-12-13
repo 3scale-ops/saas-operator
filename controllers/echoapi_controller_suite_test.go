@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 
+	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	testutil "github.com/3scale/saas-operator/test/util"
 	. "github.com/onsi/ginkgo/v2"
@@ -87,6 +88,15 @@ var _ = Describe("EchoAPI controller", func() {
 
 		})
 
+		It("doesn't create the non-default resources", func() {
+
+			ec := &marin3rv1alpha1.EnvoyConfig{}
+			By("ensuring an echo-api envoyconfig is not created",
+				(&testutil.ExpectedResource{Name: "echo-api", Namespace: namespace, Missing: true}).
+					Assert(k8sClient, ec, timeout, poll))
+
+		})
+
 		When("updating a EchoAPI resource with customizations", func() {
 
 			// Resource Versions
@@ -114,12 +124,26 @@ var _ = Describe("EchoAPI controller", func() {
 					echoapi.Spec.LivenessProbe = &saasv1alpha1.ProbeSpec{}
 					echoapi.Spec.ReadinessProbe = &saasv1alpha1.ProbeSpec{}
 
+					echoapi.Spec.Marin3r = &saasv1alpha1.Marin3rSidecarSpec{
+						NodeID: pointer.String("echo-api"),
+						EnvoyDynamicConfig: []saasv1alpha1.EnvoyDynamicConfig{{
+							ListenerHttp: &saasv1alpha1.ListenerHttp{
+								EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
+									Name:             "http",
+									GeneratorVersion: pointer.String("v1"),
+								},
+								Port:            8080,
+								RouteConfigName: "route",
+							},
+						}},
+					}
+
 					return k8sClient.Patch(context.Background(), echoapi, patch)
 
 				}, timeout, poll).ShouldNot(HaveOccurred())
 			})
 
-			It("removes EchoAPI disabled resources", func() {
+			It("updates the echo-api resources", func() {
 
 				dep := &appsv1.Deployment{}
 				By("updating the EchoAPI workload",
@@ -131,6 +155,7 @@ var _ = Describe("EchoAPI controller", func() {
 						PDB:           true,
 						HPA:           true,
 						PodMonitor:    true,
+						EnvoyConfig:   true,
 						LastVersion:   rvs["deployment/echoapi"],
 					}).Assert(k8sClient, dep, timeout, poll))
 

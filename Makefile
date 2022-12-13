@@ -3,7 +3,7 @@
 # To re-generate a bundle for another specific version without changing the standard setup, you can:
 # - use the VERSION as arg of the bundle target (e.g make bundle VERSION=0.0.2)
 # - use environment variables to overwrite this value (e.g export VERSION=0.0.2)
-VERSION ?= 0.17.3
+VERSION ?= 0.18.0-alpha.4
 
 # CHANNELS define the bundle channels used in the bundle.
 # Add a new line here if you would like to change its default config. (E.g CHANNELS = "candidate,fast,stable")
@@ -361,6 +361,7 @@ refdocs: ## Generates api reference documentation from code
 refdocs: crd-ref-docs
 	$(CRD_REFDOCS) \
 		--source-path=api \
+		--max-depth=10 \
 		--config=docs/api-reference/config.yaml \
 		--renderer=asciidoctor \
 		--output-path=docs/api-reference/reference.asciidoc

@@ -7,6 +7,7 @@ resources:
 - external-apis/podmonitors.monitoring.coreos.com.yaml
 - external-apis/servicemonitors.monitoring.coreos.com.yaml
 - external-apis/externalsecrets.external-secrets.io.yaml
+- external-apis/envoyconfigs.marin3r.3scale.net.yaml
 patches:
   - target:
       group: apps

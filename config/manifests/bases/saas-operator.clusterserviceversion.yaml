@@ -299,6 +299,134 @@ spec:
       - description: Marin3r configures the Marin3r sidecars for the component
         displayName: Marin3r
         path: production.marin3r
+      - description: Envoy dynamic configuration. Populating this field causes the
+          operator to create a Marin3r EnvoyConfig resource, so Marin3r must be installed
+          in the cluster.
+        displayName: Envoy Dynamic Config
+        path: production.marin3r.dynamicConfigs
+      - description: Cluster contains options for an Envoy cluster protobuffer message
+        displayName: Cluster
+        path: production.marin3r.dynamicConfigs[0].cluster
+      - description: GeneratorVersion specifies the version of a given template. "v1"
+          is the default.
+        displayName: Generator Version
+        path: production.marin3r.dynamicConfigs[0].cluster.generatorVersion
+      - description: The upstream host
+        displayName: Host
+        path: production.marin3r.dynamicConfigs[0].cluster.host
+      - description: Specifies if the upstream cluster is http2 or not (default).
+        displayName: Is Http2
+        path: production.marin3r.dynamicConfigs[0].cluster.isHttp2
+      - description: The name of the configuration/resource. The name is what allows
+          a configuration to be used from wihin other configuration.
+        displayName: Name
+        path: production.marin3r.dynamicConfigs[0].cluster.name
+      - description: The upstream port
+        displayName: Port
+        path: production.marin3r.dynamicConfigs[0].cluster.port
+      - description: 'Allows defining configuration using directly envoy''s config
+          API. WARNING: no validation of this field''s value is performed before writting
+          the custom resource to etcd.'
+        displayName: Raw Config
+        path: production.marin3r.dynamicConfigs[0].cluster.rawConfig
+      - description: ListenerHttp contains options for an HTTP/HTTPS listener
+        displayName: Listener Http
+        path: production.marin3r.dynamicConfigs[0].listenerHttp
+      - description: Allow headers with underscores
+        displayName: Allow Headers With Underscores
+        path: production.marin3r.dynamicConfigs[0].listenerHttp.allowHeadersWithUnderscores
+      - description: The name of the Secret containing a valid certificate. If unset
+          the listener will be http, if set https
+        displayName: Certificate Secret Name
+        path: production.marin3r.dynamicConfigs[0].listenerHttp.certificateSecretName
+      - description: If this filed is set, http 1.0 will be enabled and this will
+          be the default hostname to use.
+        displayName: Default Host For Http10
+        path: production.marin3r.dynamicConfigs[0].listenerHttp.defaultHostForHttp10
+      - description: Enable http2 in the listener.Disabled by default.
+        displayName: Enable Http2
+        path: production.marin3r.dynamicConfigs[0].listenerHttp.enableHttp2
+      - description: GeneratorVersion specifies the version of a given template. "v1"
+          is the default.
+        displayName: Generator Version
+        path: production.marin3r.dynamicConfigs[0].listenerHttp.generatorVersion
+      - description: Max connection duration. If unset no max connection duration
+          will be applied.
+        displayName: Max Connection Duration
+        path: production.marin3r.dynamicConfigs[0].listenerHttp.maxConnectionDuration
+      - description: The name of the configuration/resource. The name is what allows
+          a configuration to be used from wihin other configuration.
+        displayName: Name
+        path: production.marin3r.dynamicConfigs[0].listenerHttp.name
+      - description: The port where the listener listens for new connections
+        displayName: Port
+        path: production.marin3r.dynamicConfigs[0].listenerHttp.port
+      - description: Rate limit options for the ratelimit filter of the HTTP connection
+          manager
+        displayName: Rate Limit Options
+        path: production.marin3r.dynamicConfigs[0].listenerHttp.rateLimitOptions
+      - description: The rate limit domain
+        displayName: Domain
+        path: production.marin3r.dynamicConfigs[0].listenerHttp.rateLimitOptions.domain
+      - description: Whether to allow requests or not if the rate limit service is
+          unavailable
+        displayName: Failure Mode Deny
+        path: production.marin3r.dynamicConfigs[0].listenerHttp.rateLimitOptions.failureModeDeny
+      - description: Location of the rate limit service. Must point to one of the
+          defined clusters.
+        displayName: Rate Limit Cluster
+        path: production.marin3r.dynamicConfigs[0].listenerHttp.rateLimitOptions.rateLimitCluster
+      - description: Max time to wait for a response from the rate limit service
+        displayName: Timeout
+        path: production.marin3r.dynamicConfigs[0].listenerHttp.rateLimitOptions.timeout
+      - description: 'Allows defining configuration using directly envoy''s config
+          API. WARNING: no validation of this field''s value is performed before writting
+          the custom resource to etcd.'
+        displayName: Raw Config
+        path: production.marin3r.dynamicConfigs[0].listenerHttp.rawConfig
+      - description: The name of the RouteConfiguration to use in the listener
+        displayName: Route Config Name
+        path: production.marin3r.dynamicConfigs[0].listenerHttp.routeConfigName
+      - description: RouteConfiguration contains options for an Envoy route_configuration
+          protobuffer message
+        displayName: Route Configuration
+        path: production.marin3r.dynamicConfigs[0].routeConfiguration
+      - description: GeneratorVersion specifies the version of a given template. "v1"
+          is the default.
+        displayName: Generator Version
+        path: production.marin3r.dynamicConfigs[0].routeConfiguration.generatorVersion
+      - description: The name of the configuration/resource. The name is what allows
+          a configuration to be used from wihin other configuration.
+        displayName: Name
+        path: production.marin3r.dynamicConfigs[0].routeConfiguration.name
+      - description: 'Allows defining configuration using directly envoy''s config
+          API. WARNING: no validation of this field''s value is performed before writting
+          the custom resource to etcd.'
+        displayName: Raw Config
+        path: production.marin3r.dynamicConfigs[0].routeConfiguration.rawConfig
+      - description: The virtual_hosts definitions for this route configuration. Virtual
+          hosts must be specified using directly Envoy's API
+        displayName: Virtual Hosts
+        path: production.marin3r.dynamicConfigs[0].routeConfiguration.virtualHosts
+      - description: Runtime contains options for an Envoy runtime protobuffer message
+        displayName: Runtime
+        path: production.marin3r.dynamicConfigs[0].runtime
+      - description: GeneratorVersion specifies the version of a given template. "v1"
+          is the default.
+        displayName: Generator Version
+        path: production.marin3r.dynamicConfigs[0].runtime.generatorVersion
+      - description: The list of listeners to apply overload protection limits to
+        displayName: Listener Names
+        path: production.marin3r.dynamicConfigs[0].runtime.listenerNames
+      - description: The name of the configuration/resource. The name is what allows
+          a configuration to be used from wihin other configuration.
+        displayName: Name
+        path: production.marin3r.dynamicConfigs[0].runtime.name
+      - description: 'Allows defining configuration using directly envoy''s config
+          API. WARNING: no validation of this field''s value is performed before writting
+          the custom resource to etcd.'
+        displayName: Raw Config
+        path: production.marin3r.dynamicConfigs[0].runtime.rawConfig
       - description: The Envoy API version to use
         displayName: Envoy APIVersion
         path: production.marin3r.envoyAPIVersion
@@ -524,6 +652,134 @@ spec:
       - description: Marin3r configures the Marin3r sidecars for the component
         displayName: Marin3r
         path: staging.marin3r
+      - description: Envoy dynamic configuration. Populating this field causes the
+          operator to create a Marin3r EnvoyConfig resource, so Marin3r must be installed
+          in the cluster.
+        displayName: Envoy Dynamic Config
+        path: staging.marin3r.dynamicConfigs
+      - description: Cluster contains options for an Envoy cluster protobuffer message
+        displayName: Cluster
+        path: staging.marin3r.dynamicConfigs[0].cluster
+      - description: GeneratorVersion specifies the version of a given template. "v1"
+          is the default.
+        displayName: Generator Version
+        path: staging.marin3r.dynamicConfigs[0].cluster.generatorVersion
+      - description: The upstream host
+        displayName: Host
+        path: staging.marin3r.dynamicConfigs[0].cluster.host
+      - description: Specifies if the upstream cluster is http2 or not (default).
+        displayName: Is Http2
+        path: staging.marin3r.dynamicConfigs[0].cluster.isHttp2
+      - description: The name of the configuration/resource. The name is what allows
+          a configuration to be used from wihin other configuration.
+        displayName: Name
+        path: staging.marin3r.dynamicConfigs[0].cluster.name
+      - description: The upstream port
+        displayName: Port
+        path: staging.marin3r.dynamicConfigs[0].cluster.port
+      - description: 'Allows defining configuration using directly envoy''s config
+          API. WARNING: no validation of this field''s value is performed before writting
+          the custom resource to etcd.'
+        displayName: Raw Config
+        path: staging.marin3r.dynamicConfigs[0].cluster.rawConfig
+      - description: ListenerHttp contains options for an HTTP/HTTPS listener
+        displayName: Listener Http
+        path: staging.marin3r.dynamicConfigs[0].listenerHttp
+      - description: Allow headers with underscores
+        displayName: Allow Headers With Underscores
+        path: staging.marin3r.dynamicConfigs[0].listenerHttp.allowHeadersWithUnderscores
+      - description: The name of the Secret containing a valid certificate. If unset
+          the listener will be http, if set https
+        displayName: Certificate Secret Name
+        path: staging.marin3r.dynamicConfigs[0].listenerHttp.certificateSecretName
+      - description: If this filed is set, http 1.0 will be enabled and this will
+          be the default hostname to use.
+        displayName: Default Host For Http10
+        path: staging.marin3r.dynamicConfigs[0].listenerHttp.defaultHostForHttp10
+      - description: Enable http2 in the listener.Disabled by default.
+        displayName: Enable Http2
+        path: staging.marin3r.dynamicConfigs[0].listenerHttp.enableHttp2
+      - description: GeneratorVersion specifies the version of a given template. "v1"
+          is the default.
+        displayName: Generator Version
+        path: staging.marin3r.dynamicConfigs[0].listenerHttp.generatorVersion
+      - description: Max connection duration. If unset no max connection duration
+          will be applied.
+        displayName: Max Connection Duration
+        path: staging.marin3r.dynamicConfigs[0].listenerHttp.maxConnectionDuration
+      - description: The name of the configuration/resource. The name is what allows
+          a configuration to be used from wihin other configuration.
+        displayName: Name
+        path: staging.marin3r.dynamicConfigs[0].listenerHttp.name
+      - description: The port where the listener listens for new connections
+        displayName: Port
+        path: staging.marin3r.dynamicConfigs[0].listenerHttp.port
+      - description: Rate limit options for the ratelimit filter of the HTTP connection
+          manager
+        displayName: Rate Limit Options
+        path: staging.marin3r.dynamicConfigs[0].listenerHttp.rateLimitOptions
+      - description: The rate limit domain
+        displayName: Domain
+        path: staging.marin3r.dynamicConfigs[0].listenerHttp.rateLimitOptions.domain
+      - description: Whether to allow requests or not if the rate limit service is
+          unavailable
+        displayName: Failure Mode Deny
+        path: staging.marin3r.dynamicConfigs[0].listenerHttp.rateLimitOptions.failureModeDeny
+      - description: Location of the rate limit service. Must point to one of the
+          defined clusters.
+        displayName: Rate Limit Cluster
+        path: staging.marin3r.dynamicConfigs[0].listenerHttp.rateLimitOptions.rateLimitCluster
+      - description: Max time to wait for a response from the rate limit service
+        displayName: Timeout
+        path: staging.marin3r.dynamicConfigs[0].listenerHttp.rateLimitOptions.timeout
+      - description: 'Allows defining configuration using directly envoy''s config
+          API. WARNING: no validation of this field''s value is performed before writting
+          the custom resource to etcd.'
+        displayName: Raw Config
+        path: staging.marin3r.dynamicConfigs[0].listenerHttp.rawConfig
+      - description: The name of the RouteConfiguration to use in the listener
+        displayName: Route Config Name
+        path: staging.marin3r.dynamicConfigs[0].listenerHttp.routeConfigName
+      - description: RouteConfiguration contains options for an Envoy route_configuration
+          protobuffer message
+        displayName: Route Configuration
+        path: staging.marin3r.dynamicConfigs[0].routeConfiguration
+      - description: GeneratorVersion specifies the version of a given template. "v1"
+          is the default.
+        displayName: Generator Version
+        path: staging.marin3r.dynamicConfigs[0].routeConfiguration.generatorVersion
+      - description: The name of the configuration/resource. The name is what allows
+          a configuration to be used from wihin other configuration.
+        displayName: Name
+        path: staging.marin3r.dynamicConfigs[0].routeConfiguration.name
+      - description: 'Allows defining configuration using directly envoy''s config
+          API. WARNING: no validation of this field''s value is performed before writting
+          the custom resource to etcd.'
+        displayName: Raw Config
+        path: staging.marin3r.dynamicConfigs[0].routeConfiguration.rawConfig
+      - description: The virtual_hosts definitions for this route configuration. Virtual
+          hosts must be specified using directly Envoy's API
+        displayName: Virtual Hosts
+        path: staging.marin3r.dynamicConfigs[0].routeConfiguration.virtualHosts
+      - description: Runtime contains options for an Envoy runtime protobuffer message
+        displayName: Runtime
+        path: staging.marin3r.dynamicConfigs[0].runtime
+      - description: GeneratorVersion specifies the version of a given template. "v1"
+          is the default.
+        displayName: Generator Version
+        path: staging.marin3r.dynamicConfigs[0].runtime.generatorVersion
+      - description: The list of listeners to apply overload protection limits to
+        displayName: Listener Names
+        path: staging.marin3r.dynamicConfigs[0].runtime.listenerNames
+      - description: The name of the configuration/resource. The name is what allows
+          a configuration to be used from wihin other configuration.
+        displayName: Name
+        path: staging.marin3r.dynamicConfigs[0].runtime.name
+      - description: 'Allows defining configuration using directly envoy''s config
+          API. WARNING: no validation of this field''s value is performed before writting
+          the custom resource to etcd.'
+        displayName: Raw Config
+        path: staging.marin3r.dynamicConfigs[0].runtime.rawConfig
       - description: The Envoy API version to use
         displayName: Envoy APIVersion
         path: staging.marin3r.envoyAPIVersion
@@ -1115,6 +1371,134 @@ spec:
       - description: Marin3r configures the Marin3r sidecars for the component
         displayName: Marin3r
         path: listener.marin3r
+      - description: Envoy dynamic configuration. Populating this field causes the
+          operator to create a Marin3r EnvoyConfig resource, so Marin3r must be installed
+          in the cluster.
+        displayName: Envoy Dynamic Config
+        path: listener.marin3r.dynamicConfigs
+      - description: Cluster contains options for an Envoy cluster protobuffer message
+        displayName: Cluster
+        path: listener.marin3r.dynamicConfigs[0].cluster
+      - description: GeneratorVersion specifies the version of a given template. "v1"
+          is the default.
+        displayName: Generator Version
+        path: listener.marin3r.dynamicConfigs[0].cluster.generatorVersion
+      - description: The upstream host
+        displayName: Host
+        path: listener.marin3r.dynamicConfigs[0].cluster.host
+      - description: Specifies if the upstream cluster is http2 or not (default).
+        displayName: Is Http2
+        path: listener.marin3r.dynamicConfigs[0].cluster.isHttp2
+      - description: The name of the configuration/resource. The name is what allows
+          a configuration to be used from wihin other configuration.
+        displayName: Name
+        path: listener.marin3r.dynamicConfigs[0].cluster.name
+      - description: The upstream port
+        displayName: Port
+        path: listener.marin3r.dynamicConfigs[0].cluster.port
+      - description: 'Allows defining configuration using directly envoy''s config
+          API. WARNING: no validation of this field''s value is performed before writting
+          the custom resource to etcd.'
+        displayName: Raw Config
+        path: listener.marin3r.dynamicConfigs[0].cluster.rawConfig
+      - description: ListenerHttp contains options for an HTTP/HTTPS listener
+        displayName: Listener Http
+        path: listener.marin3r.dynamicConfigs[0].listenerHttp
+      - description: Allow headers with underscores
+        displayName: Allow Headers With Underscores
+        path: listener.marin3r.dynamicConfigs[0].listenerHttp.allowHeadersWithUnderscores
+      - description: The name of the Secret containing a valid certificate. If unset
+          the listener will be http, if set https
+        displayName: Certificate Secret Name
+        path: listener.marin3r.dynamicConfigs[0].listenerHttp.certificateSecretName
+      - description: If this filed is set, http 1.0 will be enabled and this will
+          be the default hostname to use.
+        displayName: Default Host For Http10
+        path: listener.marin3r.dynamicConfigs[0].listenerHttp.defaultHostForHttp10
+      - description: Enable http2 in the listener.Disabled by default.
+        displayName: Enable Http2
+        path: listener.marin3r.dynamicConfigs[0].listenerHttp.enableHttp2
+      - description: GeneratorVersion specifies the version of a given template. "v1"
+          is the default.
+        displayName: Generator Version
+        path: listener.marin3r.dynamicConfigs[0].listenerHttp.generatorVersion
+      - description: Max connection duration. If unset no max connection duration
+          will be applied.
+        displayName: Max Connection Duration
+        path: listener.marin3r.dynamicConfigs[0].listenerHttp.maxConnectionDuration
+      - description: The name of the configuration/resource. The name is what allows
+          a configuration to be used from wihin other configuration.
+        displayName: Name
+        path: listener.marin3r.dynamicConfigs[0].listenerHttp.name
+      - description: The port where the listener listens for new connections
+        displayName: Port
+        path: listener.marin3r.dynamicConfigs[0].listenerHttp.port
+      - description: Rate limit options for the ratelimit filter of the HTTP connection
+          manager
+        displayName: Rate Limit Options
+        path: listener.marin3r.dynamicConfigs[0].listenerHttp.rateLimitOptions
+      - description: The rate limit domain
+        displayName: Domain
+        path: listener.marin3r.dynamicConfigs[0].listenerHttp.rateLimitOptions.domain
+      - description: Whether to allow requests or not if the rate limit service is
+          unavailable
+        displayName: Failure Mode Deny
+        path: listener.marin3r.dynamicConfigs[0].listenerHttp.rateLimitOptions.failureModeDeny
+      - description: Location of the rate limit service. Must point to one of the
+          defined clusters.
+        displayName: Rate Limit Cluster
+        path: listener.marin3r.dynamicConfigs[0].listenerHttp.rateLimitOptions.rateLimitCluster
+      - description: Max time to wait for a response from the rate limit service
+        displayName: Timeout
+        path: listener.marin3r.dynamicConfigs[0].listenerHttp.rateLimitOptions.timeout
+      - description: 'Allows defining configuration using directly envoy''s config
+          API. WARNING: no validation of this field''s value is performed before writting
+          the custom resource to etcd.'
+        displayName: Raw Config
+        path: listener.marin3r.dynamicConfigs[0].listenerHttp.rawConfig
+      - description: The name of the RouteConfiguration to use in the listener
+        displayName: Route Config Name
+        path: listener.marin3r.dynamicConfigs[0].listenerHttp.routeConfigName
+      - description: RouteConfiguration contains options for an Envoy route_configuration
+          protobuffer message
+        displayName: Route Configuration
+        path: listener.marin3r.dynamicConfigs[0].routeConfiguration
+      - description: GeneratorVersion specifies the version of a given template. "v1"
+          is the default.
+        displayName: Generator Version
+        path: listener.marin3r.dynamicConfigs[0].routeConfiguration.generatorVersion
+      - description: The name of the configuration/resource. The name is what allows
+          a configuration to be used from wihin other configuration.
+        displayName: Name
+        path: listener.marin3r.dynamicConfigs[0].routeConfiguration.name
+      - description: 'Allows defining configuration using directly envoy''s config
+          API. WARNING: no validation of this field''s value is performed before writting
+          the custom resource to etcd.'
+        displayName: Raw Config
+        path: listener.marin3r.dynamicConfigs[0].routeConfiguration.rawConfig
+      - description: The virtual_hosts definitions for this route configuration. Virtual
+          hosts must be specified using directly Envoy's API
+        displayName: Virtual Hosts
+        path: listener.marin3r.dynamicConfigs[0].routeConfiguration.virtualHosts
+      - description: Runtime contains options for an Envoy runtime protobuffer message
+        displayName: Runtime
+        path: listener.marin3r.dynamicConfigs[0].runtime
+      - description: GeneratorVersion specifies the version of a given template. "v1"
+          is the default.
+        displayName: Generator Version
+        path: listener.marin3r.dynamicConfigs[0].runtime.generatorVersion
+      - description: The list of listeners to apply overload protection limits to
+        displayName: Listener Names
+        path: listener.marin3r.dynamicConfigs[0].runtime.listenerNames
+      - description: The name of the configuration/resource. The name is what allows
+          a configuration to be used from wihin other configuration.
+        displayName: Name
+        path: listener.marin3r.dynamicConfigs[0].runtime.name
+      - description: 'Allows defining configuration using directly envoy''s config
+          API. WARNING: no validation of this field''s value is performed before writting
+          the custom resource to etcd.'
+        displayName: Raw Config
+        path: listener.marin3r.dynamicConfigs[0].runtime.rawConfig
       - description: The Envoy API version to use
         displayName: Envoy APIVersion
         path: listener.marin3r.envoyAPIVersion
@@ -1683,6 +2067,134 @@ spec:
       - description: Marin3r configures the Marin3r sidecars for the component
         displayName: Marin3r
         path: marin3r
+      - description: Envoy dynamic configuration. Populating this field causes the
+          operator to create a Marin3r EnvoyConfig resource, so Marin3r must be installed
+          in the cluster.
+        displayName: Envoy Dynamic Config
+        path: marin3r.dynamicConfigs
+      - description: Cluster contains options for an Envoy cluster protobuffer message
+        displayName: Cluster
+        path: marin3r.dynamicConfigs[0].cluster
+      - description: GeneratorVersion specifies the version of a given template. "v1"
+          is the default.
+        displayName: Generator Version
+        path: marin3r.dynamicConfigs[0].cluster.generatorVersion
+      - description: The upstream host
+        displayName: Host
+        path: marin3r.dynamicConfigs[0].cluster.host
+      - description: Specifies if the upstream cluster is http2 or not (default).
+        displayName: Is Http2
+        path: marin3r.dynamicConfigs[0].cluster.isHttp2
+      - description: The name of the configuration/resource. The name is what allows
+          a configuration to be used from wihin other configuration.
+        displayName: Name
+        path: marin3r.dynamicConfigs[0].cluster.name
+      - description: The upstream port
+        displayName: Port
+        path: marin3r.dynamicConfigs[0].cluster.port
+      - description: 'Allows defining configuration using directly envoy''s config
+          API. WARNING: no validation of this field''s value is performed before writting
+          the custom resource to etcd.'
+        displayName: Raw Config
+        path: marin3r.dynamicConfigs[0].cluster.rawConfig
+      - description: ListenerHttp contains options for an HTTP/HTTPS listener
+        displayName: Listener Http
+        path: marin3r.dynamicConfigs[0].listenerHttp
+      - description: Allow headers with underscores
+        displayName: Allow Headers With Underscores
+        path: marin3r.dynamicConfigs[0].listenerHttp.allowHeadersWithUnderscores
+      - description: The name of the Secret containing a valid certificate. If unset
+          the listener will be http, if set https
+        displayName: Certificate Secret Name
+        path: marin3r.dynamicConfigs[0].listenerHttp.certificateSecretName
+      - description: If this filed is set, http 1.0 will be enabled and this will
+          be the default hostname to use.
+        displayName: Default Host For Http10
+        path: marin3r.dynamicConfigs[0].listenerHttp.defaultHostForHttp10
+      - description: Enable http2 in the listener.Disabled by default.
+        displayName: Enable Http2
+        path: marin3r.dynamicConfigs[0].listenerHttp.enableHttp2
+      - description: GeneratorVersion specifies the version of a given template. "v1"
+          is the default.
+        displayName: Generator Version
+        path: marin3r.dynamicConfigs[0].listenerHttp.generatorVersion
+      - description: Max connection duration. If unset no max connection duration
+          will be applied.
+        displayName: Max Connection Duration
+        path: marin3r.dynamicConfigs[0].listenerHttp.maxConnectionDuration
+      - description: The name of the configuration/resource. The name is what allows
+          a configuration to be used from wihin other configuration.
+        displayName: Name
+        path: marin3r.dynamicConfigs[0].listenerHttp.name
+      - description: The port where the listener listens for new connections
+        displayName: Port
+        path: marin3r.dynamicConfigs[0].listenerHttp.port
+      - description: Rate limit options for the ratelimit filter of the HTTP connection
+          manager
+        displayName: Rate Limit Options
+        path: marin3r.dynamicConfigs[0].listenerHttp.rateLimitOptions
+      - description: The rate limit domain
+        displayName: Domain
+        path: marin3r.dynamicConfigs[0].listenerHttp.rateLimitOptions.domain
+      - description: Whether to allow requests or not if the rate limit service is
+          unavailable
+        displayName: Failure Mode Deny
+        path: marin3r.dynamicConfigs[0].listenerHttp.rateLimitOptions.failureModeDeny
+      - description: Location of the rate limit service. Must point to one of the
+          defined clusters.
+        displayName: Rate Limit Cluster
+        path: marin3r.dynamicConfigs[0].listenerHttp.rateLimitOptions.rateLimitCluster
+      - description: Max time to wait for a response from the rate limit service
+        displayName: Timeout
+        path: marin3r.dynamicConfigs[0].listenerHttp.rateLimitOptions.timeout
+      - description: 'Allows defining configuration using directly envoy''s config
+          API. WARNING: no validation of this field''s value is performed before writting
+          the custom resource to etcd.'
+        displayName: Raw Config
+        path: marin3r.dynamicConfigs[0].listenerHttp.rawConfig
+      - description: The name of the RouteConfiguration to use in the listener
+        displayName: Route Config Name
+        path: marin3r.dynamicConfigs[0].listenerHttp.routeConfigName
+      - description: RouteConfiguration contains options for an Envoy route_configuration
+          protobuffer message
+        displayName: Route Configuration
+        path: marin3r.dynamicConfigs[0].routeConfiguration
+      - description: GeneratorVersion specifies the version of a given template. "v1"
+          is the default.
+        displayName: Generator Version
+        path: marin3r.dynamicConfigs[0].routeConfiguration.generatorVersion
+      - description: The name of the configuration/resource. The name is what allows
+          a configuration to be used from wihin other configuration.
+        displayName: Name
+        path: marin3r.dynamicConfigs[0].routeConfiguration.name
+      - description: 'Allows defining configuration using directly envoy''s config
+          API. WARNING: no validation of this field''s value is performed before writting
+          the custom resource to etcd.'
+        displayName: Raw Config
+        path: marin3r.dynamicConfigs[0].routeConfiguration.rawConfig
+      - description: The virtual_hosts definitions for this route configuration. Virtual
+          hosts must be specified using directly Envoy's API
+        displayName: Virtual Hosts
+        path: marin3r.dynamicConfigs[0].routeConfiguration.virtualHosts
+      - description: Runtime contains options for an Envoy runtime protobuffer message
+        displayName: Runtime
+        path: marin3r.dynamicConfigs[0].runtime
+      - description: GeneratorVersion specifies the version of a given template. "v1"
+          is the default.
+        displayName: Generator Version
+        path: marin3r.dynamicConfigs[0].runtime.generatorVersion
+      - description: The list of listeners to apply overload protection limits to
+        displayName: Listener Names
+        path: marin3r.dynamicConfigs[0].runtime.listenerNames
+      - description: The name of the configuration/resource. The name is what allows
+          a configuration to be used from wihin other configuration.
+        displayName: Name
+        path: marin3r.dynamicConfigs[0].runtime.name
+      - description: 'Allows defining configuration using directly envoy''s config
+          API. WARNING: no validation of this field''s value is performed before writting
+          the custom resource to etcd.'
+        displayName: Raw Config
+        path: marin3r.dynamicConfigs[0].runtime.rawConfig
       - description: The Envoy API version to use
         displayName: Envoy APIVersion
         path: marin3r.envoyAPIVersion
@@ -2184,50 +2696,6 @@ spec:
       - description: Number of seconds after which the probe times out
         displayName: Timeout Seconds
         path: app.livenessProbe.timeoutSeconds
-      - description: Marin3r configures the Marin3r sidecars for the component
-        displayName: Marin3r
-        path: app.marin3r
-      - description: The Envoy API version to use
-        displayName: Envoy APIVersion
-        path: app.marin3r.envoyAPIVersion
-      - description: The Envoy iamge to use
-        displayName: Envoy Image
-        path: app.marin3r.envoyImage
-      - description: Extra annotations to pass the Pod to further configure the sidecar
-          container.
-        displayName: Extra Pod Annotations
-        path: app.marin3r.extraPodAnnotations
-      - description: The NodeID that identifies the Envoy sidecar to the DiscoveryService
-        displayName: Node ID
-        path: app.marin3r.nodeID
-      - description: The ports that the sidecar exposes
-        displayName: Ports
-        path: app.marin3r.ports
-      - description: Port name
-        displayName: Name
-        path: app.marin3r.ports[0].name
-      - description: Port value
-        displayName: Port
-        path: app.marin3r.ports[0].port
-      - description: Compute Resources required by this container.
-        displayName: Resources
-        path: app.marin3r.resources
-      - description: 'Limits describes the maximum amount of compute resources allowed.
-          More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
-        displayName: Limits
-        path: app.marin3r.resources.limits
-      - description: 'Requests describes the minimum amount of compute resources required.
-          If Requests is omitted for a container, it defaults to Limits if that is
-          explicitly specified, otherwise to an implementation-defined value. More
-          info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
-        displayName: Requests
-        path: app.marin3r.resources.requests
-      - description: Extra containers to sync with the shutdown manager upon pod termination
-        displayName: Shutdown Manager Extra Lifecycle Hooks
-        path: app.marin3r.shtdnmgrExtraLifecycleHooks
-      - description: The port where Marin3r's shutdown manager listens
-        displayName: Shutdown Manager Port
-        path: app.marin3r.shtdnmgrPort
       - description: Pod Disruption Budget for the component
         displayName: PDB
         path: app.pdb
@@ -2895,50 +3363,6 @@ spec:
       - description: Number of seconds after which the probe times out
         displayName: Timeout Seconds
         path: sidekiqBilling.livenessProbe.timeoutSeconds
-      - description: Marin3r configures the Marin3r sidecars for the component
-        displayName: Marin3r
-        path: sidekiqBilling.marin3r
-      - description: The Envoy API version to use
-        displayName: Envoy APIVersion
-        path: sidekiqBilling.marin3r.envoyAPIVersion
-      - description: The Envoy iamge to use
-        displayName: Envoy Image
-        path: sidekiqBilling.marin3r.envoyImage
-      - description: Extra annotations to pass the Pod to further configure the sidecar
-          container.
-        displayName: Extra Pod Annotations
-        path: sidekiqBilling.marin3r.extraPodAnnotations
-      - description: The NodeID that identifies the Envoy sidecar to the DiscoveryService
-        displayName: Node ID
-        path: sidekiqBilling.marin3r.nodeID
-      - description: The ports that the sidecar exposes
-        displayName: Ports
-        path: sidekiqBilling.marin3r.ports
-      - description: Port name
-        displayName: Name
-        path: sidekiqBilling.marin3r.ports[0].name
-      - description: Port value
-        displayName: Port
-        path: sidekiqBilling.marin3r.ports[0].port
-      - description: Compute Resources required by this container.
-        displayName: Resources
-        path: sidekiqBilling.marin3r.resources
-      - description: 'Limits describes the maximum amount of compute resources allowed.
-          More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
-        displayName: Limits
-        path: sidekiqBilling.marin3r.resources.limits
-      - description: 'Requests describes the minimum amount of compute resources required.
-          If Requests is omitted for a container, it defaults to Limits if that is
-          explicitly specified, otherwise to an implementation-defined value. More
-          info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
-        displayName: Requests
-        path: sidekiqBilling.marin3r.resources.requests
-      - description: Extra containers to sync with the shutdown manager upon pod termination
-        displayName: Shutdown Manager Extra Lifecycle Hooks
-        path: sidekiqBilling.marin3r.shtdnmgrExtraLifecycleHooks
-      - description: The port where Marin3r's shutdown manager listens
-        displayName: Shutdown Manager Port
-        path: sidekiqBilling.marin3r.shtdnmgrPort
       - description: Pod Disruption Budget for the component
         displayName: PDB
         path: sidekiqBilling.pdb
@@ -3065,50 +3489,6 @@ spec:
       - description: Number of seconds after which the probe times out
         displayName: Timeout Seconds
         path: sidekiqDefault.livenessProbe.timeoutSeconds
-      - description: Marin3r configures the Marin3r sidecars for the component
-        displayName: Marin3r
-        path: sidekiqDefault.marin3r
-      - description: The Envoy API version to use
-        displayName: Envoy APIVersion
-        path: sidekiqDefault.marin3r.envoyAPIVersion
-      - description: The Envoy iamge to use
-        displayName: Envoy Image
-        path: sidekiqDefault.marin3r.envoyImage
-      - description: Extra annotations to pass the Pod to further configure the sidecar
-          container.
-        displayName: Extra Pod Annotations
-        path: sidekiqDefault.marin3r.extraPodAnnotations
-      - description: The NodeID that identifies the Envoy sidecar to the DiscoveryService
-        displayName: Node ID
-        path: sidekiqDefault.marin3r.nodeID
-      - description: The ports that the sidecar exposes
-        displayName: Ports
-        path: sidekiqDefault.marin3r.ports
-      - description: Port name
-        displayName: Name
-        path: sidekiqDefault.marin3r.ports[0].name
-      - description: Port value
-        displayName: Port
-        path: sidekiqDefault.marin3r.ports[0].port
-      - description: Compute Resources required by this container.
-        displayName: Resources
-        path: sidekiqDefault.marin3r.resources
-      - description: 'Limits describes the maximum amount of compute resources allowed.
-          More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
-        displayName: Limits
-        path: sidekiqDefault.marin3r.resources.limits
-      - description: 'Requests describes the minimum amount of compute resources required.
-          If Requests is omitted for a container, it defaults to Limits if that is
-          explicitly specified, otherwise to an implementation-defined value. More
-          info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
-        displayName: Requests
-        path: sidekiqDefault.marin3r.resources.requests
-      - description: Extra containers to sync with the shutdown manager upon pod termination
-        displayName: Shutdown Manager Extra Lifecycle Hooks
-        path: sidekiqDefault.marin3r.shtdnmgrExtraLifecycleHooks
-      - description: The port where Marin3r's shutdown manager listens
-        displayName: Shutdown Manager Port
-        path: sidekiqDefault.marin3r.shtdnmgrPort
       - description: Pod Disruption Budget for the component
         displayName: PDB
         path: sidekiqDefault.pdb
@@ -3235,50 +3615,6 @@ spec:
       - description: Number of seconds after which the probe times out
         displayName: Timeout Seconds
         path: sidekiqLow.livenessProbe.timeoutSeconds
-      - description: Marin3r configures the Marin3r sidecars for the component
-        displayName: Marin3r
-        path: sidekiqLow.marin3r
-      - description: The Envoy API version to use
-        displayName: Envoy APIVersion
-        path: sidekiqLow.marin3r.envoyAPIVersion
-      - description: The Envoy iamge to use
-        displayName: Envoy Image
-        path: sidekiqLow.marin3r.envoyImage
-      - description: Extra annotations to pass the Pod to further configure the sidecar
-          container.
-        displayName: Extra Pod Annotations
-        path: sidekiqLow.marin3r.extraPodAnnotations
-      - description: The NodeID that identifies the Envoy sidecar to the DiscoveryService
-        displayName: Node ID
-        path: sidekiqLow.marin3r.nodeID
-      - description: The ports that the sidecar exposes
-        displayName: Ports
-        path: sidekiqLow.marin3r.ports
-      - description: Port name
-        displayName: Name
-        path: sidekiqLow.marin3r.ports[0].name
-      - description: Port value
-        displayName: Port
-        path: sidekiqLow.marin3r.ports[0].port
-      - description: Compute Resources required by this container.
-        displayName: Resources
-        path: sidekiqLow.marin3r.resources
-      - description: 'Limits describes the maximum amount of compute resources allowed.
-          More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
-        displayName: Limits
-        path: sidekiqLow.marin3r.resources.limits
-      - description: 'Requests describes the minimum amount of compute resources required.
-          If Requests is omitted for a container, it defaults to Limits if that is
-          explicitly specified, otherwise to an implementation-defined value. More
-          info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
-        displayName: Requests
-        path: sidekiqLow.marin3r.resources.requests
-      - description: Extra containers to sync with the shutdown manager upon pod termination
-        displayName: Shutdown Manager Extra Lifecycle Hooks
-        path: sidekiqLow.marin3r.shtdnmgrExtraLifecycleHooks
-      - description: The port where Marin3r's shutdown manager listens
-        displayName: Shutdown Manager Port
-        path: sidekiqLow.marin3r.shtdnmgrPort
       - description: Pod Disruption Budget for the component
         displayName: PDB
         path: sidekiqLow.pdb

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
@@ -27,6 +28,7 @@ type ExpectedWorkload struct {
 	HPA            bool
 	PDB            bool
 	PodMonitor     bool
+	EnvoyConfig    bool
 	LastVersion    string
 }
 
@@ -94,6 +96,17 @@ func (ew *ExpectedWorkload) Assert(c client.Client, dep *appsv1.Deployment, time
 		)
 		if ew.PodMonitor {
 			Expect(pm.Spec.Selector.MatchLabels["deployment"]).Should(Equal(ew.Name))
+		}
+
+		ec := &marin3rv1alpha1.EnvoyConfig{}
+		By(fmt.Sprintf("%s workload EnvoyConfig", ew.Name),
+			(&ExpectedResource{
+				Name:      ew.Name,
+				Namespace: ew.Namespace, Missing: !ew.EnvoyConfig,
+			}).Assert(c, ec, timeout, poll),
+		)
+		if ew.EnvoyConfig {
+			Expect(ec.Spec.NodeID).Should(Equal(ew.Name))
 		}
 
 	}

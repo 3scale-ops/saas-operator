@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
 	testutil "github.com/3scale/saas-operator/test/util"
@@ -202,13 +203,20 @@ var _ = Describe("Apicast controller", func() {
 		It("doesn't create the non-default resources", func() {
 
 			dep := &appsv1.Deployment{}
-			By("ensuring an apicast-production-canary workload is gone",
+			By("ensuring an apicast-production-canary workload is not created",
 				(&testutil.ExpectedResource{Name: "apicast-production-canary", Namespace: namespace, Missing: true}).
 					Assert(k8sClient, dep, timeout, poll))
-
-			By("ensuring an apicast-staging-canary workload is gone",
+			By("ensuring an apicast-staging-canary workload is not created",
 				(&testutil.ExpectedResource{Name: "apicast-staging-canary", Namespace: namespace, Missing: true}).
 					Assert(k8sClient, dep, timeout, poll))
+
+			ec := &marin3rv1alpha1.EnvoyConfig{}
+			By("ensuring an apicast-production envoyconfig is not created",
+				(&testutil.ExpectedResource{Name: "apicast-staging-production", Namespace: namespace, Missing: true}).
+					Assert(k8sClient, ec, timeout, poll))
+			By("ensuring an apicast-staging envoyconfig is not created",
+				(&testutil.ExpectedResource{Name: "apicast-staging-canary", Namespace: namespace, Missing: true}).
+					Assert(k8sClient, ec, timeout, poll))
 
 		})
 
@@ -249,6 +257,19 @@ var _ = Describe("Apicast controller", func() {
 						},
 						LivenessProbe:  &saasv1alpha1.ProbeSpec{},
 						ReadinessProbe: &saasv1alpha1.ProbeSpec{},
+						Marin3r: &saasv1alpha1.Marin3rSidecarSpec{
+							NodeID: pointer.String("apicast-production"),
+							EnvoyDynamicConfig: []saasv1alpha1.EnvoyDynamicConfig{{
+								ListenerHttp: &saasv1alpha1.ListenerHttp{
+									EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
+										Name:             "http",
+										GeneratorVersion: pointer.String("v1"),
+									},
+									Port:            8080,
+									RouteConfigName: "route",
+								},
+							}},
+						},
 					}
 					apicast.Spec.Staging = saasv1alpha1.ApicastEnvironmentSpec{
 						Config: saasv1alpha1.ApicastConfig{
@@ -263,6 +284,21 @@ var _ = Describe("Apicast controller", func() {
 						},
 						LivenessProbe:  &saasv1alpha1.ProbeSpec{},
 						ReadinessProbe: &saasv1alpha1.ProbeSpec{},
+						Marin3r: &saasv1alpha1.Marin3rSidecarSpec{
+							NodeID: pointer.String("apicast-production"),
+							EnvoyDynamicConfig: []saasv1alpha1.EnvoyDynamicConfig{
+								{
+									ListenerHttp: &saasv1alpha1.ListenerHttp{
+										EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
+											Name:             "http",
+											GeneratorVersion: pointer.String("v1"),
+										},
+										Port:            8080,
+										RouteConfigName: "route",
+									},
+								},
+							},
+						},
 					}
 					apicast.Spec.GrafanaDashboard = &saasv1alpha1.GrafanaDashboardSpec{}
 
@@ -292,6 +328,7 @@ var _ = Describe("Apicast controller", func() {
 						HPA:           true,
 						PDB:           true,
 						PodMonitor:    true,
+						EnvoyConfig:   true,
 						LastVersion:   rvs["deployment/apicast-production"],
 					}).Assert(k8sClient, dep, timeout, poll))
 
@@ -317,6 +354,7 @@ var _ = Describe("Apicast controller", func() {
 						HPA:           true,
 						PDB:           true,
 						PodMonitor:    true,
+						EnvoyConfig:   true,
 						LastVersion:   rvs["deployment/apicast-staging"],
 					}).Assert(k8sClient, dep, timeout, poll))
 

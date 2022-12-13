@@ -49,6 +49,11 @@ type WithTraffic interface {
 	Services() []resources.ServiceTemplate
 }
 
+type WithEnvoySidecar interface {
+	WithWorkloadMeta
+	EnvoyDynamicConfigurations() []saasv1alpha1.EnvoyDynamicConfig
+}
+
 type DeploymentWorkload interface {
 	WithWorkloadMeta
 	WithMonitoring

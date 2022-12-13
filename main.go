@@ -28,6 +28,7 @@ import (
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
+	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/controllers"
 	externalsecretsv1beta1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1beta1"
@@ -68,6 +69,7 @@ func init() {
 	utilruntime.Must(monitoringv1.AddToScheme(scheme))
 	utilruntime.Must(grafanav1alpha1.AddToScheme(scheme))
 	utilruntime.Must(externalsecretsv1beta1.AddToScheme(scheme))
+	utilruntime.Must(marin3rv1alpha1.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 }
 
