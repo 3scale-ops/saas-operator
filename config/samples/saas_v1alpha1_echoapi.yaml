@@ -17,12 +17,12 @@ spec:
       - name: envoy-metrics
         port: 9901
     dynamicConfigs:
-      - listenerHttp:
-          name: http
+      - name: http
+        listenerHttp:
           port: 38080
           routeConfigName: echo_api
-      - listenerHttp:
-          name: https
+      - name: https
+        listenerHttp:
           port: 38443
           routeConfigName: echo_api
           certificateSecretName: certificate
@@ -30,17 +30,24 @@ spec:
             domain: echo_api
             timeout: 10ms
             rateLimitCluster: test
-      - routeConfiguration:
-          name: echo_api
-          virtualHosts:
-            - name: echo_api
-              domains: ["*"]
-              routes:
-                - {route: {cluster: echo_api}, match: {prefix: "/"}}
-      - cluster:
-          name: echo_api
+      - name: echo_api_route
+        rawConfig:
+          type: "routeConfiguration"
+          value:
+            name: echo_api_route
+            virtual_hosts:
+              - domains:
+                  - "*"
+                name: echo_api
+                routes:
+                  - match:
+                      prefix: /
+                    route:
+                      cluster: echo_api
+      - name: echo_api_cluster
+        cluster:
           port: 9292
           host: 127.0.0.1
-      - runtime:
-          name: runtime
+      - name: runtime
+        runtime:
           listenerNames: ["http"]
