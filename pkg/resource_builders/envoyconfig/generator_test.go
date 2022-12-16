@@ -1,7 +1,6 @@
 package envoyconfig
 
 import (
-	"reflect"
 	"testing"
 	"time"
 
@@ -9,6 +8,7 @@ import (
 	"github.com/3scale-ops/marin3r/pkg/envoy"
 	envoy_serializer "github.com/3scale-ops/marin3r/pkg/envoy/serializer"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	"github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/dynamic_config"
 	"github.com/3scale/saas-operator/pkg/util"
 	"github.com/MakeNowJust/heredoc"
 	envoy_config_cluster_v3 "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
@@ -18,11 +18,9 @@ import (
 	envoy_config_route_v3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	envoy_service_runtime_v3 "github.com/envoyproxy/go-control-plane/envoy/service/runtime/v3"
 	"github.com/go-test/deep"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/structpb"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/pointer"
 )
@@ -31,7 +29,7 @@ func TestNew(t *testing.T) {
 	type args struct {
 		key       types.NamespacedName
 		nodeID    string
-		resources []saasv1alpha1.EnvoyDynamicConfig
+		resources []dynamic_config.EnvoyDynamicConfigDescriptor
 	}
 	tests := []struct {
 		name    string
@@ -44,24 +42,25 @@ func TestNew(t *testing.T) {
 			args: args{
 				key:    types.NamespacedName{Name: "test", Namespace: "default"},
 				nodeID: "test",
-				resources: []saasv1alpha1.EnvoyDynamicConfig{
-					{
+				resources: []dynamic_config.EnvoyDynamicConfigDescriptor{
+					&saasv1alpha1.EnvoyDynamicConfig{
+						EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
+							Name:             "my_cluster",
+							GeneratorVersion: pointer.String("v1"),
+						},
 						Cluster: &saasv1alpha1.Cluster{
-							EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
-								Name:             "my_cluster",
-								GeneratorVersion: pointer.String("v1"),
-							},
 							Host:    "localhost",
 							Port:    8080,
 							IsHttp2: pointer.Bool(false),
 						},
 					},
-					{
+					&saasv1alpha1.EnvoyDynamicConfig{
+						EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
+							Name:             "my_listener",
+							GeneratorVersion: pointer.String("v1"),
+						},
 						ListenerHttp: &saasv1alpha1.ListenerHttp{
-							EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
-								Name:             "my_listener",
-								GeneratorVersion: pointer.String("v1"),
-							}, Port: 0,
+							Port:                        0,
 							RouteConfigName:             "routeconfig",
 							CertificateSecretName:       pointer.String("certificate"),
 							EnableHttp2:                 pointer.Bool(false),
@@ -320,157 +319,6 @@ func Test_newFromProtos(t *testing.T) {
 			}
 			if diff := deep.Equal(got, tt.want); len(diff) > 0 {
 				t.Errorf("newFromProtos() = diff %v", diff)
-			}
-		})
-	}
-}
-
-func Test_inspect(t *testing.T) {
-	type args struct {
-		v *saasv1alpha1.EnvoyDynamicConfig
-	}
-	tests := []struct {
-		name  string
-		args  args
-		want  string
-		want1 interface{}
-	}{
-		{
-			name: "",
-			args: args{
-				v: &saasv1alpha1.EnvoyDynamicConfig{
-					ListenerHttp: &saasv1alpha1.ListenerHttp{
-						EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
-							Name:             "test",
-							GeneratorVersion: pointer.String("v1"),
-						},
-					},
-				},
-			},
-			want: "ListenerHttp_v1",
-			want1: &saasv1alpha1.ListenerHttp{
-				EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
-					Name:             "test",
-					GeneratorVersion: pointer.String("v1"),
-				},
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := inspect(tt.args.v)
-			if got != tt.want {
-				t.Errorf("inspect() got = %v, want %v", got, tt.want)
-			}
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("inspect() got1 = %+v, want %+v", got1, tt.want1)
-			}
-		})
-	}
-}
-func Test_envoyResourceFactory_newResource(t *testing.T) {
-	type args struct {
-		functionName string
-		descriptor   envoyDynamicConfigDescriptor
-	}
-	tests := []struct {
-		name    string
-		erf     envoyDynamicConfigFactory
-		args    args
-		want    envoy.Resource
-		wantErr bool
-	}{
-		{
-			name: "Generates a resource proto",
-			erf:  generator,
-			args: args{
-				functionName: "Runtime_v1",
-				descriptor: &saasv1alpha1.Runtime{
-					EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
-						Name:             "test",
-						GeneratorVersion: pointer.String("v1"),
-					},
-					ListenerNames: []string{"http", "https"},
-				},
-			},
-			want: func() envoy.Resource {
-				l, _ := structpb.NewStruct(map[string]interface{}{
-					"envoy": map[string]interface{}{
-						"resource_limits": map[string]interface{}{
-							"listener": map[string]interface{}{
-								"http": map[string]interface{}{
-									"connection_limit": 10000,
-								},
-								"https": map[string]interface{}{
-									"connection_limit": 10000,
-								},
-							},
-						},
-					},
-					"overload": map[string]interface{}{
-						"global_downstream_max_connections": 50000,
-					},
-				})
-				return &envoy_service_runtime_v3.Runtime{
-					Name:  "test",
-					Layer: l,
-				}
-			}(),
-			wantErr: false,
-		},
-		{
-			name: "Returns raw configuration",
-			erf:  generator,
-			args: args{
-				functionName: "Cluster_v1",
-				descriptor: &saasv1alpha1.Cluster{
-					EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
-						Name:             "test",
-						GeneratorVersion: pointer.String("v1"),
-					},
-					EnvoyDynamicConfigRaw: saasv1alpha1.EnvoyDynamicConfigRaw{
-						RawConfig: &runtime.RawExtension{
-							Raw: []byte(heredoc.Doc(`
-								{
-								  "load_assignment": {
-								    "cluster_name": "cluster1"
-								  },
-								  "name": "cluster1"
-								}
-							`)),
-						},
-					},
-				},
-			},
-			want: &envoy_config_cluster_v3.Cluster{
-				Name: "cluster1",
-				LoadAssignment: &envoy_config_endpoint_v3.ClusterLoadAssignment{
-					ClusterName: "cluster1",
-					Endpoints:   []*envoy_config_endpoint_v3.LocalityLbEndpoints{},
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name: "Unregistered class",
-			erf:  generator,
-			args: args{
-				functionName: "Runtime_xx",
-				descriptor:   nil,
-			},
-			want:    nil,
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.erf.newResource(tt.args.functionName, tt.args.descriptor)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("envoyResourceFactory.newResource() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !proto.Equal(got, tt.want) {
-				t.Errorf("envoyResourceFactory.newResource() = %+v, want %+v", got, tt.want)
 			}
 		})
 	}

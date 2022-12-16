@@ -260,11 +260,11 @@ var _ = Describe("Apicast controller", func() {
 						Marin3r: &saasv1alpha1.Marin3rSidecarSpec{
 							NodeID: pointer.String("apicast-production"),
 							EnvoyDynamicConfig: []saasv1alpha1.EnvoyDynamicConfig{{
+								EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
+									Name:             "http",
+									GeneratorVersion: pointer.String("v1"),
+								},
 								ListenerHttp: &saasv1alpha1.ListenerHttp{
-									EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
-										Name:             "http",
-										GeneratorVersion: pointer.String("v1"),
-									},
 									Port:            8080,
 									RouteConfigName: "route",
 								},
@@ -288,11 +288,11 @@ var _ = Describe("Apicast controller", func() {
 							NodeID: pointer.String("apicast-production"),
 							EnvoyDynamicConfig: []saasv1alpha1.EnvoyDynamicConfig{
 								{
+									EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
+										Name:             "http",
+										GeneratorVersion: pointer.String("v1"),
+									},
 									ListenerHttp: &saasv1alpha1.ListenerHttp{
-										EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
-											Name:             "http",
-											GeneratorVersion: pointer.String("v1"),
-										},
 										Port:            8080,
 										RouteConfigName: "route",
 									},

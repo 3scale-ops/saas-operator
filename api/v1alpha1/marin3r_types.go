@@ -107,9 +107,10 @@ func InitializeMarin3rSidecarSpec(spec *Marin3rSidecarSpec, def defaultMarin3rSi
 	return spec
 }
 
-// +kubebuilder:validation:MinProperties:=1
-// +kubebuilder:validation:MaxProperties:=1
+// +kubebuilder:validation:MinProperties:=3
+// +kubebuilder:validation:MaxProperties:=3
 type EnvoyDynamicConfig struct {
+	EnvoyDynamicConfigMeta `json:",inline"`
 	// ListenerHttp contains options for an HTTP/HTTPS listener
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -127,6 +128,25 @@ type EnvoyDynamicConfig struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Runtime *Runtime `json:"runtime,omitempty"`
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	RawConfig *RawConfig `json:"rawConfig,omitempty"`
+}
+
+func (edc *EnvoyDynamicConfig) GetOptions() interface{} {
+	if edc.ListenerHttp != nil {
+		return edc.ListenerHttp
+	} else if edc.RouteConfiguration != nil {
+		return edc.RouteConfiguration
+	} else if edc.Cluster != nil {
+		return edc.Cluster
+	} else if edc.Runtime != nil {
+		return edc.Runtime
+	} else if edc.RawConfig != nil {
+		return edc.RawConfig
+	}
+
+	return nil
 }
 
 type EnvoyDynamicConfigMeta struct {
@@ -152,28 +172,8 @@ func (meta *EnvoyDynamicConfigMeta) GetGeneratorVersion() string {
 	return *meta.GeneratorVersion
 }
 
-// EnvoyDynamicConfigRaw is a struct with methods to manage a
-// configuration defined using directly the Envoy config API
-type EnvoyDynamicConfigRaw struct {
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	// Allows defining configuration using directly envoy's config API.
-	// WARNING: no validation of this field's value is performed before
-	// writting the custom resource to etcd.
-	RawConfig *runtime.RawExtension `json:"rawConfig,omitempty"`
-}
-
-func (raw *EnvoyDynamicConfigRaw) GetRawConfig() []byte {
-	if raw != nil && raw.RawConfig != nil && raw.RawConfig.Raw != nil {
-		return raw.RawConfig.Raw
-	}
-	return nil
-}
-
 // ListenerHttp contains options for an HTTP/HTTPS listener
 type ListenerHttp struct {
-	EnvoyDynamicConfigMeta `json:",inline"`
-	EnvoyDynamicConfigRaw  `json:",inline"`
 	// The port where the listener listens for new connections
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Port uint32 `json:"port"`
@@ -235,8 +235,6 @@ type RateLimitOptions struct {
 
 // Cluster contains options for an Envoy cluster protobuffer message
 type Cluster struct {
-	EnvoyDynamicConfigMeta `json:",inline"`
-	EnvoyDynamicConfigRaw  `json:",inline"`
 	// The upstream host
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Host string `json:"host"`
@@ -253,8 +251,6 @@ type Cluster struct {
 // RouteConfiguration contains options for an Envoy route_configuration
 // protobuffer message
 type RouteConfiguration struct {
-	EnvoyDynamicConfigMeta `json:",inline"`
-	EnvoyDynamicConfigRaw  `json:",inline"`
 	// The virtual_hosts definitions for this route configuration.
 	// Virtual hosts must be specified using directly Envoy's API
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
@@ -263,9 +259,21 @@ type RouteConfiguration struct {
 
 // Runtime contains options for an Envoy runtime protobuffer message
 type Runtime struct {
-	EnvoyDynamicConfigMeta `json:",inline"`
-	EnvoyDynamicConfigRaw  `json:",inline"`
 	// The list of listeners to apply overload protection limits to
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	ListenerNames []string `json:"listenerNames"`
+}
+
+// RawConfig is a struct with methods to manage a
+// configuration defined using directly the Envoy config API
+type RawConfig struct {
+	// Type is the type url for the protobuf message
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +kubebuilder:validation:Enum=listener;routeConfiguration;cluster;runtime
+	Type string `json:"type"`
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// Allows defining configuration using directly envoy's config API.
+	// WARNING: no validation of this field's value is performed before
+	// writting the custom resource to etcd.
+	Value runtime.RawExtension `json:"value"`
 }

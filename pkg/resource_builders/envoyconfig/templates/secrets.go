@@ -1,4 +1,4 @@
-package envoyconfig
+package templates
 
 import (
 	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
@@ -27,7 +27,7 @@ func secretRefsFromListener(listener *envoy_config_listener_v3.Listener) ([]stri
 	return util.Unique(secrets), nil
 }
 
-func generateSecrets(resources []envoy.Resource) ([]marin3rv1alpha1.EnvoySecretResource, error) {
+func GenerateSecrets(resources []envoy.Resource) ([]marin3rv1alpha1.EnvoySecretResource, error) {
 
 	refs := []string{}
 
@@ -43,7 +43,6 @@ func generateSecrets(resources []envoy.Resource) ([]marin3rv1alpha1.EnvoySecretR
 			refs = append(refs, secrets...)
 
 		}
-
 	}
 
 	secrets := []marin3rv1alpha1.EnvoySecretResource{}

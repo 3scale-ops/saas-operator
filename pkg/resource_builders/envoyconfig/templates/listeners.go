@@ -1,4 +1,4 @@
-package envoyconfig
+package templates
 
 import (
 	"time"
@@ -20,13 +20,13 @@ import (
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
-func ListenerHTTP_v1(desc envoyDynamicConfigDescriptor) (envoy.Resource, error) {
-	opts := desc.(*saasv1alpha1.ListenerHttp)
+func ListenerHTTP_v1(name string, opts interface{}) (envoy.Resource, error) {
+	o := opts.(*saasv1alpha1.ListenerHttp)
 
 	listener := &envoy_config_listener_v3.Listener{
-		Name:            desc.GetName(),
-		Address:         Address_v1("0.0.0.0", opts.Port),
-		ListenerFilters: ListenerFilters_v1(opts.CertificateSecretName != nil),
+		Name:            name,
+		Address:         Address_v1("0.0.0.0", o.Port),
+		ListenerFilters: ListenerFilters_v1(o.CertificateSecretName != nil),
 		FilterChains: []*envoy_config_listener_v3.FilterChain{{
 			Filters: []*envoy_config_listener_v3.Filter{{
 				Name: "envoy.filters.network.http_connection_manager",
@@ -34,15 +34,15 @@ func ListenerHTTP_v1(desc envoyDynamicConfigDescriptor) (envoy.Resource, error) 
 					TypedConfig: func() *anypb.Any {
 						any, err := anypb.New(
 							&http_connection_manager_v3.HttpConnectionManager{
-								AccessLog: AccessLogConfig_v1(desc.GetName(), opts.CertificateSecretName != nil),
+								AccessLog: AccessLogConfig_v1(name, o.CertificateSecretName != nil),
 								CommonHttpProtocolOptions: func() *envoy_config_core_v3.HttpProtocolOptions {
 									po := &envoy_config_core_v3.HttpProtocolOptions{
 										IdleTimeout: durationpb.New(3600 * time.Second),
 									}
-									if opts.MaxConnectionDuration != nil {
-										po.MaxConnectionDuration = durationpb.New(opts.MaxConnectionDuration.Duration)
+									if o.MaxConnectionDuration != nil {
+										po.MaxConnectionDuration = durationpb.New(o.MaxConnectionDuration.Duration)
 									}
-									if opts.AllowHeadersWithUnderscores != nil && *opts.AllowHeadersWithUnderscores {
+									if o.AllowHeadersWithUnderscores != nil && *o.AllowHeadersWithUnderscores {
 										po.HeadersWithUnderscoresAction = envoy_config_core_v3.HttpProtocolOptions_ALLOW
 									} else {
 										po.HeadersWithUnderscoresAction = envoy_config_core_v3.HttpProtocolOptions_REJECT_REQUEST
@@ -50,12 +50,12 @@ func ListenerHTTP_v1(desc envoyDynamicConfigDescriptor) (envoy.Resource, error) 
 									return po
 								}(),
 
-								HttpFilters: HttpFilters_v1(opts.RateLimitOptions),
+								HttpFilters: HttpFilters_v1(o.RateLimitOptions),
 								HttpProtocolOptions: func() *envoy_config_core_v3.Http1ProtocolOptions {
-									if opts.DefaultHostForHttp10 != nil {
+									if o.DefaultHostForHttp10 != nil {
 										return &envoy_config_core_v3.Http1ProtocolOptions{
 											AcceptHttp_10:         true,
-											DefaultHostForHttp_10: *opts.DefaultHostForHttp10,
+											DefaultHostForHttp_10: *o.DefaultHostForHttp10,
 										}
 									}
 									return &envoy_config_core_v3.Http1ProtocolOptions{}
@@ -66,8 +66,8 @@ func ListenerHTTP_v1(desc envoyDynamicConfigDescriptor) (envoy.Resource, error) 
 									InitialConnectionWindowSize: wrapperspb.UInt32(1048576), // 1 MiB
 								},
 								RequestTimeout:    durationpb.New(300 * time.Second),
-								RouteSpecifier:    RouteConfigFromAds_v1(opts.RouteConfigName),
-								StatPrefix:        desc.GetName(),
+								RouteSpecifier:    RouteConfigFromAds_v1(o.RouteConfigName),
+								StatPrefix:        name,
 								StreamIdleTimeout: durationpb.New(300 * time.Second),
 								UseRemoteAddress:  wrapperspb.Bool(true),
 							})
@@ -83,8 +83,8 @@ func ListenerHTTP_v1(desc envoyDynamicConfigDescriptor) (envoy.Resource, error) 
 	}
 
 	// Apply TLS config if this is a HTTPS listener
-	if opts.CertificateSecretName != nil {
-		listener.FilterChains[0].TransportSocket = TransportSocket_v1(*opts.CertificateSecretName, *opts.EnableHttp2)
+	if o.CertificateSecretName != nil {
+		listener.FilterChains[0].TransportSocket = TransportSocket_v1(*o.CertificateSecretName, *o.EnableHttp2)
 	}
 
 	return listener, nil

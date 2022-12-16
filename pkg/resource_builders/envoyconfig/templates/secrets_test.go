@@ -1,4 +1,4 @@
-package envoyconfig
+package templates
 
 import (
 	"reflect"
@@ -25,12 +25,11 @@ func Test_secretRefsFromListener(t *testing.T) {
 			name: "returns the list of secrets used by the listener",
 			args: args{
 				listener: func() *envoy_config_listener_v3.Listener {
-					l, _ := ListenerHTTP_v1(&saasv1alpha1.ListenerHttp{
-						EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{Name: "test"},
-						Port:                   8080,
-						RouteConfigName:        "my_route",
-						CertificateSecretName:  pointer.String("my_certificate"),
-						EnableHttp2:            pointer.Bool(false),
+					l, _ := ListenerHTTP_v1("test", &saasv1alpha1.ListenerHttp{
+						Port:                  8080,
+						RouteConfigName:       "my_route",
+						CertificateSecretName: pointer.String("my_certificate"),
+						EnableHttp2:           pointer.Bool(false),
 					})
 					return l.(*envoy_config_listener_v3.Listener)
 				}(),
@@ -68,32 +67,29 @@ func Test_generateSecrets(t *testing.T) {
 			args: args{
 				resources: []envoy.Resource{
 					func() envoy.Resource {
-						l, _ := ListenerHTTP_v1(&saasv1alpha1.ListenerHttp{
-							EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{Name: "test1"},
-							Port:                   8080,
-							RouteConfigName:        "my_route",
-							CertificateSecretName:  pointer.String("cert1"),
-							EnableHttp2:            pointer.Bool(false),
+						l, _ := ListenerHTTP_v1("test1", &saasv1alpha1.ListenerHttp{
+							Port:                  8080,
+							RouteConfigName:       "my_route",
+							CertificateSecretName: pointer.String("cert1"),
+							EnableHttp2:           pointer.Bool(false),
 						})
 						return l
 					}(),
 					func() envoy.Resource {
-						l, _ := ListenerHTTP_v1(&saasv1alpha1.ListenerHttp{
-							EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{Name: "test2"},
-							Port:                   8081,
-							RouteConfigName:        "my_route",
-							CertificateSecretName:  pointer.String("cert2"),
-							EnableHttp2:            pointer.Bool(false),
+						l, _ := ListenerHTTP_v1("test2", &saasv1alpha1.ListenerHttp{
+							Port:                  8081,
+							RouteConfigName:       "my_route",
+							CertificateSecretName: pointer.String("cert2"),
+							EnableHttp2:           pointer.Bool(false),
 						})
 						return l
 					}(),
 					func() envoy.Resource {
-						l, _ := ListenerHTTP_v1(&saasv1alpha1.ListenerHttp{
-							EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{Name: "test3"},
-							Port:                   8082,
-							RouteConfigName:        "my_route",
-							CertificateSecretName:  pointer.String("cert1"),
-							EnableHttp2:            pointer.Bool(false),
+						l, _ := ListenerHTTP_v1("test3", &saasv1alpha1.ListenerHttp{
+							Port:                  8082,
+							RouteConfigName:       "my_route",
+							CertificateSecretName: pointer.String("cert1"),
+							EnableHttp2:           pointer.Bool(false),
 						})
 						return l
 					}(),
@@ -108,7 +104,7 @@ func Test_generateSecrets(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := generateSecrets(tt.args.resources)
+			got, err := GenerateSecrets(tt.args.resources)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("generateSecrets() error = %v, wantErr %v", err, tt.wantErr)
 				return

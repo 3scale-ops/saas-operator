@@ -1,4 +1,4 @@
-package envoyconfig
+package templates
 
 import (
 	"testing"
@@ -11,6 +11,7 @@ import (
 
 func TestRuntime_v1(t *testing.T) {
 	type args struct {
+		name string
 		opts *saasv1alpha1.Runtime
 	}
 	tests := []struct {
@@ -21,9 +22,9 @@ func TestRuntime_v1(t *testing.T) {
 		{
 			name: "Generates runtime",
 			args: args{
+				name: "runtime",
 				opts: &saasv1alpha1.Runtime{
-					EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{Name: "runtime"},
-					ListenerNames:          []string{"listener1", "listener2"},
+					ListenerNames: []string{"listener1", "listener2"},
 				},
 			},
 			want: heredoc.Doc(`
@@ -43,7 +44,7 @@ func TestRuntime_v1(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, _ := Runtime_v1(tt.args.opts)
+			got, _ := Runtime_v1(tt.args.name, tt.args.opts)
 			j, err := envoy_serializer_v3.JSON{}.Marshal(got)
 			if err != nil {
 				t.Error(err)
