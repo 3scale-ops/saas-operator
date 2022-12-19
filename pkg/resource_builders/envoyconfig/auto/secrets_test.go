@@ -31,6 +31,7 @@ func Test_secretRefsFromListener(t *testing.T) {
 						RouteConfigName:       "my_route",
 						CertificateSecretName: pointer.String("my_certificate"),
 						EnableHttp2:           pointer.Bool(false),
+						ProxyProtocol:         pointer.Bool(false),
 					})
 					return l.(*envoy_config_listener_v3.Listener)
 				}(),
@@ -73,6 +74,7 @@ func TestGenerateSecrets(t *testing.T) {
 							RouteConfigName:       "my_route",
 							CertificateSecretName: pointer.String("cert1"),
 							EnableHttp2:           pointer.Bool(false),
+							ProxyProtocol:         pointer.Bool(false),
 						})
 						return l
 					}(),
@@ -82,6 +84,7 @@ func TestGenerateSecrets(t *testing.T) {
 							RouteConfigName:       "my_route",
 							CertificateSecretName: pointer.String("cert2"),
 							EnableHttp2:           pointer.Bool(false),
+							ProxyProtocol:         pointer.Bool(false),
 						})
 						return l
 					}(),
@@ -91,6 +94,7 @@ func TestGenerateSecrets(t *testing.T) {
 							RouteConfigName:       "my_route",
 							CertificateSecretName: pointer.String("cert1"),
 							EnableHttp2:           pointer.Bool(false),
+							ProxyProtocol:         pointer.Bool(false),
 						})
 						return l
 					}(),

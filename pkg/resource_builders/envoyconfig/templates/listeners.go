@@ -11,7 +11,6 @@ import (
 	envoy_config_ratelimit_v3 "github.com/envoyproxy/go-control-plane/envoy/config/ratelimit/v3"
 	envoy_extensions_access_loggers_file_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/access_loggers/file/v3"
 	envoy_extensions_filters_http_ratelimit_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ratelimit/v3"
-	envoy_extensions_filters_listener_proxy_protocol_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/listener/proxy_protocol/v3"
 	http_connection_manager_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
 	envoy_extensions_transport_sockets_tls_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/tls/v3"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -26,7 +25,7 @@ func ListenerHTTP_v1(name string, opts interface{}) (envoy.Resource, error) {
 	listener := &envoy_config_listener_v3.Listener{
 		Name:            name,
 		Address:         Address_v1("0.0.0.0", o.Port),
-		ListenerFilters: ListenerFilters_v1(o.CertificateSecretName != nil),
+		ListenerFilters: ListenerFilters_v1(o.CertificateSecretName != nil, *o.ProxyProtocol),
 		FilterChains: []*envoy_config_listener_v3.FilterChain{{
 			Filters: []*envoy_config_listener_v3.Filter{{
 				Name: "envoy.filters.network.http_connection_manager",
@@ -69,7 +68,7 @@ func ListenerHTTP_v1(name string, opts interface{}) (envoy.Resource, error) {
 								RouteSpecifier:    RouteConfigFromAds_v1(o.RouteConfigName),
 								StatPrefix:        name,
 								StreamIdleTimeout: durationpb.New(300 * time.Second),
-								UseRemoteAddress:  wrapperspb.Bool(true),
+								UseRemoteAddress:  wrapperspb.Bool(*o.ProxyProtocol),
 							})
 						if err != nil {
 							panic(err)
@@ -90,29 +89,20 @@ func ListenerHTTP_v1(name string, opts interface{}) (envoy.Resource, error) {
 	return listener, nil
 }
 
-func ListenerFilters_v1(tls bool) []*envoy_config_listener_v3.ListenerFilter {
+func ListenerFilters_v1(tls, proxyProtocol bool) []*envoy_config_listener_v3.ListenerFilter {
 	filters := []*envoy_config_listener_v3.ListenerFilter{}
 	if tls {
 		filters = append(filters, &envoy_config_listener_v3.ListenerFilter{
 			Name: "envoy.filters.listener.tls_inspector",
 		})
 	}
-	filters = append(filters, &envoy_config_listener_v3.ListenerFilter{
-		Name: "envoy.filters.listener.proxy_protocol",
-		ConfigType: &envoy_config_listener_v3.ListenerFilter_TypedConfig{
-			TypedConfig: func() *anypb.Any {
-				any, err := anypb.New(&envoy_extensions_filters_listener_proxy_protocol_v3.ProxyProtocol{})
-				if err != nil {
-					panic(err)
-				}
-				return any
-			}(),
-		},
-	})
+	if proxyProtocol {
+		filters = append(filters, &envoy_config_listener_v3.ListenerFilter{
+			Name: "envoy.filters.listener.proxy_protocol",
+		})
+	}
 	return filters
 }
-
-func HTTPConnectionManager() {}
 
 func RouteConfigFromAds_v1(name string) *http_connection_manager_v3.HttpConnectionManager_Rds {
 	return &http_connection_manager_v3.HttpConnectionManager_Rds{

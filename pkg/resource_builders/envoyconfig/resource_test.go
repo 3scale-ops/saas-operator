@@ -12,7 +12,6 @@ import (
 	"github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/factory"
 	"github.com/3scale/saas-operator/pkg/util"
 	"github.com/MakeNowJust/heredoc"
-	"github.com/davecgh/go-spew/spew"
 	envoy_config_cluster_v3 "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
 	envoy_config_core_v3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	envoy_config_endpoint_v3 "github.com/envoyproxy/go-control-plane/envoy/config/endpoint/v3"
@@ -64,6 +63,7 @@ func TestNew(t *testing.T) {
 							EnableHttp2:                 pointer.Bool(false),
 							AllowHeadersWithUnderscores: pointer.Bool(true),
 							MaxConnectionDuration:       util.Metav1DurationPtr(900 * time.Second),
+							ProxyProtocol:               pointer.Bool(true),
 						},
 					},
 				}.AsList(),
@@ -166,8 +166,6 @@ func TestNew(t *testing.T) {
                               listener_filters:
                               - name: envoy.filters.listener.tls_inspector
                               - name: envoy.filters.listener.proxy_protocol
-                                typed_config:
-                                  '@type': type.googleapis.com/envoy.extensions.filters.listener.proxy_protocol.v3.ProxyProtocol
                               name: my_listener
                               per_connection_buffer_limit_bytes: 32768
 							`),
@@ -188,7 +186,6 @@ func TestNew(t *testing.T) {
 				t.Errorf("New() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			spew.Dump(got)
 			if diff := deep.Equal(got, tt.want); len(diff) > 0 {
 				t.Errorf("New() = got diff %v", diff)
 			}

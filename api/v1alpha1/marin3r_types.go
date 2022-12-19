@@ -192,6 +192,11 @@ type ListenerHttp struct {
 	// The port where the listener listens for new connections
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Port uint32 `json:"port"`
+	// Whether proxy protocol should be enabled or not. Defaults to true.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +kubebuilder:default:=true
+	// +optional
+	ProxyProtocol *bool `json:"proxyProtocol,omitempty"`
 	// The name of the RouteConfiguration to use in the listener
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	RouteConfigName string `json:"routeConfigName"`

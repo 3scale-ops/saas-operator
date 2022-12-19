@@ -41,6 +41,7 @@ func TestListenerHTTP_v1(t *testing.T) {
 					EnableHttp2:                 pointer.Bool(false),
 					AllowHeadersWithUnderscores: pointer.Bool(true),
 					MaxConnectionDuration:       util.Metav1DurationPtr(900 * time.Second),
+					ProxyProtocol:               pointer.Bool(true),
 				},
 			},
 			want: heredoc.Doc(`
@@ -126,8 +127,6 @@ func TestListenerHTTP_v1(t *testing.T) {
                 listener_filters:
                 - name: envoy.filters.listener.tls_inspector
                 - name: envoy.filters.listener.proxy_protocol
-                  typed_config:
-                    '@type': type.googleapis.com/envoy.extensions.filters.listener.proxy_protocol.v3.ProxyProtocol
                 name: test
                 per_connection_buffer_limit_bytes: 32768
 			`),
@@ -149,6 +148,7 @@ func TestListenerHTTP_v1(t *testing.T) {
 					EnableHttp2:                 pointer.Bool(false),
 					AllowHeadersWithUnderscores: pointer.Bool(true),
 					MaxConnectionDuration:       util.Metav1DurationPtr(900 * time.Second),
+					ProxyProtocol:               pointer.Bool(true),
 				},
 			},
 			want: heredoc.Doc(`
@@ -216,8 +216,6 @@ func TestListenerHTTP_v1(t *testing.T) {
                       use_remote_address: true
                 listener_filters:
                 - name: envoy.filters.listener.proxy_protocol
-                  typed_config:
-                    '@type': type.googleapis.com/envoy.extensions.filters.listener.proxy_protocol.v3.ProxyProtocol
                 name: test
                 per_connection_buffer_limit_bytes: 32768
 			`),

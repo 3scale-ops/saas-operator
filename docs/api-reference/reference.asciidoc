@@ -434,8 +434,6 @@ Cluster contains options for an Envoy cluster protobuffer message
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`EnvoyDynamicConfigMeta`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfigmeta[$$EnvoyDynamicConfigMeta$$]__ | 
-| *`EnvoyDynamicConfigRaw`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfigraw[$$EnvoyDynamicConfigRaw$$]__ | 
 | *`host`* __string__ | The upstream host
 | *`port`* __integer__ | The upstream port
 | *`isHttp2`* __boolean__ | Specifies if the upstream cluster is http2 or not (default).
@@ -544,51 +542,12 @@ Endpoint sets the external endpoint for the component
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
+| *`generatorVersion`* __string__ | GeneratorVersion specifies the version of a given template. "v1" is the default.
 | *`listenerHttp`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerhttp[$$ListenerHttp$$]__ | ListenerHttp contains options for an HTTP/HTTPS listener
 | *`routeConfiguration`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-routeconfiguration[$$RouteConfiguration$$]__ | RouteConfiguration contains options for an Envoy route_configuration protobuffer message
 | *`cluster`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-cluster[$$Cluster$$]__ | Cluster contains options for an Envoy cluster protobuffer message
 | *`runtime`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-runtime[$$Runtime$$]__ | Runtime contains options for an Envoy runtime protobuffer message
-|===
-
-
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfigmeta"]
-==== EnvoyDynamicConfigMeta 
-
-
-
-.Appears In:
-****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-cluster[$$Cluster$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerhttp[$$ListenerHttp$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-routeconfiguration[$$RouteConfiguration$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-runtime[$$Runtime$$]
-****
-
-[cols="25a,75a", options="header"]
-|===
-| Field | Description
-| *`name`* __string__ | The name of the configuration/resource. The name is what allows a configuration to be used from wihin other configuration.
-| *`generatorVersion`* __string__ | GeneratorVersion specifies the version of a given template. "v1" is the default.
-|===
-
-
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfigraw"]
-==== EnvoyDynamicConfigRaw 
-
-EnvoyDynamicConfigRaw is a struct with methods to manage a configuration defined using directly the Envoy config API
-
-.Appears In:
-****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-cluster[$$Cluster$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerhttp[$$ListenerHttp$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-routeconfiguration[$$RouteConfiguration$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-runtime[$$Runtime$$]
-****
-
-[cols="25a,75a", options="header"]
-|===
-| Field | Description
-| *`rawConfig`* __RawExtension__ | Allows defining configuration using directly envoy's config API. WARNING: no validation of this field's value is performed before writting the custom resource to etcd.
+| *`rawConfig`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-rawconfig[$$RawConfig$$]__ | 
 |===
 
 
@@ -770,9 +729,8 @@ ListenerHttp contains options for an HTTP/HTTPS listener
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`EnvoyDynamicConfigMeta`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfigmeta[$$EnvoyDynamicConfigMeta$$]__ | 
-| *`EnvoyDynamicConfigRaw`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfigraw[$$EnvoyDynamicConfigRaw$$]__ | 
 | *`port`* __integer__ | The port where the listener listens for new connections
+| *`proxyProtocol`* __boolean__ | Whether proxy protocol should be enabled or not. Defaults to true.
 | *`routeConfigName`* __string__ | The name of the RouteConfiguration to use in the listener
 | *`certificateSecretName`* __string__ | The name of the Secret containing a valid certificate. If unset the listener will be http, if set https
 | *`rateLimitOptions`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-ratelimitoptions[$$RateLimitOptions$$]__ | Rate limit options for the ratelimit filter of the HTTP connection manager
@@ -835,6 +793,8 @@ LoadBalancerSpec configures the AWS load balancer for the component
 | *`healthcheckInterval`* __integer__ | Sets the interval between health checks
 | *`healthcheckTimeout`* __integer__ | Sets the timeout for the health check
 |===
+
+
 
 
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservice"]
@@ -929,7 +889,7 @@ Marin3rSidecarSpec defines the marin3r sidecar for the component
 | *`shtdnmgrPort`* __integer__ | The port where Marin3r's shutdown manager listens
 | *`shtdnmgrExtraLifecycleHooks`* __string array__ | Extra containers to sync with the shutdown manager upon pod termination
 | *`extraPodAnnotations`* __object (keys:string, values:string)__ | Extra annotations to pass the Pod to further configure the sidecar container.
-| *`dynamicConfigs`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$] array__ | Envoy dynamic configuration. Populating this field causes the operator to create a Marin3r EnvoyConfig resource, so Marin3r must be installed in the cluster.
+| *`dynamicConfigs`* __object (keys:string, values:xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$])__ | Envoy dynamic configuration. Populating this field causes the operator to create a Marin3r EnvoyConfig resource, so Marin3r must be installed in the cluster.
 |===
 
 
@@ -1077,9 +1037,27 @@ RateLimitOptions contains options for the ratelimit filter of the http connectio
 |===
 | Field | Description
 | *`domain`* __string__ | The rate limit domain
-| *`failureModeDeny`* __boolean__ | Whether to allow requests or not if the rate limit service is unavailable
+| *`failureModeDeny`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-bool[$$bool$$]__ | Whether to allow requests or not if the rate limit service is unavailable
 | *`timeout`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#duration-v1-meta[$$Duration$$]__ | Max time to wait for a response from the rate limit service
 | *`rateLimitCluster`* __string__ | Location of the rate limit service. Must point to one of the defined clusters.
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-rawconfig"]
+==== RawConfig 
+
+RawConfig is a struct with methods to manage a configuration defined using directly the Envoy config API
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`type`* __string__ | Type is the type url for the protobuf message
+| *`value`* __xref:{anchor_prefix}-k8s-io-apimachinery-pkg-runtime-rawextension[$$RawExtension$$]__ | Allows defining configuration using directly envoy's config API. WARNING: no validation of this field's value is performed before writting the custom resource to etcd.
 |===
 
 
@@ -1251,8 +1229,6 @@ RouteConfiguration contains options for an Envoy route_configuration protobuffer
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`EnvoyDynamicConfigMeta`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfigmeta[$$EnvoyDynamicConfigMeta$$]__ | 
-| *`EnvoyDynamicConfigRaw`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfigraw[$$EnvoyDynamicConfigRaw$$]__ | 
 | *`virtualHosts`* __xref:{anchor_prefix}-k8s-io-apimachinery-pkg-runtime-rawextension[$$RawExtension$$] array__ | The virtual_hosts definitions for this route configuration. Virtual hosts must be specified using directly Envoy's API
 |===
 
@@ -1270,8 +1246,6 @@ Runtime contains options for an Envoy runtime protobuffer message
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`EnvoyDynamicConfigMeta`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfigmeta[$$EnvoyDynamicConfigMeta$$]__ | 
-| *`EnvoyDynamicConfigRaw`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfigraw[$$EnvoyDynamicConfigRaw$$]__ | 
 | *`listenerNames`* __string array__ | The list of listeners to apply overload protection limits to
 |===
 
