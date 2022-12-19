@@ -10,6 +10,7 @@ import (
 	"github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
 	basereconciler_resources "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/resources"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
+	descriptor "github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 	"github.com/3scale/saas-operator/pkg/resource_builders/grafanadashboard"
 	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
 	"github.com/3scale/saas-operator/pkg/resource_builders/podmonitor"
@@ -248,8 +249,8 @@ func (gen *ListenerGenerator) TrafficSelector() map[string]string {
 		fmt.Sprintf("%s/traffic", saasv1alpha1.GroupVersion.Group): fmt.Sprintf("%s-%s", component, listener),
 	}
 }
-func (gen *ListenerGenerator) EnvoyDynamicConfigurations() []saasv1alpha1.EnvoyDynamicConfig {
-	return gen.ListenerSpec.Marin3r.EnvoyDynamicConfig
+func (gen *ListenerGenerator) EnvoyDynamicConfigurations() []descriptor.EnvoyDynamicConfigDescriptor {
+	return gen.ListenerSpec.Marin3r.EnvoyDynamicConfig.AsList()
 }
 
 // WorkerGenerator has methods to generate resources for a

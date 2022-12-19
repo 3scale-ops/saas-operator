@@ -1,4 +1,4 @@
-package templates
+package auto
 
 import (
 	"reflect"
@@ -7,6 +7,7 @@ import (
 	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
 	"github.com/3scale-ops/marin3r/pkg/envoy"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	"github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/templates"
 	envoy_config_listener_v3 "github.com/envoyproxy/go-control-plane/envoy/config/listener/v3"
 	"k8s.io/utils/pointer"
 )
@@ -25,7 +26,7 @@ func Test_secretRefsFromListener(t *testing.T) {
 			name: "returns the list of secrets used by the listener",
 			args: args{
 				listener: func() *envoy_config_listener_v3.Listener {
-					l, _ := ListenerHTTP_v1("test", &saasv1alpha1.ListenerHttp{
+					l, _ := templates.ListenerHTTP_v1("test", &saasv1alpha1.ListenerHttp{
 						Port:                  8080,
 						RouteConfigName:       "my_route",
 						CertificateSecretName: pointer.String("my_certificate"),
@@ -52,7 +53,7 @@ func Test_secretRefsFromListener(t *testing.T) {
 	}
 }
 
-func Test_generateSecrets(t *testing.T) {
+func TestGenerateSecrets(t *testing.T) {
 	type args struct {
 		resources []envoy.Resource
 	}
@@ -67,7 +68,7 @@ func Test_generateSecrets(t *testing.T) {
 			args: args{
 				resources: []envoy.Resource{
 					func() envoy.Resource {
-						l, _ := ListenerHTTP_v1("test1", &saasv1alpha1.ListenerHttp{
+						l, _ := templates.ListenerHTTP_v1("test1", &saasv1alpha1.ListenerHttp{
 							Port:                  8080,
 							RouteConfigName:       "my_route",
 							CertificateSecretName: pointer.String("cert1"),
@@ -76,7 +77,7 @@ func Test_generateSecrets(t *testing.T) {
 						return l
 					}(),
 					func() envoy.Resource {
-						l, _ := ListenerHTTP_v1("test2", &saasv1alpha1.ListenerHttp{
+						l, _ := templates.ListenerHTTP_v1("test2", &saasv1alpha1.ListenerHttp{
 							Port:                  8081,
 							RouteConfigName:       "my_route",
 							CertificateSecretName: pointer.String("cert2"),
@@ -85,7 +86,7 @@ func Test_generateSecrets(t *testing.T) {
 						return l
 					}(),
 					func() envoy.Resource {
-						l, _ := ListenerHTTP_v1("test3", &saasv1alpha1.ListenerHttp{
+						l, _ := templates.ListenerHTTP_v1("test3", &saasv1alpha1.ListenerHttp{
 							Port:                  8082,
 							RouteConfigName:       "my_route",
 							CertificateSecretName: pointer.String("cert1"),
@@ -106,11 +107,11 @@ func Test_generateSecrets(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := GenerateSecrets(tt.args.resources)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("generateSecrets() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GenerateSecrets() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("generateSecrets() = %v, want %v", got, tt.want)
+				t.Errorf("GenerateSecrets() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -7,8 +7,9 @@ import (
 	"github.com/3scale-ops/marin3r/pkg/envoy"
 	envoy_serializer "github.com/3scale-ops/marin3r/pkg/envoy/serializer"
 	envoy_serializer_v3 "github.com/3scale-ops/marin3r/pkg/envoy/serializer/v3"
-	"github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/dynamic_config"
-	"github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/templates"
+	"github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/auto"
+	descriptor "github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
+	"github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/factory"
 	envoy_config_cluster_v3 "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
 	envoy_config_listener_v3 "github.com/envoyproxy/go-control-plane/envoy/config/listener/v3"
 	envoy_config_route_v3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
@@ -19,12 +20,27 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-var generator = dynamic_config.EnvoyDynamicConfigFactory{
-	"ListenerHttp_v1":       dynamic_config.RegisterTemplate(templates.ListenerHTTP_v1, &envoy_config_listener_v3.Listener{}),
-	"Cluster_v1":            dynamic_config.RegisterTemplate(templates.Cluster_v1, &envoy_config_cluster_v3.Cluster{}),
-	"RouteConfiguration_v1": dynamic_config.RegisterTemplate(templates.RouteConfiguration_v1, &envoy_config_route_v3.RouteConfiguration{}),
-	"Runtime_v1":            dynamic_config.RegisterTemplate(templates.Runtime_v1, &envoy_service_runtime_v3.Runtime{}),
-	"RawConfig_v1":          dynamic_config.RegisterTemplate(templates.RawConfig_v1, nil),
+func New(key types.NamespacedName, nodeID string, factory factory.EnvoyDynamicConfigFactory, resources ...descriptor.EnvoyDynamicConfigDescriptor) func() (*marin3rv1alpha1.EnvoyConfig, error) {
+
+	return func() (*marin3rv1alpha1.EnvoyConfig, error) {
+		protos := []envoy.Resource{}
+
+		for _, res := range resources {
+
+			proto, err := factory.NewResource(res)
+			if err != nil {
+				return nil, err
+			}
+			protos = append(protos, proto)
+		}
+
+		ec, err := newFromProtos(key, nodeID, protos)()
+		if err != nil {
+			return nil, err
+		}
+
+		return ec, nil
+	}
 }
 
 func newFromProtos(key types.NamespacedName, nodeID string, resources []envoy.Resource) func() (*marin3rv1alpha1.EnvoyConfig, error) {
@@ -35,7 +51,7 @@ func newFromProtos(key types.NamespacedName, nodeID string, resources []envoy.Re
 		routes := []marin3rv1alpha1.EnvoyResource{}
 		listeners := []marin3rv1alpha1.EnvoyResource{}
 		runtimes := []marin3rv1alpha1.EnvoyResource{}
-		secrets, err := templates.GenerateSecrets(resources)
+		secrets, err := auto.GenerateSecrets(resources)
 		if err != nil {
 			return nil, err
 		}
@@ -89,28 +105,5 @@ func newFromProtos(key types.NamespacedName, nodeID string, resources []envoy.Re
 			},
 		}, nil
 
-	}
-}
-
-func New(key types.NamespacedName, nodeID string, resources ...dynamic_config.EnvoyDynamicConfigDescriptor) func() (*marin3rv1alpha1.EnvoyConfig, error) {
-
-	return func() (*marin3rv1alpha1.EnvoyConfig, error) {
-		protos := []envoy.Resource{}
-
-		for _, res := range resources {
-
-			proto, err := generator.NewResource(res)
-			if err != nil {
-				return nil, err
-			}
-			protos = append(protos, proto)
-		}
-
-		ec, err := newFromProtos(key, nodeID, protos)()
-		if err != nil {
-			return nil, err
-		}
-
-		return ec, nil
 	}
 }

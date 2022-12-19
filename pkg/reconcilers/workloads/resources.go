@@ -5,7 +5,8 @@ import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	basereconciler_resources "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/resources"
 	"github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig"
-	"github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/dynamic_config"
+	descriptor "github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
+	"github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/factory"
 	"github.com/3scale/saas-operator/pkg/resource_builders/hpa"
 	"github.com/3scale/saas-operator/pkg/resource_builders/pdb"
 	"github.com/3scale/saas-operator/pkg/resource_builders/podmonitor"
@@ -261,15 +262,9 @@ func NewEnvoyConfigTemplate(t basereconciler_resources.EnvoyConfigTemplate) Envo
 	return EnvoyConfigTemplate{EnvoyConfigTemplate: t}
 }
 
-func NewEnvoyConfigTemplateFromEnvoyResources(edc []saasv1alpha1.EnvoyDynamicConfig) EnvoyConfigTemplate {
-
-	configs := make([]dynamic_config.EnvoyDynamicConfigDescriptor, len(edc))
-	for i := range edc {
-		configs[i] = &edc[i]
-	}
-
+func NewEnvoyConfigTemplateFromEnvoyResources(configs []descriptor.EnvoyDynamicConfigDescriptor) EnvoyConfigTemplate {
 	return NewEnvoyConfigTemplate(basereconciler_resources.EnvoyConfigTemplate{
-		Template:  envoyconfig.New(EmptyKey, EmptyKey.Name, configs...),
+		Template:  envoyconfig.New(EmptyKey, EmptyKey.Name, factory.Default(), configs...),
 		IsEnabled: len(configs) > 0,
 	})
 }

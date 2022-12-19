@@ -314,16 +314,14 @@ var _ = Describe("Backend controller", func() {
 
 					backend.Spec.Listener.Marin3r = &saasv1alpha1.Marin3rSidecarSpec{
 						NodeID: pointer.String("backend-listener"),
-						EnvoyDynamicConfig: []saasv1alpha1.EnvoyDynamicConfig{{
-							EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
-								Name:             "http",
+						EnvoyDynamicConfig: saasv1alpha1.MapOfEnvoyDynamicConfig{
+							"http": {
 								GeneratorVersion: pointer.String("v1"),
-							},
-							ListenerHttp: &saasv1alpha1.ListenerHttp{
-								Port:            8080,
-								RouteConfigName: "route",
-							},
-						}},
+								ListenerHttp: &saasv1alpha1.ListenerHttp{
+									Port:            8080,
+									RouteConfigName: "route",
+								},
+							}},
 					}
 
 					return k8sClient.Patch(context.Background(), backend, patch)

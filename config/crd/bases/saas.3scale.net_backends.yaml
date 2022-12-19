@@ -670,12 +670,9 @@ spec:
                     description: Marin3r configures the Marin3r sidecars for the component
                     properties:
                       dynamicConfigs:
-                        description: Envoy dynamic configuration. Populating this
-                          field causes the operator to create a Marin3r EnvoyConfig
-                          resource, so Marin3r must be installed in the cluster.
-                        items:
-                          maxProperties: 3
-                          minProperties: 3
+                        additionalProperties:
+                          maxProperties: 2
+                          minProperties: 2
                           properties:
                             cluster:
                               description: Cluster contains options for an Envoy cluster
@@ -768,11 +765,6 @@ spec:
                               - port
                               - routeConfigName
                               type: object
-                            name:
-                              description: The name of the configuration/resource.
-                                The name is what allows a configuration to be used
-                                from wihin other configuration.
-                              type: string
                             rawConfig:
                               description: RawConfig is a struct with methods to manage
                                 a configuration defined using directly the Envoy config
@@ -826,10 +818,11 @@ spec:
                               required:
                               - listenerNames
                               type: object
-                          required:
-                          - name
                           type: object
-                        type: array
+                        description: Envoy dynamic configuration. Populating this
+                          field causes the operator to create a Marin3r EnvoyConfig
+                          resource, so Marin3r must be installed in the cluster.
+                        type: object
                       envoyAPIVersion:
                         description: The Envoy API version to use
                         enum:

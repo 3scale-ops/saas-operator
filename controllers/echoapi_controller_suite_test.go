@@ -126,16 +126,14 @@ var _ = Describe("EchoAPI controller", func() {
 
 					echoapi.Spec.Marin3r = &saasv1alpha1.Marin3rSidecarSpec{
 						NodeID: pointer.String("echo-api"),
-						EnvoyDynamicConfig: []saasv1alpha1.EnvoyDynamicConfig{{
-							EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
-								Name:             "http",
+						EnvoyDynamicConfig: saasv1alpha1.MapOfEnvoyDynamicConfig{
+							"http": {
 								GeneratorVersion: pointer.String("v1"),
-							},
-							ListenerHttp: &saasv1alpha1.ListenerHttp{
-								Port:            8080,
-								RouteConfigName: "route",
-							},
-						}},
+								ListenerHttp: &saasv1alpha1.ListenerHttp{
+									Port:            8080,
+									RouteConfigName: "route",
+								},
+							}},
 					}
 
 					return k8sClient.Patch(context.Background(), echoapi, patch)

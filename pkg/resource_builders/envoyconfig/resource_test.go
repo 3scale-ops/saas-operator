@@ -8,9 +8,11 @@ import (
 	"github.com/3scale-ops/marin3r/pkg/envoy"
 	envoy_serializer "github.com/3scale-ops/marin3r/pkg/envoy/serializer"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/dynamic_config"
+	descriptor "github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
+	"github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/factory"
 	"github.com/3scale/saas-operator/pkg/util"
 	"github.com/MakeNowJust/heredoc"
+	"github.com/davecgh/go-spew/spew"
 	envoy_config_cluster_v3 "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
 	envoy_config_core_v3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	envoy_config_endpoint_v3 "github.com/envoyproxy/go-control-plane/envoy/config/endpoint/v3"
@@ -18,8 +20,8 @@ import (
 	envoy_config_route_v3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	envoy_service_runtime_v3 "github.com/envoyproxy/go-control-plane/envoy/service/runtime/v3"
 	"github.com/go-test/deep"
+	structpb "github.com/golang/protobuf/ptypes/struct"
 	"google.golang.org/protobuf/types/known/durationpb"
-	"google.golang.org/protobuf/types/known/structpb"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/pointer"
@@ -29,7 +31,8 @@ func TestNew(t *testing.T) {
 	type args struct {
 		key       types.NamespacedName
 		nodeID    string
-		resources []dynamic_config.EnvoyDynamicConfigDescriptor
+		factory   factory.EnvoyDynamicConfigFactory
+		resources []descriptor.EnvoyDynamicConfigDescriptor
 	}
 	tests := []struct {
 		name    string
@@ -40,25 +43,20 @@ func TestNew(t *testing.T) {
 		{
 			name: "Generates an EnvoyConfig",
 			args: args{
-				key:    types.NamespacedName{Name: "test", Namespace: "default"},
-				nodeID: "test",
-				resources: []dynamic_config.EnvoyDynamicConfigDescriptor{
-					&saasv1alpha1.EnvoyDynamicConfig{
-						EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
-							Name:             "my_cluster",
-							GeneratorVersion: pointer.String("v1"),
-						},
+				key:     types.NamespacedName{Name: "test", Namespace: "default"},
+				nodeID:  "test",
+				factory: factory.Default(),
+				resources: saasv1alpha1.MapOfEnvoyDynamicConfig{
+					"my_cluster": {
+						GeneratorVersion: pointer.String("v1"),
 						Cluster: &saasv1alpha1.Cluster{
 							Host:    "localhost",
 							Port:    8080,
 							IsHttp2: pointer.Bool(false),
 						},
 					},
-					&saasv1alpha1.EnvoyDynamicConfig{
-						EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
-							Name:             "my_listener",
-							GeneratorVersion: pointer.String("v1"),
-						},
+					"my_listener": {
+						GeneratorVersion: pointer.String("v1"),
 						ListenerHttp: &saasv1alpha1.ListenerHttp{
 							Port:                        0,
 							RouteConfigName:             "routeconfig",
@@ -68,7 +66,7 @@ func TestNew(t *testing.T) {
 							MaxConnectionDuration:       util.Metav1DurationPtr(900 * time.Second),
 						},
 					},
-				},
+				}.AsList(),
 			},
 			want: &marin3rv1alpha1.EnvoyConfig{
 				ObjectMeta: metav1.ObjectMeta{
@@ -185,11 +183,12 @@ func TestNew(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := New(tt.args.key, tt.args.nodeID, tt.args.resources...)()
+			got, err := New(tt.args.key, tt.args.nodeID, tt.args.factory, tt.args.resources...)()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("New() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+			spew.Dump(got)
 			if diff := deep.Equal(got, tt.want); len(diff) > 0 {
 				t.Errorf("New() = got diff %v", diff)
 			}

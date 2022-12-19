@@ -1,19 +1,12 @@
-package dynamic_config
+package factory
 
 import (
 	"fmt"
 	"reflect"
 
 	"github.com/3scale-ops/marin3r/pkg/envoy"
+	descriptor "github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 )
-
-// EnvoyDynamicConfigDescriptor is a struct that contains
-// information to generate an Envoy dynamic configuration
-type EnvoyDynamicConfigDescriptor interface {
-	GetGeneratorVersion() string
-	GetName() string
-	GetOptions() interface{}
-}
 
 // EnvoyDynamicConfigClass contains properties to generate specific types
 // of Envoy dynamic configurations
@@ -36,7 +29,7 @@ type EnvoyDynamicConfigFactory map[string]*EnvoyDynamicConfigClass
 // GetClass translates from the external saas-operator API to the internal
 // EnvoyDynamicConfigClass that can generate the envoy dynamic resource described
 // by the external API
-func (factory EnvoyDynamicConfigFactory) GetClass(v EnvoyDynamicConfigDescriptor) (*EnvoyDynamicConfigClass, error) {
+func (factory EnvoyDynamicConfigFactory) GetClass(v descriptor.EnvoyDynamicConfigDescriptor) (*EnvoyDynamicConfigClass, error) {
 	opts := v.GetOptions()
 	name := reflect.TypeOf(opts).Elem().Name() + "_" + v.GetGeneratorVersion()
 	class, ok := factory[name]
@@ -47,14 +40,14 @@ func (factory EnvoyDynamicConfigFactory) GetClass(v EnvoyDynamicConfigDescriptor
 	return class, nil
 }
 
-func (factory EnvoyDynamicConfigFactory) NewResource(descriptor EnvoyDynamicConfigDescriptor) (envoy.Resource, error) {
+func (factory EnvoyDynamicConfigFactory) NewResource(desc descriptor.EnvoyDynamicConfigDescriptor) (envoy.Resource, error) {
 
-	class, err := factory.GetClass(descriptor)
+	class, err := factory.GetClass(desc)
 	if err != nil {
 		return nil, err
 	}
 
-	resource, err := class.Function(descriptor.GetName(), descriptor.GetOptions())
+	resource, err := class.Function(desc.GetName(), desc.GetOptions())
 	if err != nil {
 		return nil, err
 	}

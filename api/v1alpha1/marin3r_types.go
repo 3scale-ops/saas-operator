@@ -3,8 +3,9 @@ package v1alpha1
 import (
 	"reflect"
 
+	envoyconfig "github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
+	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
 // SidecarPort defines port for the Marin3r sidecar container
@@ -57,7 +58,7 @@ type Marin3rSidecarSpec struct {
 	// in the cluster.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	EnvoyDynamicConfig []EnvoyDynamicConfig `json:"dynamicConfigs,omitempty"`
+	EnvoyDynamicConfig MapOfEnvoyDynamicConfig `json:"dynamicConfigs,omitempty"`
 }
 
 type defaultMarin3rSidecarSpec struct {
@@ -107,10 +108,31 @@ func InitializeMarin3rSidecarSpec(spec *Marin3rSidecarSpec, def defaultMarin3rSi
 	return spec
 }
 
-// +kubebuilder:validation:MinProperties:=3
-// +kubebuilder:validation:MaxProperties:=3
+type MapOfEnvoyDynamicConfig map[string]EnvoyDynamicConfig
+
+// AsList transforms from the map in the external API to the list of elements
+// that the internal API expects.
+func (mapofconfs MapOfEnvoyDynamicConfig) AsList() []envoyconfig.EnvoyDynamicConfigDescriptor {
+
+	list := make([]envoyconfig.EnvoyDynamicConfigDescriptor, 0, len(mapofconfs))
+
+	for name, conf := range mapofconfs {
+		list = append(list, conf.DeepCopy().AsEnvoyDynamicConfigDescriptor(name))
+	}
+	return list
+}
+
+// +kubebuilder:validation:MinProperties:=2
+// +kubebuilder:validation:MaxProperties:=2
 type EnvoyDynamicConfig struct {
-	EnvoyDynamicConfigMeta `json:",inline"`
+	// unexported, hidden field
+	name string `json:"-"`
+	// GeneratorVersion specifies the version of a given template.
+	// "v1" is the default.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +kubebuilder:default:=v1
+	// +optional
+	GeneratorVersion *string `json:"generatorVersion,omitempty"`
 	// ListenerHttp contains options for an HTTP/HTTPS listener
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -133,43 +155,36 @@ type EnvoyDynamicConfig struct {
 	RawConfig *RawConfig `json:"rawConfig,omitempty"`
 }
 
-func (edc *EnvoyDynamicConfig) GetOptions() interface{} {
-	if edc.ListenerHttp != nil {
-		return edc.ListenerHttp
-	} else if edc.RouteConfiguration != nil {
-		return edc.RouteConfiguration
-	} else if edc.Cluster != nil {
-		return edc.Cluster
-	} else if edc.Runtime != nil {
-		return edc.Runtime
-	} else if edc.RawConfig != nil {
-		return edc.RawConfig
-	}
-
-	return nil
+// AsEnvoyDynamicConfigDescriptor converts the external API type into the internal EnvoyDynamicConfigDescriptor
+// interface. The name field is populated with the parameter passed to the function.
+func (config *EnvoyDynamicConfig) AsEnvoyDynamicConfigDescriptor(name string) envoyconfig.EnvoyDynamicConfigDescriptor {
+	config.name = name
+	return config
 }
 
-type EnvoyDynamicConfigMeta struct {
-	// The name of the configuration/resource. The name is what
-	// allows a configuration to be used from wihin other configuration.
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	Name string `json:"name"`
-	// GeneratorVersion specifies the version of a given template.
-	// "v1" is the default.
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +kubebuilder:default:=v1
-	// +optional
-	GeneratorVersion *string `json:"generatorVersion,omitempty"`
-}
-
-// GetName returns the name
-func (meta *EnvoyDynamicConfigMeta) GetName() string {
-	return meta.Name
+func (config *EnvoyDynamicConfig) GetName() string {
+	return config.name
 }
 
 // GetGeneratorVersion returns the template's version
-func (meta *EnvoyDynamicConfigMeta) GetGeneratorVersion() string {
-	return *meta.GeneratorVersion
+func (config *EnvoyDynamicConfig) GetGeneratorVersion() string {
+	return *config.GeneratorVersion
+}
+
+func (config *EnvoyDynamicConfig) GetOptions() interface{} {
+	if config.ListenerHttp != nil {
+		return config.ListenerHttp
+	} else if config.RouteConfiguration != nil {
+		return config.RouteConfiguration
+	} else if config.Cluster != nil {
+		return config.Cluster
+	} else if config.Runtime != nil {
+		return config.Runtime
+	} else if config.RawConfig != nil {
+		return config.RawConfig
+	}
+
+	return nil
 }
 
 // ListenerHttp contains options for an HTTP/HTTPS listener

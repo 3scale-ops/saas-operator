@@ -259,16 +259,14 @@ var _ = Describe("Apicast controller", func() {
 						ReadinessProbe: &saasv1alpha1.ProbeSpec{},
 						Marin3r: &saasv1alpha1.Marin3rSidecarSpec{
 							NodeID: pointer.String("apicast-production"),
-							EnvoyDynamicConfig: []saasv1alpha1.EnvoyDynamicConfig{{
-								EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
-									Name:             "http",
+							EnvoyDynamicConfig: saasv1alpha1.MapOfEnvoyDynamicConfig{
+								"http": {
 									GeneratorVersion: pointer.String("v1"),
-								},
-								ListenerHttp: &saasv1alpha1.ListenerHttp{
-									Port:            8080,
-									RouteConfigName: "route",
-								},
-							}},
+									ListenerHttp: &saasv1alpha1.ListenerHttp{
+										Port:            8080,
+										RouteConfigName: "route",
+									},
+								}},
 						},
 					}
 					apicast.Spec.Staging = saasv1alpha1.ApicastEnvironmentSpec{
@@ -286,12 +284,10 @@ var _ = Describe("Apicast controller", func() {
 						ReadinessProbe: &saasv1alpha1.ProbeSpec{},
 						Marin3r: &saasv1alpha1.Marin3rSidecarSpec{
 							NodeID: pointer.String("apicast-production"),
-							EnvoyDynamicConfig: []saasv1alpha1.EnvoyDynamicConfig{
-								{
-									EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{
-										Name:             "http",
-										GeneratorVersion: pointer.String("v1"),
-									},
+							EnvoyDynamicConfig: saasv1alpha1.MapOfEnvoyDynamicConfig{
+								"http": {
+
+									GeneratorVersion: pointer.String("v1"),
 									ListenerHttp: &saasv1alpha1.ListenerHttp{
 										Port:            8080,
 										RouteConfigName: "route",
