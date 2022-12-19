@@ -139,8 +139,8 @@ spec:
                 properties:
                   dynamicConfigs:
                     additionalProperties:
-                      maxProperties: 2
-                      minProperties: 2
+                      maxProperties: 1
+                      minProperties: 1
                       properties:
                         cluster:
                           description: Cluster contains options for an Envoy cluster
@@ -198,6 +198,11 @@ spec:
                                 new connections
                               format: int32
                               type: integer
+                            proxyProtocol:
+                              default: true
+                              description: Whether proxy protocol should be enabled
+                                or not. Defaults to true.
+                              type: boolean
                             rateLimitOptions:
                               description: Rate limit options for the ratelimit filter
                                 of the HTTP connection manager
