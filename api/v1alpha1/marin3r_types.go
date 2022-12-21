@@ -2,6 +2,7 @@ package v1alpha1
 
 import (
 	"reflect"
+	"sort"
 
 	envoyconfig "github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -119,6 +120,12 @@ func (mapofconfs MapOfEnvoyDynamicConfig) AsList() []envoyconfig.EnvoyDynamicCon
 	for name, conf := range mapofconfs {
 		list = append(list, conf.DeepCopy().AsEnvoyDynamicConfigDescriptor(name))
 	}
+
+	// ensure consistent order of configs
+	sort.Slice(list, func(a, b int) bool {
+		return list[a].GetName() < list[b].GetName()
+	})
+
 	return list
 }
 
