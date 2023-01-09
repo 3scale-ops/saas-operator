@@ -1,4 +1,4 @@
-package envoyconfig
+package templates
 
 import (
 	"github.com/3scale-ops/marin3r/pkg/envoy"
@@ -7,15 +7,15 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
-func Runtime_v1(desc envoyDynamicConfigDescriptor) (envoy.Resource, error) {
-	opts := desc.(*saasv1alpha1.Runtime)
+func Runtime_v1(name string, opts interface{}) (envoy.Resource, error) {
+	o := opts.(*saasv1alpha1.Runtime)
 
 	layer, _ := structpb.NewStruct(map[string]interface{}{
 		"envoy": map[string]interface{}{
 			"resource_limits": map[string]interface{}{
 				"listener": func() map[string]interface{} {
 					m := map[string]interface{}{}
-					for _, name := range opts.ListenerNames {
+					for _, name := range o.ListenerNames {
 						m[name] = map[string]interface{}{
 							"connection_limit": 10000,
 						}
@@ -30,7 +30,7 @@ func Runtime_v1(desc envoyDynamicConfigDescriptor) (envoy.Resource, error) {
 	})
 
 	return &envoy_service_runtime_v3.Runtime{
-		Name:  desc.GetName(),
+		Name:  name,
 		Layer: layer,
 	}, nil
 }

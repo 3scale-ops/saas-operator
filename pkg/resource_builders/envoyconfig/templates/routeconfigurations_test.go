@@ -1,4 +1,4 @@
-package envoyconfig
+package templates
 
 import (
 	"testing"
@@ -12,6 +12,7 @@ import (
 
 func TestRouteConfiguration_v1(t *testing.T) {
 	type args struct {
+		name string
 		opts *saasv1alpha1.RouteConfiguration
 	}
 	tests := []struct {
@@ -23,8 +24,8 @@ func TestRouteConfiguration_v1(t *testing.T) {
 		{
 			name: "Generate a route with the given virtual hosts",
 			args: args{
+				name: "my_route",
 				opts: &saasv1alpha1.RouteConfiguration{
-					EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{Name: "my_route"},
 					VirtualHosts: []runtime.RawExtension{
 						{
 							Raw: []byte(`{"name":"example","domains":["example.com"],"routes":[{"route":{"cluster":"example_cluster"},"match":{"prefix":"/"}}],"rate_limits":[{"actions":[{"remote_address":{}}]}]}`),
@@ -63,7 +64,7 @@ func TestRouteConfiguration_v1(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := RouteConfiguration_v1(tt.args.opts)
+			got, err := RouteConfiguration_v1(tt.args.name, tt.args.opts)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RouteConfiguration_v1() error = %v, wantErr %v", err, tt.wantErr)
 				return

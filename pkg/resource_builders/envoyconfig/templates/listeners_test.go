@@ -1,4 +1,4 @@
-package envoyconfig
+package templates
 
 import (
 	"testing"
@@ -15,6 +15,7 @@ import (
 
 func TestListenerHTTP_v1(t *testing.T) {
 	type args struct {
+		name string
 		opts *saasv1alpha1.ListenerHttp
 	}
 	tests := []struct {
@@ -25,11 +26,11 @@ func TestListenerHTTP_v1(t *testing.T) {
 		{
 			name: "Generates https listener",
 			args: args{
+				name: "test",
 				opts: &saasv1alpha1.ListenerHttp{
-					EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{Name: "test"},
-					Port:                   8080,
-					RouteConfigName:        "my_route",
-					CertificateSecretName:  pointer.String("my_certificate"),
+					Port:                  8080,
+					RouteConfigName:       "my_route",
+					CertificateSecretName: pointer.String("my_certificate"),
 					RateLimitOptions: &saasv1alpha1.RateLimitOptions{
 						Domain:           "test_domain",
 						FailureModeDeny:  pointer.Bool(true),
@@ -40,6 +41,7 @@ func TestListenerHTTP_v1(t *testing.T) {
 					EnableHttp2:                 pointer.Bool(false),
 					AllowHeadersWithUnderscores: pointer.Bool(true),
 					MaxConnectionDuration:       util.Metav1DurationPtr(900 * time.Second),
+					ProxyProtocol:               pointer.Bool(true),
 				},
 			},
 			want: heredoc.Doc(`
@@ -125,8 +127,6 @@ func TestListenerHTTP_v1(t *testing.T) {
                 listener_filters:
                 - name: envoy.filters.listener.tls_inspector
                 - name: envoy.filters.listener.proxy_protocol
-                  typed_config:
-                    '@type': type.googleapis.com/envoy.extensions.filters.listener.proxy_protocol.v3.ProxyProtocol
                 name: test
                 per_connection_buffer_limit_bytes: 32768
 			`),
@@ -134,10 +134,10 @@ func TestListenerHTTP_v1(t *testing.T) {
 		{
 			name: "Generates http listener",
 			args: args{
+				name: "test",
 				opts: &saasv1alpha1.ListenerHttp{
-					EnvoyDynamicConfigMeta: saasv1alpha1.EnvoyDynamicConfigMeta{Name: "test"},
-					Port:                   8080,
-					RouteConfigName:        "my_route",
+					Port:            8080,
+					RouteConfigName: "my_route",
 					RateLimitOptions: &saasv1alpha1.RateLimitOptions{
 						Domain:           "test_domain",
 						FailureModeDeny:  pointer.Bool(false),
@@ -148,6 +148,7 @@ func TestListenerHTTP_v1(t *testing.T) {
 					EnableHttp2:                 pointer.Bool(false),
 					AllowHeadersWithUnderscores: pointer.Bool(true),
 					MaxConnectionDuration:       util.Metav1DurationPtr(900 * time.Second),
+					ProxyProtocol:               pointer.Bool(true),
 				},
 			},
 			want: heredoc.Doc(`
@@ -215,8 +216,6 @@ func TestListenerHTTP_v1(t *testing.T) {
                       use_remote_address: true
                 listener_filters:
                 - name: envoy.filters.listener.proxy_protocol
-                  typed_config:
-                    '@type': type.googleapis.com/envoy.extensions.filters.listener.proxy_protocol.v3.ProxyProtocol
                 name: test
                 per_connection_buffer_limit_bytes: 32768
 			`),
@@ -224,7 +223,7 @@ func TestListenerHTTP_v1(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, _ := ListenerHTTP_v1(tt.args.opts)
+			got, _ := ListenerHTTP_v1(tt.args.name, tt.args.opts)
 			j, err := envoy_serializer_v3.JSON{}.Marshal(got)
 			if err != nil {
 				t.Error(err)

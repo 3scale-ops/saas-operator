@@ -7,6 +7,7 @@ import (
 	"github.com/3scale/saas-operator/pkg/generators"
 	basereconciler_resources "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/resources"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
+	descriptor "github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 	"github.com/3scale/saas-operator/pkg/resource_builders/podmonitor"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 )
@@ -82,6 +83,6 @@ func (gen *Generator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint {
 	}
 }
 
-func (gen *Generator) EnvoyDynamicConfigurations() []saasv1alpha1.EnvoyDynamicConfig {
-	return gen.Spec.Marin3r.EnvoyDynamicConfig
+func (gen *Generator) EnvoyDynamicConfigurations() []descriptor.EnvoyDynamicConfigDescriptor {
+	return gen.Spec.Marin3r.EnvoyDynamicConfig.AsList()
 }

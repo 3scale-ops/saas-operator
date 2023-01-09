@@ -3,6 +3,7 @@ package workloads
 import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/resources"
+	descriptor "github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -51,7 +52,7 @@ type WithTraffic interface {
 
 type WithEnvoySidecar interface {
 	WithWorkloadMeta
-	EnvoyDynamicConfigurations() []saasv1alpha1.EnvoyDynamicConfig
+	EnvoyDynamicConfigurations() []descriptor.EnvoyDynamicConfigDescriptor
 }
 
 type DeploymentWorkload interface {

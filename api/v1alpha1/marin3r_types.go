@@ -2,9 +2,11 @@ package v1alpha1
 
 import (
 	"reflect"
+	"sort"
 
+	envoyconfig "github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
+	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
 // SidecarPort defines port for the Marin3r sidecar container
@@ -57,7 +59,7 @@ type Marin3rSidecarSpec struct {
 	// in the cluster.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	EnvoyDynamicConfig []EnvoyDynamicConfig `json:"dynamicConfigs,omitempty"`
+	EnvoyDynamicConfig MapOfEnvoyDynamicConfig `json:"dynamicConfigs,omitempty"`
 }
 
 type defaultMarin3rSidecarSpec struct {
@@ -107,9 +109,37 @@ func InitializeMarin3rSidecarSpec(spec *Marin3rSidecarSpec, def defaultMarin3rSi
 	return spec
 }
 
-// +kubebuilder:validation:MinProperties:=1
-// +kubebuilder:validation:MaxProperties:=1
+type MapOfEnvoyDynamicConfig map[string]EnvoyDynamicConfig
+
+// AsList transforms from the map in the external API to the list of elements
+// that the internal API expects.
+func (mapofconfs MapOfEnvoyDynamicConfig) AsList() []envoyconfig.EnvoyDynamicConfigDescriptor {
+
+	list := make([]envoyconfig.EnvoyDynamicConfigDescriptor, 0, len(mapofconfs))
+
+	for name, conf := range mapofconfs {
+		list = append(list, conf.DeepCopy().AsEnvoyDynamicConfigDescriptor(name))
+	}
+
+	// ensure consistent order of configs
+	sort.Slice(list, func(a, b int) bool {
+		return list[a].GetName() < list[b].GetName()
+	})
+
+	return list
+}
+
+// +kubebuilder:validation:MinProperties:=2
+// +kubebuilder:validation:MaxProperties:=2
 type EnvoyDynamicConfig struct {
+	// unexported, hidden field
+	name string `json:"-"`
+	// GeneratorVersion specifies the version of a given template.
+	// "v1" is the default.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +kubebuilder:default:=v1
+	// +optional
+	GeneratorVersion *string `json:"generatorVersion,omitempty"`
 	// ListenerHttp contains options for an HTTP/HTTPS listener
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -127,56 +157,53 @@ type EnvoyDynamicConfig struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Runtime *Runtime `json:"runtime,omitempty"`
-}
-
-type EnvoyDynamicConfigMeta struct {
-	// The name of the configuration/resource. The name is what
-	// allows a configuration to be used from wihin other configuration.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	Name string `json:"name"`
-	// GeneratorVersion specifies the version of a given template.
-	// "v1" is the default.
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +kubebuilder:default:=v1
 	// +optional
-	GeneratorVersion *string `json:"generatorVersion,omitempty"`
+	RawConfig *RawConfig `json:"rawConfig,omitempty"`
 }
 
-// GetName returns the name
-func (meta *EnvoyDynamicConfigMeta) GetName() string {
-	return meta.Name
+// AsEnvoyDynamicConfigDescriptor converts the external API type into the internal EnvoyDynamicConfigDescriptor
+// interface. The name field is populated with the parameter passed to the function.
+func (config *EnvoyDynamicConfig) AsEnvoyDynamicConfigDescriptor(name string) envoyconfig.EnvoyDynamicConfigDescriptor {
+	config.name = name
+	return config
+}
+
+func (config *EnvoyDynamicConfig) GetName() string {
+	return config.name
 }
 
 // GetGeneratorVersion returns the template's version
-func (meta *EnvoyDynamicConfigMeta) GetGeneratorVersion() string {
-	return *meta.GeneratorVersion
+func (config *EnvoyDynamicConfig) GetGeneratorVersion() string {
+	return *config.GeneratorVersion
 }
 
-// EnvoyDynamicConfigRaw is a struct with methods to manage a
-// configuration defined using directly the Envoy config API
-type EnvoyDynamicConfigRaw struct {
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	// Allows defining configuration using directly envoy's config API.
-	// WARNING: no validation of this field's value is performed before
-	// writting the custom resource to etcd.
-	RawConfig *runtime.RawExtension `json:"rawConfig,omitempty"`
-}
-
-func (raw *EnvoyDynamicConfigRaw) GetRawConfig() []byte {
-	if raw != nil && raw.RawConfig != nil && raw.RawConfig.Raw != nil {
-		return raw.RawConfig.Raw
+func (config *EnvoyDynamicConfig) GetOptions() interface{} {
+	if config.ListenerHttp != nil {
+		return config.ListenerHttp
+	} else if config.RouteConfiguration != nil {
+		return config.RouteConfiguration
+	} else if config.Cluster != nil {
+		return config.Cluster
+	} else if config.Runtime != nil {
+		return config.Runtime
+	} else if config.RawConfig != nil {
+		return config.RawConfig
 	}
+
 	return nil
 }
 
 // ListenerHttp contains options for an HTTP/HTTPS listener
 type ListenerHttp struct {
-	EnvoyDynamicConfigMeta `json:",inline"`
-	EnvoyDynamicConfigRaw  `json:",inline"`
 	// The port where the listener listens for new connections
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Port uint32 `json:"port"`
+	// Whether proxy protocol should be enabled or not. Defaults to true.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +kubebuilder:default:=true
+	// +optional
+	ProxyProtocol *bool `json:"proxyProtocol,omitempty"`
 	// The name of the RouteConfiguration to use in the listener
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	RouteConfigName string `json:"routeConfigName"`
@@ -235,8 +262,6 @@ type RateLimitOptions struct {
 
 // Cluster contains options for an Envoy cluster protobuffer message
 type Cluster struct {
-	EnvoyDynamicConfigMeta `json:",inline"`
-	EnvoyDynamicConfigRaw  `json:",inline"`
 	// The upstream host
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Host string `json:"host"`
@@ -253,8 +278,6 @@ type Cluster struct {
 // RouteConfiguration contains options for an Envoy route_configuration
 // protobuffer message
 type RouteConfiguration struct {
-	EnvoyDynamicConfigMeta `json:",inline"`
-	EnvoyDynamicConfigRaw  `json:",inline"`
 	// The virtual_hosts definitions for this route configuration.
 	// Virtual hosts must be specified using directly Envoy's API
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
@@ -263,9 +286,21 @@ type RouteConfiguration struct {
 
 // Runtime contains options for an Envoy runtime protobuffer message
 type Runtime struct {
-	EnvoyDynamicConfigMeta `json:",inline"`
-	EnvoyDynamicConfigRaw  `json:",inline"`
 	// The list of listeners to apply overload protection limits to
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	ListenerNames []string `json:"listenerNames"`
+}
+
+// RawConfig is a struct with methods to manage a
+// configuration defined using directly the Envoy config API
+type RawConfig struct {
+	// Type is the type url for the protobuf message
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +kubebuilder:validation:Enum=listener;routeConfiguration;cluster;runtime
+	Type string `json:"type"`
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// Allows defining configuration using directly envoy's config API.
+	// WARNING: no validation of this field's value is performed before
+	// writting the custom resource to etcd.
+	Value runtime.RawExtension `json:"value"`
 }

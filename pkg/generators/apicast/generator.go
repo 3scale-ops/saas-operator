@@ -9,6 +9,7 @@ import (
 	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
 	basereconciler_resources "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/resources"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
+	descriptor "github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 	"github.com/3scale/saas-operator/pkg/resource_builders/grafanadashboard"
 	"github.com/3scale/saas-operator/pkg/resource_builders/podmonitor"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
@@ -206,6 +207,6 @@ func (gen *EnvGenerator) TrafficSelector() map[string]string {
 		fmt.Sprintf("%s/traffic", saasv1alpha1.GroupVersion.Group): gen.GetComponent(),
 	}
 }
-func (gen *EnvGenerator) EnvoyDynamicConfigurations() []saasv1alpha1.EnvoyDynamicConfig {
-	return gen.Spec.Marin3r.EnvoyDynamicConfig
+func (gen *EnvGenerator) EnvoyDynamicConfigurations() []descriptor.EnvoyDynamicConfigDescriptor {
+	return gen.Spec.Marin3r.EnvoyDynamicConfig.AsList()
 }

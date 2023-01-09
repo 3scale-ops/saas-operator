@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 
+	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators/apicast"
@@ -105,5 +106,6 @@ func (r *ApicastReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&autoscalingv2.HorizontalPodAutoscaler{}).
 		Owns(&monitoringv1.PodMonitor{}).
 		Owns(&grafanav1alpha1.GrafanaDashboard{}).
+		Owns(&marin3rv1alpha1.EnvoyConfig{}).
 		Complete(r)
 }

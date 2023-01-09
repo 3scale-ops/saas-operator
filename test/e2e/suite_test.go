@@ -17,6 +17,8 @@ limitations under the License.
 package e2e
 
 import (
+	"crypto/rand"
+	"math/big"
 	"testing"
 	"time"
 
@@ -59,15 +61,15 @@ func TestAPIs(t *testing.T) {
 var _ = BeforeSuite(func() {
 	logf.SetLogger(zap.New(zap.WriteTo(GinkgoWriter), zap.UseDevMode(true)))
 
-	seed := GinkgoRandomSeed() + int64(GinkgoParallelProcess())
-	nameGenerator = namegenerator.NewNameGenerator(seed)
+	nBig, err := rand.Int(rand.Reader, big.NewInt(1000000))
+	Expect(err).NotTo(HaveOccurred())
+	nameGenerator = namegenerator.NewNameGenerator(nBig.Int64())
 
 	By("bootstrapping test environment")
 	testEnv = &envtest.Environment{
 		UseExistingCluster: pointer.BoolPtr(true),
 	}
 
-	var err error
 	// cfg is defined in this file globally.
 	cfg, err = testEnv.Start()
 	Expect(err).NotTo(HaveOccurred())

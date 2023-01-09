@@ -120,7 +120,7 @@ var _ = Describe("sentinel e2e suite", func() {
 
 				sclient, stopCh, err := testutil.SentinelClient(cfg,
 					types.NamespacedName{
-						Name:      fmt.Sprintf("redis-sentinel-%d", rand.Intn(int(saasv1alpha1.SentinelDefaultReplicas))-1),
+						Name:      fmt.Sprintf("redis-sentinel-%d", rand.Intn(int(saasv1alpha1.SentinelDefaultReplicas))),
 						Namespace: ns,
 					})
 				Expect(err).ToNot(HaveOccurred())

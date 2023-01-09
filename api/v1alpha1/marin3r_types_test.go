@@ -4,9 +4,9 @@ import (
 	"reflect"
 	"testing"
 
+	envoyconfig "github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 func TestMarin3rSidecarSpec_Default(t *testing.T) {
@@ -220,40 +220,44 @@ func TestInitializeMarin3rSidecarSpec(t *testing.T) {
 	}
 }
 
-func TestEnvoyDynamicConfigRaw_GetRawConfig(t *testing.T) {
-	type fields struct {
-		RawConfig *runtime.RawExtension
-	}
+func TestMapOfEnvoyDynamicConfig_AsList(t *testing.T) {
 	tests := []struct {
-		name   string
-		fields fields
-		want   []byte
+		name       string
+		mapofconfs MapOfEnvoyDynamicConfig
+		want       []envoyconfig.EnvoyDynamicConfigDescriptor
 	}{
 		{
-			name: "returns the raw config",
-			fields: fields{
-				RawConfig: &runtime.RawExtension{
-					Raw:    []byte("whatever"),
-					Object: nil,
+			name: "Returns the map as a list of EnvoyDynamicConfigDescriptor",
+			mapofconfs: map[string]EnvoyDynamicConfig{
+				"one": {
+					name:             "",
+					GeneratorVersion: new(string),
+					ListenerHttp:     &ListenerHttp{},
+				},
+				"two": {
+					name:             "",
+					GeneratorVersion: new(string),
+					Cluster:          &Cluster{},
 				},
 			},
-			want: []byte("whatever"),
-		},
-		{
-			name: "returns nil",
-			fields: fields{
-				RawConfig: nil,
+			want: []envoyconfig.EnvoyDynamicConfigDescriptor{
+				&EnvoyDynamicConfig{
+					name:             "one",
+					GeneratorVersion: new(string),
+					ListenerHttp:     &ListenerHttp{},
+				},
+				&EnvoyDynamicConfig{
+					name:             "two",
+					GeneratorVersion: new(string),
+					Cluster:          &Cluster{},
+				},
 			},
-			want: nil,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			raw := &EnvoyDynamicConfigRaw{
-				RawConfig: tt.fields.RawConfig,
-			}
-			if got := raw.GetRawConfig(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("EnvoyDynamicConfigRaw.GetRawConfig() = %v, want %v", got, tt.want)
+			if got := tt.mapofconfs.AsList(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("MapOfEnvoyDynamicConfig.AsList() = %v, want %v", got, tt.want)
 			}
 		})
 	}

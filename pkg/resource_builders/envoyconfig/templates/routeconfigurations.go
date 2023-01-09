@@ -1,4 +1,4 @@
-package envoyconfig
+package templates
 
 import (
 	"github.com/3scale-ops/marin3r/pkg/envoy"
@@ -8,16 +8,16 @@ import (
 	envoy_config_route_v3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 )
 
-func RouteConfiguration_v1(desc envoyDynamicConfigDescriptor) (envoy.Resource, error) {
-	opts := desc.(*saasv1alpha1.RouteConfiguration)
+func RouteConfiguration_v1(name string, opts interface{}) (envoy.Resource, error) {
+	o := opts.(*saasv1alpha1.RouteConfiguration)
 
 	rc := &envoy_config_route_v3.RouteConfiguration{
-		Name:         desc.GetName(),
+		Name:         name,
 		VirtualHosts: []*envoy_config_route_v3.VirtualHost{},
 	}
 
 	merr := util.MultiError{}
-	for _, vhost := range opts.VirtualHosts {
+	for _, vhost := range o.VirtualHosts {
 		vh := &envoy_config_route_v3.VirtualHost{}
 		err := envoy_serializer_v3.JSON{}.Unmarshal(string(vhost.Raw), vh)
 		if err != nil {

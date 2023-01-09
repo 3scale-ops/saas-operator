@@ -18,6 +18,8 @@ package test
 
 import (
 	"context"
+	"crypto/rand"
+	"math/big"
 	"path/filepath"
 	"testing"
 	"time"
@@ -72,8 +74,9 @@ var _ = BeforeSuite(func() {
 		},
 	}
 
-	seed := GinkgoRandomSeed() + int64(GinkgoParallelProcess())
-	nameGenerator = namegenerator.NewNameGenerator(seed)
+	nBig, err := rand.Int(rand.Reader, big.NewInt(1000000))
+	Expect(err).NotTo(HaveOccurred())
+	nameGenerator = namegenerator.NewNameGenerator(nBig.Int64())
 
 	cfg, err := testEnv.Start()
 	Expect(err).NotTo(HaveOccurred())
