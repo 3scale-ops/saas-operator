@@ -240,8 +240,8 @@ spec:
                     properties:
                       dynamicConfigs:
                         additionalProperties:
-                          maxProperties: 1
-                          minProperties: 1
+                          maxProperties: 2
+                          minProperties: 2
                           properties:
                             cluster:
                               description: Cluster contains options for an Envoy cluster
@@ -1000,8 +1000,8 @@ spec:
                     properties:
                       dynamicConfigs:
                         additionalProperties:
-                          maxProperties: 1
-                          minProperties: 1
+                          maxProperties: 2
+                          minProperties: 2
                           properties:
                             cluster:
                               description: Cluster contains options for an Envoy cluster
