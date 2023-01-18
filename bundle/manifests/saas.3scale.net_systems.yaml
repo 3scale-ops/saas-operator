@@ -2792,6 +2792,10 @@ spec:
                       thinking:
                         description: Thinking configuration for sphinx
                         properties:
+                          batchSize:
+                            description: Sphinx batch size
+                            format: int32
+                            type: integer
                           bindAddress:
                             description: Allows setting the TCP host for Sphinx to
                               a different address

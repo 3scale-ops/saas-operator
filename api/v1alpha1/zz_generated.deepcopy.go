@@ -3153,6 +3153,11 @@ func (in *ThinkingSpec) DeepCopyInto(out *ThinkingSpec) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.BatchSize != nil {
+		in, out := &in.BatchSize, &out.BatchSize
+		*out = new(int32)
+		**out = **in
+	}
 	if in.DatabasePath != nil {
 		in, out := &in.DatabasePath, &out.DatabasePath
 		*out = new(string)

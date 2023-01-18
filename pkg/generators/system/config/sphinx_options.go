@@ -13,6 +13,7 @@ type SphinxOptions struct {
 	SphinxPort              pod.EnvVarValue `env:"THINKING_SPHINX_PORT"`
 	SphinxPIDFile           pod.EnvVarValue `env:"THINKING_SPHINX_PID_FILE"`
 	SphinxConfigurationFile pod.EnvVarValue `env:"THINKING_SPHINX_CONFIGURATION_FILE"`
+	SphinxBatchSize         pod.EnvVarValue `env:"THINKING_SPHINX_BATCH_SIZE"`
 
 	RailsEnvironment pod.EnvVarValue `env:"RAILS_ENV"`
 	SecretKeyBase    pod.EnvVarValue `env:"SECRET_KEY_BASE"`
@@ -32,6 +33,7 @@ func NewSphinxOptions(spec saasv1alpha1.SystemSpec) SphinxOptions {
 		SphinxPort:              &pod.ClearTextValue{Value: fmt.Sprintf("%d", *spec.Sphinx.Config.Thinking.Port)},
 		SphinxPIDFile:           &pod.ClearTextValue{Value: *spec.Sphinx.Config.Thinking.PIDFile},
 		SphinxConfigurationFile: &pod.ClearTextValue{Value: *spec.Sphinx.Config.Thinking.ConfigFile},
+		SphinxBatchSize:         &pod.ClearTextValue{Value: fmt.Sprintf("%d", *spec.Sphinx.Config.Thinking.BatchSize)},
 		RailsEnvironment:        &pod.ClearTextValue{Value: *spec.Config.Rails.Environment},
 		SecretKeyBase:           &pod.ClearTextValue{Value: "dummy"}, // https://github.com/rails/rails/issues/32947
 		DatabaseURL:             &pod.SecretValue{Value: spec.Config.DatabaseDSN},

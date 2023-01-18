@@ -1764,6 +1764,7 @@ ThinkingSpec configures the thinking library for sphinx
 | *`port`* __integer__ | The TCP port Sphinx will run its daemon on
 | *`bindAddress`* __string__ | Allows setting the TCP host for Sphinx to a different address
 | *`configFile`* __string__ | Sphinx configuration file path
+| *`batchSize`* __integer__ | Sphinx batch size
 | *`databasePath`* __string__ | Sphinx database path
 | *`databaseStorageSize`* __Quantity__ | Sphinx database storage size
 | *`databaseStorageClass`* __string__ | Sphinx database storage type

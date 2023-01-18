@@ -3672,6 +3672,9 @@ spec:
       - description: Thinking configuration for sphinx
         displayName: Thinking
         path: sphinx.config.thinking
+      - description: Sphinx batch size
+        displayName: Batch Size
+        path: sphinx.config.thinking.batchSize
       - description: Allows setting the TCP host for Sphinx to a different address
         displayName: Bind Address
         path: sphinx.config.thinking.bindAddress
