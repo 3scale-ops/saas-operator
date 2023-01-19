@@ -19,11 +19,6 @@ type SphinxOptions struct {
 	SecretKeyBase    pod.EnvVarValue `env:"SECRET_KEY_BASE"`
 
 	DatabaseURL pod.EnvVarValue `env:"DATABASE_URL" secret:"system-database"`
-
-	RedisURL           pod.EnvVarValue `env:"REDIS_URL"`
-	RedisNamespace     pod.EnvVarValue `env:"REDIS_NAMESPACE"`
-	RedisSentinelHosts pod.EnvVarValue `env:"REDIS_SENTINEL_HOSTS"`
-	RedisSentinelRole  pod.EnvVarValue `env:"REDIS_SENTINEL_ROLE"`
 }
 
 // NewSphinxOptions returns an Options struct for the given saasv1alpha1.SystemSpec
@@ -37,10 +32,6 @@ func NewSphinxOptions(spec saasv1alpha1.SystemSpec) SphinxOptions {
 		RailsEnvironment:        &pod.ClearTextValue{Value: *spec.Config.Rails.Environment},
 		SecretKeyBase:           &pod.ClearTextValue{Value: "dummy"}, // https://github.com/rails/rails/issues/32947
 		DatabaseURL:             &pod.SecretValue{Value: spec.Config.DatabaseDSN},
-		RedisURL:                &pod.ClearTextValue{Value: spec.Config.Redis.QueuesDSN},
-		RedisNamespace:          &pod.ClearTextValue{Value: ""},
-		RedisSentinelHosts:      &pod.ClearTextValue{Value: ""},
-		RedisSentinelRole:       &pod.ClearTextValue{Value: ""},
 	}
 	return opts
 }
