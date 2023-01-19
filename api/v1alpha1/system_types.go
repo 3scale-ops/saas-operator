@@ -160,6 +160,7 @@ var (
 	systemDefaultSphinxPort                int32                           = 9306
 	systemDefaultSphinxBindAddress         string                          = "0.0.0.0"
 	systemDefaultSphinxConfigFile          string                          = "/opt/system/db/sphinx/sphinx.conf"
+	systemDefaultSphinxBatchSize           int32                           = 100
 	systemDefaultSphinxDBPath              string                          = "/opt/system/db/sphinx"
 	systemDefaultSphinxDatabaseStorageSize string                          = "30Gi"
 	systemDefaultSphinxPIDFile             string                          = "/opt/system/tmp/pids/searchd.pid"
@@ -794,6 +795,10 @@ type ThinkingSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	ConfigFile *string `json:"configFile,omitempty"`
+	// Sphinx batch size
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	BatchSize *int32 `json:"batchSize,omitempty"`
 	// Sphinx database path
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -817,6 +822,7 @@ func (tc *ThinkingSpec) Default() {
 	tc.Port = intOrDefault(tc.Port, pointer.Int32Ptr(systemDefaultSphinxPort))
 	tc.BindAddress = stringOrDefault(tc.BindAddress, pointer.StringPtr(systemDefaultSphinxBindAddress))
 	tc.ConfigFile = stringOrDefault(tc.ConfigFile, pointer.StringPtr(systemDefaultSphinxConfigFile))
+	tc.BatchSize = intOrDefault(tc.BatchSize, pointer.Int32Ptr(systemDefaultSphinxBatchSize))
 	tc.DatabasePath = stringOrDefault(tc.DatabasePath, pointer.StringPtr(systemDefaultSphinxDBPath))
 	tc.PIDFile = stringOrDefault(tc.PIDFile, pointer.StringPtr(systemDefaultSphinxPIDFile))
 	if tc.DatabaseStorageSize == nil {
