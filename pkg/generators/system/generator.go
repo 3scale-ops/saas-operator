@@ -326,11 +326,13 @@ func (gen *Generator) ExternalSecrets() []basereconciler.Resource {
 	return resources
 }
 
-func getSystemSecretsRolloutTriggers() []basereconciler_resources.RolloutTrigger {
+func getSystemSecretsRolloutTriggers(additionalSecrets ...string) []basereconciler_resources.RolloutTrigger {
 
 	triggers := []basereconciler_resources.RolloutTrigger{}
 
-	for _, secret := range getSystemSecrets() {
+	secrets := append(getSystemSecrets(), additionalSecrets...)
+
+	for _, secret := range secrets {
 		triggers = append(
 			triggers,
 			basereconciler_resources.RolloutTrigger{
@@ -375,7 +377,7 @@ func (gen *AppGenerator) TrafficSelector() map[string]string {
 func (gen *AppGenerator) Deployment() basereconciler_resources.DeploymentTemplate {
 	return basereconciler_resources.DeploymentTemplate{
 		Template:        gen.deployment(),
-		RolloutTriggers: getSystemSecretsRolloutTriggers(),
+		RolloutTriggers: getSystemSecretsRolloutTriggers(gen.ConfigFilesSecret),
 		EnforceReplicas: gen.Spec.HPA.IsDeactivated(),
 		IsEnabled:       true,
 	}
@@ -416,7 +418,7 @@ type SidekiqGenerator struct {
 func (gen *SidekiqGenerator) Deployment() basereconciler_resources.DeploymentTemplate {
 	return basereconciler_resources.DeploymentTemplate{
 		Template:        gen.deployment(),
-		RolloutTriggers: getSystemSecretsRolloutTriggers(),
+		RolloutTriggers: getSystemSecretsRolloutTriggers(gen.ConfigFilesSecret),
 		EnforceReplicas: gen.Spec.HPA.IsDeactivated(),
 		IsEnabled:       true,
 	}
@@ -488,7 +490,7 @@ type ConsoleGenerator struct {
 func (gen *ConsoleGenerator) StatefulSet() basereconciler_resources.StatefulSetTemplate {
 	return basereconciler_resources.StatefulSetTemplate{
 		Template:        gen.statefulset(),
-		RolloutTriggers: getSystemSecretsRolloutTriggers(),
+		RolloutTriggers: getSystemSecretsRolloutTriggers(gen.ConfigFilesSecret),
 		IsEnabled:       gen.Enabled,
 	}
 }
