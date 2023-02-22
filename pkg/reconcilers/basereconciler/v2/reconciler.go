@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strconv"
 
+	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	externalsecretsv1beta1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/3scale/saas-operator/pkg/apis/grafana/v1alpha1"
@@ -39,6 +40,7 @@ var SupportedListTypes = []client.ObjectList{
 	&autoscalingv2.HorizontalPodAutoscalerList{},
 	&policyv1.PodDisruptionBudgetList{},
 	&monitoringv1.PodMonitorList{},
+	&marin3rv1alpha1.EnvoyConfigList{},
 }
 
 type Resource interface {
