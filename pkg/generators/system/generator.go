@@ -394,7 +394,6 @@ func (gen *AppGenerator) PDBSpec() *saasv1alpha1.PodDisruptionBudgetSpec {
 func (gen *AppGenerator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint {
 	pmes := []monitoringv1.PodMetricsEndpoint{
 		podmonitor.PodMetricsEndpoint("/metrics", "metrics", 30),
-		podmonitor.PodMetricsEndpoint("/yabeda-metrics", "metrics", 30),
 	}
 	if gen.TwemproxySpec != nil {
 		pmes = append(pmes, podmonitor.PodMetricsEndpoint("/metrics", "twem-metrics", 30))
