@@ -30,7 +30,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-var SupportedListTypes = []client.ObjectList{
+var supportedListTypes = []client.ObjectList{
 	&corev1.ServiceList{},
 	&corev1.ConfigMapList{},
 	&appsv1.DeploymentList{},
@@ -149,7 +149,7 @@ func (r *Reconciler) ManageCleanupLogic(instance client.Object, fns []func(), lo
 // all controllers
 func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.Object, resources []Resource) error {
 
-	managedResources := []types.NamespacedName{}
+	managedResources := []corev1.ObjectReference{}
 
 	for _, res := range resources {
 
@@ -166,7 +166,11 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 			return err
 		}
 
-		managedResources = append(managedResources, util.ObjectKey(object))
+		managedResources = append(managedResources, corev1.ObjectReference{
+			Namespace: object.GetNamespace(),
+			Name:      object.GetName(),
+			Kind:      reflect.TypeOf(object).Elem().Name(),
+		})
 	}
 
 	if value, ok := owner.GetAnnotations()[fmt.Sprintf("%s/prune", saasv1alpha1.GroupVersion.Group)]; ok {
@@ -179,31 +183,34 @@ func (r *Reconciler) ReconcileOwnedResources(ctx context.Context, owner client.O
 		}
 	}
 
-	for _, list := range SupportedListTypes {
-		r.PruneOrphaned(ctx, owner, list, managedResources)
-	}
+	r.PruneOrphaned(ctx, owner, managedResources)
 
 	return nil
 }
 
-func (r *Reconciler) PruneOrphaned(ctx context.Context, owner client.Object, list client.ObjectList, managed []types.NamespacedName) error {
+func (r *Reconciler) PruneOrphaned(ctx context.Context, owner client.Object, managed []corev1.ObjectReference) error {
 	logger := log.FromContext(ctx)
-	err := r.Client.List(ctx, list, client.InNamespace(owner.GetNamespace()))
-	if err != nil {
-		return err
-	}
 
-	for _, obj := range util.GetItems(list) {
+	for _, lType := range supportedListTypes {
 
-		if isOwned(owner, obj) && !operatorutils.IsBeingDeleted(obj) && !isManaged(obj.GetName(), obj.GetNamespace(), managed) {
-			err := r.Client.Delete(ctx, obj)
-			if err != nil {
-				return err
+		err := r.Client.List(ctx, lType, client.InNamespace(owner.GetNamespace()))
+		if err != nil {
+			return err
+		}
+
+		for _, obj := range util.GetItems(lType) {
+
+			kind := reflect.TypeOf(obj).Elem().Name()
+			if isOwned(owner, obj) && !operatorutils.IsBeingDeleted(obj) && !isManaged(util.ObjectKey(obj), kind, managed) {
+
+				err := r.Client.Delete(ctx, obj)
+				if err != nil {
+					return err
+				}
+				logger.Info("resource deleted", "kind", reflect.TypeOf(obj).Elem().Name(), "resource", obj.GetName())
 			}
-			logger.Info("resource deleted", "kind", reflect.TypeOf(obj).Elem().Name(), "resource", obj.GetName())
 		}
 	}
-
 	return nil
 }
 
@@ -217,11 +224,17 @@ func isOwned(owner client.Object, owned client.Object) bool {
 	return false
 }
 
-func isManaged(name, namespace string, managed []types.NamespacedName) bool {
+func isManaged(key types.NamespacedName, kind string, managed []corev1.ObjectReference) bool {
+	// spew.Dump(managed)
+	// spew.Dump(uid)
+	// time.Sleep(10 * time.Second)
 	for _, m := range managed {
-		if m.Name == name && m.Namespace == namespace {
+		if m.Name == key.Name && m.Namespace == key.Namespace && m.Kind == kind {
 			return true
 		}
+		// if m.UID == uid {
+		// 	return true
+		// }
 	}
 	return false
 }
