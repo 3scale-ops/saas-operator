@@ -82,7 +82,7 @@ func (gen *AppGenerator) deployment() func() *appsv1.Deployment {
 						SecurityContext:               &corev1.PodSecurityContext{},
 						Affinity:                      pod.Affinity(gen.GetSelector(), gen.Spec.NodeAffinity),
 						Tolerations:                   gen.Spec.Tolerations,
-						TerminationGracePeriodSeconds: pointer.Int64(30),
+						TerminationGracePeriodSeconds: gen.Spec.TerminationGracePeriodSeconds,
 					},
 				},
 			},

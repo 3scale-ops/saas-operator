@@ -71,7 +71,7 @@ func (gen *SphinxGenerator) statefulset() func() *appsv1.StatefulSet {
 						RestartPolicy:                 corev1.RestartPolicyAlways,
 						SecurityContext:               &corev1.PodSecurityContext{},
 						Tolerations:                   gen.Spec.Tolerations,
-						TerminationGracePeriodSeconds: pointer.Int64(30),
+						TerminationGracePeriodSeconds: gen.Spec.TerminationGracePeriodSeconds,
 					},
 				},
 				VolumeClaimTemplates: []corev1.PersistentVolumeClaim{{

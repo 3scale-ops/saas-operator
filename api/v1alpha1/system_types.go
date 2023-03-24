@@ -35,6 +35,7 @@ const (
 )
 
 var (
+
 	// Common
 	systemDefaultSandboxProxyOpensslVerifyMode string           = "VERIFY_NONE"
 	systemDefaultForceSSL                      bool             = true
@@ -55,6 +56,7 @@ var (
 		SelectorKey:   pointer.StringPtr("monitoring-key"),
 		SelectorValue: pointer.StringPtr("middleware"),
 	}
+	systemDefaultTerminationGracePeriodSeconds *int64 = pointer.Int64(60)
 
 	// App
 	systemDefaultAppReplicas     int32                   = 2
@@ -620,6 +622,10 @@ type SystemAppSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Canary *Canary `json:"canary,omitempty"`
+	// Configures the TerminationGracePeriodSeconds
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty"`
 }
 
 // Default implements defaulting for the system App component
@@ -630,6 +636,10 @@ func (spec *SystemAppSpec) Default() {
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, systemDefaultAppResources)
 	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, systemDefaultAppLivenessProbe)
 	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, systemDefaultAppReadinessProbe)
+	spec.TerminationGracePeriodSeconds = int64OrDefault(
+		spec.TerminationGracePeriodSeconds, systemDefaultTerminationGracePeriodSeconds,
+	)
+
 }
 
 // SystemSidekiqSpec configures the Sidekiq component of System
@@ -673,6 +683,10 @@ type SystemSidekiqSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Canary *Canary `json:"canary,omitempty"`
+	// Configures the TerminationGracePeriodSeconds
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty"`
 }
 
 // SidekiqConfig configures app behavior for System Sidekiq
@@ -708,6 +722,10 @@ func (spec *SystemSidekiqSpec) Default(sidekiqType systemSidekiqType) {
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, systemDefaultSidekiqResources)
 	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, systemDefaultSidekiqLivenessProbe)
 	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, systemDefaultSidekiqReadinessProbe)
+	spec.TerminationGracePeriodSeconds = int64OrDefault(
+		spec.TerminationGracePeriodSeconds, systemDefaultTerminationGracePeriodSeconds,
+	)
+
 	if spec.Config == nil {
 		spec.Config = &SidekiqConfig{}
 	}
@@ -750,6 +768,10 @@ type SystemSphinxSpec struct {
 	// If specified, the pod's tolerations.
 	// +optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
+	// Configures the TerminationGracePeriodSeconds
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty"`
 }
 
 // Default implements defaulting for the system sphinx component
@@ -763,6 +785,9 @@ func (spec *SystemSphinxSpec) Default(systemDefaultImage *ImageSpec) {
 		spec.Config = &SphinxConfig{}
 	}
 	spec.Config.Default()
+	spec.TerminationGracePeriodSeconds = int64OrDefault(
+		spec.TerminationGracePeriodSeconds, systemDefaultTerminationGracePeriodSeconds,
+	)
 }
 
 // SphinxConfig has configuration options for System's sphinx
