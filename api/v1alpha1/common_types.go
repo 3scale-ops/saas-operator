@@ -658,6 +658,13 @@ func intOrDefault(value *int32, defValue *int32) *int32 {
 	return value
 }
 
+func int64OrDefault(value *int64, defValue *int64) *int64 {
+	if value == nil {
+		return defValue
+	}
+	return value
+}
+
 func boolOrDefault(value *bool, defValue *bool) *bool {
 	if value == nil {
 		return defValue
