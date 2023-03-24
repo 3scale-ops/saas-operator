@@ -157,6 +157,7 @@ var _ = Describe("System controller", func() {
 					Assert(k8sClient, svc, timeout, poll))
 
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("system-app"))
+			Expect(dep.Spec.Template.Spec.TerminationGracePeriodSeconds).To(Equal(pointer.Int64(60)))
 
 		})
 
@@ -182,6 +183,7 @@ var _ = Describe("System controller", func() {
 
 			Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
 			Expect(dep.Spec.Template.Spec.Volumes[1].Secret.SecretName).To(Equal("system-config"))
+			Expect(dep.Spec.Template.Spec.TerminationGracePeriodSeconds).To(Equal(pointer.Int64(60)))
 
 			By("deploying a system-sidekiq-billing workload",
 				(&testutil.ExpectedWorkload{
@@ -197,6 +199,7 @@ var _ = Describe("System controller", func() {
 
 			Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
 			Expect(dep.Spec.Template.Spec.Volumes[1].Secret.SecretName).To(Equal("system-config"))
+			Expect(dep.Spec.Template.Spec.TerminationGracePeriodSeconds).To(Equal(pointer.Int64(60)))
 
 			By("deploying a system-sidekiq-low workload",
 				(&testutil.ExpectedWorkload{
@@ -212,6 +215,7 @@ var _ = Describe("System controller", func() {
 
 			Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
 			Expect(dep.Spec.Template.Spec.Volumes[1].Secret.SecretName).To(Equal("system-config"))
+			Expect(dep.Spec.Template.Spec.TerminationGracePeriodSeconds).To(Equal(pointer.Int64(60)))
 
 		})
 
@@ -221,6 +225,8 @@ var _ = Describe("System controller", func() {
 			By("deploying the system-sphinx statefulset",
 				(&testutil.ExpectedResource{Name: "system-sphinx", Namespace: namespace}).
 					Assert(k8sClient, sts, timeout, poll))
+
+			Expect(sts.Spec.Template.Spec.TerminationGracePeriodSeconds).To(Equal(pointer.Int64(60)))
 
 			Expect(sts.Spec.Template.Spec.Containers[0].Env).To(
 				ContainElement(
@@ -309,6 +315,7 @@ var _ = Describe("System controller", func() {
 			By("ensuring the system-sidekiq-low-canary deployment",
 				(&testutil.ExpectedResource{Name: "system-sidekiq-low-canary", Namespace: namespace, Missing: true}).
 					Assert(k8sClient, dep, timeout, poll))
+
 		})
 
 		When("updating a System resource with console", func() {
@@ -435,6 +442,7 @@ var _ = Describe("System controller", func() {
 					}).Assert(k8sClient, dep, timeout, poll))
 
 				Expect(dep.Spec.Template.Spec.Volumes[0].Secret.SecretName).To(Equal("system-config"))
+				Expect(dep.Spec.Template.Spec.TerminationGracePeriodSeconds).To(Equal(pointer.Int64(60)))
 
 				svc := &corev1.Service{}
 				By("keeps the system-app service deployment label selector",
@@ -461,6 +469,7 @@ var _ = Describe("System controller", func() {
 
 				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
 				Expect(dep.Spec.Template.Spec.Volumes[1].Secret.SecretName).To(Equal("system-config"))
+				Expect(dep.Spec.Template.Spec.TerminationGracePeriodSeconds).To(Equal(pointer.Int64(60)))
 
 				By("deploying a system-sidekiq-billing-canary workload",
 					(&testutil.ExpectedWorkload{
@@ -474,6 +483,7 @@ var _ = Describe("System controller", func() {
 
 				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
 				Expect(dep.Spec.Template.Spec.Volumes[1].Secret.SecretName).To(Equal("system-config"))
+				Expect(dep.Spec.Template.Spec.TerminationGracePeriodSeconds).To(Equal(pointer.Int64(60)))
 
 				By("deploying a system-sidekiq-low-canary workload",
 					(&testutil.ExpectedWorkload{
@@ -487,6 +497,7 @@ var _ = Describe("System controller", func() {
 
 				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
 				Expect(dep.Spec.Template.Spec.Volumes[1].Secret.SecretName).To(Equal("system-config"))
+				Expect(dep.Spec.Template.Spec.TerminationGracePeriodSeconds).To(Equal(pointer.Int64(60)))
 
 			})
 
