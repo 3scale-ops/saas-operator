@@ -3,8 +3,8 @@ package workloads
 import (
 	"testing"
 
+	basereconciler_resources "github.com/3scale-ops/basereconciler/resources"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	basereconciler_resources "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/resources"
 	"github.com/3scale/saas-operator/pkg/util"
 	"github.com/go-test/deep"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"

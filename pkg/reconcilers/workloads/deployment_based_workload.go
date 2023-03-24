@@ -3,7 +3,7 @@ package workloads
 import (
 	"reflect"
 
-	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
+	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 

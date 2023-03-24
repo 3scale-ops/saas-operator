@@ -102,7 +102,7 @@ func (sew *SentinelEventWatcher) Cleanup() error {
 	return sew.sentinel.CRUD.CloseClient()
 }
 
-//Start starts metrics gatherer for sentinel
+// Start starts metrics gatherer for sentinel
 func (sew *SentinelEventWatcher) Start(parentCtx context.Context, l logr.Logger) error {
 	log := l.WithValues("sentinel", sew.SentinelURI)
 	if sew.started {

@@ -1,9 +1,9 @@
 package workloads
 
 import (
+	basereconciler_resources "github.com/3scale-ops/basereconciler/resources"
 	marin3r "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	basereconciler_resources "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/resources"
 	"github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig"
 	descriptor "github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 	"github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/factory"

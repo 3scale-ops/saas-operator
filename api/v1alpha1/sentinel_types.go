@@ -255,10 +255,10 @@ type RedisServerDetails struct {
 	Config map[string]string `json:"config,omitempty"`
 }
 
-//+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
-//+kubebuilder:printcolumn:JSONPath=".status.sentinels",name=Sentinels,type=string
-//+kubebuilder:printcolumn:JSONPath=".status.monitoredShards",name=Shards,type=string
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:JSONPath=".status.sentinels",name=Sentinels,type=string
+// +kubebuilder:printcolumn:JSONPath=".status.monitoredShards",name=Shards,type=string
 // Sentinel is the Schema for the sentinels API
 type Sentinel struct {
 	metav1.TypeMeta   `json:",inline"`
