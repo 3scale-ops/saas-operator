@@ -3,7 +3,7 @@ module github.com/3scale/saas-operator
 go 1.19
 
 require (
-	github.com/3scale-ops/basereconciler v0.0.0-20230330132633-d7151777d1b0
+	github.com/3scale-ops/basereconciler v0.0.0-20230330141702-3e37ce95476a
 	github.com/3scale-ops/marin3r v0.0.0-20230324210326-23925f60fa89
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/davecgh/go-spew v1.1.1

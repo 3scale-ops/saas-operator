@@ -4,6 +4,7 @@ import (
 	basereconciler_resources "github.com/3scale-ops/basereconciler/resources"
 	marin3r "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	"github.com/3scale/saas-operator/pkg/reconcilers/resource_extensions"
 	"github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig"
 	descriptor "github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 	"github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/factory"
@@ -228,7 +229,7 @@ func NewPodMonitorTemplateFromEndpoints(endpoints ...monitoringv1.PodMetricsEndp
 
 // EnvoyConfigTemplate specifies a EnvoyConfig resource
 type EnvoyConfigTemplate struct {
-	basereconciler_resources.EnvoyConfigTemplate
+	resource_extensions.EnvoyConfigTemplate
 }
 
 func (ect EnvoyConfigTemplate) ApplyMeta(w WithWorkloadMeta) EnvoyConfigTemplate {
@@ -258,12 +259,12 @@ func (ect EnvoyConfigTemplate) SetNodeID(w WithWorkloadMeta) EnvoyConfigTemplate
 	return ect
 }
 
-func NewEnvoyConfigTemplate(t basereconciler_resources.EnvoyConfigTemplate) EnvoyConfigTemplate {
+func NewEnvoyConfigTemplate(t resource_extensions.EnvoyConfigTemplate) EnvoyConfigTemplate {
 	return EnvoyConfigTemplate{EnvoyConfigTemplate: t}
 }
 
 func NewEnvoyConfigTemplateFromEnvoyResources(configs []descriptor.EnvoyDynamicConfigDescriptor) EnvoyConfigTemplate {
-	return NewEnvoyConfigTemplate(basereconciler_resources.EnvoyConfigTemplate{
+	return NewEnvoyConfigTemplate(resource_extensions.EnvoyConfigTemplate{
 		Template:  envoyconfig.New(EmptyKey, EmptyKey.Name, factory.Default(), configs...),
 		IsEnabled: len(configs) > 0,
 	})
