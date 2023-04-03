@@ -612,7 +612,7 @@ var _ = Describe("Apicast controller", func() {
 					}, timeout, poll).ShouldNot(HaveOccurred())
 				})
 
-				FIt("deletes the canary resources", func() {
+				It("deletes the canary resources", func() {
 
 					dep := &appsv1.Deployment{}
 					By("removing the apicast-production-canary Deployment",
