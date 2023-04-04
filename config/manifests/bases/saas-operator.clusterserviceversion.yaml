@@ -2256,6 +2256,9 @@ spec:
           info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
         displayName: Requests
         path: app.resources.requests
+      - description: Configures the TerminationGracePeriodSeconds
+        displayName: Termination Grace Period Seconds
+        path: app.terminationGracePeriodSeconds
       - description: Application specific configuration options for System components
         displayName: Config
         path: config
@@ -2923,6 +2926,9 @@ spec:
           info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
         displayName: Requests
         path: sidekiqBilling.resources.requests
+      - description: Configures the TerminationGracePeriodSeconds
+        displayName: Termination Grace Period Seconds
+        path: sidekiqBilling.terminationGracePeriodSeconds
       - description: Sidekiq Default specific configuration options
         displayName: Sidekiq Default
         path: sidekiqDefault
@@ -3049,6 +3055,9 @@ spec:
           info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
         displayName: Requests
         path: sidekiqDefault.resources.requests
+      - description: Configures the TerminationGracePeriodSeconds
+        displayName: Termination Grace Period Seconds
+        path: sidekiqDefault.terminationGracePeriodSeconds
       - description: Sidekiq Low specific configuration options
         displayName: Sidekiq Low
         path: sidekiqLow
@@ -3175,6 +3184,9 @@ spec:
           info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
         displayName: Requests
         path: sidekiqLow.resources.requests
+      - description: Configures the TerminationGracePeriodSeconds
+        displayName: Termination Grace Period Seconds
+        path: sidekiqLow.terminationGracePeriodSeconds
       - description: Sphinx specific configuration options
         displayName: Sphinx
         path: sphinx
@@ -3280,6 +3292,9 @@ spec:
           info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
         displayName: Requests
         path: sphinx.resources.requests
+      - description: Configures the TerminationGracePeriodSeconds
+        displayName: Termination Grace Period Seconds
+        path: sphinx.terminationGracePeriodSeconds
       - description: Configures twemproxy
         displayName: Twemproxy
         path: twemproxy

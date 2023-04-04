@@ -433,6 +433,10 @@ spec:
                           to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                         type: object
                     type: object
+                  terminationGracePeriodSeconds:
+                    description: Configures the TerminationGracePeriodSeconds
+                    format: int64
+                    type: integer
                   tolerations:
                     description: If specified, the pod's tolerations.
                     items:
@@ -1937,6 +1941,10 @@ spec:
                           to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                         type: object
                     type: object
+                  terminationGracePeriodSeconds:
+                    description: Configures the TerminationGracePeriodSeconds
+                    format: int64
+                    type: integer
                   tolerations:
                     description: If specified, the pod's tolerations.
                     items:
@@ -2392,6 +2400,10 @@ spec:
                           to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                         type: object
                     type: object
+                  terminationGracePeriodSeconds:
+                    description: Configures the TerminationGracePeriodSeconds
+                    format: int64
+                    type: integer
                   tolerations:
                     description: If specified, the pod's tolerations.
                     items:
@@ -2847,6 +2859,10 @@ spec:
                           to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                         type: object
                     type: object
+                  terminationGracePeriodSeconds:
+                    description: Configures the TerminationGracePeriodSeconds
+                    format: int64
+                    type: integer
                   tolerations:
                     description: If specified, the pod's tolerations.
                     items:
@@ -3259,6 +3275,10 @@ spec:
                           to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                         type: object
                     type: object
+                  terminationGracePeriodSeconds:
+                    description: Configures the TerminationGracePeriodSeconds
+                    format: int64
+                    type: integer
                   tolerations:
                     description: If specified, the pod's tolerations.
                     items:
