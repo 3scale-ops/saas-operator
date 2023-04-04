@@ -1,11 +1,11 @@
-package resources
+package resource_extensions
 
 import (
 	"context"
 	"fmt"
 
-	externalsecretsv1beta1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1beta1"
-	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
+	"github.com/3scale-ops/basereconciler/reconciler"
+	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -13,37 +13,42 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-var _ basereconciler.Resource = ExternalSecretTemplate{}
+var _ reconciler.Resource = EnvoyConfigTemplate{}
 
-// ExternalSecretTemplate has methods to generate and reconcile an ExternalSecret
-type ExternalSecretTemplate struct {
-	Template  func() *externalsecretsv1beta1.ExternalSecret
+// EnvoyConfigTemplate has methods to generate and reconcile a EnvoyConfig
+type EnvoyConfigTemplate struct {
+	Template  func() (*marin3rv1alpha1.EnvoyConfig, error)
 	IsEnabled bool
 }
 
-// Build returns an ExternalSecret resource
-func (est ExternalSecretTemplate) Build(ctx context.Context, cl client.Client) (client.Object, error) {
-	return est.Template().DeepCopy(), nil
+// Build returns a EnvoyConfig resource
+func (ect EnvoyConfigTemplate) Build(ctx context.Context, cl client.Client) (client.Object, error) {
+
+	ec, err := ect.Template()
+	if err != nil {
+		return nil, err
+	}
+	return ec.DeepCopy(), nil
 }
 
 // Enabled indicates if the resource should be present or not
-func (est ExternalSecretTemplate) Enabled() bool {
-	return est.IsEnabled
+func (ect EnvoyConfigTemplate) Enabled() bool {
+	return ect.IsEnabled
 }
 
-// ResourceReconciler implements a generic reconciler for ExternalSecret resources
-func (est ExternalSecretTemplate) ResourceReconciler(ctx context.Context, cl client.Client, obj client.Object) error {
-	logger := log.FromContext(ctx, "kind", "ExternalSecret", "resource", obj.GetName())
+// ResourceReconciler implements a generic reconciler for EnvoyConfig resources
+func (ect EnvoyConfigTemplate) ResourceReconciler(ctx context.Context, cl client.Client, obj client.Object) error {
+	logger := log.FromContext(ctx, "kind", "EnvoyConfig", "resource", obj.GetName())
 
 	needsUpdate := false
-	desired := obj.(*externalsecretsv1beta1.ExternalSecret)
+	desired := obj.(*marin3rv1alpha1.EnvoyConfig)
 
-	instance := &externalsecretsv1beta1.ExternalSecret{}
+	instance := &marin3rv1alpha1.EnvoyConfig{}
 	err := cl.Get(ctx, types.NamespacedName{Name: desired.GetName(), Namespace: desired.GetNamespace()}, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
 
-			if est.Enabled() {
+			if ect.Enabled() {
 				err = cl.Create(ctx, desired)
 				if err != nil {
 					return fmt.Errorf("unable to create object: " + err.Error())
@@ -60,7 +65,7 @@ func (est ExternalSecretTemplate) ResourceReconciler(ctx context.Context, cl cli
 	}
 
 	/* Delete and return if not enabled */
-	if !est.Enabled() {
+	if !ect.Enabled() {
 		err := cl.Delete(ctx, instance)
 		if err != nil {
 			return fmt.Errorf("unable to delete object: " + err.Error())
@@ -70,12 +75,16 @@ func (est ExternalSecretTemplate) ResourceReconciler(ctx context.Context, cl cli
 	}
 
 	/* Reconcile metadata */
+	if !equality.Semantic.DeepEqual(instance.GetAnnotations(), desired.GetAnnotations()) {
+		instance.ObjectMeta.Annotations = desired.GetAnnotations()
+		needsUpdate = true
+	}
 	if !equality.Semantic.DeepEqual(instance.GetLabels(), desired.GetLabels()) {
 		instance.ObjectMeta.Labels = desired.GetLabels()
 		needsUpdate = true
 	}
 
-	/* Reconcile the spec */
+	/* Reconcile spec */
 	if !equality.Semantic.DeepEqual(instance.Spec, desired.Spec) {
 		instance.Spec = desired.Spec
 		needsUpdate = true

@@ -451,6 +451,19 @@ type ResourceRequirementsSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Requests corev1.ResourceList `json:"requests,omitempty"`
+	// Claims lists the names of resources, defined in spec.resourceClaims,
+	// that are used by this container.
+	//
+	// This is an alpha field and requires enabling the
+	// DynamicResourceAllocation feature gate.
+	//
+	// This field is immutable.
+	//
+	// +listType=map
+	// +listMapKey=name
+	// +featureGate=DynamicResourceAllocation
+	// +optional
+	Claims []corev1.ResourceClaim `json:"claims,omitempty" protobuf:"bytes,3,opt,name=claims"`
 }
 
 type defaultResourceRequirementsSpec struct {

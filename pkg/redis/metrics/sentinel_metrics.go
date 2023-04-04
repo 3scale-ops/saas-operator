@@ -116,7 +116,7 @@ func (smg *SentinelMetricsGatherer) IsStarted() bool {
 // interface, but it actually does nothing with the channel.
 func (fw *SentinelMetricsGatherer) SetChannel(ch chan event.GenericEvent) {}
 
-//Start starts metrics gatherer for sentinel
+// Start starts metrics gatherer for sentinel
 func (smg *SentinelMetricsGatherer) Start(parentCtx context.Context, l logr.Logger) error {
 	log := l.WithValues("sentinel", smg.SentinelURI)
 	if smg.started {

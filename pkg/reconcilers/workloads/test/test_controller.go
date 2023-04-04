@@ -19,12 +19,13 @@ limitations under the License.
 import (
 	"context"
 
+	"github.com/3scale-ops/basereconciler/reconciler"
+	"github.com/3scale-ops/basereconciler/resources"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	externalsecretsv1beta1 "github.com/3scale/saas-operator/pkg/apis/externalsecrets/v1beta1"
-	"github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/resources"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads/test/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/util"
+	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
 	"github.com/go-logr/logr"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -39,6 +40,20 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
+
+func init() {
+	reconciler.Config.AnnotationsDomain = saasv1alpha1.AnnotationsDomain
+	reconciler.Config.ResourcePruner = true
+	reconciler.Config.ManagedTypes = reconciler.NewManagedTypes().
+		Register(&corev1.ServiceList{}).
+		Register(&corev1.ConfigMapList{}).
+		Register(&appsv1.DeploymentList{}).
+		Register(&appsv1.StatefulSetList{}).
+		Register(&externalsecretsv1beta1.ExternalSecretList{}).
+		Register(&autoscalingv2.HorizontalPodAutoscalerList{}).
+		Register(&policyv1.PodDisruptionBudgetList{}).
+		Register(&monitoringv1.PodMonitorList{})
+}
 
 // WorkloadReconciler reconciles a Test object
 // +kubebuilder:object:generate=false

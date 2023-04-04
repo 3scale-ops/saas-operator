@@ -296,7 +296,7 @@ GOBINDATA ?= $(LOCALBIN)/go-bindata
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v3.8.7
 CONTROLLER_TOOLS_VERSION ?= v0.10.0
-GINKGO_VERSION ?= v2.1.4
+GINKGO_VERSION ?= v2.9.1
 CRD_REFDOCS_VERSION ?= v0.0.8
 KIND_VERSION ?= v0.16.0
 ENVTEST_VERSION ?= latest
@@ -339,7 +339,7 @@ $(GOBINDATA):
 ##@ Other
 
 .PHONY: operator-sdk
-OPERATOR_SDK_RELEASE = v1.25.0
+OPERATOR_SDK_RELEASE = v1.27.0
 OPERATOR_SDK = bin/operator-sdk-$(OPERATOR_SDK_RELEASE)
 operator-sdk: ## Download operator-sdk locally if necessary.
 ifeq (,$(wildcard $(OPERATOR_SDK)))

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"sort"
 
+	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
+	basereconciler_resources "github.com/3scale-ops/basereconciler/resources"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators"
-	basereconciler "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2"
-	basereconciler_resources "github.com/3scale/saas-operator/pkg/reconcilers/basereconciler/v2/resources"
 	"github.com/3scale/saas-operator/pkg/redis"
 	"github.com/3scale/saas-operator/pkg/resource_builders/grafanadashboard"
 	"github.com/3scale/saas-operator/pkg/resource_builders/twemproxy"
