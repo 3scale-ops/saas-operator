@@ -121,6 +121,26 @@ var _ = Describe("System controller", func() {
 							SecretKey: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 						},
 					},
+					SidekiqDefault: &saasv1alpha1.SystemSidekiqSpec{
+						HPA: &saasv1alpha1.HorizontalPodAutoscalerSpec{
+							Behavior: &autoscalingv2.HorizontalPodAutoscalerBehavior{
+								ScaleUp: &autoscalingv2.HPAScalingRules{
+									Policies: []autoscalingv2.HPAScalingPolicy{
+										{
+											Type:          autoscalingv2.PodsScalingPolicy,
+											Value:         4,
+											PeriodSeconds: 60,
+										},
+										{
+											Type:          autoscalingv2.PercentScalingPolicy,
+											Value:         10,
+											PeriodSeconds: 60,
+										},
+									},
+								},
+							},
+						},
+					},
 				},
 			}
 			err := k8sClient.Create(context.Background(), system)
@@ -184,6 +204,14 @@ var _ = Describe("System controller", func() {
 			Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
 			Expect(dep.Spec.Template.Spec.Volumes[1].Secret.SecretName).To(Equal("system-config"))
 			Expect(dep.Spec.Template.Spec.TerminationGracePeriodSeconds).To(Equal(pointer.Int64(60)))
+
+			hpa := &autoscalingv2.HorizontalPodAutoscaler{}
+			By("updates system-sidekiq-default hpa behaviour",
+				(&testutil.ExpectedResource{Name: "system-sidekiq-default", Namespace: namespace}).
+					Assert(k8sClient, hpa, timeout, poll))
+			Expect(hpa.Spec.Behavior.ScaleUp.Policies).To(Not(BeEmpty()))
+			Expect(hpa.Spec.Behavior.ScaleUp.Policies[0].Type).To(Equal(autoscalingv2.PodsScalingPolicy))
+			Expect(hpa.Spec.Behavior.ScaleUp.Policies[0].Value).To(Equal(int32(4)))
 
 			By("deploying a system-sidekiq-billing workload",
 				(&testutil.ExpectedWorkload{

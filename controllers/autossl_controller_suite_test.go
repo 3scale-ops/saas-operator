@@ -9,6 +9,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -59,6 +60,20 @@ var _ = Describe("AutoSSL controller", func() {
 					Endpoint: saasv1alpha1.Endpoint{
 						DNS: []string{"autossl.example.com"},
 					},
+					HPA: &saasv1alpha1.HorizontalPodAutoscalerSpec{
+						Behavior: &autoscalingv2.HorizontalPodAutoscalerBehavior{
+							ScaleDown: &autoscalingv2.HPAScalingRules{
+								StabilizationWindowSeconds: pointer.Int32(45),
+								Policies: []autoscalingv2.HPAScalingPolicy{
+									{
+										Type:          autoscalingv2.PodsScalingPolicy,
+										Value:         4,
+										PeriodSeconds: 60,
+									},
+								},
+							},
+						},
+					},
 				},
 			}
 			err := k8sClient.Create(context.Background(), autossl)
@@ -102,6 +117,16 @@ var _ = Describe("AutoSSL controller", func() {
 
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("autossl"))
 			Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("autossl"))
+
+			hpa := &autoscalingv2.HorizontalPodAutoscaler{}
+			By("updates autossl hpa behaviour",
+				(&testutil.ExpectedResource{Name: "autossl", Namespace: namespace}).
+					Assert(k8sClient, hpa, timeout, poll))
+
+			Expect(hpa.Spec.Behavior.ScaleDown.StabilizationWindowSeconds).To(Equal(pointer.Int32(45)))
+			Expect(hpa.Spec.Behavior.ScaleDown.Policies).To(Not(BeEmpty()))
+			Expect(hpa.Spec.Behavior.ScaleDown.Policies[0].Type).To(Equal(autoscalingv2.PodsScalingPolicy))
+			Expect(hpa.Spec.Behavior.ScaleDown.Policies[0].Value).To(Equal(int32(4)))
 
 			By("deploying an autossl grafana dashboard",
 				(&testutil.ExpectedResource{
