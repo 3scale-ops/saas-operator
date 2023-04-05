@@ -78,3 +78,65 @@ func AddTwemproxySidecar(dep appsv1.Deployment, spec *saasv1alpha1.TwemproxySpec
 
 	return &dep
 }
+
+func AddStsTwemproxySidecar(sts appsv1.StatefulSet, spec *saasv1alpha1.TwemproxySpec) *appsv1.StatefulSet {
+
+	// Labels to subscribe to the TwemproxyConfig sync events
+	sts.Spec.Template.ObjectMeta.Labels = util.MergeMaps(
+		map[string]string{},
+		sts.Spec.Template.GetLabels(),
+		map[string]string{saasv1alpha1.TwemproxyPodSyncLabelKey: spec.TwemproxyConfigRef},
+	)
+
+	// Twemproxy container
+	sts.Spec.Template.Spec.Containers = append(sts.Spec.Template.Spec.Containers,
+		corev1.Container{
+			Env:   pod.BuildEnvironment(NewTwemproxyOptions(*spec)),
+			Name:  twemproxy,
+			Image: pod.Image(*spec.Image),
+			Ports: pod.ContainerPorts(
+				pod.ContainerPortTCP(twemproxy, 22121),
+				pod.ContainerPortTCP("twem-metrics", int32(*spec.Options.MetricsPort)),
+			),
+			Resources:                corev1.ResourceRequirements(*spec.Resources),
+			ImagePullPolicy:          *spec.Image.PullPolicy,
+			LivenessProbe:            pod.ExecProbe(healthCommand, *spec.LivenessProbe),
+			ReadinessProbe:           pod.ExecProbe(healthCommand, *spec.ReadinessProbe),
+			TerminationMessagePath:   corev1.TerminationMessagePathDefault,
+			TerminationMessagePolicy: corev1.TerminationMessageReadFile,
+			Lifecycle: &corev1.Lifecycle{
+				PreStop: &corev1.LifecycleHandler{
+					Exec: &corev1.ExecAction{
+						Command: []string{"pre-stop", TwemproxyConfigFile},
+					},
+				},
+			},
+			VolumeMounts: []corev1.VolumeMount{
+				{
+					Name:      twemproxy + "-config",
+					MountPath: filepath.Dir(TwemproxyConfigFile),
+				},
+			},
+		})
+
+	if sts.Spec.Template.Spec.Volumes == nil {
+		sts.Spec.Template.Spec.Volumes = []corev1.Volume{}
+	}
+
+	// Mount the TwemproxyConfig ConfigMap in the Pod
+	sts.Spec.Template.Spec.Volumes = append(
+		sts.Spec.Template.Spec.Volumes,
+		corev1.Volume{
+			Name: twemproxy + "-config",
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: spec.ConfigMapName(),
+					},
+					DefaultMode: pointer.Int32(420),
+				},
+			},
+		})
+
+	return &sts
+}
