@@ -662,6 +662,7 @@ HorizontalPodAutoscalerSpec defines the HPA for the component
 | *`maxReplicas`* __integer__ | Upper limit for the number of replicas to which the autoscaler can scale up. It cannot be less that minReplicas.
 | *`resourceName`* __string__ | Target resource used to autoscale (cpu/memory)
 | *`resourceUtilization`* __integer__ | A percentage indicating the target resource consumption used to autoscale
+| *`behavior`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#horizontalpodautoscalerbehavior-v2-autoscaling[$$HorizontalPodAutoscalerBehavior$$]__ | Behavior configures the scaling behavior of the target in both Up and Down directions (scaleUp and scaleDown fields respectively). If not set, the default HPAScalingRules for scale up and scale down are used.
 |===
 
 
