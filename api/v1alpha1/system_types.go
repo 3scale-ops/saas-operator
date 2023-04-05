@@ -279,7 +279,7 @@ func (spec *SystemSpec) Default() {
 	if spec.Console == nil {
 		spec.Console = &SystemRailsConsoleSpec{}
 	}
-	spec.Console.Default()
+	spec.Console.Default(spec.Image)
 
 	if spec.Twemproxy != nil {
 		spec.Twemproxy.Default()
@@ -858,6 +858,11 @@ func (tc *ThinkingSpec) Default() {
 
 // SystemRailsConsoleSpec configures the App component of System
 type SystemRailsConsoleSpec struct {
+	// Image specification for the Sphinx component.
+	// Defaults to system image if not defined.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Image *ImageSpec `json:"image,omitempty"`
 	// Resource requirements for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -871,7 +876,8 @@ type SystemRailsConsoleSpec struct {
 }
 
 // Default implements defaulting for the system App component
-func (spec *SystemRailsConsoleSpec) Default() {
+func (spec *SystemRailsConsoleSpec) Default(systemDefaultImage *ImageSpec) {
+	spec.Image = InitializeImageSpec(spec.Image, defaultImageSpec(*systemDefaultImage))
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, systemDefaultRailsConsoleResources)
 }
 

@@ -2762,6 +2762,23 @@ spec:
       - description: Console specific configuration options
         displayName: Console
         path: console
+      - description: Image specification for the Sphinx component. Defaults to system
+          image if not defined.
+        displayName: Image
+        path: console.image
+      - description: Docker repository of the image
+        displayName: Name
+        path: console.image.name
+      - description: Pull policy for the image
+        displayName: Pull Policy
+        path: console.image.pullPolicy
+      - description: Name of the Secret that holds quay.io credentials to access the
+          image repository
+        displayName: Pull Secret Name
+        path: console.image.pullSecretName
+      - description: Image tag
+        displayName: Tag
+        path: console.image.tag
       - description: Resource requirements for the component
         displayName: Resources
         path: console.resources

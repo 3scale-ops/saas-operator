@@ -329,12 +329,14 @@ var _ = Describe("System controller", func() {
 					)
 					Expect(err).ToNot(HaveOccurred())
 					patch := client.MergeFrom(system.DeepCopy())
-					system.Spec.Image = &saasv1alpha1.ImageSpec{
-						Name: pointer.StringPtr("newImage"),
-						Tag:  pointer.StringPtr("newTag"),
-					}
 					system.Spec.Config.Rails = &saasv1alpha1.SystemRailsSpec{
 						Console: pointer.Bool(true),
+					}
+					system.Spec.Console = &saasv1alpha1.SystemRailsConsoleSpec{
+						Image: &saasv1alpha1.ImageSpec{
+							Name: pointer.StringPtr("newImage"),
+							Tag:  pointer.StringPtr("newTag"),
+						},
 					}
 					return k8sClient.Patch(context.Background(), system, patch)
 				}, timeout, poll).ShouldNot(HaveOccurred())
