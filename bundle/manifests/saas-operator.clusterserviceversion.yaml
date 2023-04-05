@@ -627,7 +627,7 @@ metadata:
     capabilities: Basic Install
     categories: Integration & Delivery
     containerImage: quay.io/3scale/saas-operator
-    createdAt: "2023-04-05T07:51:54Z"
+    createdAt: "2023-04-05T08:01:02Z"
     description: |-
       The 3scale SaaS Operator creates and maintains a SaaS-ready deployment
       of the Red Hat 3scale API Management on OpenShift.
@@ -635,7 +635,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/3scale/saas-operator
     support: Red Hat
-  name: saas-operator.v0.19.1
+  name: saas-operator.v0.19.2
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -3250,6 +3250,23 @@ spec:
       - description: Console specific configuration options
         displayName: Console
         path: console
+      - description: Image specification for the Sphinx component. Defaults to system
+          image if not defined.
+        displayName: Image
+        path: console.image
+      - description: Docker repository of the image
+        displayName: Name
+        path: console.image.name
+      - description: Pull policy for the image
+        displayName: Pull Policy
+        path: console.image.pullPolicy
+      - description: Name of the Secret that holds quay.io credentials to access the
+          image repository
+        displayName: Pull Secret Name
+        path: console.image.pullSecretName
+      - description: Image tag
+        displayName: Tag
+        path: console.image.tag
       - description: Resource requirements for the component
         displayName: Resources
         path: console.resources
@@ -4322,7 +4339,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/3scale/saas-operator:v0.19.1
+                image: quay.io/3scale/saas-operator:v0.19.2
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -4836,4 +4853,4 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
-  version: 0.19.1
+  version: 0.19.2

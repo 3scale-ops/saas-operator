@@ -162,7 +162,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) (Gen
 			},
 			Spec:              *spec.Console,
 			Options:           config.NewOptions(spec),
-			Image:             *spec.Image,
+			Image:             *spec.Console.Image,
 			ConfigFilesSecret: *spec.Config.ConfigFilesSecret,
 			Enabled:           *spec.Config.Rails.Console,
 		},
