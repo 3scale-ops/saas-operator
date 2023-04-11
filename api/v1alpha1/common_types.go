@@ -23,6 +23,7 @@ import (
 	"time"
 
 	jsonpatch "github.com/evanphx/json-patch"
+	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -441,6 +442,39 @@ func InitializeHorizontalPodAutoscalerSpec(spec *HorizontalPodAutoscalerSpec, de
 		return copy
 	}
 	return spec
+}
+
+type DeploymentStrategySpec struct {
+	// Type of deployment. Can be "Recreate" or "RollingUpdate". Default is RollingUpdate.
+	// +optional
+	Type appsv1.DeploymentStrategyType `json:"type,omitempty" protobuf:"bytes,1,opt,name=type,casttype=DeploymentStrategyType"`
+	// Rolling update config params. Present only if DeploymentStrategyType =
+	// RollingUpdate.
+	// +optional
+	RollingUpdate *appsv1.RollingUpdateDeployment `json:"rollingUpdate,omitempty" protobuf:"bytes,2,opt,name=rollingUpdate"`
+}
+
+type defaultDeploymentRollingStrategySpec struct {
+	MaxUnavailable, MaxSurge *intstr.IntOrString
+}
+
+// InitializeDeploymentStrategySpec initializes a DeploymentStrategySpec struct
+func InitializeDeploymentStrategySpec(spec *DeploymentStrategySpec, def defaultDeploymentRollingStrategySpec) *DeploymentStrategySpec {
+	if spec == nil {
+		new := &DeploymentStrategySpec{}
+		new.Default(def)
+		return new
+	}
+	return spec
+}
+
+// Default sets default values for any value not specifically set in the DeploymentStrategySpec struct
+func (spec *DeploymentStrategySpec) Default(def defaultDeploymentRollingStrategySpec) {
+	spec.Type = appsv1.RollingUpdateDeploymentStrategyType
+	spec.RollingUpdate = &appsv1.RollingUpdateDeployment{
+		MaxSurge:       def.MaxSurge,
+		MaxUnavailable: def.MaxUnavailable,
+	}
 }
 
 // ResourceRequirementsSpec defines the resource requirements for the component
