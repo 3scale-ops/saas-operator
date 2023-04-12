@@ -460,6 +460,25 @@ CronSpec is the configuration for Backend Cron
 |===
 
 
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-deploymentstrategyspec"]
+==== DeploymentStrategySpec 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`type`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#deploymentstrategytype-v1-apps[$$DeploymentStrategyType$$]__ | Type of deployment. Can be "Recreate" or "RollingUpdate". Default is RollingUpdate.
+| *`rollingUpdate`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#rollingupdatedeployment-v1-apps[$$RollingUpdateDeployment$$]__ | Rolling update config params. Present only if DeploymentStrategyType = RollingUpdate.
+|===
+
+
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapi"]
 ==== EchoAPI 
 
@@ -1519,6 +1538,7 @@ SystemAppSpec configures the App component of System
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
+| *`deploymentStrategy`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-deploymentstrategyspec[$$DeploymentStrategySpec$$]__ | The deployment strategy to use to replace existing pods with new ones.
 | *`pdb`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
 | *`hpa`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
 | *`replicas`* __integer__ | Number of replicas (ignored if hpa is enabled) for the component
@@ -1665,6 +1685,7 @@ SystemSidekiqSpec configures the Sidekiq component of System
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
+| *`deploymentStrategy`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-deploymentstrategyspec[$$DeploymentStrategySpec$$]__ | The deployment strategy to use to replace existing pods with new ones.
 | *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sidekiqconfig[$$SidekiqConfig$$]__ | Sidekiq specific configuration options for the component element
 | *`pdb`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
 | *`hpa`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
