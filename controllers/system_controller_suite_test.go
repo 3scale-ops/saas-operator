@@ -6,6 +6,7 @@ import (
 	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	"github.com/3scale/saas-operator/pkg/util"
 	testutil "github.com/3scale/saas-operator/test/util"
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
@@ -18,6 +19,7 @@ import (
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -121,7 +123,22 @@ var _ = Describe("System controller", func() {
 							SecretKey: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 						},
 					},
+					App: &saasv1alpha1.SystemAppSpec{
+						DeploymentStrategy: &saasv1alpha1.DeploymentStrategySpec{
+							Type: appsv1.RollingUpdateDeploymentStrategyType,
+							RollingUpdate: &appsv1.RollingUpdateDeployment{
+								MaxSurge:       util.IntStrPtr(intstr.FromString("20%")),
+								MaxUnavailable: util.IntStrPtr(intstr.FromInt(0)),
+							},
+						}},
 					SidekiqDefault: &saasv1alpha1.SystemSidekiqSpec{
+						DeploymentStrategy: &saasv1alpha1.DeploymentStrategySpec{
+							Type: appsv1.RollingUpdateDeploymentStrategyType,
+							RollingUpdate: &appsv1.RollingUpdateDeployment{
+								MaxSurge:       util.IntStrPtr(intstr.FromString("15%")),
+								MaxUnavailable: util.IntStrPtr(intstr.FromString("5%")),
+							},
+						},
 						HPA: &saasv1alpha1.HorizontalPodAutoscalerSpec{
 							Behavior: &autoscalingv2.HorizontalPodAutoscalerBehavior{
 								ScaleUp: &autoscalingv2.HPAScalingRules{
@@ -170,6 +187,9 @@ var _ = Describe("System controller", func() {
 				}).Assert(k8sClient, dep, timeout, poll))
 
 			Expect(dep.Spec.Template.Spec.Volumes[0].Secret.SecretName).To(Equal("system-config"))
+			Expect(dep.Spec.Strategy.Type).To(Equal(appsv1.RollingUpdateDeploymentStrategyType))
+			Expect(dep.Spec.Strategy.RollingUpdate.MaxSurge).To(Equal(util.IntStrPtr(intstr.FromString("20%"))))
+			Expect(dep.Spec.Strategy.RollingUpdate.MaxUnavailable).To(Equal(util.IntStrPtr(intstr.FromInt(0))))
 
 			svc := &corev1.Service{}
 			By("deploying the system-app service",
@@ -204,6 +224,9 @@ var _ = Describe("System controller", func() {
 			Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
 			Expect(dep.Spec.Template.Spec.Volumes[1].Secret.SecretName).To(Equal("system-config"))
 			Expect(dep.Spec.Template.Spec.TerminationGracePeriodSeconds).To(Equal(pointer.Int64(60)))
+			Expect(dep.Spec.Strategy.Type).To(Equal(appsv1.RollingUpdateDeploymentStrategyType))
+			Expect(dep.Spec.Strategy.RollingUpdate.MaxSurge).To(Equal(util.IntStrPtr(intstr.FromString("15%"))))
+			Expect(dep.Spec.Strategy.RollingUpdate.MaxUnavailable).To(Equal(util.IntStrPtr(intstr.FromString("5%"))))
 
 			hpa := &autoscalingv2.HorizontalPodAutoscaler{}
 			By("updates system-sidekiq-default hpa behaviour",
@@ -228,6 +251,9 @@ var _ = Describe("System controller", func() {
 			Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
 			Expect(dep.Spec.Template.Spec.Volumes[1].Secret.SecretName).To(Equal("system-config"))
 			Expect(dep.Spec.Template.Spec.TerminationGracePeriodSeconds).To(Equal(pointer.Int64(60)))
+			Expect(dep.Spec.Strategy.Type).To(Equal(appsv1.RollingUpdateDeploymentStrategyType))
+			Expect(dep.Spec.Strategy.RollingUpdate.MaxSurge).To(Equal(util.IntStrPtr(intstr.FromInt(1))))
+			Expect(dep.Spec.Strategy.RollingUpdate.MaxUnavailable).To(Equal(util.IntStrPtr(intstr.FromInt(0))))
 
 			By("deploying a system-sidekiq-low workload",
 				(&testutil.ExpectedWorkload{
