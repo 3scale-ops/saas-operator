@@ -1375,7 +1375,7 @@ spec:
                 description: Console specific configuration options
                 properties:
                   image:
-                    description: Image specification for the Sphinx component. Defaults
+                    description: Image specification for the Console component. Defaults
                       to system image if not defined.
                     properties:
                       name:

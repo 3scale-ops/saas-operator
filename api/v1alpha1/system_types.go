@@ -876,7 +876,7 @@ func (tc *ThinkingSpec) Default() {
 
 // SystemRailsConsoleSpec configures the App component of System
 type SystemRailsConsoleSpec struct {
-	// Image specification for the Sphinx component.
+	// Image specification for the Console component.
 	// Defaults to system image if not defined.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
