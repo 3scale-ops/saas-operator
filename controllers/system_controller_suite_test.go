@@ -682,6 +682,10 @@ var _ = Describe("System controller", func() {
 
 					patch := client.MergeFrom(system.DeepCopy())
 
+					system.Spec.Config.Rails = &saasv1alpha1.SystemRailsSpec{
+						Console: pointer.Bool(true),
+					}
+
 					system.Spec.Twemproxy = &saasv1alpha1.TwemproxySpec{
 						TwemproxyConfigRef: "system-twemproxyconfig",
 						Options: &saasv1alpha1.TwemproxyOptions{
@@ -863,6 +867,22 @@ var _ = Describe("System controller", func() {
 				Expect(dep.Spec.Template.Spec.Containers[1].VolumeMounts[0].Name).To(Equal("twemproxy-config"))
 				Expect(dep.Spec.Template.Spec.Containers[1].Env[3].Name).To(Equal("TWEMPROXY_LOG_LEVEL"))
 				Expect(dep.Spec.Template.Spec.Containers[1].Env[3].Value).To(Equal("5"))
+
+				sts := &appsv1.StatefulSet{}
+				By("adding a twemproxy sidecar to the system-console statefulset",
+					(&testutil.ExpectedResource{Name: "system-console", Namespace: namespace}).
+						Assert(k8sClient, sts, timeout, poll))
+
+				Expect(sts.Spec.Template.Spec.Volumes).To(HaveLen(2))
+				Expect(sts.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-config"))
+				Expect(sts.Spec.Template.Spec.Volumes[0].VolumeSource.Secret.SecretName).To(Equal("system-config"))
+				Expect(sts.Spec.Template.Spec.Volumes[1].Name).To(Equal("twemproxy-config"))
+				Expect(sts.Spec.Template.Spec.Volumes[1].VolumeSource.ConfigMap.LocalObjectReference.Name).To(Equal("system-twemproxyconfig"))
+				Expect(sts.Spec.Template.Spec.Containers).To(HaveLen(2))
+				Expect(sts.Spec.Template.Spec.Containers[1].Name).To(Equal("twemproxy"))
+				Expect(sts.Spec.Template.Spec.Containers[1].VolumeMounts[0].Name).To(Equal("twemproxy-config"))
+				Expect(sts.Spec.Template.Spec.Containers[1].Env[3].Name).To(Equal("TWEMPROXY_LOG_LEVEL"))
+				Expect(sts.Spec.Template.Spec.Containers[1].Env[3].Value).To(Equal("2"))
 
 			})
 		})
