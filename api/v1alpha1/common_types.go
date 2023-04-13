@@ -447,11 +447,11 @@ func InitializeHorizontalPodAutoscalerSpec(spec *HorizontalPodAutoscalerSpec, de
 type DeploymentStrategySpec struct {
 	// Type of deployment. Can be "Recreate" or "RollingUpdate". Default is RollingUpdate.
 	// +optional
-	Type appsv1.DeploymentStrategyType `json:"type,omitempty" protobuf:"bytes,1,opt,name=type,casttype=DeploymentStrategyType"`
+	Type appsv1.DeploymentStrategyType `json:"type,omitempty"`
 	// Rolling update config params. Present only if DeploymentStrategyType =
 	// RollingUpdate.
 	// +optional
-	RollingUpdate *appsv1.RollingUpdateDeployment `json:"rollingUpdate,omitempty" protobuf:"bytes,2,opt,name=rollingUpdate"`
+	RollingUpdate *appsv1.RollingUpdateDeployment `json:"rollingUpdate,omitempty"`
 }
 
 type defaultDeploymentRollingStrategySpec struct {
