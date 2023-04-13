@@ -1,7 +1,7 @@
 package version
 
 const (
-	version string = "v0.19.4"
+	version string = "v0.19.5-alpha.1"
 )
 
 // Current returns the current marin3r operator version
