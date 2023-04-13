@@ -104,9 +104,8 @@ func (gen *AppGenerator) deployment() func() *appsv1.Deployment {
 		)
 
 		if gen.TwemproxySpec != nil {
-			dep = twemproxy.AddTwemproxySidecar(*dep, gen.TwemproxySpec)
+			dep.Spec.Template = twemproxy.AddTwemproxySidecar(dep.Spec.Template, gen.TwemproxySpec)
 		}
-
 		return dep
 	}
 }

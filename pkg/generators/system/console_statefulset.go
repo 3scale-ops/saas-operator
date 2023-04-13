@@ -86,7 +86,7 @@ func (gen *ConsoleGenerator) statefulset() func() *appsv1.StatefulSet {
 			})
 
 		if gen.TwemproxySpec != nil {
-			sts = twemproxy.AddStsTwemproxySidecar(*sts, gen.TwemproxySpec)
+			sts.Spec.Template = twemproxy.AddTwemproxySidecar(sts.Spec.Template, gen.TwemproxySpec)
 		}
 
 		return sts
