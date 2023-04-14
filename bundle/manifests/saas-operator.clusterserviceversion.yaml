@@ -627,7 +627,7 @@ metadata:
     capabilities: Basic Install
     categories: Integration & Delivery
     containerImage: quay.io/3scale/saas-operator
-    createdAt: "2023-04-13T10:48:38Z"
+    createdAt: "2023-04-14T14:18:14Z"
     description: |-
       The 3scale SaaS Operator creates and maintains a SaaS-ready deployment
       of the Red Hat 3scale API Management on OpenShift.
@@ -3250,7 +3250,7 @@ spec:
       - description: Console specific configuration options
         displayName: Console
         path: console
-      - description: Image specification for the Sphinx component. Defaults to system
+      - description: Image specification for the Console component. Defaults to system
           image if not defined.
         displayName: Image
         path: console.image

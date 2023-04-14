@@ -1628,7 +1628,7 @@ SystemRailsConsoleSpec configures the App component of System
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the Sphinx component. Defaults to system image if not defined.
+| *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the Console component. Defaults to system image if not defined.
 | *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.

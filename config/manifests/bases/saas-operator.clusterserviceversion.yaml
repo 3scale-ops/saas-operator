@@ -2762,7 +2762,7 @@ spec:
       - description: Console specific configuration options
         displayName: Console
         path: console
-      - description: Image specification for the Sphinx component. Defaults to system
+      - description: Image specification for the Console component. Defaults to system
           image if not defined.
         displayName: Image
         path: console.image
