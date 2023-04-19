@@ -23,6 +23,8 @@ import (
 	"time"
 
 	jsonpatch "github.com/evanphx/json-patch"
+	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -402,6 +404,11 @@ type HorizontalPodAutoscalerSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	ResourceUtilization *int32 `json:"resourceUtilization,omitempty"`
+	// Behavior configures the scaling behavior of the target
+	// in both Up and Down directions (scaleUp and scaleDown fields respectively).
+	// If not set, the default HPAScalingRules for scale up and scale down are used.
+	// +optional
+	Behavior *autoscalingv2.HorizontalPodAutoscalerBehavior `json:"behavior,omitempty"`
 }
 
 type defaultHorizontalPodAutoscalerSpec struct {
@@ -435,6 +442,39 @@ func InitializeHorizontalPodAutoscalerSpec(spec *HorizontalPodAutoscalerSpec, de
 		return copy
 	}
 	return spec
+}
+
+type DeploymentStrategySpec struct {
+	// Type of deployment. Can be "Recreate" or "RollingUpdate". Default is RollingUpdate.
+	// +optional
+	Type appsv1.DeploymentStrategyType `json:"type,omitempty"`
+	// Rolling update config params. Present only if DeploymentStrategyType =
+	// RollingUpdate.
+	// +optional
+	RollingUpdate *appsv1.RollingUpdateDeployment `json:"rollingUpdate,omitempty"`
+}
+
+type defaultDeploymentRollingStrategySpec struct {
+	MaxUnavailable, MaxSurge *intstr.IntOrString
+}
+
+// InitializeDeploymentStrategySpec initializes a DeploymentStrategySpec struct
+func InitializeDeploymentStrategySpec(spec *DeploymentStrategySpec, def defaultDeploymentRollingStrategySpec) *DeploymentStrategySpec {
+	if spec == nil {
+		new := &DeploymentStrategySpec{}
+		new.Default(def)
+		return new
+	}
+	return spec
+}
+
+// Default sets default values for any value not specifically set in the DeploymentStrategySpec struct
+func (spec *DeploymentStrategySpec) Default(def defaultDeploymentRollingStrategySpec) {
+	spec.Type = appsv1.RollingUpdateDeploymentStrategyType
+	spec.RollingUpdate = &appsv1.RollingUpdateDeployment{
+		MaxSurge:       def.MaxSurge,
+		MaxUnavailable: def.MaxUnavailable,
+	}
 }
 
 // ResourceRequirementsSpec defines the resource requirements for the component
@@ -652,6 +692,13 @@ func stringOrDefault(value *string, defValue *string) *string {
 }
 
 func intOrDefault(value *int32, defValue *int32) *int32 {
+	if value == nil {
+		return defValue
+	}
+	return value
+}
+
+func int64OrDefault(value *int64, defValue *int64) *int64 {
 	if value == nil {
 		return defValue
 	}

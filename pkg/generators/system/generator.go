@@ -162,9 +162,10 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) (Gen
 			},
 			Spec:              *spec.Console,
 			Options:           config.NewOptions(spec),
-			Image:             *spec.Image,
+			Image:             *spec.Console.Image,
 			ConfigFilesSecret: *spec.Config.ConfigFilesSecret,
 			Enabled:           *spec.Config.Rails.Console,
+			TwemproxySpec:     spec.Twemproxy,
 		},
 		GrafanaDashboardSpec: *spec.GrafanaDashboard,
 		Config:               spec.Config,
@@ -484,6 +485,7 @@ type ConsoleGenerator struct {
 	Image             saasv1alpha1.ImageSpec
 	ConfigFilesSecret string
 	Enabled           bool
+	TwemproxySpec     *saasv1alpha1.TwemproxySpec
 }
 
 func (gen *ConsoleGenerator) StatefulSet() basereconciler_resources.StatefulSetTemplate {

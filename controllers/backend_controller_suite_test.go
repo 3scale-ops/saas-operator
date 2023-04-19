@@ -96,6 +96,21 @@ var _ = Describe("Backend controller", func() {
 							},
 						},
 					},
+					Worker: &saasv1alpha1.WorkerSpec{
+						HPA: &saasv1alpha1.HorizontalPodAutoscalerSpec{
+							Behavior: &autoscalingv2.HorizontalPodAutoscalerBehavior{
+								ScaleUp: &autoscalingv2.HPAScalingRules{
+									Policies: []autoscalingv2.HPAScalingPolicy{
+										{
+											Type:          autoscalingv2.PercentScalingPolicy,
+											Value:         10,
+											PeriodSeconds: 60,
+										},
+									},
+								},
+							},
+						},
+					},
 				},
 			}
 			err := k8sClient.Create(context.Background(), backend)
@@ -157,6 +172,14 @@ var _ = Describe("Backend controller", func() {
 
 			Expect(dep.Spec.Template.Spec.Containers[0].Env[12].Name).To(Equal("CONFIG_EVENTS_HOOK"))
 			Expect(dep.Spec.Template.Spec.Containers[0].Env[12].Value).To(Equal("system-app"))
+
+			hpa := &autoscalingv2.HorizontalPodAutoscaler{}
+			By("updates backend-worker hpa behaviour",
+				(&testutil.ExpectedResource{Name: "backend-worker", Namespace: namespace}).
+					Assert(k8sClient, hpa, timeout, poll))
+			Expect(hpa.Spec.Behavior.ScaleUp.Policies).To(Not(BeEmpty()))
+			Expect(hpa.Spec.Behavior.ScaleUp.Policies[0].Type).To(Equal(autoscalingv2.PercentScalingPolicy))
+			Expect(hpa.Spec.Behavior.ScaleUp.Policies[0].Value).To(Equal(int32(10)))
 
 			By("deploying the backend-cron workload",
 				(&testutil.ExpectedWorkload{

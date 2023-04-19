@@ -6,7 +6,6 @@ import (
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
 	"github.com/3scale/saas-operator/pkg/util"
-	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/utils/pointer"
 )
@@ -17,29 +16,29 @@ const (
 	healthCommand              = "health"
 )
 
-func AddTwemproxySidecar(dep appsv1.Deployment, spec *saasv1alpha1.TwemproxySpec) *appsv1.Deployment {
+func AddTwemproxySidecar(podTemplateSpec corev1.PodTemplateSpec, twemproxySpec *saasv1alpha1.TwemproxySpec) corev1.PodTemplateSpec {
 
 	// Labels to subscribe to the TwemproxyConfig sync events
-	dep.Spec.Template.ObjectMeta.Labels = util.MergeMaps(
+	podTemplateSpec.ObjectMeta.Labels = util.MergeMaps(
 		map[string]string{},
-		dep.Spec.Template.GetLabels(),
-		map[string]string{saasv1alpha1.TwemproxyPodSyncLabelKey: spec.TwemproxyConfigRef},
+		podTemplateSpec.GetLabels(),
+		map[string]string{saasv1alpha1.TwemproxyPodSyncLabelKey: twemproxySpec.TwemproxyConfigRef},
 	)
 
 	// Twemproxy container
-	dep.Spec.Template.Spec.Containers = append(dep.Spec.Template.Spec.Containers,
+	podTemplateSpec.Spec.Containers = append(podTemplateSpec.Spec.Containers,
 		corev1.Container{
-			Env:   pod.BuildEnvironment(NewTwemproxyOptions(*spec)),
+			Env:   pod.BuildEnvironment(NewTwemproxyOptions(*twemproxySpec)),
 			Name:  twemproxy,
-			Image: pod.Image(*spec.Image),
+			Image: pod.Image(*twemproxySpec.Image),
 			Ports: pod.ContainerPorts(
 				pod.ContainerPortTCP(twemproxy, 22121),
-				pod.ContainerPortTCP("twem-metrics", int32(*spec.Options.MetricsPort)),
+				pod.ContainerPortTCP("twem-metrics", int32(*twemproxySpec.Options.MetricsPort)),
 			),
-			Resources:                corev1.ResourceRequirements(*spec.Resources),
-			ImagePullPolicy:          *spec.Image.PullPolicy,
-			LivenessProbe:            pod.ExecProbe(healthCommand, *spec.LivenessProbe),
-			ReadinessProbe:           pod.ExecProbe(healthCommand, *spec.ReadinessProbe),
+			Resources:                corev1.ResourceRequirements(*twemproxySpec.Resources),
+			ImagePullPolicy:          *twemproxySpec.Image.PullPolicy,
+			LivenessProbe:            pod.ExecProbe(healthCommand, *twemproxySpec.LivenessProbe),
+			ReadinessProbe:           pod.ExecProbe(healthCommand, *twemproxySpec.ReadinessProbe),
 			TerminationMessagePath:   corev1.TerminationMessagePathDefault,
 			TerminationMessagePolicy: corev1.TerminationMessageReadFile,
 			Lifecycle: &corev1.Lifecycle{
@@ -57,24 +56,24 @@ func AddTwemproxySidecar(dep appsv1.Deployment, spec *saasv1alpha1.TwemproxySpec
 			},
 		})
 
-	if dep.Spec.Template.Spec.Volumes == nil {
-		dep.Spec.Template.Spec.Volumes = []corev1.Volume{}
+	if podTemplateSpec.Spec.Volumes == nil {
+		podTemplateSpec.Spec.Volumes = []corev1.Volume{}
 	}
 
 	// Mount the TwemproxyConfig ConfigMap in the Pod
-	dep.Spec.Template.Spec.Volumes = append(
-		dep.Spec.Template.Spec.Volumes,
+	podTemplateSpec.Spec.Volumes = append(
+		podTemplateSpec.Spec.Volumes,
 		corev1.Volume{
 			Name: twemproxy + "-config",
 			VolumeSource: corev1.VolumeSource{
 				ConfigMap: &corev1.ConfigMapVolumeSource{
 					LocalObjectReference: corev1.LocalObjectReference{
-						Name: spec.ConfigMapName(),
+						Name: twemproxySpec.ConfigMapName(),
 					},
 					DefaultMode: pointer.Int32(420),
 				},
 			},
 		})
 
-	return &dep
+	return podTemplateSpec
 }

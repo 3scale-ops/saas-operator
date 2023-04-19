@@ -35,6 +35,7 @@ const (
 )
 
 var (
+
 	// Common
 	systemDefaultSandboxProxyOpensslVerifyMode string           = "VERIFY_NONE"
 	systemDefaultForceSSL                      bool             = true
@@ -55,6 +56,7 @@ var (
 		SelectorKey:   pointer.StringPtr("monitoring-key"),
 		SelectorValue: pointer.StringPtr("middleware"),
 	}
+	systemDefaultTerminationGracePeriodSeconds *int64 = pointer.Int64(60)
 
 	// App
 	systemDefaultAppReplicas     int32                   = 2
@@ -77,6 +79,10 @@ var (
 			corev1.ResourceCPU:    resource.MustParse("400m"),
 			corev1.ResourceMemory: resource.MustParse("2Gi"),
 		},
+	}
+	systemDefaultAppDeploymentStrategy defaultDeploymentRollingStrategySpec = defaultDeploymentRollingStrategySpec{
+		MaxUnavailable: util.IntStrPtr(intstr.FromInt(0)),
+		MaxSurge:       util.IntStrPtr(intstr.FromString("10%")),
 	}
 	systemDefaultAppHPA defaultHorizontalPodAutoscalerSpec = defaultHorizontalPodAutoscalerSpec{
 		MinReplicas:         pointer.Int32Ptr(2),
@@ -113,6 +119,10 @@ var (
 			corev1.ResourceCPU:    resource.MustParse("1"),
 			corev1.ResourceMemory: resource.MustParse("2Gi"),
 		},
+	}
+	systemDefaultSidekiqDeploymentStrategy defaultDeploymentRollingStrategySpec = defaultDeploymentRollingStrategySpec{
+		MaxUnavailable: util.IntStrPtr(intstr.FromInt(0)),
+		MaxSurge:       util.IntStrPtr(intstr.FromInt(1)),
 	}
 	systemDefaultSidekiqHPA defaultHorizontalPodAutoscalerSpec = defaultHorizontalPodAutoscalerSpec{
 		MinReplicas:         pointer.Int32Ptr(2),
@@ -277,7 +287,7 @@ func (spec *SystemSpec) Default() {
 	if spec.Console == nil {
 		spec.Console = &SystemRailsConsoleSpec{}
 	}
-	spec.Console.Default()
+	spec.Console.Default(spec.Image)
 
 	if spec.Twemproxy != nil {
 		spec.Twemproxy.Default()
@@ -585,6 +595,10 @@ func (srs *SystemRailsSpec) Default() {
 
 // SystemAppSpec configures the App component of System
 type SystemAppSpec struct {
+	// The deployment strategy to use to replace existing pods with new ones.
+	// +optional
+	// +patchStrategy=retainKeys
+	DeploymentStrategy *DeploymentStrategySpec `json:"deploymentStrategy,omitempty"`
 	// Pod Disruption Budget for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -620,20 +634,33 @@ type SystemAppSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Canary *Canary `json:"canary,omitempty"`
+	// Configures the TerminationGracePeriodSeconds
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty"`
 }
 
 // Default implements defaulting for the system App component
 func (spec *SystemAppSpec) Default() {
+	spec.DeploymentStrategy = InitializeDeploymentStrategySpec(spec.DeploymentStrategy, systemDefaultAppDeploymentStrategy)
 	spec.HPA = InitializeHorizontalPodAutoscalerSpec(spec.HPA, systemDefaultAppHPA)
 	spec.Replicas = intOrDefault(spec.Replicas, &systemDefaultAppReplicas)
 	spec.PDB = InitializePodDisruptionBudgetSpec(spec.PDB, systemDefaultAppPDB)
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, systemDefaultAppResources)
 	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, systemDefaultAppLivenessProbe)
 	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, systemDefaultAppReadinessProbe)
+	spec.TerminationGracePeriodSeconds = int64OrDefault(
+		spec.TerminationGracePeriodSeconds, systemDefaultTerminationGracePeriodSeconds,
+	)
+
 }
 
 // SystemSidekiqSpec configures the Sidekiq component of System
 type SystemSidekiqSpec struct {
+	// The deployment strategy to use to replace existing pods with new ones.
+	// +optional
+	// +patchStrategy=retainKeys
+	DeploymentStrategy *DeploymentStrategySpec `json:"deploymentStrategy,omitempty"`
 	// Sidekiq specific configuration options for the component element
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -673,6 +700,10 @@ type SystemSidekiqSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Canary *Canary `json:"canary,omitempty"`
+	// Configures the TerminationGracePeriodSeconds
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty"`
 }
 
 // SidekiqConfig configures app behavior for System Sidekiq
@@ -702,12 +733,17 @@ func (cfg *SidekiqConfig) Default(def defaultSidekiqConfig) {
 
 // Default implements defaulting for the system Sidekiq component
 func (spec *SystemSidekiqSpec) Default(sidekiqType systemSidekiqType) {
+	spec.DeploymentStrategy = InitializeDeploymentStrategySpec(spec.DeploymentStrategy, systemDefaultSidekiqDeploymentStrategy)
 	spec.HPA = InitializeHorizontalPodAutoscalerSpec(spec.HPA, systemDefaultSidekiqHPA)
 	spec.Replicas = intOrDefault(spec.Replicas, &systemDefaultSidekiqReplicas)
 	spec.PDB = InitializePodDisruptionBudgetSpec(spec.PDB, systemDefaultSidekiqPDB)
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, systemDefaultSidekiqResources)
 	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, systemDefaultSidekiqLivenessProbe)
 	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, systemDefaultSidekiqReadinessProbe)
+	spec.TerminationGracePeriodSeconds = int64OrDefault(
+		spec.TerminationGracePeriodSeconds, systemDefaultTerminationGracePeriodSeconds,
+	)
+
 	if spec.Config == nil {
 		spec.Config = &SidekiqConfig{}
 	}
@@ -750,6 +786,10 @@ type SystemSphinxSpec struct {
 	// If specified, the pod's tolerations.
 	// +optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
+	// Configures the TerminationGracePeriodSeconds
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty"`
 }
 
 // Default implements defaulting for the system sphinx component
@@ -763,6 +803,9 @@ func (spec *SystemSphinxSpec) Default(systemDefaultImage *ImageSpec) {
 		spec.Config = &SphinxConfig{}
 	}
 	spec.Config.Default()
+	spec.TerminationGracePeriodSeconds = int64OrDefault(
+		spec.TerminationGracePeriodSeconds, systemDefaultTerminationGracePeriodSeconds,
+	)
 }
 
 // SphinxConfig has configuration options for System's sphinx
@@ -833,6 +876,11 @@ func (tc *ThinkingSpec) Default() {
 
 // SystemRailsConsoleSpec configures the App component of System
 type SystemRailsConsoleSpec struct {
+	// Image specification for the Console component.
+	// Defaults to system image if not defined.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Image *ImageSpec `json:"image,omitempty"`
 	// Resource requirements for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -846,7 +894,8 @@ type SystemRailsConsoleSpec struct {
 }
 
 // Default implements defaulting for the system App component
-func (spec *SystemRailsConsoleSpec) Default() {
+func (spec *SystemRailsConsoleSpec) Default(systemDefaultImage *ImageSpec) {
+	spec.Image = InitializeImageSpec(spec.Image, defaultImageSpec(*systemDefaultImage))
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, systemDefaultRailsConsoleResources)
 }
 

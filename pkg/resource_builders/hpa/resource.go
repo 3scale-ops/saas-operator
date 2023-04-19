@@ -31,6 +31,7 @@ func New(key types.NamespacedName, labels map[string]string, cfg saasv1alpha1.Ho
 					Name:       key.Name,
 				},
 				MinReplicas: cfg.MinReplicas,
+				Behavior:    cfg.Behavior,
 			},
 			Status: autoscalingv2.HorizontalPodAutoscalerStatus{
 				Conditions: []autoscalingv2.HorizontalPodAutoscalerCondition{},

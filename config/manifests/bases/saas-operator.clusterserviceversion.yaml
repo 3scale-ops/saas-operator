@@ -2256,6 +2256,9 @@ spec:
           info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
         displayName: Requests
         path: app.resources.requests
+      - description: Configures the TerminationGracePeriodSeconds
+        displayName: Termination Grace Period Seconds
+        path: app.terminationGracePeriodSeconds
       - description: Application specific configuration options for System components
         displayName: Config
         path: config
@@ -2759,6 +2762,23 @@ spec:
       - description: Console specific configuration options
         displayName: Console
         path: console
+      - description: Image specification for the Console component. Defaults to system
+          image if not defined.
+        displayName: Image
+        path: console.image
+      - description: Docker repository of the image
+        displayName: Name
+        path: console.image.name
+      - description: Pull policy for the image
+        displayName: Pull Policy
+        path: console.image.pullPolicy
+      - description: Name of the Secret that holds quay.io credentials to access the
+          image repository
+        displayName: Pull Secret Name
+        path: console.image.pullSecretName
+      - description: Image tag
+        displayName: Tag
+        path: console.image.tag
       - description: Resource requirements for the component
         displayName: Resources
         path: console.resources
@@ -2923,6 +2943,9 @@ spec:
           info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
         displayName: Requests
         path: sidekiqBilling.resources.requests
+      - description: Configures the TerminationGracePeriodSeconds
+        displayName: Termination Grace Period Seconds
+        path: sidekiqBilling.terminationGracePeriodSeconds
       - description: Sidekiq Default specific configuration options
         displayName: Sidekiq Default
         path: sidekiqDefault
@@ -3049,6 +3072,9 @@ spec:
           info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
         displayName: Requests
         path: sidekiqDefault.resources.requests
+      - description: Configures the TerminationGracePeriodSeconds
+        displayName: Termination Grace Period Seconds
+        path: sidekiqDefault.terminationGracePeriodSeconds
       - description: Sidekiq Low specific configuration options
         displayName: Sidekiq Low
         path: sidekiqLow
@@ -3175,6 +3201,9 @@ spec:
           info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
         displayName: Requests
         path: sidekiqLow.resources.requests
+      - description: Configures the TerminationGracePeriodSeconds
+        displayName: Termination Grace Period Seconds
+        path: sidekiqLow.terminationGracePeriodSeconds
       - description: Sphinx specific configuration options
         displayName: Sphinx
         path: sphinx
@@ -3280,6 +3309,9 @@ spec:
           info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
         displayName: Requests
         path: sphinx.resources.requests
+      - description: Configures the TerminationGracePeriodSeconds
+        displayName: Termination Grace Period Seconds
+        path: sphinx.terminationGracePeriodSeconds
       - description: Configures twemproxy
         displayName: Twemproxy
         path: twemproxy

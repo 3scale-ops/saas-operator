@@ -6,6 +6,7 @@ import (
 	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	"github.com/3scale/saas-operator/pkg/util"
 	testutil "github.com/3scale/saas-operator/test/util"
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
@@ -18,6 +19,7 @@ import (
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -121,6 +123,41 @@ var _ = Describe("System controller", func() {
 							SecretKey: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
 						},
 					},
+					App: &saasv1alpha1.SystemAppSpec{
+						DeploymentStrategy: &saasv1alpha1.DeploymentStrategySpec{
+							Type: appsv1.RollingUpdateDeploymentStrategyType,
+							RollingUpdate: &appsv1.RollingUpdateDeployment{
+								MaxSurge:       util.IntStrPtr(intstr.FromString("20%")),
+								MaxUnavailable: util.IntStrPtr(intstr.FromInt(0)),
+							},
+						}},
+					SidekiqDefault: &saasv1alpha1.SystemSidekiqSpec{
+						DeploymentStrategy: &saasv1alpha1.DeploymentStrategySpec{
+							Type: appsv1.RollingUpdateDeploymentStrategyType,
+							RollingUpdate: &appsv1.RollingUpdateDeployment{
+								MaxSurge:       util.IntStrPtr(intstr.FromString("15%")),
+								MaxUnavailable: util.IntStrPtr(intstr.FromString("5%")),
+							},
+						},
+						HPA: &saasv1alpha1.HorizontalPodAutoscalerSpec{
+							Behavior: &autoscalingv2.HorizontalPodAutoscalerBehavior{
+								ScaleUp: &autoscalingv2.HPAScalingRules{
+									Policies: []autoscalingv2.HPAScalingPolicy{
+										{
+											Type:          autoscalingv2.PodsScalingPolicy,
+											Value:         4,
+											PeriodSeconds: 60,
+										},
+										{
+											Type:          autoscalingv2.PercentScalingPolicy,
+											Value:         10,
+											PeriodSeconds: 60,
+										},
+									},
+								},
+							},
+						},
+					},
 				},
 			}
 			err := k8sClient.Create(context.Background(), system)
@@ -150,6 +187,9 @@ var _ = Describe("System controller", func() {
 				}).Assert(k8sClient, dep, timeout, poll))
 
 			Expect(dep.Spec.Template.Spec.Volumes[0].Secret.SecretName).To(Equal("system-config"))
+			Expect(dep.Spec.Strategy.Type).To(Equal(appsv1.RollingUpdateDeploymentStrategyType))
+			Expect(dep.Spec.Strategy.RollingUpdate.MaxSurge).To(Equal(util.IntStrPtr(intstr.FromString("20%"))))
+			Expect(dep.Spec.Strategy.RollingUpdate.MaxUnavailable).To(Equal(util.IntStrPtr(intstr.FromInt(0))))
 
 			svc := &corev1.Service{}
 			By("deploying the system-app service",
@@ -157,6 +197,7 @@ var _ = Describe("System controller", func() {
 					Assert(k8sClient, svc, timeout, poll))
 
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("system-app"))
+			Expect(dep.Spec.Template.Spec.TerminationGracePeriodSeconds).To(Equal(pointer.Int64(60)))
 
 		})
 
@@ -182,6 +223,18 @@ var _ = Describe("System controller", func() {
 
 			Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
 			Expect(dep.Spec.Template.Spec.Volumes[1].Secret.SecretName).To(Equal("system-config"))
+			Expect(dep.Spec.Template.Spec.TerminationGracePeriodSeconds).To(Equal(pointer.Int64(60)))
+			Expect(dep.Spec.Strategy.Type).To(Equal(appsv1.RollingUpdateDeploymentStrategyType))
+			Expect(dep.Spec.Strategy.RollingUpdate.MaxSurge).To(Equal(util.IntStrPtr(intstr.FromString("15%"))))
+			Expect(dep.Spec.Strategy.RollingUpdate.MaxUnavailable).To(Equal(util.IntStrPtr(intstr.FromString("5%"))))
+
+			hpa := &autoscalingv2.HorizontalPodAutoscaler{}
+			By("updates system-sidekiq-default hpa behaviour",
+				(&testutil.ExpectedResource{Name: "system-sidekiq-default", Namespace: namespace}).
+					Assert(k8sClient, hpa, timeout, poll))
+			Expect(hpa.Spec.Behavior.ScaleUp.Policies).To(Not(BeEmpty()))
+			Expect(hpa.Spec.Behavior.ScaleUp.Policies[0].Type).To(Equal(autoscalingv2.PodsScalingPolicy))
+			Expect(hpa.Spec.Behavior.ScaleUp.Policies[0].Value).To(Equal(int32(4)))
 
 			By("deploying a system-sidekiq-billing workload",
 				(&testutil.ExpectedWorkload{
@@ -197,6 +250,10 @@ var _ = Describe("System controller", func() {
 
 			Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
 			Expect(dep.Spec.Template.Spec.Volumes[1].Secret.SecretName).To(Equal("system-config"))
+			Expect(dep.Spec.Template.Spec.TerminationGracePeriodSeconds).To(Equal(pointer.Int64(60)))
+			Expect(dep.Spec.Strategy.Type).To(Equal(appsv1.RollingUpdateDeploymentStrategyType))
+			Expect(dep.Spec.Strategy.RollingUpdate.MaxSurge).To(Equal(util.IntStrPtr(intstr.FromInt(1))))
+			Expect(dep.Spec.Strategy.RollingUpdate.MaxUnavailable).To(Equal(util.IntStrPtr(intstr.FromInt(0))))
 
 			By("deploying a system-sidekiq-low workload",
 				(&testutil.ExpectedWorkload{
@@ -212,6 +269,7 @@ var _ = Describe("System controller", func() {
 
 			Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
 			Expect(dep.Spec.Template.Spec.Volumes[1].Secret.SecretName).To(Equal("system-config"))
+			Expect(dep.Spec.Template.Spec.TerminationGracePeriodSeconds).To(Equal(pointer.Int64(60)))
 
 		})
 
@@ -221,6 +279,8 @@ var _ = Describe("System controller", func() {
 			By("deploying the system-sphinx statefulset",
 				(&testutil.ExpectedResource{Name: "system-sphinx", Namespace: namespace}).
 					Assert(k8sClient, sts, timeout, poll))
+
+			Expect(sts.Spec.Template.Spec.TerminationGracePeriodSeconds).To(Equal(pointer.Int64(60)))
 
 			Expect(sts.Spec.Template.Spec.Containers[0].Env).To(
 				ContainElement(
@@ -309,6 +369,7 @@ var _ = Describe("System controller", func() {
 			By("ensuring the system-sidekiq-low-canary deployment",
 				(&testutil.ExpectedResource{Name: "system-sidekiq-low-canary", Namespace: namespace, Missing: true}).
 					Assert(k8sClient, dep, timeout, poll))
+
 		})
 
 		When("updating a System resource with console", func() {
@@ -322,12 +383,14 @@ var _ = Describe("System controller", func() {
 					)
 					Expect(err).ToNot(HaveOccurred())
 					patch := client.MergeFrom(system.DeepCopy())
-					system.Spec.Image = &saasv1alpha1.ImageSpec{
-						Name: pointer.StringPtr("newImage"),
-						Tag:  pointer.StringPtr("newTag"),
-					}
 					system.Spec.Config.Rails = &saasv1alpha1.SystemRailsSpec{
 						Console: pointer.Bool(true),
+					}
+					system.Spec.Console = &saasv1alpha1.SystemRailsConsoleSpec{
+						Image: &saasv1alpha1.ImageSpec{
+							Name: pointer.StringPtr("newImage"),
+							Tag:  pointer.StringPtr("newTag"),
+						},
 					}
 					return k8sClient.Patch(context.Background(), system, patch)
 				}, timeout, poll).ShouldNot(HaveOccurred())
@@ -435,6 +498,7 @@ var _ = Describe("System controller", func() {
 					}).Assert(k8sClient, dep, timeout, poll))
 
 				Expect(dep.Spec.Template.Spec.Volumes[0].Secret.SecretName).To(Equal("system-config"))
+				Expect(dep.Spec.Template.Spec.TerminationGracePeriodSeconds).To(Equal(pointer.Int64(60)))
 
 				svc := &corev1.Service{}
 				By("keeps the system-app service deployment label selector",
@@ -461,6 +525,7 @@ var _ = Describe("System controller", func() {
 
 				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
 				Expect(dep.Spec.Template.Spec.Volumes[1].Secret.SecretName).To(Equal("system-config"))
+				Expect(dep.Spec.Template.Spec.TerminationGracePeriodSeconds).To(Equal(pointer.Int64(60)))
 
 				By("deploying a system-sidekiq-billing-canary workload",
 					(&testutil.ExpectedWorkload{
@@ -474,6 +539,7 @@ var _ = Describe("System controller", func() {
 
 				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
 				Expect(dep.Spec.Template.Spec.Volumes[1].Secret.SecretName).To(Equal("system-config"))
+				Expect(dep.Spec.Template.Spec.TerminationGracePeriodSeconds).To(Equal(pointer.Int64(60)))
 
 				By("deploying a system-sidekiq-low-canary workload",
 					(&testutil.ExpectedWorkload{
@@ -487,6 +553,7 @@ var _ = Describe("System controller", func() {
 
 				Expect(dep.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-tmp"))
 				Expect(dep.Spec.Template.Spec.Volumes[1].Secret.SecretName).To(Equal("system-config"))
+				Expect(dep.Spec.Template.Spec.TerminationGracePeriodSeconds).To(Equal(pointer.Int64(60)))
 
 			})
 
@@ -614,6 +681,10 @@ var _ = Describe("System controller", func() {
 						k8sClient, &appsv1.Deployment{}, "system-sidekiq-low", namespace, timeout, poll)
 
 					patch := client.MergeFrom(system.DeepCopy())
+
+					system.Spec.Config.Rails = &saasv1alpha1.SystemRailsSpec{
+						Console: pointer.Bool(true),
+					}
 
 					system.Spec.Twemproxy = &saasv1alpha1.TwemproxySpec{
 						TwemproxyConfigRef: "system-twemproxyconfig",
@@ -796,6 +867,22 @@ var _ = Describe("System controller", func() {
 				Expect(dep.Spec.Template.Spec.Containers[1].VolumeMounts[0].Name).To(Equal("twemproxy-config"))
 				Expect(dep.Spec.Template.Spec.Containers[1].Env[3].Name).To(Equal("TWEMPROXY_LOG_LEVEL"))
 				Expect(dep.Spec.Template.Spec.Containers[1].Env[3].Value).To(Equal("5"))
+
+				sts := &appsv1.StatefulSet{}
+				By("adding a twemproxy sidecar to the system-console statefulset",
+					(&testutil.ExpectedResource{Name: "system-console", Namespace: namespace}).
+						Assert(k8sClient, sts, timeout, poll))
+
+				Expect(sts.Spec.Template.Spec.Volumes).To(HaveLen(2))
+				Expect(sts.Spec.Template.Spec.Volumes[0].Name).To(Equal("system-config"))
+				Expect(sts.Spec.Template.Spec.Volumes[0].VolumeSource.Secret.SecretName).To(Equal("system-config"))
+				Expect(sts.Spec.Template.Spec.Volumes[1].Name).To(Equal("twemproxy-config"))
+				Expect(sts.Spec.Template.Spec.Volumes[1].VolumeSource.ConfigMap.LocalObjectReference.Name).To(Equal("system-twemproxyconfig"))
+				Expect(sts.Spec.Template.Spec.Containers).To(HaveLen(2))
+				Expect(sts.Spec.Template.Spec.Containers[1].Name).To(Equal("twemproxy"))
+				Expect(sts.Spec.Template.Spec.Containers[1].VolumeMounts[0].Name).To(Equal("twemproxy-config"))
+				Expect(sts.Spec.Template.Spec.Containers[1].Env[3].Name).To(Equal("TWEMPROXY_LOG_LEVEL"))
+				Expect(sts.Spec.Template.Spec.Containers[1].Env[3].Value).To(Equal("2"))
 
 			})
 		})

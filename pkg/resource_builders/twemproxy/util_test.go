@@ -15,7 +15,7 @@ import (
 	"k8s.io/utils/pointer"
 )
 
-func Test_addTwemproxySidecar(t *testing.T) {
+func Test_AddTwemproxySidecar(t *testing.T) {
 	type args struct {
 		dep  appsv1.Deployment
 		spec *saasv1alpha1.TwemproxySpec
@@ -23,7 +23,7 @@ func Test_addTwemproxySidecar(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want *appsv1.Deployment
+		want corev1.PodTemplateSpec
 	}{
 		{
 			name: "Adds twemproxy sidecar container to a Deployment",
@@ -69,80 +69,76 @@ func Test_addTwemproxySidecar(t *testing.T) {
 					},
 				},
 			},
-			want: &appsv1.Deployment{
-				Spec: appsv1.DeploymentSpec{
-					Template: corev1.PodTemplateSpec{
-						ObjectMeta: metav1.ObjectMeta{
-							Labels: map[string]string{
-								"saas.3scale.net/twemproxyconfig.sync": "twem-config",
+			want: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						"saas.3scale.net/twemproxyconfig.sync": "twem-config",
+					},
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "test",
+						},
+						{
+							Env: []corev1.EnvVar{
+								{Name: "TWEMPROXY_CONFIG_FILE", Value: TwemproxyConfigFile},
+								{Name: "TWEMPROXY_METRICS_ADDRESS", Value: ":5555"},
+								{Name: "TWEMPROXY_STATS_INTERVAL", Value: "20000"},
+								{Name: "TWEMPROXY_LOG_LEVEL", Value: "6"},
+							},
+							Name:  twemproxy,
+							Image: "twemproxy:latest",
+							Ports: pod.ContainerPorts(
+								pod.ContainerPortTCP(twemproxy, 22121),
+								pod.ContainerPortTCP("twem-metrics", 5555),
+							),
+							Resources:       corev1.ResourceRequirements{},
+							ImagePullPolicy: corev1.PullIfNotPresent,
+							LivenessProbe: &corev1.Probe{
+								ProbeHandler: corev1.ProbeHandler{Exec: &corev1.ExecAction{
+									Command: strings.Split(healthCommand, " "),
+								}},
+								InitialDelaySeconds: *pointer.Int32(1),
+								TimeoutSeconds:      *pointer.Int32(3),
+								PeriodSeconds:       *pointer.Int32(5),
+								SuccessThreshold:    *pointer.Int32(1),
+								FailureThreshold:    *pointer.Int32(3),
+							},
+							ReadinessProbe: &corev1.Probe{
+								ProbeHandler: corev1.ProbeHandler{Exec: &corev1.ExecAction{
+									Command: strings.Split(healthCommand, " "),
+								}},
+								InitialDelaySeconds: *pointer.Int32(1),
+								TimeoutSeconds:      *pointer.Int32(3),
+								PeriodSeconds:       *pointer.Int32(5),
+								SuccessThreshold:    *pointer.Int32(1),
+								FailureThreshold:    *pointer.Int32(3),
+							},
+							TerminationMessagePath:   corev1.TerminationMessagePathDefault,
+							TerminationMessagePolicy: corev1.TerminationMessageReadFile,
+							Lifecycle: &corev1.Lifecycle{
+								PreStop: &corev1.LifecycleHandler{
+									Exec: &corev1.ExecAction{
+										Command: []string{"pre-stop", TwemproxyConfigFile},
+									},
+								},
+							},
+							VolumeMounts: []corev1.VolumeMount{
+								{
+									Name:      "twemproxy-config",
+									MountPath: filepath.Dir(TwemproxyConfigFile),
+								},
 							},
 						},
-						Spec: corev1.PodSpec{
-							Containers: []corev1.Container{
-								{
-									Name: "test",
-								},
-								{
-									Env: []corev1.EnvVar{
-										{Name: "TWEMPROXY_CONFIG_FILE", Value: TwemproxyConfigFile},
-										{Name: "TWEMPROXY_METRICS_ADDRESS", Value: ":5555"},
-										{Name: "TWEMPROXY_STATS_INTERVAL", Value: "20000"},
-										{Name: "TWEMPROXY_LOG_LEVEL", Value: "6"},
-									},
-									Name:  twemproxy,
-									Image: "twemproxy:latest",
-									Ports: pod.ContainerPorts(
-										pod.ContainerPortTCP(twemproxy, 22121),
-										pod.ContainerPortTCP("twem-metrics", 5555),
-									),
-									Resources:       corev1.ResourceRequirements{},
-									ImagePullPolicy: corev1.PullIfNotPresent,
-									LivenessProbe: &corev1.Probe{
-										ProbeHandler: corev1.ProbeHandler{Exec: &corev1.ExecAction{
-											Command: strings.Split(healthCommand, " "),
-										}},
-										InitialDelaySeconds: *pointer.Int32(1),
-										TimeoutSeconds:      *pointer.Int32(3),
-										PeriodSeconds:       *pointer.Int32(5),
-										SuccessThreshold:    *pointer.Int32(1),
-										FailureThreshold:    *pointer.Int32(3),
-									},
-									ReadinessProbe: &corev1.Probe{
-										ProbeHandler: corev1.ProbeHandler{Exec: &corev1.ExecAction{
-											Command: strings.Split(healthCommand, " "),
-										}},
-										InitialDelaySeconds: *pointer.Int32(1),
-										TimeoutSeconds:      *pointer.Int32(3),
-										PeriodSeconds:       *pointer.Int32(5),
-										SuccessThreshold:    *pointer.Int32(1),
-										FailureThreshold:    *pointer.Int32(3),
-									},
-									TerminationMessagePath:   corev1.TerminationMessagePathDefault,
-									TerminationMessagePolicy: corev1.TerminationMessageReadFile,
-									Lifecycle: &corev1.Lifecycle{
-										PreStop: &corev1.LifecycleHandler{
-											Exec: &corev1.ExecAction{
-												Command: []string{"pre-stop", TwemproxyConfigFile},
-											},
-										},
-									},
-									VolumeMounts: []corev1.VolumeMount{
-										{
-											Name:      "twemproxy-config",
-											MountPath: filepath.Dir(TwemproxyConfigFile),
-										},
-									},
-								},
-							},
-							Volumes: []corev1.Volume{
-								{
-									Name: twemproxy + "-config",
-									VolumeSource: corev1.VolumeSource{
-										ConfigMap: &corev1.ConfigMapVolumeSource{
-											LocalObjectReference: corev1.LocalObjectReference{Name: "twem-config"},
-											DefaultMode:          pointer.Int32(420),
-										},
-									},
+					},
+					Volumes: []corev1.Volume{
+						{
+							Name: twemproxy + "-config",
+							VolumeSource: corev1.VolumeSource{
+								ConfigMap: &corev1.ConfigMapVolumeSource{
+									LocalObjectReference: corev1.LocalObjectReference{Name: "twem-config"},
+									DefaultMode:          pointer.Int32(420),
 								},
 							},
 						},
@@ -153,9 +149,9 @@ func Test_addTwemproxySidecar(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := AddTwemproxySidecar(tt.args.dep, tt.args.spec)
+			got := AddTwemproxySidecar(tt.args.dep.Spec.Template, tt.args.spec)
 			if diff := deep.Equal(got, tt.want); len(diff) > 0 {
-				t.Errorf("addTwemproxySidecar() = diff %v", diff)
+				t.Errorf("AddTwemproxySidecar() = diff %v", diff)
 			}
 		})
 	}

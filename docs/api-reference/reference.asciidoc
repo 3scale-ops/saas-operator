@@ -460,6 +460,25 @@ CronSpec is the configuration for Backend Cron
 |===
 
 
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-deploymentstrategyspec"]
+==== DeploymentStrategySpec 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`type`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#deploymentstrategytype-v1-apps[$$DeploymentStrategyType$$]__ | Type of deployment. Can be "Recreate" or "RollingUpdate". Default is RollingUpdate.
+| *`rollingUpdate`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#rollingupdatedeployment-v1-apps[$$RollingUpdateDeployment$$]__ | Rolling update config params. Present only if DeploymentStrategyType = RollingUpdate.
+|===
+
+
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapi"]
 ==== EchoAPI 
 
@@ -662,6 +681,7 @@ HorizontalPodAutoscalerSpec defines the HPA for the component
 | *`maxReplicas`* __integer__ | Upper limit for the number of replicas to which the autoscaler can scale up. It cannot be less that minReplicas.
 | *`resourceName`* __string__ | Target resource used to autoscale (cpu/memory)
 | *`resourceUtilization`* __integer__ | A percentage indicating the target resource consumption used to autoscale
+| *`behavior`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#horizontalpodautoscalerbehavior-v2-autoscaling[$$HorizontalPodAutoscalerBehavior$$]__ | Behavior configures the scaling behavior of the target in both Up and Down directions (scaleUp and scaleDown fields respectively). If not set, the default HPAScalingRules for scale up and scale down are used.
 |===
 
 
@@ -680,6 +700,7 @@ ImageSpec defines the image for the component
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshardspec[$$RedisShardSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelspec[$$SentinelSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemrailsconsolespec[$$SystemRailsConsoleSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsphinxspec[$$SystemSphinxSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyspec[$$TwemproxySpec$$]
@@ -1214,6 +1235,13 @@ ResourceRequirementsSpec defines the resource requirements for the component
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
 ****
 
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`claims`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#resourceclaim-v1-core[$$ResourceClaim$$] array__ | Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container. 
+ This is an alpha field and requires enabling the DynamicResourceAllocation feature gate. 
+ This field is immutable.
+|===
 
 
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-routeconfiguration"]
@@ -1510,6 +1538,7 @@ SystemAppSpec configures the App component of System
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
+| *`deploymentStrategy`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-deploymentstrategyspec[$$DeploymentStrategySpec$$]__ | The deployment strategy to use to replace existing pods with new ones.
 | *`pdb`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
 | *`hpa`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
 | *`replicas`* __integer__ | Number of replicas (ignored if hpa is enabled) for the component
@@ -1519,6 +1548,7 @@ SystemAppSpec configures the App component of System
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 | *`canary`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
+| *`terminationGracePeriodSeconds`* __integer__ | Configures the TerminationGracePeriodSeconds
 |===
 
 
@@ -1598,6 +1628,7 @@ SystemRailsConsoleSpec configures the App component of System
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
+| *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the Console component. Defaults to system image if not defined.
 | *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
@@ -1654,6 +1685,7 @@ SystemSidekiqSpec configures the Sidekiq component of System
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
+| *`deploymentStrategy`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-deploymentstrategyspec[$$DeploymentStrategySpec$$]__ | The deployment strategy to use to replace existing pods with new ones.
 | *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sidekiqconfig[$$SidekiqConfig$$]__ | Sidekiq specific configuration options for the component element
 | *`pdb`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
 | *`hpa`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
@@ -1664,6 +1696,7 @@ SystemSidekiqSpec configures the Sidekiq component of System
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 | *`canary`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
+| *`terminationGracePeriodSeconds`* __integer__ | Configures the TerminationGracePeriodSeconds
 |===
 
 
@@ -1713,6 +1746,7 @@ SystemSphinxSpec configures the App component of System
 | *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
+| *`terminationGracePeriodSeconds`* __integer__ | Configures the TerminationGracePeriodSeconds
 |===
 
 
