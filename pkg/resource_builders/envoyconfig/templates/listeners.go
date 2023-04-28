@@ -186,7 +186,7 @@ func AccessLogConfig_v1(name string, tls bool) []*envoy_config_accesslog_v3.Acce
 											"upstream_cluster":      structpb.NewStringValue("%UPSTREAM_CLUSTER%"),
 											"upstream_service_time": structpb.NewStringValue("%RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%"),
 											"user_agent":            structpb.NewStringValue("%REQ(USER-AGENT)%"),
-											"client_ip":             structpb.NewStringValue("%REQ(X-ENVOY-EXTERNAL-ADDRESS)%"),
+											"client_ip":             structpb.NewStringValue("%DOWNSTREAM_REMOTE_ADDRESS_WITHOUT_PORT%"),
 										}
 										if tls {
 											m["downstream_tls_cipher"] = structpb.NewStringValue("%DOWNSTREAM_TLS_CIPHER%")
