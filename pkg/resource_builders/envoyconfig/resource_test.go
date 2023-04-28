@@ -115,7 +115,7 @@ func TestNew(t *testing.T) {
                                             authority: '%REQ(:AUTHORITY)%'
                                             bytes_received: '%BYTES_RECEIVED%'
                                             bytes_sent: '%BYTES_SENT%'
-                                            client_ip: '%REQ(X-ENVOY-EXTERNAL-ADDRESS)%'
+                                            client_ip: '%DOWNSTREAM_REMOTE_ADDRESS_WITHOUT_PORT%'
                                             downstream_tls_cipher: '%DOWNSTREAM_TLS_CIPHER%'
                                             downstream_tls_version: '%DOWNSTREAM_TLS_VERSION%'
                                             duration: '%DURATION%'
