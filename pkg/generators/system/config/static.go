@@ -1,5 +1,6 @@
 package config
 
 const (
-	SystemSphinxServiceName = "system-sphinx"
+	SystemSphinxServiceName  = "system-sphinx"
+	SystemSearchdServiceName = "system-searchd"
 )

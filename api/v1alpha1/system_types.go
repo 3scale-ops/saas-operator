@@ -199,6 +199,44 @@ var (
 		SuccessThreshold:    pointer.Int32Ptr(1),
 		FailureThreshold:    pointer.Int32Ptr(5),
 	}
+	// Searchd
+	systemDefaultSearchdEnabled bool             = false
+	systemDefaultSearchdImage   defaultImageSpec = defaultImageSpec{
+		Name:       pointer.StringPtr("quay.io/3scale/searchd"),
+		Tag:        pointer.StringPtr("latest"),
+		PullPolicy: (*corev1.PullPolicy)(pointer.StringPtr(string(corev1.PullIfNotPresent))),
+	}
+	systemDefaultSearchdPort                int32                           = 9306
+	systemDefaultSearchdBindAddress         string                          = "0.0.0.0"
+	systemDefaultSearchdConfigFile          string                          = "/var/lib/searchd/sphinx.conf"
+	systemDefaultSearchdBatchSize           int32                           = 100
+	systemDefaultSearchdDBPath              string                          = "/var/lib/searchd"
+	systemDefaultSearchdDatabaseStorageSize string                          = "30Gi"
+	systemDefaultSearchdPIDFile             string                          = "/opt/system/tmp/pids/searchd.pid"
+	systemDefaultSearchdResources           defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
+		Requests: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("250m"),
+			corev1.ResourceMemory: resource.MustParse("4Gi"),
+		},
+		Limits: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("750m"),
+			corev1.ResourceMemory: resource.MustParse("5Gi"),
+		},
+	}
+	systemDefaultSearchdLivenessProbe defaultProbeSpec = defaultProbeSpec{
+		InitialDelaySeconds: pointer.Int32Ptr(60),
+		TimeoutSeconds:      pointer.Int32Ptr(3),
+		PeriodSeconds:       pointer.Int32Ptr(15),
+		SuccessThreshold:    pointer.Int32Ptr(1),
+		FailureThreshold:    pointer.Int32Ptr(5),
+	}
+	systemDefaultSearchdReadinessProbe defaultProbeSpec = defaultProbeSpec{
+		InitialDelaySeconds: pointer.Int32Ptr(60),
+		TimeoutSeconds:      pointer.Int32Ptr(5),
+		PeriodSeconds:       pointer.Int32Ptr(30),
+		SuccessThreshold:    pointer.Int32Ptr(1),
+		FailureThreshold:    pointer.Int32Ptr(5),
+	}
 	systemDefaultRailsConsoleResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
 		Requests: corev1.ResourceList{
 			corev1.ResourceCPU:    resource.MustParse("200m"),
@@ -240,6 +278,10 @@ type SystemSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Sphinx *SystemSphinxSpec `json:"sphinx,omitempty"`
+	// Searchd specific configuration options
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Searchd *SystemSearchdSpec `json:"searchd,omitempty"`
 	// Console specific configuration options
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -279,6 +321,11 @@ func (spec *SystemSpec) Default() {
 		spec.SidekiqLow = &SystemSidekiqSpec{}
 	}
 	spec.SidekiqLow.Default(Low)
+
+	if spec.Searchd == nil {
+		spec.Searchd = &SystemSearchdSpec{}
+	}
+	spec.Searchd.Default()
 
 	if spec.Sphinx == nil {
 		spec.Sphinx = &SystemSphinxSpec{}
@@ -881,6 +928,111 @@ func (tc *ThinkingSpec) Default() {
 	if tc.DatabaseStorageSize == nil {
 		size := resource.MustParse(systemDefaultSphinxDatabaseStorageSize)
 		tc.DatabaseStorageSize = &size
+	}
+}
+
+// SystemSearchdSpec configures the App component of System
+type SystemSearchdSpec struct {
+	// Deploy searchd instance
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Enabled *bool `json:"console,omitempty"`
+	// Image specification for the Searchd component.
+	// Defaults to system image if not defined.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Image *ImageSpec `json:"image,omitempty"`
+	// Configuration options for System's sphinx
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Config *SearchdConfig `json:"config,omitempty"`
+	// Resource requirements for the component
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Resources *ResourceRequirementsSpec `json:"resources,omitempty"`
+	// Liveness probe for the component
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	LivenessProbe *ProbeSpec `json:"livenessProbe,omitempty"`
+	// Readiness probe for the component
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ReadinessProbe *ProbeSpec `json:"readinessProbe,omitempty"`
+	// Describes node affinity scheduling rules for the pod.
+	// +optional
+	NodeAffinity *corev1.NodeAffinity `json:"nodeAffinity,omitempty" protobuf:"bytes,1,opt,name=nodeAffinity"`
+	// If specified, the pod's tolerations.
+	// +optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
+	// Configures the TerminationGracePeriodSeconds
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty"`
+}
+
+// Default implements defaulting for the system sphinx component
+func (spec *SystemSearchdSpec) Default() {
+	spec.Enabled = boolOrDefault(spec.Enabled, pointer.Bool(systemDefaultSearchdEnabled))
+	spec.Image = InitializeImageSpec(spec.Image, defaultImageSpec(systemDefaultSearchdImage))
+	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, systemDefaultSearchdResources)
+	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, systemDefaultSearchdLivenessProbe)
+	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, systemDefaultSearchdReadinessProbe)
+	if spec.Config == nil {
+		spec.Config = &SearchdConfig{}
+	}
+	spec.Config.Default()
+	spec.TerminationGracePeriodSeconds = int64OrDefault(
+		spec.TerminationGracePeriodSeconds, systemDefaultTerminationGracePeriodSeconds,
+	)
+}
+
+// SearchdConfig has configuration options for System's sphinx
+type SearchdConfig struct {
+	// The TCP port Searchd will run its daemon on
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Port *int32 `json:"port,omitempty"`
+	// Allows setting the TCP host for Searchd to a different address
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	BindAddress *string `json:"bindAddress,omitempty"`
+	// Searchd configuration file path
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ConfigFile *string `json:"configFile,omitempty"`
+	// Searchd batch size
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	BatchSize *int32 `json:"batchSize,omitempty"`
+	// Searchd database path
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	DatabasePath *string `json:"databasePath,omitempty"`
+	// Searchd database storage size
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	DatabaseStorageSize *resource.Quantity `json:"databaseStorageSize,omitempty"`
+	// Searchd database storage type
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	DatabaseStorageClass *string `json:"databaseStorageClass,omitempty"`
+	// Searchd PID file path
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	PIDFile *string `json:"pidFile,omitempty"`
+}
+
+// Default implements defaulting for SearchdConfig
+func (sc *SearchdConfig) Default() {
+	sc.Port = intOrDefault(sc.Port, pointer.Int32Ptr(systemDefaultSearchdPort))
+	sc.BindAddress = stringOrDefault(sc.BindAddress, pointer.StringPtr(systemDefaultSearchdBindAddress))
+	sc.ConfigFile = stringOrDefault(sc.ConfigFile, pointer.StringPtr(systemDefaultSearchdConfigFile))
+	sc.BatchSize = intOrDefault(sc.BatchSize, pointer.Int32Ptr(systemDefaultSearchdBatchSize))
+	sc.DatabasePath = stringOrDefault(sc.DatabasePath, pointer.StringPtr(systemDefaultSearchdDBPath))
+	sc.PIDFile = stringOrDefault(sc.PIDFile, pointer.StringPtr(systemDefaultSearchdPIDFile))
+	if sc.DatabaseStorageSize == nil {
+		size := resource.MustParse(systemDefaultSearchdDatabaseStorageSize)
+		sc.DatabaseStorageSize = &size
 	}
 }
 
