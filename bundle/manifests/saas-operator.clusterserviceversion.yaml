@@ -627,7 +627,7 @@ metadata:
     capabilities: Basic Install
     categories: Integration & Delivery
     containerImage: quay.io/3scale/saas-operator
-    createdAt: "2023-04-28T10:01:10Z"
+    createdAt: "2023-04-29T17:55:26Z"
     description: |-
       The 3scale SaaS Operator creates and maintains a SaaS-ready deployment
       of the Red Hat 3scale API Management on OpenShift.
@@ -3305,6 +3305,114 @@ spec:
       - description: Image tag
         displayName: Tag
         path: image.tag
+      - description: Searchd specific configuration options
+        displayName: Searchd
+        path: searchd
+      - description: Configuration options for System's sphinx
+        displayName: Config
+        path: searchd.config
+      - description: Searchd batch size
+        displayName: Batch Size
+        path: searchd.config.batchSize
+      - description: Allows setting the TCP host for Searchd to a different address
+        displayName: Bind Address
+        path: searchd.config.bindAddress
+      - description: Searchd configuration file path
+        displayName: Config File
+        path: searchd.config.configFile
+      - description: Searchd database path
+        displayName: Database Path
+        path: searchd.config.databasePath
+      - description: Searchd database storage type
+        displayName: Database Storage Class
+        path: searchd.config.databaseStorageClass
+      - description: Searchd database storage size
+        displayName: Database Storage Size
+        path: searchd.config.databaseStorageSize
+      - description: Searchd PID file path
+        displayName: PIDFile
+        path: searchd.config.pidFile
+      - description: The TCP port Searchd will run its daemon on
+        displayName: Port
+        path: searchd.config.port
+      - description: Deploy searchd instance
+        displayName: Enabled
+        path: searchd.console
+      - description: Image specification for the Searchd component. Defaults to system
+          image if not defined.
+        displayName: Image
+        path: searchd.image
+      - description: Docker repository of the image
+        displayName: Name
+        path: searchd.image.name
+      - description: Pull policy for the image
+        displayName: Pull Policy
+        path: searchd.image.pullPolicy
+      - description: Name of the Secret that holds quay.io credentials to access the
+          image repository
+        displayName: Pull Secret Name
+        path: searchd.image.pullSecretName
+      - description: Image tag
+        displayName: Tag
+        path: searchd.image.tag
+      - description: Liveness probe for the component
+        displayName: Liveness Probe
+        path: searchd.livenessProbe
+      - description: Minimum consecutive failures for the probe to be considered failed
+          after having succeeded
+        displayName: Failure Threshold
+        path: searchd.livenessProbe.failureThreshold
+      - description: Number of seconds after the container has started before liveness
+          probes are initiated
+        displayName: Initial Delay Seconds
+        path: searchd.livenessProbe.initialDelaySeconds
+      - description: How often (in seconds) to perform the probe
+        displayName: Period Seconds
+        path: searchd.livenessProbe.periodSeconds
+      - description: Minimum consecutive successes for the probe to be considered
+          successful after having failed
+        displayName: Success Threshold
+        path: searchd.livenessProbe.successThreshold
+      - description: Number of seconds after which the probe times out
+        displayName: Timeout Seconds
+        path: searchd.livenessProbe.timeoutSeconds
+      - description: Readiness probe for the component
+        displayName: Readiness Probe
+        path: searchd.readinessProbe
+      - description: Minimum consecutive failures for the probe to be considered failed
+          after having succeeded
+        displayName: Failure Threshold
+        path: searchd.readinessProbe.failureThreshold
+      - description: Number of seconds after the container has started before liveness
+          probes are initiated
+        displayName: Initial Delay Seconds
+        path: searchd.readinessProbe.initialDelaySeconds
+      - description: How often (in seconds) to perform the probe
+        displayName: Period Seconds
+        path: searchd.readinessProbe.periodSeconds
+      - description: Minimum consecutive successes for the probe to be considered
+          successful after having failed
+        displayName: Success Threshold
+        path: searchd.readinessProbe.successThreshold
+      - description: Number of seconds after which the probe times out
+        displayName: Timeout Seconds
+        path: searchd.readinessProbe.timeoutSeconds
+      - description: Resource requirements for the component
+        displayName: Resources
+        path: searchd.resources
+      - description: 'Limits describes the maximum amount of compute resources allowed.
+          More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Limits
+        path: searchd.resources.limits
+      - description: 'Requests describes the minimum amount of compute resources required.
+          If Requests is omitted for a container, it defaults to Limits if that is
+          explicitly specified, otherwise to an implementation-defined value. More
+          info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Requests
+        path: searchd.resources.requests
+      - description: Configures the TerminationGracePeriodSeconds
+        displayName: Termination Grace Period Seconds
+        path: searchd.terminationGracePeriodSeconds
       - description: Sidekiq Billing specific configuration options
         displayName: Sidekiq Billing
         path: sidekiqBilling
@@ -3698,6 +3806,9 @@ spec:
       - description: Configuration options for System's sphinx
         displayName: Config
         path: sphinx.config
+      - description: Deploy Sphinx instance
+        displayName: Enabled
+        path: sphinx.config.console
       - description: Thinking configuration for sphinx
         displayName: Thinking
         path: sphinx.config.thinking
