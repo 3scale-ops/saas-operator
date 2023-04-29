@@ -167,6 +167,7 @@ var (
 	}
 
 	// Sphinx
+	systemDefaultSphinxEnabled             bool                            = true
 	systemDefaultSphinxPort                int32                           = 9306
 	systemDefaultSphinxBindAddress         string                          = "0.0.0.0"
 	systemDefaultSphinxConfigFile          string                          = "/opt/system/db/sphinx/sphinx.conf"
@@ -810,6 +811,10 @@ func (spec *SystemSphinxSpec) Default(systemDefaultImage *ImageSpec) {
 
 // SphinxConfig has configuration options for System's sphinx
 type SphinxConfig struct {
+	// Deploy Sphinx instance
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Enabled *bool `json:"console,omitempty"`
 	// Thinking configuration for sphinx
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -818,6 +823,11 @@ type SphinxConfig struct {
 
 // Default implements defaulting for SphinxConfig
 func (sc *SphinxConfig) Default() {
+
+	sc.Enabled = boolOrDefault(
+		sc.Enabled, pointer.Bool(systemDefaultSphinxEnabled),
+	)
+
 	if sc.Thinking == nil {
 		sc.Thinking = &ThinkingSpec{}
 	}

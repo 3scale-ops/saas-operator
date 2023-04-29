@@ -372,6 +372,37 @@ var _ = Describe("System controller", func() {
 
 		})
 
+		When("updating a System resource disabling sphinx", func() {
+
+			BeforeEach(func() {
+				Eventually(func() error {
+					err := k8sClient.Get(
+						context.Background(),
+						types.NamespacedName{Name: "instance", Namespace: namespace},
+						system,
+					)
+					Expect(err).ToNot(HaveOccurred())
+					patch := client.MergeFrom(system.DeepCopy())
+					system.Spec.Sphinx = &saasv1alpha1.SystemSphinxSpec{
+						Config: &saasv1alpha1.SphinxConfig{
+							Enabled: pointer.Bool(false),
+						},
+					}
+					return k8sClient.Patch(context.Background(), system, patch)
+				}, timeout, poll).ShouldNot(HaveOccurred())
+			})
+
+			It("removes the system-sphinx resources", func() {
+
+				sts := &appsv1.StatefulSet{}
+				By("removing the system-sphinx statefulset",
+					(&testutil.ExpectedResource{Name: "system-sphinx", Namespace: namespace, Missing: true}).
+						Assert(k8sClient, sts, timeout, poll))
+
+			})
+
+		})
+
 		When("updating a System resource with console", func() {
 
 			BeforeEach(func() {

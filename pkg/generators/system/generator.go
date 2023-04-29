@@ -452,6 +452,7 @@ type SphinxGenerator struct {
 	DatabasePath         string
 	DatabaseStorageSize  resource.Quantity
 	DatabaseStorageClass *string
+	Enabled              bool
 }
 
 func (gen *SphinxGenerator) StatefulSetWithTraffic() []basereconciler.Resource {
@@ -466,14 +467,16 @@ func (gen *SphinxGenerator) StatefulSet() basereconciler_resources.StatefulSetTe
 		RolloutTriggers: []basereconciler_resources.RolloutTrigger{
 			{Name: "system-database", SecretName: pointer.String("system-database")},
 		},
-		IsEnabled: true,
+		IsEnabled: gen.Enabled,
 	}
 }
 
 func (gen *SphinxGenerator) Service() basereconciler_resources.ServiceTemplate {
 	return basereconciler_resources.ServiceTemplate{
 		Template:  gen.service(),
-		IsEnabled: true,
+		IsEnabled: gen.Enabled,
+	}
+}
 	}
 }
 
