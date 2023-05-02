@@ -627,7 +627,7 @@ metadata:
     capabilities: Basic Install
     categories: Integration & Delivery
     containerImage: quay.io/3scale/saas-operator
-    createdAt: "2023-04-29T17:56:25Z"
+    createdAt: "2023-05-02T10:16:48Z"
     description: |-
       The 3scale SaaS Operator creates and maintains a SaaS-ready deployment
       of the Red Hat 3scale API Management on OpenShift.

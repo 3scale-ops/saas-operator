@@ -861,7 +861,7 @@ type SphinxConfig struct {
 	// Deploy Sphinx instance
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	Enabled *bool `json:"console,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 	// Thinking configuration for sphinx
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -936,35 +936,35 @@ type SystemSearchdSpec struct {
 	// Deploy searchd instance
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	Enabled *bool `json:"console,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 	// Image specification for the Searchd component.
 	// Defaults to system image if not defined.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Image *ImageSpec `json:"image,omitempty"`
-	// Configuration options for System's sphinx
+	// Configuration options for System's Searchd
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Config *SearchdConfig `json:"config,omitempty"`
-	// Resource requirements for the component
+	// Resource requirements for the Searchd component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Resources *ResourceRequirementsSpec `json:"resources,omitempty"`
-	// Liveness probe for the component
+	// Liveness probe for the Searchd component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	LivenessProbe *ProbeSpec `json:"livenessProbe,omitempty"`
-	// Readiness probe for the component
+	// Readiness probe for the Searchd component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	ReadinessProbe *ProbeSpec `json:"readinessProbe,omitempty"`
-	// Describes node affinity scheduling rules for the pod.
+	// Describes node affinity scheduling rules for the Searchd pod
 	// +optional
 	NodeAffinity *corev1.NodeAffinity `json:"nodeAffinity,omitempty" protobuf:"bytes,1,opt,name=nodeAffinity"`
-	// If specified, the pod's tolerations.
+	// If specified, the Searchd pod's tolerations.
 	// +optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
-	// Configures the TerminationGracePeriodSeconds
+	// Configures the TerminationGracePeriodSeconds for Searchd
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty"`
