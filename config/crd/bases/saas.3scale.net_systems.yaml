@@ -1721,7 +1721,7 @@ spec:
                 description: Searchd specific configuration options
                 properties:
                   config:
-                    description: Configuration options for System's sphinx
+                    description: Configuration options for System's Searchd
                     properties:
                       batchSize:
                         description: Searchd batch size
@@ -1755,7 +1755,7 @@ spec:
                         format: int32
                         type: integer
                     type: object
-                  console:
+                  enabled:
                     description: Deploy searchd instance
                     type: boolean
                   image:
@@ -1777,7 +1777,7 @@ spec:
                         type: string
                     type: object
                   livenessProbe:
-                    description: Liveness probe for the component
+                    description: Liveness probe for the Searchd component
                     properties:
                       failureThreshold:
                         description: Minimum consecutive failures for the probe to
@@ -1806,7 +1806,7 @@ spec:
                     type: object
                   nodeAffinity:
                     description: Describes node affinity scheduling rules for the
-                      pod.
+                      Searchd pod
                     properties:
                       preferredDuringSchedulingIgnoredDuringExecution:
                         description: The scheduler will prefer to schedule pods to
@@ -2012,7 +2012,7 @@ spec:
                         x-kubernetes-map-type: atomic
                     type: object
                   readinessProbe:
-                    description: Readiness probe for the component
+                    description: Readiness probe for the Searchd component
                     properties:
                       failureThreshold:
                         description: Minimum consecutive failures for the probe to
@@ -2040,7 +2040,7 @@ spec:
                         type: integer
                     type: object
                   resources:
-                    description: Resource requirements for the component
+                    description: Resource requirements for the Searchd component
                     properties:
                       claims:
                         description: "Claims lists the names of resources, defined
@@ -2087,11 +2087,12 @@ spec:
                         type: object
                     type: object
                   terminationGracePeriodSeconds:
-                    description: Configures the TerminationGracePeriodSeconds
+                    description: Configures the TerminationGracePeriodSeconds for
+                      Searchd
                     format: int64
                     type: integer
                   tolerations:
-                    description: If specified, the pod's tolerations.
+                    description: If specified, the Searchd pod's tolerations.
                     items:
                       description: The pod this Toleration is attached to tolerates
                         any taint that matches the triple <key,value,effect> using
@@ -4028,7 +4029,7 @@ spec:
                   config:
                     description: Configuration options for System's sphinx
                     properties:
-                      console:
+                      enabled:
                         description: Deploy Sphinx instance
                         type: boolean
                       thinking:

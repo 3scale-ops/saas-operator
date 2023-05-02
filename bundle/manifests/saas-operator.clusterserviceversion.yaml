@@ -627,7 +627,7 @@ metadata:
     capabilities: Basic Install
     categories: Integration & Delivery
     containerImage: quay.io/3scale/saas-operator
-    createdAt: "2023-05-02T10:16:48Z"
+    createdAt: "2023-05-02T10:27:35Z"
     description: |-
       The 3scale SaaS Operator creates and maintains a SaaS-ready deployment
       of the Red Hat 3scale API Management on OpenShift.
@@ -635,7 +635,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/3scale/saas-operator
     support: Red Hat
-  name: saas-operator.v0.19.7-alpha.1
+  name: saas-operator.v0.19.7-alpha.3
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -3308,7 +3308,7 @@ spec:
       - description: Searchd specific configuration options
         displayName: Searchd
         path: searchd
-      - description: Configuration options for System's sphinx
+      - description: Configuration options for System's Searchd
         displayName: Config
         path: searchd.config
       - description: Searchd batch size
@@ -3337,7 +3337,7 @@ spec:
         path: searchd.config.port
       - description: Deploy searchd instance
         displayName: Enabled
-        path: searchd.console
+        path: searchd.enabled
       - description: Image specification for the Searchd component. Defaults to system
           image if not defined.
         displayName: Image
@@ -3355,7 +3355,7 @@ spec:
       - description: Image tag
         displayName: Tag
         path: searchd.image.tag
-      - description: Liveness probe for the component
+      - description: Liveness probe for the Searchd component
         displayName: Liveness Probe
         path: searchd.livenessProbe
       - description: Minimum consecutive failures for the probe to be considered failed
@@ -3376,7 +3376,7 @@ spec:
       - description: Number of seconds after which the probe times out
         displayName: Timeout Seconds
         path: searchd.livenessProbe.timeoutSeconds
-      - description: Readiness probe for the component
+      - description: Readiness probe for the Searchd component
         displayName: Readiness Probe
         path: searchd.readinessProbe
       - description: Minimum consecutive failures for the probe to be considered failed
@@ -3397,7 +3397,7 @@ spec:
       - description: Number of seconds after which the probe times out
         displayName: Timeout Seconds
         path: searchd.readinessProbe.timeoutSeconds
-      - description: Resource requirements for the component
+      - description: Resource requirements for the Searchd component
         displayName: Resources
         path: searchd.resources
       - description: 'Limits describes the maximum amount of compute resources allowed.
@@ -3410,7 +3410,7 @@ spec:
           info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
         displayName: Requests
         path: searchd.resources.requests
-      - description: Configures the TerminationGracePeriodSeconds
+      - description: Configures the TerminationGracePeriodSeconds for Searchd
         displayName: Termination Grace Period Seconds
         path: searchd.terminationGracePeriodSeconds
       - description: Sidekiq Billing specific configuration options
@@ -3808,7 +3808,7 @@ spec:
         path: sphinx.config
       - description: Deploy Sphinx instance
         displayName: Enabled
-        path: sphinx.config.console
+        path: sphinx.config.enabled
       - description: Thinking configuration for sphinx
         displayName: Thinking
         path: sphinx.config.thinking
@@ -4450,7 +4450,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/3scale/saas-operator:v0.19.7-alpha.1
+                image: quay.io/3scale/saas-operator:v0.19.7-alpha.3
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -4964,4 +4964,4 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
-  version: 0.19.7-alpha.1
+  version: 0.19.7-alpha.3
