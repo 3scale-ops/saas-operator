@@ -1140,6 +1140,17 @@ spec:
                   sandboxProxyOpensslVerifyMode:
                     description: OpenSSL verification mode for sandbox proxy
                     type: string
+                  searchServer:
+                    description: Search service options
+                    properties:
+                      host:
+                        description: Defines the address host
+                        type: string
+                      port:
+                        description: Defines the address port
+                        format: int32
+                        type: integer
+                    type: object
                   secretKeyBase:
                     description: SecretKeyBase
                     properties:
@@ -1754,6 +1765,9 @@ spec:
                         description: The TCP port Searchd will run its daemon on
                         format: int32
                         type: integer
+                      serviceName:
+                        description: Allows setting the service name for Searchd
+                        type: string
                     type: object
                   enabled:
                     description: Deploy searchd instance
@@ -4066,6 +4080,9 @@ spec:
                             description: The TCP port Sphinx will run its daemon on
                             format: int32
                             type: integer
+                          serviceName:
+                            description: Allows setting the service name for Sphinx
+                            type: string
                         type: object
                     type: object
                   image:
