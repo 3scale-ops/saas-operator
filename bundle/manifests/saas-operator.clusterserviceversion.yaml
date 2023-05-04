@@ -3093,6 +3093,15 @@ spec:
       - description: OpenSSL verification mode for sandbox proxy
         displayName: Sandbox Proxy Openssl Verify Mode
         path: config.sandboxProxyOpensslVerifyMode
+      - description: Search service options
+        displayName: Search Server
+        path: config.searchServer
+      - description: Defines the address host
+        displayName: Host
+        path: config.searchServer.host
+      - description: Defines the address port
+        displayName: Port
+        path: config.searchServer.port
       - description: SecretKeyBase
         displayName: Secret Key Base
         path: config.secretKeyBase
@@ -3335,6 +3344,9 @@ spec:
       - description: The TCP port Searchd will run its daemon on
         displayName: Port
         path: searchd.config.port
+      - description: Allows setting the service name for Searchd
+        displayName: Service Name
+        path: searchd.config.serviceName
       - description: Deploy searchd instance
         displayName: Enabled
         path: searchd.enabled
@@ -3836,6 +3848,9 @@ spec:
       - description: The TCP port Sphinx will run its daemon on
         displayName: Port
         path: sphinx.config.thinking.port
+      - description: Allows setting the service name for Sphinx
+        displayName: Service Name
+        path: sphinx.config.thinking.serviceName
       - description: Image specification for the Sphinx component. Defaults to system
           image if not defined.
         displayName: Image

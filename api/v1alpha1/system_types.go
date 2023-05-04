@@ -56,7 +56,11 @@ var (
 		SelectorKey:   pointer.StringPtr("monitoring-key"),
 		SelectorValue: pointer.StringPtr("middleware"),
 	}
-	systemDefaultTerminationGracePeriodSeconds *int64 = pointer.Int64(60)
+	systemDefaultTerminationGracePeriodSeconds *int64      = pointer.Int64(60)
+	systemDefaultSearchServerAddress           AddressSpec = AddressSpec{
+		Host: pointer.String("system-sphinx"),
+		Port: pointer.Int32(9306),
+	}
 
 	// App
 	systemDefaultAppReplicas     int32                   = 2
@@ -168,6 +172,7 @@ var (
 
 	// Sphinx
 	systemDefaultSphinxEnabled             bool                            = true
+	systemDefaultSphinxServiceName         string                          = "system-sphinx"
 	systemDefaultSphinxPort                int32                           = 9306
 	systemDefaultSphinxBindAddress         string                          = "0.0.0.0"
 	systemDefaultSphinxConfigFile          string                          = "/opt/system/db/sphinx/sphinx.conf"
@@ -206,6 +211,7 @@ var (
 		Tag:        pointer.StringPtr("latest"),
 		PullPolicy: (*corev1.PullPolicy)(pointer.StringPtr(string(corev1.PullIfNotPresent))),
 	}
+	systemDefaultSearchdServiceName         string                          = "system-searchd"
 	systemDefaultSearchdPort                int32                           = 9306
 	systemDefaultSearchdBindAddress         string                          = "0.0.0.0"
 	systemDefaultSearchdConfigFile          string                          = "/var/lib/searchd/sphinx.conf"
@@ -361,6 +367,10 @@ type SystemConfig struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	SSLCertsDir *string `json:"sslCertsDir,omitempty"`
+	// Search service options
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	SearchServer AddressSpec `json:"searchServer,omitempty"`
 	// 3scale provider plan
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -456,6 +466,10 @@ func (sc *SystemConfig) Default() {
 	sc.ThreescaleSuperdomain = stringOrDefault(sc.ThreescaleSuperdomain, pointer.StringPtr(systemDefaultThreescaleSuperdomain))
 	sc.ExternalSecret.SecretStoreRef = InitializeExternalSecretSecretStoreReferenceSpec(sc.ExternalSecret.SecretStoreRef, defaultExternalSecretSecretStoreReference)
 	sc.ExternalSecret.RefreshInterval = durationOrDefault(sc.ExternalSecret.RefreshInterval, &defaultExternalSecretRefreshInterval)
+
+	sc.SearchServer.Host = stringOrDefault(sc.SearchServer.Host, systemDefaultSearchServerAddress.Host)
+	sc.SearchServer.Port = intOrDefault(sc.SearchServer.Port, systemDefaultSearchServerAddress.Port)
+
 }
 
 // ResolveCanarySpec modifies the SystemSpec given the provided canary configuration
@@ -883,6 +897,10 @@ func (sc *SphinxConfig) Default() {
 
 // ThinkingSpec configures the thinking library for sphinx
 type ThinkingSpec struct {
+	// Allows setting the service name for Sphinx
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ServiceName *string `json:"serviceName,omitempty"`
 	// The TCP port Sphinx will run its daemon on
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -919,6 +937,7 @@ type ThinkingSpec struct {
 
 // Default implements defaulting for ThinkingSpec
 func (tc *ThinkingSpec) Default() {
+	tc.ServiceName = stringOrDefault(tc.ServiceName, pointer.String(systemDefaultSphinxServiceName))
 	tc.Port = intOrDefault(tc.Port, pointer.Int32Ptr(systemDefaultSphinxPort))
 	tc.BindAddress = stringOrDefault(tc.BindAddress, pointer.StringPtr(systemDefaultSphinxBindAddress))
 	tc.ConfigFile = stringOrDefault(tc.ConfigFile, pointer.StringPtr(systemDefaultSphinxConfigFile))
@@ -988,6 +1007,10 @@ func (spec *SystemSearchdSpec) Default() {
 
 // SearchdConfig has configuration options for System's sphinx
 type SearchdConfig struct {
+	// Allows setting the service name for Searchd
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ServiceName *string `json:"serviceName,omitempty"`
 	// The TCP port Searchd will run its daemon on
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -1024,6 +1047,7 @@ type SearchdConfig struct {
 
 // Default implements defaulting for SearchdConfig
 func (sc *SearchdConfig) Default() {
+	sc.ServiceName = stringOrDefault(sc.ServiceName, pointer.String(systemDefaultSearchdServiceName))
 	sc.Port = intOrDefault(sc.Port, pointer.Int32Ptr(systemDefaultSearchdPort))
 	sc.BindAddress = stringOrDefault(sc.BindAddress, pointer.StringPtr(systemDefaultSearchdBindAddress))
 	sc.ConfigFile = stringOrDefault(sc.ConfigFile, pointer.StringPtr(systemDefaultSearchdConfigFile))

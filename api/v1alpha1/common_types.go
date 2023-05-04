@@ -634,6 +634,18 @@ func (bs *BugsnagSpec) Enabled() bool {
 	return !reflect.DeepEqual(bs, &BugsnagSpec{})
 }
 
+// AddressSpec allows the definition of an address
+type AddressSpec struct {
+	// Defines the address host
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Host *string `json:"host,omitempty"`
+	// Defines the address port
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Port *int32 `json:"port,omitempty"`
+}
+
 // Canary allows the definition of a canary Deployment
 type Canary struct {
 	// SendTraffic controls if traffic is sent to the canary

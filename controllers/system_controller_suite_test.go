@@ -292,6 +292,8 @@ var _ = Describe("System controller", func() {
 				switch env.Name {
 				case "SECRET_KEY_BASE":
 					Expect(env.Value).NotTo(Equal(""))
+				case "THINKING_SPHINX_ADDRESS":
+					Expect(env.Value).NotTo(Equal("system-sphinx"))
 				}
 			}
 
@@ -378,6 +380,9 @@ var _ = Describe("System controller", func() {
 
 		When("updating a System resource with searchd", func() {
 
+			// Resource Versions
+			rvs := make(map[string]string)
+
 			BeforeEach(func() {
 				Eventually(func() error {
 					err := k8sClient.Get(
@@ -386,7 +391,16 @@ var _ = Describe("System controller", func() {
 						system,
 					)
 					Expect(err).ToNot(HaveOccurred())
+
+					rvs["deployment/system-app"] = testutil.GetResourceVersion(
+						k8sClient, &appsv1.Deployment{}, "system-app", namespace, timeout, poll)
+
 					patch := client.MergeFrom(system.DeepCopy())
+					system.Spec.Config.SearchServer = saasv1alpha1.AddressSpec{
+						Host: pointer.String("system-searchd"),
+						Port: pointer.Int32(1234),
+					}
+
 					system.Spec.Searchd = &saasv1alpha1.SystemSearchdSpec{
 						Enabled: pointer.Bool(true),
 						Image: &saasv1alpha1.ImageSpec{
@@ -399,6 +413,28 @@ var _ = Describe("System controller", func() {
 			})
 
 			It("creates the system-searchd resources", func() {
+
+				dep := &appsv1.Deployment{}
+				By("deploying a system-app workload",
+					(&testutil.ExpectedWorkload{
+						Name:          "system-app",
+						Namespace:     namespace,
+						Replicas:      2,
+						ContainerName: "system-app",
+						PDB:           true,
+						HPA:           true,
+						PodMonitor:    true,
+						LastVersion:   rvs["deployment/system-app"],
+					}).Assert(k8sClient, dep, timeout, poll))
+
+				for _, env := range dep.Spec.Template.Spec.Containers[0].Env {
+					switch env.Name {
+					case "THINKING_SPHINX_ADDRESS":
+						Expect(env.Value).To(Equal("system-searchd"))
+					case "THINKING_SPHINX_PORT":
+						Expect(env.Value).To(Equal("1234"))
+					}
+				}
 
 				sts := &appsv1.StatefulSet{}
 				By("deploying the system-searchd statefulset",
