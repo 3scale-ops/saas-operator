@@ -2832,15 +2832,6 @@ spec:
       - description: Configuration options for System's Searchd
         displayName: Config
         path: searchd.config
-      - description: Searchd batch size
-        displayName: Batch Size
-        path: searchd.config.batchSize
-      - description: Allows setting the TCP host for Searchd to a different address
-        displayName: Bind Address
-        path: searchd.config.bindAddress
-      - description: Searchd configuration file path
-        displayName: Config File
-        path: searchd.config.configFile
       - description: Searchd database path
         displayName: Database Path
         path: searchd.config.databasePath
@@ -2850,9 +2841,6 @@ spec:
       - description: Searchd database storage size
         displayName: Database Storage Size
         path: searchd.config.databaseStorageSize
-      - description: Searchd PID file path
-        displayName: PIDFile
-        path: searchd.config.pidFile
       - description: The TCP port Searchd will run its daemon on
         displayName: Port
         path: searchd.config.port

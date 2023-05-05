@@ -627,7 +627,7 @@ metadata:
     capabilities: Basic Install
     categories: Integration & Delivery
     containerImage: quay.io/3scale/saas-operator
-    createdAt: "2023-05-03T21:32:33Z"
+    createdAt: "2023-05-05T12:16:46Z"
     description: |-
       The 3scale SaaS Operator creates and maintains a SaaS-ready deployment
       of the Red Hat 3scale API Management on OpenShift.
@@ -635,7 +635,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/3scale/saas-operator
     support: Red Hat
-  name: saas-operator.v0.19.7-alpha.4
+  name: saas-operator.v0.19.7-alpha.5
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -3320,15 +3320,6 @@ spec:
       - description: Configuration options for System's Searchd
         displayName: Config
         path: searchd.config
-      - description: Searchd batch size
-        displayName: Batch Size
-        path: searchd.config.batchSize
-      - description: Allows setting the TCP host for Searchd to a different address
-        displayName: Bind Address
-        path: searchd.config.bindAddress
-      - description: Searchd configuration file path
-        displayName: Config File
-        path: searchd.config.configFile
       - description: Searchd database path
         displayName: Database Path
         path: searchd.config.databasePath
@@ -3338,9 +3329,6 @@ spec:
       - description: Searchd database storage size
         displayName: Database Storage Size
         path: searchd.config.databaseStorageSize
-      - description: Searchd PID file path
-        displayName: PIDFile
-        path: searchd.config.pidFile
       - description: The TCP port Searchd will run its daemon on
         displayName: Port
         path: searchd.config.port
@@ -4465,7 +4453,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/3scale/saas-operator:v0.19.7-alpha.4
+                image: quay.io/3scale/saas-operator:v0.19.7-alpha.5
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -4979,4 +4967,4 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
-  version: 0.19.7-alpha.4
+  version: 0.19.7-alpha.5
