@@ -53,7 +53,7 @@ func (gen *SphinxGenerator) statefulset() func() *appsv1.StatefulSet {
 								},
 								Env: pod.BuildEnvironment(gen.Options),
 								Ports: pod.ContainerPorts(
-									pod.ContainerPortTCP("sphinx", 9306),
+									pod.ContainerPortTCP("sphinx", gen.DatabasePort),
 								),
 								Resources:                corev1.ResourceRequirements(*gen.Spec.Resources),
 								LivenessProbe:            pod.TCPProbe(intstr.FromString("sphinx"), *gen.Spec.LivenessProbe),

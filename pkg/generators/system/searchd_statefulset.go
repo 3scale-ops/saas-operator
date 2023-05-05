@@ -49,7 +49,7 @@ func (gen *SearchdGenerator) statefulset() func() *appsv1.StatefulSet {
 								Image: fmt.Sprintf("%s:%s", *gen.Image.Name, *gen.Image.Tag),
 								Args:  []string{},
 								Ports: pod.ContainerPorts(
-									pod.ContainerPortTCP("searchd", 9306),
+									pod.ContainerPortTCP("searchd", gen.DatabasePort),
 								),
 								Resources:                corev1.ResourceRequirements(*gen.Spec.Resources),
 								LivenessProbe:            pod.TCPProbe(intstr.FromString("searchd"), *gen.Spec.LivenessProbe),
