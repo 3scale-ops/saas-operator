@@ -1734,17 +1734,6 @@ spec:
                   config:
                     description: Configuration options for System's Searchd
                     properties:
-                      batchSize:
-                        description: Searchd batch size
-                        format: int32
-                        type: integer
-                      bindAddress:
-                        description: Allows setting the TCP host for Searchd to a
-                          different address
-                        type: string
-                      configFile:
-                        description: Searchd configuration file path
-                        type: string
                       databasePath:
                         description: Searchd database path
                         type: string
@@ -1758,9 +1747,6 @@ spec:
                         description: Searchd database storage size
                         pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                         x-kubernetes-int-or-string: true
-                      pidFile:
-                        description: Searchd PID file path
-                        type: string
                       port:
                         description: The TCP port Searchd will run its daemon on
                         format: int32

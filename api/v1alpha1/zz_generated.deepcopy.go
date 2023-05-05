@@ -2378,21 +2378,6 @@ func (in *SearchdConfig) DeepCopyInto(out *SearchdConfig) {
 		*out = new(int32)
 		**out = **in
 	}
-	if in.BindAddress != nil {
-		in, out := &in.BindAddress, &out.BindAddress
-		*out = new(string)
-		**out = **in
-	}
-	if in.ConfigFile != nil {
-		in, out := &in.ConfigFile, &out.ConfigFile
-		*out = new(string)
-		**out = **in
-	}
-	if in.BatchSize != nil {
-		in, out := &in.BatchSize, &out.BatchSize
-		*out = new(int32)
-		**out = **in
-	}
 	if in.DatabasePath != nil {
 		in, out := &in.DatabasePath, &out.DatabasePath
 		*out = new(string)
@@ -2405,11 +2390,6 @@ func (in *SearchdConfig) DeepCopyInto(out *SearchdConfig) {
 	}
 	if in.DatabaseStorageClass != nil {
 		in, out := &in.DatabaseStorageClass, &out.DatabaseStorageClass
-		*out = new(string)
-		**out = **in
-	}
-	if in.PIDFile != nil {
-		in, out := &in.PIDFile, &out.PIDFile
 		*out = new(string)
 		**out = **in
 	}

@@ -1015,18 +1015,6 @@ type SearchdConfig struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Port *int32 `json:"port,omitempty"`
-	// Allows setting the TCP host for Searchd to a different address
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	BindAddress *string `json:"bindAddress,omitempty"`
-	// Searchd configuration file path
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	ConfigFile *string `json:"configFile,omitempty"`
-	// Searchd batch size
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	BatchSize *int32 `json:"batchSize,omitempty"`
 	// Searchd database path
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -1039,21 +1027,13 @@ type SearchdConfig struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	DatabaseStorageClass *string `json:"databaseStorageClass,omitempty"`
-	// Searchd PID file path
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	PIDFile *string `json:"pidFile,omitempty"`
 }
 
 // Default implements defaulting for SearchdConfig
 func (sc *SearchdConfig) Default() {
 	sc.ServiceName = stringOrDefault(sc.ServiceName, pointer.String(systemDefaultSearchdServiceName))
 	sc.Port = intOrDefault(sc.Port, pointer.Int32Ptr(systemDefaultSearchdPort))
-	sc.BindAddress = stringOrDefault(sc.BindAddress, pointer.StringPtr(systemDefaultSearchdBindAddress))
-	sc.ConfigFile = stringOrDefault(sc.ConfigFile, pointer.StringPtr(systemDefaultSearchdConfigFile))
-	sc.BatchSize = intOrDefault(sc.BatchSize, pointer.Int32Ptr(systemDefaultSearchdBatchSize))
 	sc.DatabasePath = stringOrDefault(sc.DatabasePath, pointer.StringPtr(systemDefaultSearchdDBPath))
-	sc.PIDFile = stringOrDefault(sc.PIDFile, pointer.StringPtr(systemDefaultSearchdPIDFile))
 	if sc.DatabaseStorageSize == nil {
 		size := resource.MustParse(systemDefaultSearchdDatabaseStorageSize)
 		sc.DatabaseStorageSize = &size
