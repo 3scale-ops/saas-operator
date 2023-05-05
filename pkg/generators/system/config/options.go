@@ -153,7 +153,7 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 		}
 
 	} else {
-		opts.BugsnagAPIKey = &pod.SecretValue{Value: saasv1alpha1.SecretReference{Override: pointer.StringPtr("")}}
+		opts.BugsnagAPIKey = &pod.SecretValue{Value: saasv1alpha1.SecretReference{Override: pointer.String("")}}
 	}
 
 	if spec.Config.Assets.Host == nil {

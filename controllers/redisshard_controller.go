@@ -139,7 +139,7 @@ func (r *RedisShardReconciler) updateStatus(ctx context.Context, shard *redis.Sh
 
 	for _, server := range shard.Servers {
 		if server.Role == client.Master {
-			status.ShardNodes.Master = pointer.StringPtr(server.Name)
+			status.ShardNodes.Master = pointer.String(server.Name)
 		} else if server.Role == client.Slave {
 			status.ShardNodes.Slaves = append(status.ShardNodes.Slaves, server.Name)
 		}

@@ -33,9 +33,9 @@ func TestEnableSidecar(t *testing.T) {
 					},
 				},
 				spec: saasv1alpha1.Marin3rSidecarSpec{
-					EnvoyAPIVersion:                    pointer.StringPtr("xx"),
-					EnvoyImage:                         pointer.StringPtr("image"),
-					NodeID:                             pointer.StringPtr("node-id"),
+					EnvoyAPIVersion:                    pointer.String("xx"),
+					EnvoyImage:                         pointer.String("image"),
+					NodeID:                             pointer.String("node-id"),
 					ShutdownManagerPort:                func() *uint32 { var v uint32 = 5000; return &v }(),
 					ShutdownManagerExtraLifecycleHooks: []string{"container1", "container2"},
 					Ports: []saasv1alpha1.SidecarPort{
@@ -123,7 +123,7 @@ func TestEnableSidecar(t *testing.T) {
 					},
 				},
 				spec: saasv1alpha1.Marin3rSidecarSpec{
-					EnvoyImage: pointer.StringPtr("image"),
+					EnvoyImage: pointer.String("image"),
 					ExtraPodAnnotations: map[string]string{
 						"marin3r.3scale.net/envoy-image": "override",
 					},

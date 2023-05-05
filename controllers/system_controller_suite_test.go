@@ -64,63 +64,63 @@ var _ = Describe("System controller", func() {
 								Key:  "some-key-db",
 							},
 						},
-						EventsSharedSecret: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
+						EventsSharedSecret: saasv1alpha1.SecretReference{Override: pointer.String("override")},
 						Recaptcha: saasv1alpha1.SystemRecaptchaSpec{
-							PublicKey:  saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-							PrivateKey: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
+							PublicKey:  saasv1alpha1.SecretReference{Override: pointer.String("override")},
+							PrivateKey: saasv1alpha1.SecretReference{Override: pointer.String("override")},
 						},
-						SecretKeyBase: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-						AccessCode:    &saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
+						SecretKeyBase: saasv1alpha1.SecretReference{Override: pointer.String("override")},
+						AccessCode:    &saasv1alpha1.SecretReference{Override: pointer.String("override")},
 						Segment: saasv1alpha1.SegmentSpec{
 							DeletionWorkspace: "value",
-							DeletionToken:     saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-							WriteKey:          saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
+							DeletionToken:     saasv1alpha1.SecretReference{Override: pointer.String("override")},
+							WriteKey:          saasv1alpha1.SecretReference{Override: pointer.String("override")},
 						},
 						Github: saasv1alpha1.GithubSpec{
-							ClientID:     saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-							ClientSecret: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
+							ClientID:     saasv1alpha1.SecretReference{Override: pointer.String("override")},
+							ClientSecret: saasv1alpha1.SecretReference{Override: pointer.String("override")},
 						},
 						RedHatCustomerPortal: saasv1alpha1.RedHatCustomerPortalSpec{
-							ClientID:     saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-							ClientSecret: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-							Realm:        pointer.StringPtr("sso.example.net"),
+							ClientID:     saasv1alpha1.SecretReference{Override: pointer.String("override")},
+							ClientSecret: saasv1alpha1.SecretReference{Override: pointer.String("override")},
+							Realm:        pointer.String("sso.example.net"),
 						},
 						Bugsnag: &saasv1alpha1.BugsnagSpec{
-							ReleaseStage: pointer.StringPtr("staging"),
-							APIKey:       saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
+							ReleaseStage: pointer.String("staging"),
+							APIKey:       saasv1alpha1.SecretReference{Override: pointer.String("override")},
 						},
-						DatabaseSecret:   saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
+						DatabaseSecret:   saasv1alpha1.SecretReference{Override: pointer.String("override")},
 						MemcachedServers: "value",
 						Redis: saasv1alpha1.RedisSpec{
 							QueuesDSN: "value",
 						},
 						SMTP: saasv1alpha1.SMTPSpec{
 							Address:           "value",
-							User:              saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-							Password:          saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
+							User:              saasv1alpha1.SecretReference{Override: pointer.String("override")},
+							Password:          saasv1alpha1.SecretReference{Override: pointer.String("override")},
 							Port:              1000,
 							AuthProtocol:      "value",
 							OpenSSLVerifyMode: "value",
-							STARTTLS:          pointer.BoolPtr(false),
+							STARTTLS:          pointer.Bool(false),
 						},
-						MappingServiceAccessToken: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
+						MappingServiceAccessToken: saasv1alpha1.SecretReference{Override: pointer.String("override")},
 						Zync: &saasv1alpha1.SystemZyncSpec{
-							AuthToken: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
+							AuthToken: saasv1alpha1.SecretReference{Override: pointer.String("override")},
 							Endpoint:  "value",
 						},
 						Backend: saasv1alpha1.SystemBackendSpec{
 							ExternalEndpoint:    "value",
 							InternalEndpoint:    "value",
-							InternalAPIUser:     saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-							InternalAPIPassword: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
+							InternalAPIUser:     saasv1alpha1.SecretReference{Override: pointer.String("override")},
+							InternalAPIPassword: saasv1alpha1.SecretReference{Override: pointer.String("override")},
 							RedisDSN:            "value",
 						},
 						Assets: saasv1alpha1.AssetsSpec{
-							Host:      pointer.StringPtr("test.cloudfront.net"),
+							Host:      pointer.String("test.cloudfront.net"),
 							Bucket:    "bucket",
 							Region:    "us-east-1",
-							AccessKey: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
-							SecretKey: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")},
+							AccessKey: saasv1alpha1.SecretReference{Override: pointer.String("override")},
+							SecretKey: saasv1alpha1.SecretReference{Override: pointer.String("override")},
 						},
 					},
 					App: &saasv1alpha1.SystemAppSpec{
@@ -503,8 +503,8 @@ var _ = Describe("System controller", func() {
 					}
 					system.Spec.Console = &saasv1alpha1.SystemRailsConsoleSpec{
 						Image: &saasv1alpha1.ImageSpec{
-							Name: pointer.StringPtr("newImage"),
-							Tag:  pointer.StringPtr("newTag"),
+							Name: pointer.String("newImage"),
+							Tag:  pointer.String("newTag"),
 						},
 					}
 					return k8sClient.Patch(context.Background(), system, patch)
@@ -559,27 +559,27 @@ var _ = Describe("System controller", func() {
 					patch := client.MergeFrom(system.DeepCopy())
 					system.Spec.App = &saasv1alpha1.SystemAppSpec{
 						Canary: &saasv1alpha1.Canary{
-							ImageName: pointer.StringPtr("newImage"),
-							ImageTag:  pointer.StringPtr("newTag"),
-							Replicas:  pointer.Int32Ptr(2)},
+							ImageName: pointer.String("newImage"),
+							ImageTag:  pointer.String("newTag"),
+							Replicas:  pointer.Int32(2)},
 					}
 					system.Spec.SidekiqDefault = &saasv1alpha1.SystemSidekiqSpec{
 						Canary: &saasv1alpha1.Canary{
-							ImageName: pointer.StringPtr("newImage"),
-							ImageTag:  pointer.StringPtr("newTag"),
-							Replicas:  pointer.Int32Ptr(2)},
+							ImageName: pointer.String("newImage"),
+							ImageTag:  pointer.String("newTag"),
+							Replicas:  pointer.Int32(2)},
 					}
 					system.Spec.SidekiqBilling = &saasv1alpha1.SystemSidekiqSpec{
 						Canary: &saasv1alpha1.Canary{
-							ImageName: pointer.StringPtr("newImage"),
-							ImageTag:  pointer.StringPtr("newTag"),
-							Replicas:  pointer.Int32Ptr(2)},
+							ImageName: pointer.String("newImage"),
+							ImageTag:  pointer.String("newTag"),
+							Replicas:  pointer.Int32(2)},
 					}
 					system.Spec.SidekiqLow = &saasv1alpha1.SystemSidekiqSpec{
 						Canary: &saasv1alpha1.Canary{
-							ImageName: pointer.StringPtr("newImage"),
-							ImageTag:  pointer.StringPtr("newTag"),
-							Replicas:  pointer.Int32Ptr(2)},
+							ImageName: pointer.String("newImage"),
+							ImageTag:  pointer.String("newTag"),
+							Replicas:  pointer.Int32(2)},
 					}
 					// return k8sClient.Patch(context.Background(), system, patch)
 
@@ -804,7 +804,7 @@ var _ = Describe("System controller", func() {
 					system.Spec.Twemproxy = &saasv1alpha1.TwemproxySpec{
 						TwemproxyConfigRef: "system-twemproxyconfig",
 						Options: &saasv1alpha1.TwemproxyOptions{
-							LogLevel: pointer.Int32Ptr(2),
+							LogLevel: pointer.Int32(2),
 						},
 					}
 
@@ -1026,8 +1026,8 @@ var _ = Describe("System controller", func() {
 
 					system.Spec.Config.ExternalSecret.RefreshInterval = &metav1.Duration{Duration: 1 * time.Second}
 					system.Spec.Config.ExternalSecret.SecretStoreRef = &saasv1alpha1.ExternalSecretSecretStoreReferenceSpec{
-						Name: pointer.StringPtr("other-store"),
-						Kind: pointer.StringPtr("SecretStore"),
+						Name: pointer.String("other-store"),
+						Kind: pointer.String("SecretStore"),
 					}
 					system.Spec.Config.DatabaseDSN.FromVault.Path = "secret/data/updated-path"
 

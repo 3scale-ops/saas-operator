@@ -30,8 +30,8 @@ var (
 	TwemproxySyncAnnotationKey string = fmt.Sprintf("%s/twemproxyconfig.configmap-hash", GroupVersion.Group)
 
 	twemproxyDefaultGrafanaDashboard defaultGrafanaDashboardSpec = defaultGrafanaDashboardSpec{
-		SelectorKey:   pointer.StringPtr("monitoring-key"),
-		SelectorValue: pointer.StringPtr("middleware"),
+		SelectorKey:   pointer.String("monitoring-key"),
+		SelectorValue: pointer.String("middleware"),
 	}
 )
 

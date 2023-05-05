@@ -26,7 +26,7 @@ func (gen *SphinxGenerator) statefulset() func() *appsv1.StatefulSet {
 				Labels:    gen.GetLabels(),
 			},
 			Spec: appsv1.StatefulSetSpec{
-				Replicas: pointer.Int32Ptr(1),
+				Replicas: pointer.Int32(1),
 				Selector: &metav1.LabelSelector{MatchLabels: gen.GetSelector()},
 				UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
 					Type: appsv1.RollingUpdateStatefulSetStrategyType,
@@ -85,7 +85,7 @@ func (gen *SphinxGenerator) statefulset() func() *appsv1.StatefulSet {
 						AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
 						Resources:        corev1.ResourceRequirements{Requests: corev1.ResourceList{corev1.ResourceStorage: gen.DatabaseStorageSize}},
 						StorageClassName: gen.DatabaseStorageClass,
-						VolumeMode:       (*corev1.PersistentVolumeMode)(pointer.StringPtr(string(corev1.PersistentVolumeFilesystem))),
+						VolumeMode:       (*corev1.PersistentVolumeMode)(pointer.String(string(corev1.PersistentVolumeFilesystem))),
 						DataSource:       &corev1.TypedLocalObjectReference{},
 					},
 				}},

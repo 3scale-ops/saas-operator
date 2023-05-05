@@ -72,7 +72,7 @@ var _ = Describe("Zync controller", func() {
 							},
 						},
 						Bugsnag: &saasv1alpha1.BugsnagSpec{
-							ReleaseStage: pointer.StringPtr("staging"),
+							ReleaseStage: pointer.String("staging"),
 							APIKey: saasv1alpha1.SecretReference{
 								FromVault: &saasv1alpha1.VaultSecretReference{
 									Path: "some-path-bugsnag",
@@ -229,8 +229,8 @@ var _ = Describe("Zync controller", func() {
 					}
 					zync.Spec.Config.ExternalSecret.RefreshInterval = &metav1.Duration{Duration: 1 * time.Second}
 					zync.Spec.Config.ExternalSecret.SecretStoreRef = &saasv1alpha1.ExternalSecretSecretStoreReferenceSpec{
-						Name: pointer.StringPtr("other-store"),
-						Kind: pointer.StringPtr("SecretStore"),
+						Name: pointer.String("other-store"),
+						Kind: pointer.String("SecretStore"),
 					}
 					zync.Spec.Config.SecretKeyBase.FromVault.Path = "secret/data/updated-path"
 

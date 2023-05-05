@@ -42,8 +42,8 @@ const (
 var (
 	defaultExternalSecretRefreshInterval      metav1.Duration                               = metav1.Duration{Duration: 60 * time.Second}
 	defaultExternalSecretSecretStoreReference defaultExternalSecretSecretStoreReferenceSpec = defaultExternalSecretSecretStoreReferenceSpec{
-		Name: pointer.StringPtr("vault-mgmt"),
-		Kind: pointer.StringPtr("ClusterSecretStore"),
+		Name: pointer.String("vault-mgmt"),
+		Kind: pointer.String("ClusterSecretStore"),
 	}
 )
 

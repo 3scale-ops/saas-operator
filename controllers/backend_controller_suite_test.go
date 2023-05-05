@@ -64,7 +64,7 @@ var _ = Describe("Backend controller", func() {
 					Config: saasv1alpha1.BackendConfig{
 						RedisStorageDSN:     "storageDSN",
 						RedisQueuesDSN:      "queuesDSN",
-						SystemEventsHookURL: saasv1alpha1.SecretReference{Override: pointer.StringPtr("system-app")},
+						SystemEventsHookURL: saasv1alpha1.SecretReference{Override: pointer.String("system-app")},
 						SystemEventsHookPassword: saasv1alpha1.SecretReference{
 							FromVault: &saasv1alpha1.VaultSecretReference{
 								Path: "some-path-hook-password",
@@ -307,13 +307,13 @@ var _ = Describe("Backend controller", func() {
 
 					patch := client.MergeFrom(backend.DeepCopy())
 					backend.Spec.Image = &saasv1alpha1.ImageSpec{
-						Name: pointer.StringPtr("newImage"),
-						Tag:  pointer.StringPtr("newTag"),
+						Name: pointer.String("newImage"),
+						Tag:  pointer.String("newTag"),
 					}
 					backend.Spec.Listener.Replicas = pointer.Int32(3)
 					backend.Spec.Listener.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
 					backend.Spec.Listener.Config = &saasv1alpha1.ListenerConfig{
-						RedisAsync: pointer.BoolPtr(true),
+						RedisAsync: pointer.Bool(true),
 					}
 					backend.Spec.Worker = &saasv1alpha1.WorkerSpec{
 						HPA: &saasv1alpha1.HorizontalPodAutoscalerSpec{
@@ -324,12 +324,12 @@ var _ = Describe("Backend controller", func() {
 						Replicas: pointer.Int32(3),
 					}
 					backend.Spec.Listener.LoadBalancer = &saasv1alpha1.NLBLoadBalancerSpec{
-						CrossZoneLoadBalancingEnabled: pointer.BoolPtr(false),
+						CrossZoneLoadBalancingEnabled: pointer.Bool(false),
 					}
 					backend.Spec.Config.ExternalSecret.RefreshInterval = &metav1.Duration{Duration: 1 * time.Second}
 					backend.Spec.Config.ExternalSecret.SecretStoreRef = &saasv1alpha1.ExternalSecretSecretStoreReferenceSpec{
-						Name: pointer.StringPtr("other-store"),
-						Kind: pointer.StringPtr("SecretStore"),
+						Name: pointer.String("other-store"),
+						Kind: pointer.String("SecretStore"),
 					}
 					backend.Spec.Config.InternalAPIUser.FromVault.Path = "secret/data/updated-path-api"
 					backend.Spec.Config.SystemEventsHookPassword.FromVault.Path = "secret/data/updated-path-hook"
@@ -490,13 +490,13 @@ var _ = Describe("Backend controller", func() {
 
 					patch := client.MergeFrom(backend.DeepCopy())
 					backend.Spec.Listener.Canary = &saasv1alpha1.Canary{
-						ImageName: pointer.StringPtr("newImage"),
-						ImageTag:  pointer.StringPtr("newTag"),
+						ImageName: pointer.String("newImage"),
+						ImageTag:  pointer.String("newTag"),
 					}
 					backend.Spec.Worker = &saasv1alpha1.WorkerSpec{
 						Canary: &saasv1alpha1.Canary{
-							ImageName: pointer.StringPtr("newImage"),
-							ImageTag:  pointer.StringPtr("newTag"),
+							ImageName: pointer.String("newImage"),
+							ImageTag:  pointer.String("newTag"),
 							Patches: []string{
 								`[{"op": "add", "path": "/config/rackEnv", "value": "test"}]`,
 								`[{"op": "replace", "path": "/config/redisStorageDSN", "value": "testDSN"}]`,
@@ -740,7 +740,7 @@ var _ = Describe("Backend controller", func() {
 					backend.Spec.Twemproxy = &saasv1alpha1.TwemproxySpec{
 						TwemproxyConfigRef: "backend-twemproxyconfig",
 						Options: &saasv1alpha1.TwemproxyOptions{
-							LogLevel: pointer.Int32Ptr(2),
+							LogLevel: pointer.Int32(2),
 						},
 					}
 

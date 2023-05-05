@@ -165,8 +165,8 @@ var _ = Describe("CORSProxy controller", func() {
 					corsproxy.Spec.ReadinessProbe = &saasv1alpha1.ProbeSpec{}
 					corsproxy.Spec.Config.ExternalSecret.RefreshInterval = &metav1.Duration{Duration: 1 * time.Second}
 					corsproxy.Spec.Config.ExternalSecret.SecretStoreRef = &saasv1alpha1.ExternalSecretSecretStoreReferenceSpec{
-						Name: pointer.StringPtr("other-store"),
-						Kind: pointer.StringPtr("SecretStore"),
+						Name: pointer.String("other-store"),
+						Kind: pointer.String("SecretStore"),
 					}
 					corsproxy.Spec.Config.SystemDatabaseDSN.FromVault.Path = "secret/data/updated-path"
 					corsproxy.Spec.GrafanaDashboard = &saasv1alpha1.GrafanaDashboardSpec{}

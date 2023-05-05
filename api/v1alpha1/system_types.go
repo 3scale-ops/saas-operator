@@ -48,13 +48,13 @@ var (
 	systemDefaultConfigFilesSecret             string           = "system-config"
 	systemDefaultBugsnagSpec                   BugsnagSpec      = BugsnagSpec{}
 	systemDefaultImage                         defaultImageSpec = defaultImageSpec{
-		Name:       pointer.StringPtr("quay.io/3scale/porta"),
-		Tag:        pointer.StringPtr("nightly"),
-		PullPolicy: (*corev1.PullPolicy)(pointer.StringPtr(string(corev1.PullIfNotPresent))),
+		Name:       pointer.String("quay.io/3scale/porta"),
+		Tag:        pointer.String("nightly"),
+		PullPolicy: (*corev1.PullPolicy)(pointer.String(string(corev1.PullIfNotPresent))),
 	}
 	systemDefaultGrafanaDashboard defaultGrafanaDashboardSpec = defaultGrafanaDashboardSpec{
-		SelectorKey:   pointer.StringPtr("monitoring-key"),
-		SelectorValue: pointer.StringPtr("middleware"),
+		SelectorKey:   pointer.String("monitoring-key"),
+		SelectorValue: pointer.String("middleware"),
 	}
 	systemDefaultTerminationGracePeriodSeconds *int64      = pointer.Int64(60)
 	systemDefaultSearchServerAddress           AddressSpec = AddressSpec{
@@ -79,24 +79,24 @@ var (
 		MaxSurge:       util.IntStrPtr(intstr.FromString("10%")),
 	}
 	systemDefaultAppHPA defaultHorizontalPodAutoscalerSpec = defaultHorizontalPodAutoscalerSpec{
-		MinReplicas:         pointer.Int32Ptr(2),
-		MaxReplicas:         pointer.Int32Ptr(4),
-		ResourceUtilization: pointer.Int32Ptr(90),
-		ResourceName:        pointer.StringPtr("cpu"),
+		MinReplicas:         pointer.Int32(2),
+		MaxReplicas:         pointer.Int32(4),
+		ResourceUtilization: pointer.Int32(90),
+		ResourceName:        pointer.String("cpu"),
 	}
 	systemDefaultAppLivenessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32Ptr(30),
-		TimeoutSeconds:      pointer.Int32Ptr(1),
-		PeriodSeconds:       pointer.Int32Ptr(10),
-		SuccessThreshold:    pointer.Int32Ptr(1),
-		FailureThreshold:    pointer.Int32Ptr(3),
+		InitialDelaySeconds: pointer.Int32(30),
+		TimeoutSeconds:      pointer.Int32(1),
+		PeriodSeconds:       pointer.Int32(10),
+		SuccessThreshold:    pointer.Int32(1),
+		FailureThreshold:    pointer.Int32(3),
 	}
 	systemDefaultAppReadinessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32Ptr(30),
-		TimeoutSeconds:      pointer.Int32Ptr(5),
-		PeriodSeconds:       pointer.Int32Ptr(10),
-		SuccessThreshold:    pointer.Int32Ptr(1),
-		FailureThreshold:    pointer.Int32Ptr(3),
+		InitialDelaySeconds: pointer.Int32(30),
+		TimeoutSeconds:      pointer.Int32(5),
+		PeriodSeconds:       pointer.Int32(10),
+		SuccessThreshold:    pointer.Int32(1),
+		FailureThreshold:    pointer.Int32(3),
 	}
 	systemDefaultAppPDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
 		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
@@ -119,24 +119,24 @@ var (
 		MaxSurge:       util.IntStrPtr(intstr.FromInt(1)),
 	}
 	systemDefaultSidekiqHPA defaultHorizontalPodAutoscalerSpec = defaultHorizontalPodAutoscalerSpec{
-		MinReplicas:         pointer.Int32Ptr(2),
-		MaxReplicas:         pointer.Int32Ptr(4),
-		ResourceUtilization: pointer.Int32Ptr(90),
-		ResourceName:        pointer.StringPtr("cpu"),
+		MinReplicas:         pointer.Int32(2),
+		MaxReplicas:         pointer.Int32(4),
+		ResourceUtilization: pointer.Int32(90),
+		ResourceName:        pointer.String("cpu"),
 	}
 	systemDefaultSidekiqLivenessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32Ptr(10),
-		TimeoutSeconds:      pointer.Int32Ptr(3),
-		PeriodSeconds:       pointer.Int32Ptr(15),
-		SuccessThreshold:    pointer.Int32Ptr(1),
-		FailureThreshold:    pointer.Int32Ptr(5),
+		InitialDelaySeconds: pointer.Int32(10),
+		TimeoutSeconds:      pointer.Int32(3),
+		PeriodSeconds:       pointer.Int32(15),
+		SuccessThreshold:    pointer.Int32(1),
+		FailureThreshold:    pointer.Int32(5),
 	}
 	systemDefaultSidekiqReadinessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32Ptr(10),
-		TimeoutSeconds:      pointer.Int32Ptr(5),
-		PeriodSeconds:       pointer.Int32Ptr(30),
-		SuccessThreshold:    pointer.Int32Ptr(1),
-		FailureThreshold:    pointer.Int32Ptr(5),
+		InitialDelaySeconds: pointer.Int32(10),
+		TimeoutSeconds:      pointer.Int32(5),
+		PeriodSeconds:       pointer.Int32(30),
+		SuccessThreshold:    pointer.Int32(1),
+		FailureThreshold:    pointer.Int32(5),
 	}
 	systemDefaultSidekiqPDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
 		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
@@ -147,17 +147,17 @@ var (
 			"critical", "backend_sync", "events", "zync,40",
 			"priority,25", "default,15", "web_hooks,10", "deletion,5",
 		},
-		MaxThreads: pointer.Int32Ptr(15),
+		MaxThreads: pointer.Int32(15),
 	}
 	systemDefaultSidekiqConfigBilling defaultSidekiqConfig = defaultSidekiqConfig{
 		Queues:     []string{"billing"},
-		MaxThreads: pointer.Int32Ptr(15),
+		MaxThreads: pointer.Int32(15),
 	}
 	systemDefaultSidekiqConfigLow defaultSidekiqConfig = defaultSidekiqConfig{
 		Queues: []string{
 			"mailers", "low", "bulk_indexing",
 		},
-		MaxThreads: pointer.Int32Ptr(15),
+		MaxThreads: pointer.Int32(15),
 	}
 
 	// Sphinx
@@ -181,25 +181,25 @@ var (
 		},
 	}
 	systemDefaultSphinxLivenessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32Ptr(60),
-		TimeoutSeconds:      pointer.Int32Ptr(3),
-		PeriodSeconds:       pointer.Int32Ptr(15),
-		SuccessThreshold:    pointer.Int32Ptr(1),
-		FailureThreshold:    pointer.Int32Ptr(5),
+		InitialDelaySeconds: pointer.Int32(60),
+		TimeoutSeconds:      pointer.Int32(3),
+		PeriodSeconds:       pointer.Int32(15),
+		SuccessThreshold:    pointer.Int32(1),
+		FailureThreshold:    pointer.Int32(5),
 	}
 	systemDefaultSphinxReadinessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32Ptr(60),
-		TimeoutSeconds:      pointer.Int32Ptr(5),
-		PeriodSeconds:       pointer.Int32Ptr(30),
-		SuccessThreshold:    pointer.Int32Ptr(1),
-		FailureThreshold:    pointer.Int32Ptr(5),
+		InitialDelaySeconds: pointer.Int32(60),
+		TimeoutSeconds:      pointer.Int32(5),
+		PeriodSeconds:       pointer.Int32(30),
+		SuccessThreshold:    pointer.Int32(1),
+		FailureThreshold:    pointer.Int32(5),
 	}
 	// Searchd
 	systemDefaultSearchdEnabled bool             = false
 	systemDefaultSearchdImage   defaultImageSpec = defaultImageSpec{
-		Name:       pointer.StringPtr("quay.io/3scale/searchd"),
-		Tag:        pointer.StringPtr("latest"),
-		PullPolicy: (*corev1.PullPolicy)(pointer.StringPtr(string(corev1.PullIfNotPresent))),
+		Name:       pointer.String("quay.io/3scale/searchd"),
+		Tag:        pointer.String("latest"),
+		PullPolicy: (*corev1.PullPolicy)(pointer.String(string(corev1.PullIfNotPresent))),
 	}
 	systemDefaultSearchdServiceName         string                          = "system-searchd"
 	systemDefaultSearchdPort                int32                           = 9306
@@ -216,18 +216,18 @@ var (
 		},
 	}
 	systemDefaultSearchdLivenessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32Ptr(60),
-		TimeoutSeconds:      pointer.Int32Ptr(3),
-		PeriodSeconds:       pointer.Int32Ptr(15),
-		SuccessThreshold:    pointer.Int32Ptr(1),
-		FailureThreshold:    pointer.Int32Ptr(5),
+		InitialDelaySeconds: pointer.Int32(60),
+		TimeoutSeconds:      pointer.Int32(3),
+		PeriodSeconds:       pointer.Int32(15),
+		SuccessThreshold:    pointer.Int32(1),
+		FailureThreshold:    pointer.Int32(5),
 	}
 	systemDefaultSearchdReadinessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32Ptr(60),
-		TimeoutSeconds:      pointer.Int32Ptr(5),
-		PeriodSeconds:       pointer.Int32Ptr(30),
-		SuccessThreshold:    pointer.Int32Ptr(1),
-		FailureThreshold:    pointer.Int32Ptr(5),
+		InitialDelaySeconds: pointer.Int32(60),
+		TimeoutSeconds:      pointer.Int32(5),
+		PeriodSeconds:       pointer.Int32(30),
+		SuccessThreshold:    pointer.Int32(1),
+		FailureThreshold:    pointer.Int32(5),
 	}
 	systemDefaultRailsConsoleResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
 		Requests: corev1.ResourceList{
@@ -439,17 +439,17 @@ func (sc *SystemConfig) Default() {
 	}
 	sc.Rails.Default()
 
-	sc.ConfigFilesSecret = stringOrDefault(sc.ConfigFilesSecret, pointer.StringPtr(systemDefaultConfigFilesSecret))
+	sc.ConfigFilesSecret = stringOrDefault(sc.ConfigFilesSecret, pointer.String(systemDefaultConfigFilesSecret))
 
 	if sc.Bugsnag == nil {
 		sc.Bugsnag = &systemDefaultBugsnagSpec
 	}
 
-	sc.SandboxProxyOpensslVerifyMode = stringOrDefault(sc.SandboxProxyOpensslVerifyMode, pointer.StringPtr(systemDefaultSandboxProxyOpensslVerifyMode))
-	sc.ForceSSL = boolOrDefault(sc.ForceSSL, pointer.BoolPtr(systemDefaultForceSSL))
-	sc.SSLCertsDir = stringOrDefault(sc.SSLCertsDir, pointer.StringPtr(systemDefaultSSLCertsDir))
-	sc.ThreescaleProviderPlan = stringOrDefault(sc.ThreescaleProviderPlan, pointer.StringPtr(systemDefaultThreescaleProviderPlan))
-	sc.ThreescaleSuperdomain = stringOrDefault(sc.ThreescaleSuperdomain, pointer.StringPtr(systemDefaultThreescaleSuperdomain))
+	sc.SandboxProxyOpensslVerifyMode = stringOrDefault(sc.SandboxProxyOpensslVerifyMode, pointer.String(systemDefaultSandboxProxyOpensslVerifyMode))
+	sc.ForceSSL = boolOrDefault(sc.ForceSSL, pointer.Bool(systemDefaultForceSSL))
+	sc.SSLCertsDir = stringOrDefault(sc.SSLCertsDir, pointer.String(systemDefaultSSLCertsDir))
+	sc.ThreescaleProviderPlan = stringOrDefault(sc.ThreescaleProviderPlan, pointer.String(systemDefaultThreescaleProviderPlan))
+	sc.ThreescaleSuperdomain = stringOrDefault(sc.ThreescaleSuperdomain, pointer.String(systemDefaultThreescaleSuperdomain))
 	sc.ExternalSecret.SecretStoreRef = InitializeExternalSecretSecretStoreReferenceSpec(sc.ExternalSecret.SecretStoreRef, defaultExternalSecretSecretStoreReference)
 	sc.ExternalSecret.RefreshInterval = durationOrDefault(sc.ExternalSecret.RefreshInterval, &defaultExternalSecretRefreshInterval)
 
@@ -636,9 +636,9 @@ type SystemRailsSpec struct {
 
 // Default applies defaults for SystemRailsSpec
 func (srs *SystemRailsSpec) Default() {
-	srs.Console = boolOrDefault(srs.Console, pointer.BoolPtr(systemDefaultRailsConsole))
-	srs.Environment = stringOrDefault(srs.Environment, pointer.StringPtr(systemDefaultRailsEnvironment))
-	srs.LogLevel = stringOrDefault(srs.LogLevel, pointer.StringPtr(systemDefaultRailsLogLevel))
+	srs.Console = boolOrDefault(srs.Console, pointer.Bool(systemDefaultRailsConsole))
+	srs.Environment = stringOrDefault(srs.Environment, pointer.String(systemDefaultRailsEnvironment))
+	srs.LogLevel = stringOrDefault(srs.LogLevel, pointer.String(systemDefaultRailsLogLevel))
 }
 
 // SystemAppSpec configures the App component of System
@@ -776,7 +776,7 @@ func (cfg *SidekiqConfig) Default(def defaultSidekiqConfig) {
 	if cfg.Queues == nil {
 		cfg.Queues = def.Queues
 	}
-	cfg.MaxThreads = intOrDefault(cfg.MaxThreads, pointer.Int32Ptr(*def.MaxThreads))
+	cfg.MaxThreads = intOrDefault(cfg.MaxThreads, pointer.Int32(*def.MaxThreads))
 }
 
 // Default implements defaulting for the system Sidekiq component
@@ -924,12 +924,12 @@ type ThinkingSpec struct {
 // Default implements defaulting for ThinkingSpec
 func (tc *ThinkingSpec) Default() {
 	tc.ServiceName = stringOrDefault(tc.ServiceName, pointer.String(systemDefaultSphinxServiceName))
-	tc.Port = intOrDefault(tc.Port, pointer.Int32Ptr(systemDefaultSphinxPort))
-	tc.BindAddress = stringOrDefault(tc.BindAddress, pointer.StringPtr(systemDefaultSphinxBindAddress))
-	tc.ConfigFile = stringOrDefault(tc.ConfigFile, pointer.StringPtr(systemDefaultSphinxConfigFile))
-	tc.BatchSize = intOrDefault(tc.BatchSize, pointer.Int32Ptr(systemDefaultSphinxBatchSize))
-	tc.DatabasePath = stringOrDefault(tc.DatabasePath, pointer.StringPtr(systemDefaultSphinxDBPath))
-	tc.PIDFile = stringOrDefault(tc.PIDFile, pointer.StringPtr(systemDefaultSphinxPIDFile))
+	tc.Port = intOrDefault(tc.Port, pointer.Int32(systemDefaultSphinxPort))
+	tc.BindAddress = stringOrDefault(tc.BindAddress, pointer.String(systemDefaultSphinxBindAddress))
+	tc.ConfigFile = stringOrDefault(tc.ConfigFile, pointer.String(systemDefaultSphinxConfigFile))
+	tc.BatchSize = intOrDefault(tc.BatchSize, pointer.Int32(systemDefaultSphinxBatchSize))
+	tc.DatabasePath = stringOrDefault(tc.DatabasePath, pointer.String(systemDefaultSphinxDBPath))
+	tc.PIDFile = stringOrDefault(tc.PIDFile, pointer.String(systemDefaultSphinxPIDFile))
 	if tc.DatabaseStorageSize == nil {
 		size := resource.MustParse(systemDefaultSphinxDatabaseStorageSize)
 		tc.DatabaseStorageSize = &size
@@ -1018,8 +1018,8 @@ type SearchdConfig struct {
 // Default implements defaulting for SearchdConfig
 func (sc *SearchdConfig) Default() {
 	sc.ServiceName = stringOrDefault(sc.ServiceName, pointer.String(systemDefaultSearchdServiceName))
-	sc.Port = intOrDefault(sc.Port, pointer.Int32Ptr(systemDefaultSearchdPort))
-	sc.DatabasePath = stringOrDefault(sc.DatabasePath, pointer.StringPtr(systemDefaultSearchdDBPath))
+	sc.Port = intOrDefault(sc.Port, pointer.Int32(systemDefaultSearchdPort))
+	sc.DatabasePath = stringOrDefault(sc.DatabasePath, pointer.String(systemDefaultSearchdDBPath))
 	if sc.DatabaseStorageSize == nil {
 		size := resource.MustParse(systemDefaultSearchdDatabaseStorageSize)
 		sc.DatabaseStorageSize = &size

@@ -211,7 +211,7 @@ func Test_keysSlice(t *testing.T) {
 					Option2: &SecretValue{Value: saasv1alpha1.SecretReference{
 						FromVault: &saasv1alpha1.VaultSecretReference{Key: "key2", Path: "path2"}}},
 					Option3: &SecretValue{Value: saasv1alpha1.SecretReference{
-						Override: pointer.StringPtr("override")}},
+						Override: pointer.String("override")}},
 					Option4: &SecretValue{Value: saasv1alpha1.SecretReference{
 						FromVault: &saasv1alpha1.VaultSecretReference{Key: "key4", Path: "path4"}}},
 				},

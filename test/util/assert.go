@@ -71,9 +71,9 @@ func (ew *ExpectedWorkload) Assert(c client.Client, dep *appsv1.Deployment, time
 		if ew.HPA {
 			Expect(hpa.Spec.ScaleTargetRef.Kind).Should(Equal("Deployment"))
 			Expect(hpa.Spec.ScaleTargetRef.Name).Should(Equal(ew.Name))
-			Expect(hpa.Spec.MinReplicas).Should(Equal(pointer.Int32Ptr(ew.Replicas)))
+			Expect(hpa.Spec.MinReplicas).Should(Equal(pointer.Int32(ew.Replicas)))
 		} else {
-			Expect(dep.Spec.Replicas).To(Equal(pointer.Int32Ptr(ew.Replicas)))
+			Expect(dep.Spec.Replicas).To(Equal(pointer.Int32(ew.Replicas)))
 		}
 
 		pdb := &policyv1.PodDisruptionBudget{}

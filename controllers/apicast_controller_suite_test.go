@@ -419,14 +419,14 @@ var _ = Describe("Apicast controller", func() {
 
 					patch := client.MergeFrom(apicast.DeepCopy())
 					apicast.Spec.Production.Canary = &saasv1alpha1.Canary{
-						ImageName: pointer.StringPtr("newImage"),
-						ImageTag:  pointer.StringPtr("newTag"),
-						Replicas:  pointer.Int32Ptr(1),
+						ImageName: pointer.String("newImage"),
+						ImageTag:  pointer.String("newTag"),
+						Replicas:  pointer.Int32(1),
 					}
 					apicast.Spec.Staging.Canary = &saasv1alpha1.Canary{
-						ImageName: pointer.StringPtr("newImage"),
-						ImageTag:  pointer.StringPtr("newTag"),
-						Replicas:  pointer.Int32Ptr(1),
+						ImageName: pointer.String("newImage"),
+						ImageTag:  pointer.String("newTag"),
+						Replicas:  pointer.Int32(1),
 					}
 
 					if err := k8sClient.Patch(context.Background(), apicast, patch); err != nil {

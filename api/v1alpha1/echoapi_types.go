@@ -27,16 +27,16 @@ import (
 
 var (
 	echoapiDefaultImage defaultImageSpec = defaultImageSpec{
-		Name:       pointer.StringPtr("quay.io/3scale/echoapi"),
-		Tag:        pointer.StringPtr("v1.0.3"),
-		PullPolicy: (*corev1.PullPolicy)(pointer.StringPtr(string(corev1.PullIfNotPresent))),
+		Name:       pointer.String("quay.io/3scale/echoapi"),
+		Tag:        pointer.String("v1.0.3"),
+		PullPolicy: (*corev1.PullPolicy)(pointer.String(string(corev1.PullIfNotPresent))),
 	}
 	echoapiDefaultReplicas int32                              = 2
 	echoapiDefaultHPA      defaultHorizontalPodAutoscalerSpec = defaultHorizontalPodAutoscalerSpec{
-		MinReplicas:         pointer.Int32Ptr(2),
-		MaxReplicas:         pointer.Int32Ptr(4),
-		ResourceUtilization: pointer.Int32Ptr(90),
-		ResourceName:        pointer.StringPtr("cpu"),
+		MinReplicas:         pointer.Int32(2),
+		MaxReplicas:         pointer.Int32(4),
+		ResourceUtilization: pointer.Int32(90),
+		ResourceName:        pointer.String("cpu"),
 	}
 	echoapiDefaultPDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
 		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
@@ -52,23 +52,23 @@ var (
 		},
 	}
 	echoapiDefaultLivenessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32Ptr(25),
-		TimeoutSeconds:      pointer.Int32Ptr(2),
-		PeriodSeconds:       pointer.Int32Ptr(20),
-		SuccessThreshold:    pointer.Int32Ptr(1),
-		FailureThreshold:    pointer.Int32Ptr(5),
+		InitialDelaySeconds: pointer.Int32(25),
+		TimeoutSeconds:      pointer.Int32(2),
+		PeriodSeconds:       pointer.Int32(20),
+		SuccessThreshold:    pointer.Int32(1),
+		FailureThreshold:    pointer.Int32(5),
 	}
 	echoapiDefaultReadinessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32Ptr(25),
-		TimeoutSeconds:      pointer.Int32Ptr(2),
-		PeriodSeconds:       pointer.Int32Ptr(20),
-		SuccessThreshold:    pointer.Int32Ptr(1),
-		FailureThreshold:    pointer.Int32Ptr(5),
+		InitialDelaySeconds: pointer.Int32(25),
+		TimeoutSeconds:      pointer.Int32(2),
+		PeriodSeconds:       pointer.Int32(20),
+		SuccessThreshold:    pointer.Int32(1),
+		FailureThreshold:    pointer.Int32(5),
 	}
 	echoapiDefaultMarin3rSpec     defaultMarin3rSidecarSpec  = defaultMarin3rSidecarSpec{}
 	echoapiDefaultNLBLoadBalancer defaultNLBLoadBalancerSpec = defaultNLBLoadBalancerSpec{
-		ProxyProtocol:                 pointer.BoolPtr(true),
-		CrossZoneLoadBalancingEnabled: pointer.BoolPtr(true),
+		ProxyProtocol:                 pointer.Bool(true),
+		CrossZoneLoadBalancingEnabled: pointer.Bool(true),
 	}
 )
 

@@ -67,7 +67,7 @@ var _ = BeforeSuite(func() {
 
 	By("bootstrapping test environment")
 	testEnv = &envtest.Environment{
-		UseExistingCluster: pointer.BoolPtr(true),
+		UseExistingCluster: pointer.Bool(true),
 	}
 
 	// cfg is defined in this file globally.

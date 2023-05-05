@@ -137,7 +137,7 @@ func (gen *Generator) statefulSet() func() *appsv1.StatefulSet {
 						AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
 						Resources:        corev1.ResourceRequirements{Requests: corev1.ResourceList{corev1.ResourceStorage: *gen.Spec.Config.StorageSize}},
 						StorageClassName: gen.Spec.Config.StorageClass,
-						VolumeMode:       (*corev1.PersistentVolumeMode)(pointer.StringPtr(string(corev1.PersistentVolumeFilesystem))),
+						VolumeMode:       (*corev1.PersistentVolumeMode)(pointer.String(string(corev1.PersistentVolumeFilesystem))),
 						DataSource:       &corev1.TypedLocalObjectReference{},
 					},
 					Status: corev1.PersistentVolumeClaimStatus{
