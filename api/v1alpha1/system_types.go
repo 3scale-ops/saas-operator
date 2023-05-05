@@ -213,12 +213,8 @@ var (
 	}
 	systemDefaultSearchdServiceName         string                          = "system-searchd"
 	systemDefaultSearchdPort                int32                           = 9306
-	systemDefaultSearchdBindAddress         string                          = "0.0.0.0"
-	systemDefaultSearchdConfigFile          string                          = "/var/lib/searchd/sphinx.conf"
-	systemDefaultSearchdBatchSize           int32                           = 100
 	systemDefaultSearchdDBPath              string                          = "/var/lib/searchd"
 	systemDefaultSearchdDatabaseStorageSize string                          = "30Gi"
-	systemDefaultSearchdPIDFile             string                          = "/opt/system/tmp/pids/searchd.pid"
 	systemDefaultSearchdResources           defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
 		Requests: corev1.ResourceList{
 			corev1.ResourceCPU:    resource.MustParse("250m"),
