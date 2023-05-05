@@ -63,17 +63,7 @@ var (
 	}
 
 	// App
-	systemDefaultAppReplicas     int32                   = 2
-	systemDefaultAppLoadBalancer defaultLoadBalancerSpec = defaultLoadBalancerSpec{
-		ProxyProtocol:                 pointer.BoolPtr(true),
-		CrossZoneLoadBalancingEnabled: pointer.BoolPtr(true),
-		ConnectionDrainingEnabled:     pointer.BoolPtr(true),
-		ConnectionDrainingTimeout:     pointer.Int32Ptr(60),
-		HealthcheckHealthyThreshold:   pointer.Int32Ptr(2),
-		HealthcheckUnhealthyThreshold: pointer.Int32Ptr(2),
-		HealthcheckInterval:           pointer.Int32Ptr(5),
-		HealthcheckTimeout:            pointer.Int32Ptr(3),
-	}
+	systemDefaultAppReplicas  int32                           = 2
 	systemDefaultAppResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
 		Requests: corev1.ResourceList{
 			corev1.ResourceCPU:    resource.MustParse("200m"),
