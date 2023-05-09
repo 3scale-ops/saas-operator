@@ -73,7 +73,7 @@ func TestSecretValue_ToEnvVar(t *testing.T) {
 		},
 		{
 			name:   "Returns EnvVar from an overrided Secret",
-			fields: fields{Value: saasv1alpha1.SecretReference{Override: pointer.StringPtr("override")}},
+			fields: fields{Value: saasv1alpha1.SecretReference{Override: pointer.String("override")}},
 			args:   args{key: "key:my-secret"},
 			want:   corev1.EnvVar{Name: "key", Value: "override"},
 		},
@@ -145,7 +145,7 @@ func TestBuildEnvironment(t *testing.T) {
 					Option3 EnvVarValue `env:"OPTION3" secret:"my-secret"`
 				}{
 					Option1: &ClearTextValue{Value: "value1"},
-					Option2: &SecretValue{Value: v1alpha1.SecretReference{Override: pointer.StringPtr("override")}},
+					Option2: &SecretValue{Value: v1alpha1.SecretReference{Override: pointer.String("override")}},
 					Option3: &SecretValue{Value: v1alpha1.SecretReference{}},
 				},
 			},

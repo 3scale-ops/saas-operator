@@ -48,28 +48,22 @@ var (
 	systemDefaultConfigFilesSecret             string           = "system-config"
 	systemDefaultBugsnagSpec                   BugsnagSpec      = BugsnagSpec{}
 	systemDefaultImage                         defaultImageSpec = defaultImageSpec{
-		Name:       pointer.StringPtr("quay.io/3scale/porta"),
-		Tag:        pointer.StringPtr("nightly"),
-		PullPolicy: (*corev1.PullPolicy)(pointer.StringPtr(string(corev1.PullIfNotPresent))),
+		Name:       pointer.String("quay.io/3scale/porta"),
+		Tag:        pointer.String("nightly"),
+		PullPolicy: (*corev1.PullPolicy)(pointer.String(string(corev1.PullIfNotPresent))),
 	}
 	systemDefaultGrafanaDashboard defaultGrafanaDashboardSpec = defaultGrafanaDashboardSpec{
-		SelectorKey:   pointer.StringPtr("monitoring-key"),
-		SelectorValue: pointer.StringPtr("middleware"),
+		SelectorKey:   pointer.String("monitoring-key"),
+		SelectorValue: pointer.String("middleware"),
 	}
-	systemDefaultTerminationGracePeriodSeconds *int64 = pointer.Int64(60)
+	systemDefaultTerminationGracePeriodSeconds *int64      = pointer.Int64(60)
+	systemDefaultSearchServerAddress           AddressSpec = AddressSpec{
+		Host: pointer.String("system-sphinx"),
+		Port: pointer.Int32(9306),
+	}
 
 	// App
-	systemDefaultAppReplicas     int32                   = 2
-	systemDefaultAppLoadBalancer defaultLoadBalancerSpec = defaultLoadBalancerSpec{
-		ProxyProtocol:                 pointer.BoolPtr(true),
-		CrossZoneLoadBalancingEnabled: pointer.BoolPtr(true),
-		ConnectionDrainingEnabled:     pointer.BoolPtr(true),
-		ConnectionDrainingTimeout:     pointer.Int32Ptr(60),
-		HealthcheckHealthyThreshold:   pointer.Int32Ptr(2),
-		HealthcheckUnhealthyThreshold: pointer.Int32Ptr(2),
-		HealthcheckInterval:           pointer.Int32Ptr(5),
-		HealthcheckTimeout:            pointer.Int32Ptr(3),
-	}
+	systemDefaultAppReplicas  int32                           = 2
 	systemDefaultAppResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
 		Requests: corev1.ResourceList{
 			corev1.ResourceCPU:    resource.MustParse("200m"),
@@ -85,24 +79,24 @@ var (
 		MaxSurge:       util.IntStrPtr(intstr.FromString("10%")),
 	}
 	systemDefaultAppHPA defaultHorizontalPodAutoscalerSpec = defaultHorizontalPodAutoscalerSpec{
-		MinReplicas:         pointer.Int32Ptr(2),
-		MaxReplicas:         pointer.Int32Ptr(4),
-		ResourceUtilization: pointer.Int32Ptr(90),
-		ResourceName:        pointer.StringPtr("cpu"),
+		MinReplicas:         pointer.Int32(2),
+		MaxReplicas:         pointer.Int32(4),
+		ResourceUtilization: pointer.Int32(90),
+		ResourceName:        pointer.String("cpu"),
 	}
 	systemDefaultAppLivenessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32Ptr(30),
-		TimeoutSeconds:      pointer.Int32Ptr(1),
-		PeriodSeconds:       pointer.Int32Ptr(10),
-		SuccessThreshold:    pointer.Int32Ptr(1),
-		FailureThreshold:    pointer.Int32Ptr(3),
+		InitialDelaySeconds: pointer.Int32(30),
+		TimeoutSeconds:      pointer.Int32(1),
+		PeriodSeconds:       pointer.Int32(10),
+		SuccessThreshold:    pointer.Int32(1),
+		FailureThreshold:    pointer.Int32(3),
 	}
 	systemDefaultAppReadinessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32Ptr(30),
-		TimeoutSeconds:      pointer.Int32Ptr(5),
-		PeriodSeconds:       pointer.Int32Ptr(10),
-		SuccessThreshold:    pointer.Int32Ptr(1),
-		FailureThreshold:    pointer.Int32Ptr(3),
+		InitialDelaySeconds: pointer.Int32(30),
+		TimeoutSeconds:      pointer.Int32(5),
+		PeriodSeconds:       pointer.Int32(10),
+		SuccessThreshold:    pointer.Int32(1),
+		FailureThreshold:    pointer.Int32(3),
 	}
 	systemDefaultAppPDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
 		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
@@ -125,24 +119,24 @@ var (
 		MaxSurge:       util.IntStrPtr(intstr.FromInt(1)),
 	}
 	systemDefaultSidekiqHPA defaultHorizontalPodAutoscalerSpec = defaultHorizontalPodAutoscalerSpec{
-		MinReplicas:         pointer.Int32Ptr(2),
-		MaxReplicas:         pointer.Int32Ptr(4),
-		ResourceUtilization: pointer.Int32Ptr(90),
-		ResourceName:        pointer.StringPtr("cpu"),
+		MinReplicas:         pointer.Int32(2),
+		MaxReplicas:         pointer.Int32(4),
+		ResourceUtilization: pointer.Int32(90),
+		ResourceName:        pointer.String("cpu"),
 	}
 	systemDefaultSidekiqLivenessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32Ptr(10),
-		TimeoutSeconds:      pointer.Int32Ptr(3),
-		PeriodSeconds:       pointer.Int32Ptr(15),
-		SuccessThreshold:    pointer.Int32Ptr(1),
-		FailureThreshold:    pointer.Int32Ptr(5),
+		InitialDelaySeconds: pointer.Int32(10),
+		TimeoutSeconds:      pointer.Int32(3),
+		PeriodSeconds:       pointer.Int32(15),
+		SuccessThreshold:    pointer.Int32(1),
+		FailureThreshold:    pointer.Int32(5),
 	}
 	systemDefaultSidekiqReadinessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32Ptr(10),
-		TimeoutSeconds:      pointer.Int32Ptr(5),
-		PeriodSeconds:       pointer.Int32Ptr(30),
-		SuccessThreshold:    pointer.Int32Ptr(1),
-		FailureThreshold:    pointer.Int32Ptr(5),
+		InitialDelaySeconds: pointer.Int32(10),
+		TimeoutSeconds:      pointer.Int32(5),
+		PeriodSeconds:       pointer.Int32(30),
+		SuccessThreshold:    pointer.Int32(1),
+		FailureThreshold:    pointer.Int32(5),
 	}
 	systemDefaultSidekiqPDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
 		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
@@ -153,20 +147,22 @@ var (
 			"critical", "backend_sync", "events", "zync,40",
 			"priority,25", "default,15", "web_hooks,10", "deletion,5",
 		},
-		MaxThreads: pointer.Int32Ptr(15),
+		MaxThreads: pointer.Int32(15),
 	}
 	systemDefaultSidekiqConfigBilling defaultSidekiqConfig = defaultSidekiqConfig{
 		Queues:     []string{"billing"},
-		MaxThreads: pointer.Int32Ptr(15),
+		MaxThreads: pointer.Int32(15),
 	}
 	systemDefaultSidekiqConfigLow defaultSidekiqConfig = defaultSidekiqConfig{
 		Queues: []string{
 			"mailers", "low", "bulk_indexing",
 		},
-		MaxThreads: pointer.Int32Ptr(15),
+		MaxThreads: pointer.Int32(15),
 	}
 
 	// Sphinx
+	systemDefaultSphinxEnabled             bool                            = true
+	systemDefaultSphinxServiceName         string                          = "system-sphinx"
 	systemDefaultSphinxPort                int32                           = 9306
 	systemDefaultSphinxBindAddress         string                          = "0.0.0.0"
 	systemDefaultSphinxConfigFile          string                          = "/opt/system/db/sphinx/sphinx.conf"
@@ -185,18 +181,53 @@ var (
 		},
 	}
 	systemDefaultSphinxLivenessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32Ptr(60),
-		TimeoutSeconds:      pointer.Int32Ptr(3),
-		PeriodSeconds:       pointer.Int32Ptr(15),
-		SuccessThreshold:    pointer.Int32Ptr(1),
-		FailureThreshold:    pointer.Int32Ptr(5),
+		InitialDelaySeconds: pointer.Int32(60),
+		TimeoutSeconds:      pointer.Int32(3),
+		PeriodSeconds:       pointer.Int32(15),
+		SuccessThreshold:    pointer.Int32(1),
+		FailureThreshold:    pointer.Int32(5),
 	}
 	systemDefaultSphinxReadinessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32Ptr(60),
-		TimeoutSeconds:      pointer.Int32Ptr(5),
-		PeriodSeconds:       pointer.Int32Ptr(30),
-		SuccessThreshold:    pointer.Int32Ptr(1),
-		FailureThreshold:    pointer.Int32Ptr(5),
+		InitialDelaySeconds: pointer.Int32(60),
+		TimeoutSeconds:      pointer.Int32(5),
+		PeriodSeconds:       pointer.Int32(30),
+		SuccessThreshold:    pointer.Int32(1),
+		FailureThreshold:    pointer.Int32(5),
+	}
+	// Searchd
+	systemDefaultSearchdEnabled bool             = false
+	systemDefaultSearchdImage   defaultImageSpec = defaultImageSpec{
+		Name:       pointer.String("quay.io/3scale/searchd"),
+		Tag:        pointer.String("latest"),
+		PullPolicy: (*corev1.PullPolicy)(pointer.String(string(corev1.PullIfNotPresent))),
+	}
+	systemDefaultSearchdServiceName         string                          = "system-searchd"
+	systemDefaultSearchdPort                int32                           = 9306
+	systemDefaultSearchdDBPath              string                          = "/var/lib/searchd"
+	systemDefaultSearchdDatabaseStorageSize string                          = "30Gi"
+	systemDefaultSearchdResources           defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
+		Requests: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("250m"),
+			corev1.ResourceMemory: resource.MustParse("4Gi"),
+		},
+		Limits: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("750m"),
+			corev1.ResourceMemory: resource.MustParse("5Gi"),
+		},
+	}
+	systemDefaultSearchdLivenessProbe defaultProbeSpec = defaultProbeSpec{
+		InitialDelaySeconds: pointer.Int32(60),
+		TimeoutSeconds:      pointer.Int32(3),
+		PeriodSeconds:       pointer.Int32(15),
+		SuccessThreshold:    pointer.Int32(1),
+		FailureThreshold:    pointer.Int32(5),
+	}
+	systemDefaultSearchdReadinessProbe defaultProbeSpec = defaultProbeSpec{
+		InitialDelaySeconds: pointer.Int32(60),
+		TimeoutSeconds:      pointer.Int32(5),
+		PeriodSeconds:       pointer.Int32(30),
+		SuccessThreshold:    pointer.Int32(1),
+		FailureThreshold:    pointer.Int32(5),
 	}
 	systemDefaultRailsConsoleResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
 		Requests: corev1.ResourceList{
@@ -239,6 +270,10 @@ type SystemSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Sphinx *SystemSphinxSpec `json:"sphinx,omitempty"`
+	// Searchd specific configuration options
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Searchd *SystemSearchdSpec `json:"searchd,omitempty"`
 	// Console specific configuration options
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -279,6 +314,11 @@ func (spec *SystemSpec) Default() {
 	}
 	spec.SidekiqLow.Default(Low)
 
+	if spec.Searchd == nil {
+		spec.Searchd = &SystemSearchdSpec{}
+	}
+	spec.Searchd.Default()
+
 	if spec.Sphinx == nil {
 		spec.Sphinx = &SystemSphinxSpec{}
 	}
@@ -313,6 +353,10 @@ type SystemConfig struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	SSLCertsDir *string `json:"sslCertsDir,omitempty"`
+	// Search service options
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	SearchServer AddressSpec `json:"searchServer,omitempty"`
 	// 3scale provider plan
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -395,19 +439,23 @@ func (sc *SystemConfig) Default() {
 	}
 	sc.Rails.Default()
 
-	sc.ConfigFilesSecret = stringOrDefault(sc.ConfigFilesSecret, pointer.StringPtr(systemDefaultConfigFilesSecret))
+	sc.ConfigFilesSecret = stringOrDefault(sc.ConfigFilesSecret, pointer.String(systemDefaultConfigFilesSecret))
 
 	if sc.Bugsnag == nil {
 		sc.Bugsnag = &systemDefaultBugsnagSpec
 	}
 
-	sc.SandboxProxyOpensslVerifyMode = stringOrDefault(sc.SandboxProxyOpensslVerifyMode, pointer.StringPtr(systemDefaultSandboxProxyOpensslVerifyMode))
-	sc.ForceSSL = boolOrDefault(sc.ForceSSL, pointer.BoolPtr(systemDefaultForceSSL))
-	sc.SSLCertsDir = stringOrDefault(sc.SSLCertsDir, pointer.StringPtr(systemDefaultSSLCertsDir))
-	sc.ThreescaleProviderPlan = stringOrDefault(sc.ThreescaleProviderPlan, pointer.StringPtr(systemDefaultThreescaleProviderPlan))
-	sc.ThreescaleSuperdomain = stringOrDefault(sc.ThreescaleSuperdomain, pointer.StringPtr(systemDefaultThreescaleSuperdomain))
+	sc.SandboxProxyOpensslVerifyMode = stringOrDefault(sc.SandboxProxyOpensslVerifyMode, pointer.String(systemDefaultSandboxProxyOpensslVerifyMode))
+	sc.ForceSSL = boolOrDefault(sc.ForceSSL, pointer.Bool(systemDefaultForceSSL))
+	sc.SSLCertsDir = stringOrDefault(sc.SSLCertsDir, pointer.String(systemDefaultSSLCertsDir))
+	sc.ThreescaleProviderPlan = stringOrDefault(sc.ThreescaleProviderPlan, pointer.String(systemDefaultThreescaleProviderPlan))
+	sc.ThreescaleSuperdomain = stringOrDefault(sc.ThreescaleSuperdomain, pointer.String(systemDefaultThreescaleSuperdomain))
 	sc.ExternalSecret.SecretStoreRef = InitializeExternalSecretSecretStoreReferenceSpec(sc.ExternalSecret.SecretStoreRef, defaultExternalSecretSecretStoreReference)
 	sc.ExternalSecret.RefreshInterval = durationOrDefault(sc.ExternalSecret.RefreshInterval, &defaultExternalSecretRefreshInterval)
+
+	sc.SearchServer.Host = stringOrDefault(sc.SearchServer.Host, systemDefaultSearchServerAddress.Host)
+	sc.SearchServer.Port = intOrDefault(sc.SearchServer.Port, systemDefaultSearchServerAddress.Port)
+
 }
 
 // ResolveCanarySpec modifies the SystemSpec given the provided canary configuration
@@ -588,9 +636,9 @@ type SystemRailsSpec struct {
 
 // Default applies defaults for SystemRailsSpec
 func (srs *SystemRailsSpec) Default() {
-	srs.Console = boolOrDefault(srs.Console, pointer.BoolPtr(systemDefaultRailsConsole))
-	srs.Environment = stringOrDefault(srs.Environment, pointer.StringPtr(systemDefaultRailsEnvironment))
-	srs.LogLevel = stringOrDefault(srs.LogLevel, pointer.StringPtr(systemDefaultRailsLogLevel))
+	srs.Console = boolOrDefault(srs.Console, pointer.Bool(systemDefaultRailsConsole))
+	srs.Environment = stringOrDefault(srs.Environment, pointer.String(systemDefaultRailsEnvironment))
+	srs.LogLevel = stringOrDefault(srs.LogLevel, pointer.String(systemDefaultRailsLogLevel))
 }
 
 // SystemAppSpec configures the App component of System
@@ -728,7 +776,7 @@ func (cfg *SidekiqConfig) Default(def defaultSidekiqConfig) {
 	if cfg.Queues == nil {
 		cfg.Queues = def.Queues
 	}
-	cfg.MaxThreads = intOrDefault(cfg.MaxThreads, pointer.Int32Ptr(*def.MaxThreads))
+	cfg.MaxThreads = intOrDefault(cfg.MaxThreads, pointer.Int32(*def.MaxThreads))
 }
 
 // Default implements defaulting for the system Sidekiq component
@@ -810,6 +858,10 @@ func (spec *SystemSphinxSpec) Default(systemDefaultImage *ImageSpec) {
 
 // SphinxConfig has configuration options for System's sphinx
 type SphinxConfig struct {
+	// Deploy Sphinx instance
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Enabled *bool `json:"enabled,omitempty"`
 	// Thinking configuration for sphinx
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -818,6 +870,11 @@ type SphinxConfig struct {
 
 // Default implements defaulting for SphinxConfig
 func (sc *SphinxConfig) Default() {
+
+	sc.Enabled = boolOrDefault(
+		sc.Enabled, pointer.Bool(systemDefaultSphinxEnabled),
+	)
+
 	if sc.Thinking == nil {
 		sc.Thinking = &ThinkingSpec{}
 	}
@@ -826,6 +883,10 @@ func (sc *SphinxConfig) Default() {
 
 // ThinkingSpec configures the thinking library for sphinx
 type ThinkingSpec struct {
+	// Allows setting the service name for Sphinx
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ServiceName *string `json:"serviceName,omitempty"`
 	// The TCP port Sphinx will run its daemon on
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -862,15 +923,106 @@ type ThinkingSpec struct {
 
 // Default implements defaulting for ThinkingSpec
 func (tc *ThinkingSpec) Default() {
-	tc.Port = intOrDefault(tc.Port, pointer.Int32Ptr(systemDefaultSphinxPort))
-	tc.BindAddress = stringOrDefault(tc.BindAddress, pointer.StringPtr(systemDefaultSphinxBindAddress))
-	tc.ConfigFile = stringOrDefault(tc.ConfigFile, pointer.StringPtr(systemDefaultSphinxConfigFile))
-	tc.BatchSize = intOrDefault(tc.BatchSize, pointer.Int32Ptr(systemDefaultSphinxBatchSize))
-	tc.DatabasePath = stringOrDefault(tc.DatabasePath, pointer.StringPtr(systemDefaultSphinxDBPath))
-	tc.PIDFile = stringOrDefault(tc.PIDFile, pointer.StringPtr(systemDefaultSphinxPIDFile))
+	tc.ServiceName = stringOrDefault(tc.ServiceName, pointer.String(systemDefaultSphinxServiceName))
+	tc.Port = intOrDefault(tc.Port, pointer.Int32(systemDefaultSphinxPort))
+	tc.BindAddress = stringOrDefault(tc.BindAddress, pointer.String(systemDefaultSphinxBindAddress))
+	tc.ConfigFile = stringOrDefault(tc.ConfigFile, pointer.String(systemDefaultSphinxConfigFile))
+	tc.BatchSize = intOrDefault(tc.BatchSize, pointer.Int32(systemDefaultSphinxBatchSize))
+	tc.DatabasePath = stringOrDefault(tc.DatabasePath, pointer.String(systemDefaultSphinxDBPath))
+	tc.PIDFile = stringOrDefault(tc.PIDFile, pointer.String(systemDefaultSphinxPIDFile))
 	if tc.DatabaseStorageSize == nil {
 		size := resource.MustParse(systemDefaultSphinxDatabaseStorageSize)
 		tc.DatabaseStorageSize = &size
+	}
+}
+
+// SystemSearchdSpec configures the App component of System
+type SystemSearchdSpec struct {
+	// Deploy searchd instance
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Enabled *bool `json:"enabled,omitempty"`
+	// Image specification for the Searchd component.
+	// Defaults to system image if not defined.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Image *ImageSpec `json:"image,omitempty"`
+	// Configuration options for System's Searchd
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Config *SearchdConfig `json:"config,omitempty"`
+	// Resource requirements for the Searchd component
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Resources *ResourceRequirementsSpec `json:"resources,omitempty"`
+	// Liveness probe for the Searchd component
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	LivenessProbe *ProbeSpec `json:"livenessProbe,omitempty"`
+	// Readiness probe for the Searchd component
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ReadinessProbe *ProbeSpec `json:"readinessProbe,omitempty"`
+	// Describes node affinity scheduling rules for the Searchd pod
+	// +optional
+	NodeAffinity *corev1.NodeAffinity `json:"nodeAffinity,omitempty" protobuf:"bytes,1,opt,name=nodeAffinity"`
+	// If specified, the Searchd pod's tolerations.
+	// +optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
+	// Configures the TerminationGracePeriodSeconds for Searchd
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty"`
+}
+
+// Default implements defaulting for the system sphinx component
+func (spec *SystemSearchdSpec) Default() {
+	spec.Enabled = boolOrDefault(spec.Enabled, pointer.Bool(systemDefaultSearchdEnabled))
+	spec.Image = InitializeImageSpec(spec.Image, defaultImageSpec(systemDefaultSearchdImage))
+	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, systemDefaultSearchdResources)
+	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, systemDefaultSearchdLivenessProbe)
+	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, systemDefaultSearchdReadinessProbe)
+	if spec.Config == nil {
+		spec.Config = &SearchdConfig{}
+	}
+	spec.Config.Default()
+	spec.TerminationGracePeriodSeconds = int64OrDefault(
+		spec.TerminationGracePeriodSeconds, systemDefaultTerminationGracePeriodSeconds,
+	)
+}
+
+// SearchdConfig has configuration options for System's sphinx
+type SearchdConfig struct {
+	// Allows setting the service name for Searchd
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ServiceName *string `json:"serviceName,omitempty"`
+	// The TCP port Searchd will run its daemon on
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Port *int32 `json:"port,omitempty"`
+	// Searchd database path
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	DatabasePath *string `json:"databasePath,omitempty"`
+	// Searchd database storage size
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	DatabaseStorageSize *resource.Quantity `json:"databaseStorageSize,omitempty"`
+	// Searchd database storage type
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	DatabaseStorageClass *string `json:"databaseStorageClass,omitempty"`
+}
+
+// Default implements defaulting for SearchdConfig
+func (sc *SearchdConfig) Default() {
+	sc.ServiceName = stringOrDefault(sc.ServiceName, pointer.String(systemDefaultSearchdServiceName))
+	sc.Port = intOrDefault(sc.Port, pointer.Int32(systemDefaultSearchdPort))
+	sc.DatabasePath = stringOrDefault(sc.DatabasePath, pointer.String(systemDefaultSearchdDBPath))
+	if sc.DatabaseStorageSize == nil {
+		size := resource.MustParse(systemDefaultSearchdDatabaseStorageSize)
+		sc.DatabaseStorageSize = &size
 	}
 }
 

@@ -27,23 +27,23 @@ import (
 
 var (
 	zyncDefaultImage defaultImageSpec = defaultImageSpec{
-		Name:       pointer.StringPtr("quay.io/3scale/zync"),
-		Tag:        pointer.StringPtr("nightly"),
-		PullPolicy: (*corev1.PullPolicy)(pointer.StringPtr(string(corev1.PullIfNotPresent))),
+		Name:       pointer.String("quay.io/3scale/zync"),
+		Tag:        pointer.String("nightly"),
+		PullPolicy: (*corev1.PullPolicy)(pointer.String(string(corev1.PullIfNotPresent))),
 	}
 	zyncDefaultGrafanaDashboard defaultGrafanaDashboardSpec = defaultGrafanaDashboardSpec{
-		SelectorKey:   pointer.StringPtr("monitoring-key"),
-		SelectorValue: pointer.StringPtr("middleware"),
+		SelectorKey:   pointer.String("monitoring-key"),
+		SelectorValue: pointer.String("middleware"),
 	}
 	zyncDefaultConfigRailsEnvironment string                             = "development"
 	zyncDefaultConfigRailsLogLevel    string                             = "info"
 	zyncDefaultConfigRailsMaxThreads  int32                              = 10
 	zyncDefaultConfigBugsnagSpec      BugsnagSpec                        = BugsnagSpec{}
 	zyncDefaultAPIHPA                 defaultHorizontalPodAutoscalerSpec = defaultHorizontalPodAutoscalerSpec{
-		MinReplicas:         pointer.Int32Ptr(2),
-		MaxReplicas:         pointer.Int32Ptr(4),
-		ResourceUtilization: pointer.Int32Ptr(90),
-		ResourceName:        pointer.StringPtr("cpu"),
+		MinReplicas:         pointer.Int32(2),
+		MaxReplicas:         pointer.Int32(4),
+		ResourceUtilization: pointer.Int32(90),
+		ResourceName:        pointer.String("cpu"),
 	}
 	zyncDefaultAPIPDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
 		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
@@ -60,24 +60,24 @@ var (
 		},
 	}
 	zyncDefaultAPILivenessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32Ptr(10),
-		TimeoutSeconds:      pointer.Int32Ptr(30),
-		PeriodSeconds:       pointer.Int32Ptr(10),
-		SuccessThreshold:    pointer.Int32Ptr(1),
-		FailureThreshold:    pointer.Int32Ptr(3),
+		InitialDelaySeconds: pointer.Int32(10),
+		TimeoutSeconds:      pointer.Int32(30),
+		PeriodSeconds:       pointer.Int32(10),
+		SuccessThreshold:    pointer.Int32(1),
+		FailureThreshold:    pointer.Int32(3),
 	}
 	zyncDefaultAPIReadinessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32Ptr(30),
-		TimeoutSeconds:      pointer.Int32Ptr(10),
-		PeriodSeconds:       pointer.Int32Ptr(10),
-		SuccessThreshold:    pointer.Int32Ptr(1),
-		FailureThreshold:    pointer.Int32Ptr(3),
+		InitialDelaySeconds: pointer.Int32(30),
+		TimeoutSeconds:      pointer.Int32(10),
+		PeriodSeconds:       pointer.Int32(10),
+		SuccessThreshold:    pointer.Int32(1),
+		FailureThreshold:    pointer.Int32(3),
 	}
 	zyncDefaultQueHPA defaultHorizontalPodAutoscalerSpec = defaultHorizontalPodAutoscalerSpec{
-		MinReplicas:         pointer.Int32Ptr(2),
-		MaxReplicas:         pointer.Int32Ptr(4),
-		ResourceUtilization: pointer.Int32Ptr(90),
-		ResourceName:        pointer.StringPtr("cpu"),
+		MinReplicas:         pointer.Int32(2),
+		MaxReplicas:         pointer.Int32(4),
+		ResourceUtilization: pointer.Int32(90),
+		ResourceName:        pointer.String("cpu"),
 	}
 	zyncDefaultQuePDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
 		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
@@ -94,18 +94,18 @@ var (
 		},
 	}
 	zyncDefaultQueLivenessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32Ptr(10),
-		TimeoutSeconds:      pointer.Int32Ptr(30),
-		PeriodSeconds:       pointer.Int32Ptr(10),
-		SuccessThreshold:    pointer.Int32Ptr(1),
-		FailureThreshold:    pointer.Int32Ptr(3),
+		InitialDelaySeconds: pointer.Int32(10),
+		TimeoutSeconds:      pointer.Int32(30),
+		PeriodSeconds:       pointer.Int32(10),
+		SuccessThreshold:    pointer.Int32(1),
+		FailureThreshold:    pointer.Int32(3),
 	}
 	zyncDefaultQueReadinessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32Ptr(30),
-		TimeoutSeconds:      pointer.Int32Ptr(10),
-		PeriodSeconds:       pointer.Int32Ptr(10),
-		SuccessThreshold:    pointer.Int32Ptr(1),
-		FailureThreshold:    pointer.Int32Ptr(3),
+		InitialDelaySeconds: pointer.Int32(30),
+		TimeoutSeconds:      pointer.Int32(10),
+		PeriodSeconds:       pointer.Int32(10),
+		SuccessThreshold:    pointer.Int32(1),
+		FailureThreshold:    pointer.Int32(3),
 	}
 )
 
@@ -295,9 +295,9 @@ type ZyncRailsSpec struct {
 
 // Default applies defaults for ZyncRailsSpec
 func (zrs *ZyncRailsSpec) Default() {
-	zrs.Environment = stringOrDefault(zrs.Environment, pointer.StringPtr(zyncDefaultConfigRailsEnvironment))
-	zrs.LogLevel = stringOrDefault(zrs.LogLevel, pointer.StringPtr(zyncDefaultConfigRailsLogLevel))
-	zrs.MaxThreads = intOrDefault(zrs.MaxThreads, pointer.Int32Ptr(zyncDefaultConfigRailsMaxThreads))
+	zrs.Environment = stringOrDefault(zrs.Environment, pointer.String(zyncDefaultConfigRailsEnvironment))
+	zrs.LogLevel = stringOrDefault(zrs.LogLevel, pointer.String(zyncDefaultConfigRailsLogLevel))
+	zrs.MaxThreads = intOrDefault(zrs.MaxThreads, pointer.Int32(zyncDefaultConfigRailsMaxThreads))
 }
 
 // ZyncStatus defines the observed state of Zync

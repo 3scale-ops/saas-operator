@@ -256,9 +256,9 @@ var _ = Describe("AutoSSL controller", func() {
 
 					patch := client.MergeFrom(autossl.DeepCopy())
 					autossl.Spec.Canary = &saasv1alpha1.Canary{
-						ImageName: pointer.StringPtr("newImage"),
-						ImageTag:  pointer.StringPtr("newTag"),
-						Replicas:  pointer.Int32Ptr(1),
+						ImageName: pointer.String("newImage"),
+						ImageTag:  pointer.String("newTag"),
+						Replicas:  pointer.Int32(1),
 					}
 
 					return k8sClient.Patch(context.Background(), autossl, patch)

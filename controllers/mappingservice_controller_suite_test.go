@@ -158,8 +158,8 @@ var _ = Describe("MappingService controller", func() {
 
 					mappingservice.Spec.Config.ExternalSecret.RefreshInterval = &metav1.Duration{Duration: 1 * time.Second}
 					mappingservice.Spec.Config.ExternalSecret.SecretStoreRef = &saasv1alpha1.ExternalSecretSecretStoreReferenceSpec{
-						Name: pointer.StringPtr("other-store"),
-						Kind: pointer.StringPtr("SecretStore"),
+						Name: pointer.String("other-store"),
+						Kind: pointer.String("SecretStore"),
 					}
 					mappingservice.Spec.Config.SystemAdminToken.FromVault.Path = "secret/data/updated-path"
 					mappingservice.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{

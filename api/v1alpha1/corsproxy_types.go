@@ -28,9 +28,9 @@ import (
 var (
 	corsproxyDefaultReplicas int32            = 2
 	corsproxyDefaultImage    defaultImageSpec = defaultImageSpec{
-		Name:       pointer.StringPtr("quay.io/3scale/cors-proxy"),
-		Tag:        pointer.StringPtr("latest"),
-		PullPolicy: (*corev1.PullPolicy)(pointer.StringPtr(string(corev1.PullIfNotPresent))),
+		Name:       pointer.String("quay.io/3scale/cors-proxy"),
+		Tag:        pointer.String("latest"),
+		PullPolicy: (*corev1.PullPolicy)(pointer.String(string(corev1.PullIfNotPresent))),
 	}
 	corsproxyDefaultResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
 		Requests: corev1.ResourceList{
@@ -43,25 +43,25 @@ var (
 		},
 	}
 	corsproxyDefaultHPA defaultHorizontalPodAutoscalerSpec = defaultHorizontalPodAutoscalerSpec{
-		MinReplicas:         pointer.Int32Ptr(2),
-		MaxReplicas:         pointer.Int32Ptr(4),
-		ResourceUtilization: pointer.Int32Ptr(90),
-		ResourceName:        pointer.StringPtr("cpu"),
+		MinReplicas:         pointer.Int32(2),
+		MaxReplicas:         pointer.Int32(4),
+		ResourceUtilization: pointer.Int32(90),
+		ResourceName:        pointer.String("cpu"),
 	}
 	corsproxyDefaultProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32Ptr(3),
-		TimeoutSeconds:      pointer.Int32Ptr(1),
-		PeriodSeconds:       pointer.Int32Ptr(10),
-		SuccessThreshold:    pointer.Int32Ptr(1),
-		FailureThreshold:    pointer.Int32Ptr(3),
+		InitialDelaySeconds: pointer.Int32(3),
+		TimeoutSeconds:      pointer.Int32(1),
+		PeriodSeconds:       pointer.Int32(10),
+		SuccessThreshold:    pointer.Int32(1),
+		FailureThreshold:    pointer.Int32(3),
 	}
 	corsproxyDefaultPDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
 		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
 	}
 
 	corsproxyDefaultGrafanaDashboard defaultGrafanaDashboardSpec = defaultGrafanaDashboardSpec{
-		SelectorKey:   pointer.StringPtr("monitoring-key"),
-		SelectorValue: pointer.StringPtr("middleware"),
+		SelectorKey:   pointer.String("monitoring-key"),
+		SelectorValue: pointer.String("middleware"),
 	}
 )
 

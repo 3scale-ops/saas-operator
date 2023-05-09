@@ -1,97 +1,154 @@
-
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<title>controllers: Go Coverage Report</title>
-		<style>
-			body {
-				background: black;
-				color: rgb(80, 80, 80);
-			}
-			body, pre, #legend span {
-				font-family: Menlo, monospace;
-				font-weight: bold;
-			}
-			#topbar {
-				background: black;
-				position: fixed;
-				top: 0; left: 0; right: 0;
-				height: 42px;
-				border-bottom: 1px solid rgb(80, 80, 80);
-			}
-			#content {
-				margin-top: 50px;
-			}
-			#nav, #legend {
-				float: left;
-				margin-left: 10px;
-			}
-			#legend {
-				margin-top: 12px;
-			}
-			#nav {
-				margin-top: 10px;
-			}
-			#legend span {
-				margin: 0 5px;
-			}
-			.cov0 { color: rgb(192, 0, 0) }
-.cov1 { color: rgb(128, 128, 128) }
-.cov2 { color: rgb(116, 140, 131) }
-.cov3 { color: rgb(104, 152, 134) }
-.cov4 { color: rgb(92, 164, 137) }
-.cov5 { color: rgb(80, 176, 140) }
-.cov6 { color: rgb(68, 188, 143) }
-.cov7 { color: rgb(56, 200, 146) }
-.cov8 { color: rgb(44, 212, 149) }
-.cov9 { color: rgb(32, 224, 152) }
-.cov10 { color: rgb(20, 236, 155) }
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>controllers: Go Coverage Report</title>
+    <style>
+      body {
+        background: black;
+        color: rgb(80, 80, 80);
+      }
+      body,
+      pre,
+      #legend span {
+        font-family: Menlo, monospace;
+        font-weight: bold;
+      }
+      #topbar {
+        background: black;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 42px;
+        border-bottom: 1px solid rgb(80, 80, 80);
+      }
+      #content {
+        margin-top: 50px;
+      }
+      #nav,
+      #legend {
+        float: left;
+        margin-left: 10px;
+      }
+      #legend {
+        margin-top: 12px;
+      }
+      #nav {
+        margin-top: 10px;
+      }
+      #legend span {
+        margin: 0 5px;
+      }
+      .cov0 {
+        color: rgb(192, 0, 0);
+      }
+      .cov1 {
+        color: rgb(128, 128, 128);
+      }
+      .cov2 {
+        color: rgb(116, 140, 131);
+      }
+      .cov3 {
+        color: rgb(104, 152, 134);
+      }
+      .cov4 {
+        color: rgb(92, 164, 137);
+      }
+      .cov5 {
+        color: rgb(80, 176, 140);
+      }
+      .cov6 {
+        color: rgb(68, 188, 143);
+      }
+      .cov7 {
+        color: rgb(56, 200, 146);
+      }
+      .cov8 {
+        color: rgb(44, 212, 149);
+      }
+      .cov9 {
+        color: rgb(32, 224, 152);
+      }
+      .cov10 {
+        color: rgb(20, 236, 155);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="topbar">
+      <div id="nav">
+        <select id="files">
+          <option value="file0">
+            github.com/3scale/saas-operator/controllers/apicast_controller.go
+            (0.0%)
+          </option>
 
-		</style>
-	</head>
-	<body>
-		<div id="topbar">
-			<div id="nav">
-				<select id="files">
-				
-				<option value="file0">github.com/3scale/saas-operator/controllers/apicast_controller.go (0.0%)</option>
-				
-				<option value="file1">github.com/3scale/saas-operator/controllers/autossl_controller.go (0.0%)</option>
-				
-				<option value="file2">github.com/3scale/saas-operator/controllers/backend_controller.go (0.0%)</option>
-				
-				<option value="file3">github.com/3scale/saas-operator/controllers/corsproxy_controller.go (0.0%)</option>
-				
-				<option value="file4">github.com/3scale/saas-operator/controllers/echoapi_controller.go (0.0%)</option>
-				
-				<option value="file5">github.com/3scale/saas-operator/controllers/mappingservice_controller.go (0.0%)</option>
-				
-				<option value="file6">github.com/3scale/saas-operator/controllers/reconciler_config.go (100.0%)</option>
-				
-				<option value="file7">github.com/3scale/saas-operator/controllers/redisshard_controller.go (0.0%)</option>
-				
-				<option value="file8">github.com/3scale/saas-operator/controllers/sentinel_controller.go (0.0%)</option>
-				
-				<option value="file9">github.com/3scale/saas-operator/controllers/system_controller.go (0.0%)</option>
-				
-				<option value="file10">github.com/3scale/saas-operator/controllers/twemproxyconfig_controller.go (0.0%)</option>
-				
-				<option value="file11">github.com/3scale/saas-operator/controllers/zync_controller.go (0.0%)</option>
-				
-				</select>
-			</div>
-			<div id="legend">
-				<span>not tracked</span>
-			
-				<span class="cov0">not covered</span>
-				<span class="cov8">covered</span>
-			
-			</div>
-		</div>
-		<div id="content">
-		
-		<pre class="file" id="file0" style="display: none">/*
+          <option value="file1">
+            github.com/3scale/saas-operator/controllers/autossl_controller.go
+            (0.0%)
+          </option>
+
+          <option value="file2">
+            github.com/3scale/saas-operator/controllers/backend_controller.go
+            (0.0%)
+          </option>
+
+          <option value="file3">
+            github.com/3scale/saas-operator/controllers/corsproxy_controller.go
+            (0.0%)
+          </option>
+
+          <option value="file4">
+            github.com/3scale/saas-operator/controllers/echoapi_controller.go
+            (0.0%)
+          </option>
+
+          <option value="file5">
+            github.com/3scale/saas-operator/controllers/mappingservice_controller.go
+            (0.0%)
+          </option>
+
+          <option value="file6">
+            github.com/3scale/saas-operator/controllers/reconciler_config.go
+            (100.0%)
+          </option>
+
+          <option value="file7">
+            github.com/3scale/saas-operator/controllers/redisshard_controller.go
+            (0.0%)
+          </option>
+
+          <option value="file8">
+            github.com/3scale/saas-operator/controllers/sentinel_controller.go
+            (0.0%)
+          </option>
+
+          <option value="file9">
+            github.com/3scale/saas-operator/controllers/system_controller.go
+            (0.0%)
+          </option>
+
+          <option value="file10">
+            github.com/3scale/saas-operator/controllers/twemproxyconfig_controller.go
+            (0.0%)
+          </option>
+
+          <option value="file11">
+            github.com/3scale/saas-operator/controllers/zync_controller.go
+            (0.0%)
+          </option>
+        </select>
+      </div>
+      <div id="legend">
+        <span>not tracked</span>
+
+        <span class="cov0">not covered</span>
+        <span class="cov8">covered</span>
+      </div>
+    </div>
+    <div id="content">
+      <pre class="file" id="file0" style="display: none">/*
 Copyright 2021.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -203,8 +260,8 @@ func (r *ApicastReconciler) SetupWithManager(mgr ctrl.Manager) error <span class
                 Complete(r)
 }</span>
 </pre>
-		
-		<pre class="file" id="file1" style="display: none">/*
+
+      <pre class="file" id="file1" style="display: none">/*
 Copyright 2021.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -316,8 +373,8 @@ func (r *AutoSSLReconciler) SetupWithManager(mgr ctrl.Manager) error <span class
                 Complete(r)
 }</span>
 </pre>
-		
-		<pre class="file" id="file2" style="display: none">/*
+
+      <pre class="file" id="file2" style="display: none">/*
 Copyright 2021.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -448,8 +505,8 @@ func (r *BackendReconciler) SetupWithManager(mgr ctrl.Manager) error <span class
                 Complete(r)
 }</span>
 </pre>
-		
-		<pre class="file" id="file3" style="display: none">/*
+
+      <pre class="file" id="file3" style="display: none">/*
 Copyright 2021.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -565,8 +622,8 @@ func (r *CORSProxyReconciler) SetupWithManager(mgr ctrl.Manager) error <span cla
                 Complete(r)
 }</span>
 </pre>
-		
-		<pre class="file" id="file4" style="display: none">/*
+
+      <pre class="file" id="file4" style="display: none">/*
 Copyright 2021.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -669,8 +726,8 @@ func (r *EchoAPIReconciler) SetupWithManager(mgr ctrl.Manager) error <span class
                 Complete(r)
 }</span>
 </pre>
-		
-		<pre class="file" id="file5" style="display: none">/*
+
+      <pre class="file" id="file5" style="display: none">/*
 Copyright 2021.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -786,8 +843,8 @@ func (r *MappingServiceReconciler) SetupWithManager(mgr ctrl.Manager) error <spa
                 Complete(r)
 }</span>
 </pre>
-		
-		<pre class="file" id="file6" style="display: none">package controllers
+
+      <pre class="file" id="file6" style="display: none">package controllers
 
 import (
         basereconciler "github.com/3scale-ops/basereconciler/reconciler"
@@ -818,8 +875,8 @@ func init() <span class="cov8" title="1">{
                 Register(&amp;marin3rv1alpha1.EnvoyConfigList{})
 }</span>
 </pre>
-		
-		<pre class="file" id="file7" style="display: none">/*
+
+      <pre class="file" id="file7" style="display: none">/*
 Copyright 2021.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -960,7 +1017,7 @@ func (r *RedisShardReconciler) updateStatus(ctx context.Context, shard *redis.Sh
 
         for _, server := range shard.Servers </span><span class="cov0" title="0">{
                 if server.Role == client.Master </span><span class="cov0" title="0">{
-                        status.ShardNodes.Master = pointer.StringPtr(server.Name)
+                        status.ShardNodes.Master = pointer.String(server.Name)
                 }</span> else<span class="cov0" title="0"> if server.Role == client.Slave </span><span class="cov0" title="0">{
                         status.ShardNodes.Slaves = append(status.ShardNodes.Slaves, server.Name)
                 }</span>
@@ -975,8 +1032,8 @@ func (r *RedisShardReconciler) updateStatus(ctx context.Context, shard *redis.Sh
         <span class="cov0" title="0">return nil</span>
 }
 </pre>
-		
-		<pre class="file" id="file8" style="display: none">/*
+
+      <pre class="file" id="file8" style="display: none">/*
 Copyright 2021.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -1181,8 +1238,8 @@ func (r *SentinelReconciler) SetupWithManager(mgr ctrl.Manager) error <span clas
                 Complete(r)
 }</span>
 </pre>
-		
-		<pre class="file" id="file9" style="display: none">/*
+
+      <pre class="file" id="file9" style="display: none">/*
 Copyright 2021.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -1327,8 +1384,8 @@ func (r *SystemReconciler) SetupWithManager(mgr ctrl.Manager) error <span class=
                 Complete(r)
 }</span>
 </pre>
-		
-		<pre class="file" id="file10" style="display: none">/*
+
+      <pre class="file" id="file10" style="display: none">/*
 Copyright 2021.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -1566,8 +1623,8 @@ func (r *TwemproxyConfigReconciler) SetupWithManager(mgr ctrl.Manager) error <sp
                 Complete(r)
 }</span>
 </pre>
-		
-		<pre class="file" id="file11" style="display: none">/*
+
+      <pre class="file" id="file11" style="display: none">/*
 Copyright 2021.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -1689,34 +1746,31 @@ func (r *ZyncReconciler) SetupWithManager(mgr ctrl.Manager) error <span class="c
                 Complete(r)
 }</span>
 </pre>
-		
-		</div>
-	</body>
-	<script>
-	(function() {
-		var files = document.getElementById('files');
-		var visible;
-		files.addEventListener('change', onChange, false);
-		function select(part) {
-			if (visible)
-				visible.style.display = 'none';
-			visible = document.getElementById(part);
-			if (!visible)
-				return;
-			files.value = part;
-			visible.style.display = 'block';
-			location.hash = part;
-		}
-		function onChange() {
-			select(files.value);
-			window.scrollTo(0, 0);
-		}
-		if (location.hash != "") {
-			select(location.hash.substr(1));
-		}
-		if (!visible) {
-			select("file0");
-		}
-	})();
-	</script>
+    </div>
+  </body>
+  <script>
+    (function () {
+      var files = document.getElementById("files");
+      var visible;
+      files.addEventListener("change", onChange, false);
+      function select(part) {
+        if (visible) visible.style.display = "none";
+        visible = document.getElementById(part);
+        if (!visible) return;
+        files.value = part;
+        visible.style.display = "block";
+        location.hash = part;
+      }
+      function onChange() {
+        select(files.value);
+        window.scrollTo(0, 0);
+      }
+      if (location.hash != "") {
+        select(location.hash.substr(1));
+      }
+      if (!visible) {
+        select("file0");
+      }
+    })();
+  </script>
 </html>

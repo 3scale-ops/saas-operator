@@ -38,7 +38,7 @@ func NewQueOptions(spec saasv1alpha1.ZyncSpec) QueOptions {
 		}
 
 	} else {
-		opts.BugsnagAPIKey = &pod.SecretValue{Value: saasv1alpha1.SecretReference{Override: pointer.StringPtr("")}}
+		opts.BugsnagAPIKey = &pod.SecretValue{Value: saasv1alpha1.SecretReference{Override: pointer.String("")}}
 	}
 
 	return opts

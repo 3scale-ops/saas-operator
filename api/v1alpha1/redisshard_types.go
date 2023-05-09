@@ -24,9 +24,9 @@ import (
 
 var (
 	redisShardDefaultImage defaultImageSpec = defaultImageSpec{
-		Name:       pointer.StringPtr("redis"),
-		Tag:        pointer.StringPtr("4.0.11-alpine"),
-		PullPolicy: (*corev1.PullPolicy)(pointer.StringPtr(string(corev1.PullIfNotPresent))),
+		Name:       pointer.String("redis"),
+		Tag:        pointer.String("4.0.11-alpine"),
+		PullPolicy: (*corev1.PullPolicy)(pointer.String(string(corev1.PullIfNotPresent))),
 	}
 	redisShardDefaultMasterIndex int32 = 0
 	RedisShardDefaultReplicas    int32 = 3

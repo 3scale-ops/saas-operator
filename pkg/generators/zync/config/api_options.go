@@ -42,7 +42,7 @@ func NewAPIOptions(spec saasv1alpha1.ZyncSpec) APIOptions {
 		}
 
 	} else {
-		opts.BugsnagAPIKey = &pod.SecretValue{Value: saasv1alpha1.SecretReference{Override: pointer.StringPtr("")}}
+		opts.BugsnagAPIKey = &pod.SecretValue{Value: saasv1alpha1.SecretReference{Override: pointer.String("")}}
 	}
 
 	return opts

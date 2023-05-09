@@ -260,7 +260,7 @@ func Test_newFromProtos(t *testing.T) {
 				Spec: marin3rv1alpha1.EnvoyConfigSpec{
 					NodeID:        "test",
 					Serialization: pointer.String(string(envoy_serializer.YAML)),
-					EnvoyAPI:      pointer.StringPtr(envoy.APIv3.String()),
+					EnvoyAPI:      pointer.String(envoy.APIv3.String()),
 					EnvoyResources: &marin3rv1alpha1.EnvoyResources{
 						Clusters: []marin3rv1alpha1.EnvoyResource{{
 							Value: heredoc.Doc(`

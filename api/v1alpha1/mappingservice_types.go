@@ -28,9 +28,9 @@ import (
 var (
 	mappingserviceDefaultReplicas int32            = 2
 	mappingserviceDefaultImage    defaultImageSpec = defaultImageSpec{
-		Name:       pointer.StringPtr("quay.io/3scale/apicast-cloud-hosted"),
-		Tag:        pointer.StringPtr("latest"),
-		PullPolicy: (*corev1.PullPolicy)(pointer.StringPtr(string(corev1.PullIfNotPresent))),
+		Name:       pointer.String("quay.io/3scale/apicast-cloud-hosted"),
+		Tag:        pointer.String("latest"),
+		PullPolicy: (*corev1.PullPolicy)(pointer.String(string(corev1.PullIfNotPresent))),
 	}
 	mappingserviceDefaultResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
 		Requests: corev1.ResourceList{
@@ -43,32 +43,32 @@ var (
 		},
 	}
 	mappingserviceDefaultHPA defaultHorizontalPodAutoscalerSpec = defaultHorizontalPodAutoscalerSpec{
-		MinReplicas:         pointer.Int32Ptr(2),
-		MaxReplicas:         pointer.Int32Ptr(4),
-		ResourceUtilization: pointer.Int32Ptr(90),
-		ResourceName:        pointer.StringPtr("cpu"),
+		MinReplicas:         pointer.Int32(2),
+		MaxReplicas:         pointer.Int32(4),
+		ResourceUtilization: pointer.Int32(90),
+		ResourceName:        pointer.String("cpu"),
 	}
 	mappingserviceLivenessDefaultProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32Ptr(5),
-		TimeoutSeconds:      pointer.Int32Ptr(5),
-		PeriodSeconds:       pointer.Int32Ptr(10),
-		SuccessThreshold:    pointer.Int32Ptr(1),
-		FailureThreshold:    pointer.Int32Ptr(3),
+		InitialDelaySeconds: pointer.Int32(5),
+		TimeoutSeconds:      pointer.Int32(5),
+		PeriodSeconds:       pointer.Int32(10),
+		SuccessThreshold:    pointer.Int32(1),
+		FailureThreshold:    pointer.Int32(3),
 	}
 	mappingserviceReadinessDefaultProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32Ptr(5),
-		TimeoutSeconds:      pointer.Int32Ptr(5),
-		PeriodSeconds:       pointer.Int32Ptr(30),
-		SuccessThreshold:    pointer.Int32Ptr(1),
-		FailureThreshold:    pointer.Int32Ptr(3),
+		InitialDelaySeconds: pointer.Int32(5),
+		TimeoutSeconds:      pointer.Int32(5),
+		PeriodSeconds:       pointer.Int32(30),
+		SuccessThreshold:    pointer.Int32(1),
+		FailureThreshold:    pointer.Int32(3),
 	}
 	mappingserviceDefaultPDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
 		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
 	}
 
 	mappingserviceDefaultGrafanaDashboard defaultGrafanaDashboardSpec = defaultGrafanaDashboardSpec{
-		SelectorKey:   pointer.StringPtr("monitoring-key"),
-		SelectorValue: pointer.StringPtr("middleware"),
+		SelectorKey:   pointer.String("monitoring-key"),
+		SelectorValue: pointer.String("middleware"),
 	}
 	mappingserviceDefaultLogLevel string = "warn"
 )
@@ -157,7 +157,7 @@ type MappingServiceConfig struct {
 
 // Default sets default values for any value not specifically set in the MappingServiceConfig struct
 func (cfg *MappingServiceConfig) Default() {
-	cfg.LogLevel = stringOrDefault(cfg.LogLevel, pointer.StringPtr(mappingserviceDefaultLogLevel))
+	cfg.LogLevel = stringOrDefault(cfg.LogLevel, pointer.String(mappingserviceDefaultLogLevel))
 	cfg.ExternalSecret.SecretStoreRef = InitializeExternalSecretSecretStoreReferenceSpec(cfg.ExternalSecret.SecretStoreRef, defaultExternalSecretSecretStoreReference)
 	cfg.ExternalSecret.RefreshInterval = durationOrDefault(cfg.ExternalSecret.RefreshInterval, &defaultExternalSecretRefreshInterval)
 }

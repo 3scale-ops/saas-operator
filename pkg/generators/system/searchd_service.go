@@ -8,20 +8,20 @@ import (
 )
 
 // service returns a function that will return the corev1.Service for sphinx
-func (gen *SphinxGenerator) service() func() *corev1.Service {
+func (gen *SearchdGenerator) service() func() *corev1.Service {
 
 	return func() *corev1.Service {
 
 		return &corev1.Service{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      *gen.Spec.Config.Thinking.ServiceName,
+				Name:      *gen.Spec.Config.ServiceName,
 				Namespace: gen.GetNamespace(),
 			},
 			Spec: corev1.ServiceSpec{
 				Type:            corev1.ServiceTypeClusterIP,
 				SessionAffinity: corev1.ServiceAffinityNone,
 				Ports: service.Ports(
-					service.TCPPort("sphinx", gen.DatabasePort, intstr.FromString("sphinx")),
+					service.TCPPort("searchd", gen.DatabasePort, intstr.FromString("searchd")),
 				),
 				Selector: gen.GetSelector(),
 			},

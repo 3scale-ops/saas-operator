@@ -89,7 +89,7 @@ func (gen *SidekiqGenerator) deployment() func() *appsv1.Deployment {
 				Name: "system-config",
 				VolumeSource: corev1.VolumeSource{
 					Secret: &corev1.SecretVolumeSource{
-						DefaultMode: pointer.Int32Ptr(420),
+						DefaultMode: pointer.Int32(420),
 						SecretName:  gen.ConfigFilesSecret,
 					},
 				},

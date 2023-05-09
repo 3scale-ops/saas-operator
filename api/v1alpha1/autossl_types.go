@@ -28,19 +28,19 @@ import (
 var (
 	autosslDefaultReplicas int32            = 2
 	autosslDefaultImage    defaultImageSpec = defaultImageSpec{
-		Name:       pointer.StringPtr("quay.io/3scale/autossl"),
-		Tag:        pointer.StringPtr("latest"),
-		PullPolicy: (*corev1.PullPolicy)(pointer.StringPtr(string(corev1.PullIfNotPresent))),
+		Name:       pointer.String("quay.io/3scale/autossl"),
+		Tag:        pointer.String("latest"),
+		PullPolicy: (*corev1.PullPolicy)(pointer.String(string(corev1.PullIfNotPresent))),
 	}
 	autosslDefaultLoadBalancer defaultLoadBalancerSpec = defaultLoadBalancerSpec{
-		ProxyProtocol:                 pointer.BoolPtr(true),
-		CrossZoneLoadBalancingEnabled: pointer.BoolPtr(true),
-		ConnectionDrainingEnabled:     pointer.BoolPtr(true),
-		ConnectionDrainingTimeout:     pointer.Int32Ptr(60),
-		HealthcheckHealthyThreshold:   pointer.Int32Ptr(2),
-		HealthcheckUnhealthyThreshold: pointer.Int32Ptr(2),
-		HealthcheckInterval:           pointer.Int32Ptr(5),
-		HealthcheckTimeout:            pointer.Int32Ptr(3),
+		ProxyProtocol:                 pointer.Bool(true),
+		CrossZoneLoadBalancingEnabled: pointer.Bool(true),
+		ConnectionDrainingEnabled:     pointer.Bool(true),
+		ConnectionDrainingTimeout:     pointer.Int32(60),
+		HealthcheckHealthyThreshold:   pointer.Int32(2),
+		HealthcheckUnhealthyThreshold: pointer.Int32(2),
+		HealthcheckInterval:           pointer.Int32(5),
+		HealthcheckTimeout:            pointer.Int32(3),
 	}
 	autosslDefaultResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
 		Requests: corev1.ResourceList{
@@ -53,25 +53,25 @@ var (
 		},
 	}
 	autosslDefaultHPA defaultHorizontalPodAutoscalerSpec = defaultHorizontalPodAutoscalerSpec{
-		MinReplicas:         pointer.Int32Ptr(2),
-		MaxReplicas:         pointer.Int32Ptr(4),
-		ResourceUtilization: pointer.Int32Ptr(90),
-		ResourceName:        pointer.StringPtr("cpu"),
+		MinReplicas:         pointer.Int32(2),
+		MaxReplicas:         pointer.Int32(4),
+		ResourceUtilization: pointer.Int32(90),
+		ResourceName:        pointer.String("cpu"),
 	}
 	autosslDefaultProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32Ptr(25),
-		TimeoutSeconds:      pointer.Int32Ptr(1),
-		PeriodSeconds:       pointer.Int32Ptr(10),
-		SuccessThreshold:    pointer.Int32Ptr(1),
-		FailureThreshold:    pointer.Int32Ptr(3),
+		InitialDelaySeconds: pointer.Int32(25),
+		TimeoutSeconds:      pointer.Int32(1),
+		PeriodSeconds:       pointer.Int32(10),
+		SuccessThreshold:    pointer.Int32(1),
+		FailureThreshold:    pointer.Int32(3),
 	}
 	autosslDefaultPDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
 		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
 	}
 
 	autosslDefaultGrafanaDashboard defaultGrafanaDashboardSpec = defaultGrafanaDashboardSpec{
-		SelectorKey:   pointer.StringPtr("monitoring-key"),
-		SelectorValue: pointer.StringPtr("middleware"),
+		SelectorKey:   pointer.String("monitoring-key"),
+		SelectorValue: pointer.String("middleware"),
 	}
 	autosslDefaultACMEStaging bool   = false
 	autosslDefaultRedisPort   int32  = 6379
@@ -208,9 +208,9 @@ type AutoSSLConfig struct {
 
 // Default sets default values for any value not specifically set in the AutoSSLConfig struct
 func (cfg *AutoSSLConfig) Default() {
-	cfg.ACMEStaging = boolOrDefault(cfg.ACMEStaging, pointer.BoolPtr(autosslDefaultACMEStaging))
-	cfg.RedisPort = intOrDefault(cfg.RedisPort, pointer.Int32Ptr(autosslDefaultRedisPort))
-	cfg.LogLevel = stringOrDefault(cfg.LogLevel, pointer.StringPtr(autosslDefaultLogLevel))
+	cfg.ACMEStaging = boolOrDefault(cfg.ACMEStaging, pointer.Bool(autosslDefaultACMEStaging))
+	cfg.RedisPort = intOrDefault(cfg.RedisPort, pointer.Int32(autosslDefaultRedisPort))
+	cfg.LogLevel = stringOrDefault(cfg.LogLevel, pointer.String(autosslDefaultLogLevel))
 	if cfg.DomainWhitelist == nil {
 		cfg.DomainWhitelist = []string{}
 	}

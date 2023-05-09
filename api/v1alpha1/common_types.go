@@ -42,8 +42,8 @@ const (
 var (
 	defaultExternalSecretRefreshInterval      metav1.Duration                               = metav1.Duration{Duration: 60 * time.Second}
 	defaultExternalSecretSecretStoreReference defaultExternalSecretSecretStoreReferenceSpec = defaultExternalSecretSecretStoreReferenceSpec{
-		Name: pointer.StringPtr("vault-mgmt"),
-		Kind: pointer.StringPtr("ClusterSecretStore"),
+		Name: pointer.String("vault-mgmt"),
+		Kind: pointer.String("ClusterSecretStore"),
 	}
 )
 
@@ -632,6 +632,18 @@ type BugsnagSpec struct {
 // Bugsnag integration is enabled or not
 func (bs *BugsnagSpec) Enabled() bool {
 	return !reflect.DeepEqual(bs, &BugsnagSpec{})
+}
+
+// AddressSpec allows the definition of an address
+type AddressSpec struct {
+	// Defines the address host
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Host *string `json:"host,omitempty"`
+	// Defines the address port
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Port *int32 `json:"port,omitempty"`
 }
 
 // Canary allows the definition of a canary Deployment

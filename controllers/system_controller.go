@@ -114,6 +114,9 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	// Sphinx resources
 	resources = append(resources, gen.Sphinx.StatefulSetWithTraffic()...)
 
+	// Searchd resources
+	resources = append(resources, gen.Searchd.StatefulSetWithTraffic()...)
+
 	// Console resources
 	resources = append(resources, gen.Console.StatefulSet())
 

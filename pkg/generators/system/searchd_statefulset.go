@@ -15,7 +15,7 @@ import (
 
 // StatefulSet returns a basereconciler.GeneratorFunction function that will return
 // a StatefulSet resource when called
-func (gen *SphinxGenerator) statefulset() func() *appsv1.StatefulSet {
+func (gen *SearchdGenerator) statefulset() func() *appsv1.StatefulSet {
 
 	return func() *appsv1.StatefulSet {
 
@@ -45,24 +45,20 @@ func (gen *SphinxGenerator) statefulset() func() *appsv1.StatefulSet {
 						}(),
 						Containers: []corev1.Container{
 							{
-								Name:  strings.Join([]string{component, sphinx}, "-"),
+								Name:  strings.Join([]string{component, searchd}, "-"),
 								Image: fmt.Sprintf("%s:%s", *gen.Image.Name, *gen.Image.Tag),
-								Args: []string{
-									"rake",
-									"openshift:thinking_sphinx:start",
-								},
-								Env: pod.BuildEnvironment(gen.Options),
+								Args:  []string{},
 								Ports: pod.ContainerPorts(
-									pod.ContainerPortTCP("sphinx", gen.DatabasePort),
+									pod.ContainerPortTCP("searchd", gen.DatabasePort),
 								),
 								Resources:                corev1.ResourceRequirements(*gen.Spec.Resources),
-								LivenessProbe:            pod.TCPProbe(intstr.FromString("sphinx"), *gen.Spec.LivenessProbe),
-								ReadinessProbe:           pod.TCPProbe(intstr.FromString("sphinx"), *gen.Spec.ReadinessProbe),
+								LivenessProbe:            pod.TCPProbe(intstr.FromString("searchd"), *gen.Spec.LivenessProbe),
+								ReadinessProbe:           pod.TCPProbe(intstr.FromString("searchd"), *gen.Spec.ReadinessProbe),
 								ImagePullPolicy:          *gen.Image.PullPolicy,
 								TerminationMessagePath:   corev1.TerminationMessagePathDefault,
 								TerminationMessagePolicy: corev1.TerminationMessageReadFile,
 								VolumeMounts: []corev1.VolumeMount{{
-									Name:      "system-sphinx-database",
+									Name:      "system-searchd-database",
 									MountPath: gen.DatabasePath,
 								}},
 							},
@@ -76,7 +72,7 @@ func (gen *SphinxGenerator) statefulset() func() *appsv1.StatefulSet {
 				},
 				VolumeClaimTemplates: []corev1.PersistentVolumeClaim{{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "system-sphinx-database",
+						Name: "system-searchd-database",
 					},
 					Status: corev1.PersistentVolumeClaimStatus{
 						Phase: corev1.ClaimPending,

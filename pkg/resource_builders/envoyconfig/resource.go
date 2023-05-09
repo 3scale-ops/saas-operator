@@ -92,7 +92,7 @@ func newFromProtos(key types.NamespacedName, nodeID string, resources []envoy.Re
 				Namespace: key.Namespace,
 			},
 			Spec: marin3rv1alpha1.EnvoyConfigSpec{
-				EnvoyAPI:      pointer.StringPtr(envoy.APIv3.String()),
+				EnvoyAPI:      pointer.String(envoy.APIv3.String()),
 				NodeID:        nodeID,
 				Serialization: pointer.String(string(envoy_serializer.YAML)),
 				EnvoyResources: &marin3rv1alpha1.EnvoyResources{

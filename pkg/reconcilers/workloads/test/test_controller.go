@@ -165,7 +165,7 @@ func (gen *TestWorkloadGenerator) Deployment() resources.DeploymentTemplate {
 		Template: func() *appsv1.Deployment {
 			return &appsv1.Deployment{
 				Spec: appsv1.DeploymentSpec{
-					Replicas: pointer.Int32Ptr(1),
+					Replicas: pointer.Int32(1),
 					Template: corev1.PodTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
 							Labels: map[string]string{"orig-key": "orig-value"},
@@ -202,10 +202,10 @@ func (gen *TestWorkloadGenerator) GetSelector() map[string]string {
 }
 func (gen *TestWorkloadGenerator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {
 	return &saasv1alpha1.HorizontalPodAutoscalerSpec{
-		MinReplicas:         pointer.Int32Ptr(1),
-		MaxReplicas:         pointer.Int32Ptr(2),
-		ResourceUtilization: pointer.Int32Ptr(90),
-		ResourceName:        pointer.StringPtr("cpu"),
+		MinReplicas:         pointer.Int32(1),
+		MaxReplicas:         pointer.Int32(2),
+		ResourceUtilization: pointer.Int32(90),
+		ResourceName:        pointer.String("cpu"),
 	}
 }
 func (gen *TestWorkloadGenerator) PDBSpec() *saasv1alpha1.PodDisruptionBudgetSpec {

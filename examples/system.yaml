@@ -1,0 +1,155 @@
+apiVersion: saas.3scale.net/v1alpha1
+kind: System
+metadata:
+  name: system
+spec:
+  image:
+    name: quay.io/3scale/porta
+    pullSecretName: quay-pull-secret
+  config:
+    assets:
+      host: kustomize-overlay
+      bucket: kustomize-overlay
+      region: us-east-1
+      accessKey:
+        fromVault:
+          path: system-aws-multitenant-assets-bucket-iam # prefixed by kustomize
+          key: AWS_ACCESS_KEY_ID
+      secretKey:
+        fromVault:
+          path: system-aws-multitenant-assets-bucket-iam # prefixed by kustomize
+          key: AWS_SECRET_ACCESS_KEY
+    backend:
+      externalEndpoint: kustomize-overlay
+      internalEndpoint: kustomize-overlay
+      redisDSN: redis://127.0.0.1:22121
+      internalAPIUser:
+        fromVault:
+          path: backend # prefixed by kustomize
+          key: internalApiUsername
+      internalAPIPassword:
+        fromVault:
+          path: backend # prefixed by kustomize
+          key: internalApiPassword
+    bugsnag:
+      apiKey:
+        fromVault:
+          path: system # prefixed by kustomize
+          key: bugsnagApiKey
+    configFilesSecret: system-config
+    databaseDSN:
+      fromVault:
+        path: system-database-app-credentials # prefixed by kustomize
+        key: dsn
+    databaseSecret:
+      fromVault:
+        path: system # prefixed by kustomize
+        key: databaseSecret
+    eventsSharedSecret:
+      fromVault:
+        path: system # prefixed by kustomize
+        key: eventsSharedSecret
+    github:
+      clientID:
+        fromVault:
+          path: system # prefixed by kustomize
+          key: githubClientId
+      clientSecret:
+        fromVault:
+          path: system # prefixed by kustomize
+          key: githubClientSecret
+    mappingServiceAccessToken:
+      fromVault:
+        path: system # prefixed by kustomize
+        key: mappingServiceAccessToken
+    memcachedServers: kustomize-overlay
+    rails:
+      console: true
+      environment: production
+      logLevel: info
+    recaptcha:
+      publicKey:
+        fromVault:
+          path: system # prefixed by kustomize
+          key: recaptchaPublicKey
+      privateKey:
+        fromVault:
+          path: system # prefixed by kustomize
+          key: recaptchaPrivateKey
+    redhatCustomerPortal:
+      clientID:
+        fromVault:
+          path: system # prefixed by kustomize
+          key: redhatCustomerPortalClientId
+      clientSecret:
+        fromVault:
+          path: system # prefixed by kustomize
+          key: redhatCustomerPortalClientName
+    redis:
+      queuesDSN: kustomize-overlay
+    secretKeyBase:
+      fromVault:
+        path: system # prefixed by kustomize
+        key: secretKeyBase
+    segment:
+      deletionWorkspace: 3scale-dev
+      deletionToken:
+        fromVault:
+          path: system # prefixed by kustomize
+          key: segmentDeletionToken
+      writeKey:
+        fromVault:
+          path: system # prefixed by kustomize
+          key: segmentWriteKey
+    smtp:
+      address: smtp.sendgrid.net
+      user:
+        fromVault:
+          path: system-smtp # prefixed by kustomize
+          key: username
+      password:
+        fromVault:
+          path: system-smtp # prefixed by kustomize
+          key: password
+      port: 587
+      authProtocol: plain
+      opensslVerifyMode: peer
+      starttlsAuto: false
+      starttls: true
+    threescaleSuperdomain: kustomize-overlay
+    zync:
+      endpoint: http://zync:8080
+      authToken:
+        fromVault:
+          path: zync # prefixed by kustomize
+          key: authenticationToken
+  console:
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "1Gi"
+      limits:
+        cpu: "1200m"
+        memory: "1Gi"
+  sidekiqDefault:
+    config:
+      maxThreads: 5
+  sidekiqBilling:
+    config:
+      maxThreads: 5
+  sidekiqLow:
+    config:
+      maxThreads: 5
+  searchd:
+    enabled: true
+  twemproxy:
+    twemproxyConfigRef: system-twemproxyconfig
+    options:
+      logLevel: 4
+    resources:
+      limits:
+        cpu: 200m
+        memory: 50Mi
+      requests:
+        cpu: 50m
+        memory: 20Mi

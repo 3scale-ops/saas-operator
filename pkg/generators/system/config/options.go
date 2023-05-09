@@ -20,8 +20,8 @@ type Options struct {
 	RailsLogLevel    pod.EnvVarValue `env:"RAILS_LOG_LEVEL"`
 	RailsLogToStdout pod.EnvVarValue `env:"RAILS_LOG_TO_STDOUT"`
 
-	SphinxAddress pod.EnvVarValue `env:"THINKING_SPHINX_ADDRESS"`
-	SphinxPort    pod.EnvVarValue `env:"THINKING_SPHINX_PORT"`
+	SearchServerAddress pod.EnvVarValue `env:"THINKING_SPHINX_ADDRESS"`
+	SearchServerPort    pod.EnvVarValue `env:"THINKING_SPHINX_PORT"`
 
 	DatabaseURL pod.EnvVarValue `env:"DATABASE_URL" secret:"system-database"`
 
@@ -94,8 +94,8 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 		RailsLogLevel:    &pod.ClearTextValue{Value: *spec.Config.Rails.LogLevel},
 		RailsLogToStdout: &pod.ClearTextValue{Value: "true"},
 
-		SphinxAddress: &pod.ClearTextValue{Value: SystemSphinxServiceName},
-		SphinxPort:    &pod.ClearTextValue{Value: fmt.Sprintf("%d", *spec.Sphinx.Config.Thinking.Port)},
+		SearchServerAddress: &pod.ClearTextValue{Value: *spec.Config.SearchServer.Host},
+		SearchServerPort:    &pod.ClearTextValue{Value: fmt.Sprintf("%d", *spec.Config.SearchServer.Port)},
 
 		DatabaseURL: &pod.SecretValue{Value: spec.Config.DatabaseDSN},
 
@@ -153,7 +153,7 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 		}
 
 	} else {
-		opts.BugsnagAPIKey = &pod.SecretValue{Value: saasv1alpha1.SecretReference{Override: pointer.StringPtr("")}}
+		opts.BugsnagAPIKey = &pod.SecretValue{Value: saasv1alpha1.SecretReference{Override: pointer.String("")}}
 	}
 
 	if spec.Config.Assets.Host == nil {

@@ -11,25 +11,25 @@ import (
 var (
 	// Twemproxy defaults
 	defaultTwemproxyLivenessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32Ptr(0),
-		TimeoutSeconds:      pointer.Int32Ptr(1),
-		PeriodSeconds:       pointer.Int32Ptr(5),
-		SuccessThreshold:    pointer.Int32Ptr(1),
-		FailureThreshold:    pointer.Int32Ptr(3),
+		InitialDelaySeconds: pointer.Int32(0),
+		TimeoutSeconds:      pointer.Int32(1),
+		PeriodSeconds:       pointer.Int32(5),
+		SuccessThreshold:    pointer.Int32(1),
+		FailureThreshold:    pointer.Int32(3),
 	}
 	defaultTwemproxyReadinessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32Ptr(0),
-		TimeoutSeconds:      pointer.Int32Ptr(1),
-		PeriodSeconds:       pointer.Int32Ptr(5),
-		SuccessThreshold:    pointer.Int32Ptr(1),
-		FailureThreshold:    pointer.Int32Ptr(3),
+		InitialDelaySeconds: pointer.Int32(0),
+		TimeoutSeconds:      pointer.Int32(1),
+		PeriodSeconds:       pointer.Int32(5),
+		SuccessThreshold:    pointer.Int32(1),
+		FailureThreshold:    pointer.Int32(3),
 	}
 	// TODO: add requirements
 	defaultTwemproxyResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{}
 	defaultTwemproxyImage     defaultImageSpec                = defaultImageSpec{
-		Name:       pointer.StringPtr("quay.io/3scale/twemproxy"),
-		Tag:        pointer.StringPtr("v0.5.0"),
-		PullPolicy: (*corev1.PullPolicy)(pointer.StringPtr(string(corev1.PullIfNotPresent))),
+		Name:       pointer.String("quay.io/3scale/twemproxy"),
+		Tag:        pointer.String("v0.5.0"),
+		PullPolicy: (*corev1.PullPolicy)(pointer.String(string(corev1.PullIfNotPresent))),
 	}
 	twemproxyDefaultLogLevel      int32           = 6
 	twemproxyDefaultMetricsPort   int32           = 9151
