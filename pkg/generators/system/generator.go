@@ -520,10 +520,7 @@ func (gen *SearchdGenerator) StatefulSetWithTraffic() []basereconciler.Resource 
 
 func (gen *SearchdGenerator) StatefulSet() basereconciler_resources.StatefulSetTemplate {
 	return basereconciler_resources.StatefulSetTemplate{
-		Template: gen.statefulset(),
-		RolloutTriggers: []basereconciler_resources.RolloutTrigger{
-			{Name: "system-database", SecretName: pointer.String("system-database")},
-		},
+		Template:  gen.statefulset(),
 		IsEnabled: gen.Enabled,
 	}
 }
