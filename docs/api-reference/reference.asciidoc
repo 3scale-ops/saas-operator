@@ -52,6 +52,24 @@ APISpec is the configuration for main Zync api component
 |===
 
 
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-addressspec"]
+==== AddressSpec 
+
+AddressSpec allows the definition of an address
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`host`* __string__ | Defines the address host
+| *`port`* __integer__ | Defines the address port
+|===
+
+
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicast"]
 ==== Apicast 
 
@@ -1318,14 +1336,11 @@ SearchdConfig has configuration options for System's sphinx
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
+| *`serviceName`* __string__ | Allows setting the service name for Searchd
 | *`port`* __integer__ | The TCP port Searchd will run its daemon on
-| *`bindAddress`* __string__ | Allows setting the TCP host for Searchd to a different address
-| *`configFile`* __string__ | Searchd configuration file path
-| *`batchSize`* __integer__ | Searchd batch size
 | *`databasePath`* __string__ | Searchd database path
 | *`databaseStorageSize`* __Quantity__ | Searchd database storage size
 | *`databaseStorageClass`* __string__ | Searchd database storage type
-| *`pidFile`* __string__ | Searchd PID file path
 |===
 
 
@@ -1529,7 +1544,7 @@ SphinxConfig has configuration options for System's sphinx
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`console`* __boolean__ | Deploy Sphinx instance
+| *`enabled`* __boolean__ | Deploy Sphinx instance
 | *`thinking`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-thinkingspec[$$ThinkingSpec$$]__ | Thinking configuration for sphinx
 |===
 
@@ -1618,6 +1633,7 @@ SystemConfig holds configuration for SystemApp component
 | *`sandboxProxyOpensslVerifyMode`* __string__ | OpenSSL verification mode for sandbox proxy
 | *`forceSSL`* __boolean__ | Enable (true) or disable (false) enforcing SSL
 | *`sslCertsDir`* __string__ | SSL certificates path
+| *`searchServer`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-addressspec[$$AddressSpec$$]__ | Search service options
 | *`threescaleProviderPlan`* __string__ | 3scale provider plan
 | *`threescaleSuperdomain`* __string__ | 3scale superdomain
 | *`configFilesSecret`* __string__ | Secret containging system configuration files to be mounted in the pods
@@ -1713,15 +1729,15 @@ SystemSearchdSpec configures the App component of System
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`console`* __boolean__ | Deploy searchd instance
+| *`enabled`* __boolean__ | Deploy searchd instance
 | *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the Searchd component. Defaults to system image if not defined.
-| *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-searchdconfig[$$SearchdConfig$$]__ | Configuration options for System's sphinx
-| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
-| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
-| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
-| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
-| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
-| *`terminationGracePeriodSeconds`* __integer__ | Configures the TerminationGracePeriodSeconds
+| *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-searchdconfig[$$SearchdConfig$$]__ | Configuration options for System's Searchd
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the Searchd component
+| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the Searchd component
+| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the Searchd component
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the Searchd pod
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the Searchd pod's tolerations.
+| *`terminationGracePeriodSeconds`* __integer__ | Configures the TerminationGracePeriodSeconds for Searchd
 |===
 
 
@@ -1849,6 +1865,7 @@ ThinkingSpec configures the thinking library for sphinx
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
+| *`serviceName`* __string__ | Allows setting the service name for Sphinx
 | *`port`* __integer__ | The TCP port Sphinx will run its daemon on
 | *`bindAddress`* __string__ | Allows setting the TCP host for Sphinx to a different address
 | *`configFile`* __string__ | Sphinx configuration file path
