@@ -1143,6 +1143,10 @@ spec:
                   searchServer:
                     description: Search service options
                     properties:
+                      batchSize:
+                        description: Defines the batch size
+                        format: int32
+                        type: integer
                       host:
                         description: Defines the address host
                         type: string

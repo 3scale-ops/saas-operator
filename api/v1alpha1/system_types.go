@@ -56,10 +56,13 @@ var (
 		SelectorKey:   pointer.String("monitoring-key"),
 		SelectorValue: pointer.String("middleware"),
 	}
-	systemDefaultTerminationGracePeriodSeconds *int64      = pointer.Int64(60)
-	systemDefaultSearchServerAddress           AddressSpec = AddressSpec{
-		Host: pointer.String("system-sphinx"),
-		Port: pointer.Int32(9306),
+	systemDefaultTerminationGracePeriodSeconds *int64           = pointer.Int64(60)
+	systemDefaultSearchServer                  SearchServerSpec = SearchServerSpec{
+		AddressSpec: AddressSpec{
+			Host: pointer.String("system-sphinx"),
+			Port: pointer.Int32(9306),
+		},
+		BatchSize: pointer.Int32(100),
 	}
 
 	// App
@@ -335,6 +338,14 @@ func (spec *SystemSpec) Default() {
 
 }
 
+type SearchServerSpec struct {
+	AddressSpec `json:",inline"`
+	// Defines the batch size
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	BatchSize *int32 `json:"batchSize,omitempty"`
+}
+
 // SystemConfig holds configuration for SystemApp component
 type SystemConfig struct {
 	// Rails configuration options for system components
@@ -356,7 +367,7 @@ type SystemConfig struct {
 	// Search service options
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	SearchServer AddressSpec `json:"searchServer,omitempty"`
+	SearchServer SearchServerSpec `json:"searchServer,omitempty"`
 	// 3scale provider plan
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -453,8 +464,9 @@ func (sc *SystemConfig) Default() {
 	sc.ExternalSecret.SecretStoreRef = InitializeExternalSecretSecretStoreReferenceSpec(sc.ExternalSecret.SecretStoreRef, defaultExternalSecretSecretStoreReference)
 	sc.ExternalSecret.RefreshInterval = durationOrDefault(sc.ExternalSecret.RefreshInterval, &defaultExternalSecretRefreshInterval)
 
-	sc.SearchServer.Host = stringOrDefault(sc.SearchServer.Host, systemDefaultSearchServerAddress.Host)
-	sc.SearchServer.Port = intOrDefault(sc.SearchServer.Port, systemDefaultSearchServerAddress.Port)
+	sc.SearchServer.Host = stringOrDefault(sc.SearchServer.Host, systemDefaultSearchServer.Host)
+	sc.SearchServer.Port = intOrDefault(sc.SearchServer.Port, systemDefaultSearchServer.Port)
+	sc.SearchServer.BatchSize = intOrDefault(sc.SearchServer.BatchSize, systemDefaultSearchServer.BatchSize)
 
 }
 

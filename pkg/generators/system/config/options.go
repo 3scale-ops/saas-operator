@@ -20,8 +20,9 @@ type Options struct {
 	RailsLogLevel    pod.EnvVarValue `env:"RAILS_LOG_LEVEL"`
 	RailsLogToStdout pod.EnvVarValue `env:"RAILS_LOG_TO_STDOUT"`
 
-	SearchServerAddress pod.EnvVarValue `env:"THINKING_SPHINX_ADDRESS"`
-	SearchServerPort    pod.EnvVarValue `env:"THINKING_SPHINX_PORT"`
+	SearchServerAddress   pod.EnvVarValue `env:"THINKING_SPHINX_ADDRESS"`
+	SearchServerPort      pod.EnvVarValue `env:"THINKING_SPHINX_PORT"`
+	SearchServerBatchSize pod.EnvVarValue `env:"THINKING_SPHINX_BATCH_SIZE"`
 
 	DatabaseURL pod.EnvVarValue `env:"DATABASE_URL" secret:"system-database"`
 
@@ -94,8 +95,9 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 		RailsLogLevel:    &pod.ClearTextValue{Value: *spec.Config.Rails.LogLevel},
 		RailsLogToStdout: &pod.ClearTextValue{Value: "true"},
 
-		SearchServerAddress: &pod.ClearTextValue{Value: *spec.Config.SearchServer.Host},
-		SearchServerPort:    &pod.ClearTextValue{Value: fmt.Sprintf("%d", *spec.Config.SearchServer.Port)},
+		SearchServerAddress:   &pod.ClearTextValue{Value: *spec.Config.SearchServer.Host},
+		SearchServerPort:      &pod.ClearTextValue{Value: fmt.Sprintf("%d", *spec.Config.SearchServer.Port)},
+		SearchServerBatchSize: &pod.ClearTextValue{Value: fmt.Sprintf("%d", *spec.Config.SearchServer.BatchSize)},
 
 		DatabaseURL: &pod.SecretValue{Value: spec.Config.DatabaseDSN},
 
