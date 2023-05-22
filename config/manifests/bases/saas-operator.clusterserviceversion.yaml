@@ -2608,6 +2608,9 @@ spec:
       - description: Search service options
         displayName: Search Server
         path: config.searchServer
+      - description: Defines the batch size
+        displayName: Batch Size
+        path: config.searchServer.batchSize
       - description: Defines the address host
         displayName: Host
         path: config.searchServer.host

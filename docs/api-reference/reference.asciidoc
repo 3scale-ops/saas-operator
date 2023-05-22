@@ -59,7 +59,7 @@ AddressSpec allows the definition of an address
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-searchserverspec[$$SearchServerSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -1323,6 +1323,24 @@ SMTPSpec has options to configure system's SMTP
 |===
 
 
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-searchserverspec"]
+==== SearchServerSpec 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`AddressSpec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-addressspec[$$AddressSpec$$]__ | 
+| *`batchSize`* __integer__ | Defines the batch size
+|===
+
+
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-searchdconfig"]
 ==== SearchdConfig 
 
@@ -1633,7 +1651,7 @@ SystemConfig holds configuration for SystemApp component
 | *`sandboxProxyOpensslVerifyMode`* __string__ | OpenSSL verification mode for sandbox proxy
 | *`forceSSL`* __boolean__ | Enable (true) or disable (false) enforcing SSL
 | *`sslCertsDir`* __string__ | SSL certificates path
-| *`searchServer`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-addressspec[$$AddressSpec$$]__ | Search service options
+| *`searchServer`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-searchserverspec[$$SearchServerSpec$$]__ | Search service options
 | *`threescaleProviderPlan`* __string__ | 3scale provider plan
 | *`threescaleSuperdomain`* __string__ | 3scale superdomain
 | *`configFilesSecret`* __string__ | Secret containging system configuration files to be mounted in the pods

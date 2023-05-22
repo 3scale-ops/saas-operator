@@ -396,9 +396,12 @@ var _ = Describe("System controller", func() {
 						k8sClient, &appsv1.Deployment{}, "system-app", namespace, timeout, poll)
 
 					patch := client.MergeFrom(system.DeepCopy())
-					system.Spec.Config.SearchServer = saasv1alpha1.AddressSpec{
-						Host: pointer.String("system-searchd"),
-						Port: pointer.Int32(1234),
+					system.Spec.Config.SearchServer = saasv1alpha1.SearchServerSpec{
+						AddressSpec: saasv1alpha1.AddressSpec{
+							Host: pointer.String("system-searchd"),
+							Port: pointer.Int32(1234),
+						},
+						BatchSize: pointer.Int32(222),
 					}
 
 					system.Spec.Searchd = &saasv1alpha1.SystemSearchdSpec{
@@ -433,6 +436,8 @@ var _ = Describe("System controller", func() {
 						Expect(env.Value).To(Equal("system-searchd"))
 					case "THINKING_SPHINX_PORT":
 						Expect(env.Value).To(Equal("1234"))
+					case "THINKING_SPHINX_BATCH_SIZE":
+						Expect(env.Value).To(Equal("222"))
 					}
 				}
 
