@@ -85,6 +85,7 @@ func keysSlice(name string, opts interface{}) []externalsecretsv1beta1.ExternalS
 				Key:                strings.TrimPrefix(secretValue.Value.FromVault.Path, "secret/data/"),
 				Property:           secretValue.Value.FromVault.Key,
 				ConversionStrategy: "Default",
+				DecodingStrategy:   "None",
 			},
 		})
 	}
