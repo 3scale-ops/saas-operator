@@ -35,6 +35,7 @@ var (
 		SelectorKey:   pointer.String("monitoring-key"),
 		SelectorValue: pointer.String("middleware"),
 	}
+	zyncDefaultRailsConsoleEnabled    bool                               = false
 	zyncDefaultConfigRailsEnvironment string                             = "development"
 	zyncDefaultConfigRailsLogLevel    string                             = "info"
 	zyncDefaultConfigRailsMaxThreads  int32                              = 10
@@ -107,6 +108,16 @@ var (
 		SuccessThreshold:    pointer.Int32(1),
 		FailureThreshold:    pointer.Int32(3),
 	}
+	zyncDefaultRailsConsoleResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
+		Requests: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("200m"),
+			corev1.ResourceMemory: resource.MustParse("1Gi"),
+		},
+		Limits: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("400m"),
+			corev1.ResourceMemory: resource.MustParse("2Gi"),
+		},
+	}
 )
 
 // ZyncSpec defines the desired state of Zync
@@ -130,6 +141,10 @@ type ZyncSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Que *QueSpec `json:"que,omitempty"`
+	// Console specific configuration options
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Console *ZyncRailsConsoleSpec `json:"console,omitempty"`
 }
 
 // Default implements defaulting for ZyncSpec
@@ -146,6 +161,11 @@ func (spec *ZyncSpec) Default() {
 	}
 	spec.Que.Default()
 	spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(spec.GrafanaDashboard, zyncDefaultGrafanaDashboard)
+
+	if spec.Console == nil {
+		spec.Console = &ZyncRailsConsoleSpec{}
+	}
+	spec.Console.Default(spec.Image)
 }
 
 // APISpec is the configuration for main Zync api component
@@ -298,6 +318,35 @@ func (zrs *ZyncRailsSpec) Default() {
 	zrs.Environment = stringOrDefault(zrs.Environment, pointer.String(zyncDefaultConfigRailsEnvironment))
 	zrs.LogLevel = stringOrDefault(zrs.LogLevel, pointer.String(zyncDefaultConfigRailsLogLevel))
 	zrs.MaxThreads = intOrDefault(zrs.MaxThreads, pointer.Int32(zyncDefaultConfigRailsMaxThreads))
+}
+
+// ZyncRailsConsoleSpec configures the App component of System
+type ZyncRailsConsoleSpec struct {
+	// Zync Console
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Enabled *bool `json:"enabled,omitempty"` // Image specification for the Console component.
+	// Defaults to system image if not defined.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Image *ImageSpec `json:"image,omitempty"`
+	// Resource requirements for the component
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Resources *ResourceRequirementsSpec `json:"resources,omitempty"`
+	// Describes node affinity scheduling rules for the pod.
+	// +optional
+	NodeAffinity *corev1.NodeAffinity `json:"nodeAffinity,omitempty" protobuf:"bytes,1,opt,name=nodeAffinity"`
+	// If specified, the pod's tolerations.
+	// +optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
+}
+
+// Default implements defaulting for the system App component
+func (spec *ZyncRailsConsoleSpec) Default(zyncDefaultImage *ImageSpec) {
+	spec.Enabled = boolOrDefault(spec.Enabled, pointer.Bool(zyncDefaultRailsConsoleEnabled))
+	spec.Image = InitializeImageSpec(spec.Image, defaultImageSpec(*zyncDefaultImage))
+	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, zyncDefaultRailsConsoleResources)
 }
 
 // ZyncStatus defines the observed state of Zync

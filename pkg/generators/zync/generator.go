@@ -23,6 +23,7 @@ const (
 	component string = "zync"
 	api       string = "zync"
 	que       string = "que"
+	console   string = "console"
 )
 
 // Generator configures the generators for Zync
@@ -30,6 +31,7 @@ type Generator struct {
 	generators.BaseOptionsV2
 	API                  APIGenerator
 	Que                  QueGenerator
+	Console              ConsoleGenerator
 	GrafanaDashboardSpec saasv1alpha1.GrafanaDashboardSpec
 	Config               saasv1alpha1.ZyncConfig
 }
@@ -76,6 +78,21 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.ZyncSpec) Genera
 			QueSpec: *spec.Que,
 			Image:   *spec.Image,
 			Options: config.NewQueOptions(spec),
+		},
+		Console: ConsoleGenerator{
+			BaseOptionsV2: generators.BaseOptionsV2{
+				Component:    strings.Join([]string{component, console}, "-"),
+				InstanceName: instance,
+				Namespace:    namespace,
+				Labels: map[string]string{
+					"app":                          "3scale-api-management",
+					"threescale_component":         component,
+					"threescale_component_element": console,
+				},
+			},
+			Spec:    *spec.Console,
+			Options: config.NewAPIOptions(spec),
+			Enabled: *spec.Console.Enabled,
 		},
 		GrafanaDashboardSpec: *spec.GrafanaDashboard,
 		Config:               spec.Config,
@@ -186,5 +203,26 @@ func (gen *QueGenerator) PDBSpec() *saasv1alpha1.PodDisruptionBudgetSpec {
 func (gen *QueGenerator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint {
 	return []monitoringv1.PodMetricsEndpoint{
 		podmonitor.PodMetricsEndpoint("/metrics", "metrics", 30),
+	}
+}
+
+// ConsoleGenerator has methods to generate resources for system-sphinx
+type ConsoleGenerator struct {
+	generators.BaseOptionsV2
+	Image   saasv1alpha1.ImageSpec
+	Spec    saasv1alpha1.ZyncRailsConsoleSpec
+	Options config.APIOptions
+	Enabled bool
+}
+
+func (gen *ConsoleGenerator) StatefulSet() basereconciler_resources.StatefulSetTemplate {
+	return basereconciler_resources.StatefulSetTemplate{
+		Template: gen.statefulset(),
+		RolloutTriggers: func() []basereconciler_resources.RolloutTrigger {
+			return []basereconciler_resources.RolloutTrigger{
+				{Name: "zync", SecretName: pointer.String("zync")},
+			}
+		}(),
+		IsEnabled: gen.Enabled,
 	}
 }
