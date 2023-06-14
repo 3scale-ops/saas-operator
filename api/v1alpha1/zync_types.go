@@ -322,11 +322,11 @@ func (zrs *ZyncRailsSpec) Default() {
 
 // ZyncRailsConsoleSpec configures the App component of System
 type ZyncRailsConsoleSpec struct {
-	// Zync Console
+	// Enables or disables the Zync Console statefulset
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Enabled *bool `json:"enabled,omitempty"` // Image specification for the Console component.
-	// Defaults to system image if not defined.
+	// Defaults to zync image if not defined.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Image *ImageSpec `json:"image,omitempty"`

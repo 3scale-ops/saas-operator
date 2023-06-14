@@ -720,10 +720,10 @@ spec:
                 description: Console specific configuration options
                 properties:
                   enabled:
-                    description: Zync Console
+                    description: Enables or disables the Zync Console statefulset
                     type: boolean
                   image:
-                    description: Defaults to system image if not defined.
+                    description: Defaults to zync image if not defined.
                     properties:
                       name:
                         description: Docker repository of the image

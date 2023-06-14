@@ -627,7 +627,7 @@ metadata:
     capabilities: Basic Install
     categories: Integration & Delivery
     containerImage: quay.io/3scale/saas-operator
-    createdAt: "2023-06-14T09:40:03Z"
+    createdAt: "2023-06-14T10:33:44Z"
     description: |-
       The 3scale SaaS Operator creates and maintains a SaaS-ready deployment
       of the Red Hat 3scale API Management on OpenShift.
@@ -4274,10 +4274,10 @@ spec:
       - description: Console specific configuration options
         displayName: Console
         path: console
-      - description: Zync Console
+      - description: Enables or disables the Zync Console statefulset
         displayName: Enabled
         path: console.enabled
-      - description: Defaults to system image if not defined.
+      - description: Defaults to zync image if not defined.
         displayName: Image
         path: console.image
       - description: Docker repository of the image

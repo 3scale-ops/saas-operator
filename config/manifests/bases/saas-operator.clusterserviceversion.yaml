@@ -3786,10 +3786,10 @@ spec:
       - description: Console specific configuration options
         displayName: Console
         path: console
-      - description: Zync Console
+      - description: Enables or disables the Zync Console statefulset
         displayName: Enabled
         path: console.enabled
-      - description: Defaults to system image if not defined.
+      - description: Defaults to zync image if not defined.
         displayName: Image
         path: console.image
       - description: Docker repository of the image
