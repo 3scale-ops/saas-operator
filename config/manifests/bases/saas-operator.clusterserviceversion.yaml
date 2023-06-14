@@ -3783,6 +3783,41 @@ spec:
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.zyncAuthToken.override
+      - description: Console specific configuration options
+        displayName: Console
+        path: console
+      - description: Zync Console
+        displayName: Enabled
+        path: console.enabled
+      - description: Defaults to system image if not defined.
+        displayName: Image
+        path: console.image
+      - description: Docker repository of the image
+        displayName: Name
+        path: console.image.name
+      - description: Pull policy for the image
+        displayName: Pull Policy
+        path: console.image.pullPolicy
+      - description: Name of the Secret that holds quay.io credentials to access the
+          image repository
+        displayName: Pull Secret Name
+        path: console.image.pullSecretName
+      - description: Image tag
+        displayName: Tag
+        path: console.image.tag
+      - description: Resource requirements for the component
+        displayName: Resources
+        path: console.resources
+      - description: 'Limits describes the maximum amount of compute resources allowed.
+          More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Limits
+        path: console.resources.limits
+      - description: 'Requests describes the minimum amount of compute resources required.
+          If Requests is omitted for a container, it defaults to Limits if that is
+          explicitly specified, otherwise to an implementation-defined value. More
+          info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Requests
+        path: console.resources.requests
       - description: Configures the Grafana Dashboard for the component
         displayName: Grafana Dashboard
         path: grafanaDashboard
