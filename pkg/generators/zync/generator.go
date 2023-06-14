@@ -206,7 +206,7 @@ func (gen *QueGenerator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint 
 	}
 }
 
-// ConsoleGenerator has methods to generate resources for system-sphinx
+// ConsoleGenerator has methods to generate resources for zync-console
 type ConsoleGenerator struct {
 	generators.BaseOptionsV2
 	Image   saasv1alpha1.ImageSpec

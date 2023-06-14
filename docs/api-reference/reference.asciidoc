@@ -2109,7 +2109,7 @@ ZyncConfig configures app behavior for Zync
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncrailsconsolespec"]
 ==== ZyncRailsConsoleSpec 
 
-ZyncRailsConsoleSpec configures the App component of System
+ZyncRailsConsoleSpec configures the Console component of Zync
 
 .Appears In:
 ****

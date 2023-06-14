@@ -320,7 +320,7 @@ func (zrs *ZyncRailsSpec) Default() {
 	zrs.MaxThreads = intOrDefault(zrs.MaxThreads, pointer.Int32(zyncDefaultConfigRailsMaxThreads))
 }
 
-// ZyncRailsConsoleSpec configures the App component of System
+// ZyncRailsConsoleSpec configures the Console component of Zync
 type ZyncRailsConsoleSpec struct {
 	// Enables or disables the Zync Console statefulset
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
@@ -342,7 +342,7 @@ type ZyncRailsConsoleSpec struct {
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
 }
 
-// Default implements defaulting for the system App component
+// Default implements defaulting for the Zync console component
 func (spec *ZyncRailsConsoleSpec) Default(zyncDefaultImage *ImageSpec) {
 	spec.Enabled = boolOrDefault(spec.Enabled, pointer.Bool(zyncDefaultRailsConsoleEnabled))
 	spec.Image = InitializeImageSpec(spec.Image, defaultImageSpec(*zyncDefaultImage))
