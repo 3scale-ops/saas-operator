@@ -11,7 +11,9 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
+	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/pointer"
@@ -183,6 +185,14 @@ var _ = Describe("Zync controller", func() {
 
 		})
 
+		It("doesn't creates the non-default resources", func() {
+
+			sts := &appsv1.StatefulSet{}
+			By("ensuring the zync-console statefulset",
+				(&testutil.ExpectedResource{Name: "zync-console", Namespace: namespace, Missing: true}).
+					Assert(k8sClient, sts, timeout, poll))
+		})
+
 		When("updating a Zync resource with customizations", func() {
 
 			// Resource Versions
@@ -324,6 +334,51 @@ var _ = Describe("Zync controller", func() {
 						Namespace: namespace,
 						Missing:   true,
 					}).Assert(k8sClient, &grafanav1alpha1.GrafanaDashboard{}, timeout, poll))
+
+			})
+
+		})
+
+		When("updating a Zync resource with console", func() {
+
+			BeforeEach(func() {
+				Eventually(func() error {
+					err := k8sClient.Get(
+						context.Background(),
+						types.NamespacedName{Name: "instance", Namespace: namespace},
+						zync,
+					)
+					Expect(err).ToNot(HaveOccurred())
+					patch := client.MergeFrom(zync.DeepCopy())
+					zync.Spec.Console = &saasv1alpha1.ZyncRailsConsoleSpec{
+						Enabled: pointer.Bool(true),
+						Image: &saasv1alpha1.ImageSpec{
+							Name: pointer.String("newImage"),
+							Tag:  pointer.String("newTag"),
+						},
+					}
+					return k8sClient.Patch(context.Background(), zync, patch)
+				}, timeout, poll).ShouldNot(HaveOccurred())
+			})
+
+			It("creates the required console resources", func() {
+
+				sts := &appsv1.StatefulSet{}
+				By("deploying the zync-console StatefulSet",
+					(&testutil.ExpectedResource{Name: "zync-console", Namespace: namespace}).
+						Assert(k8sClient, sts, timeout, poll))
+
+				Expect(sts.Spec.Template.Spec.Containers[0].Image).Should((Equal("newImage:newTag")))
+
+				pdb := &policyv1.PodDisruptionBudget{}
+				By("ensuring the zync-console PDB",
+					(&testutil.ExpectedResource{Name: "zync-console", Namespace: namespace, Missing: true}).
+						Assert(k8sClient, pdb, timeout, poll))
+
+				hpa := &autoscalingv2.HorizontalPodAutoscaler{}
+				By("ensuring the zync-console HPA",
+					(&testutil.ExpectedResource{Name: "zync-console", Namespace: namespace, Missing: true}).
+						Assert(k8sClient, hpa, timeout, poll))
 
 			})
 

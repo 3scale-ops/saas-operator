@@ -723,6 +723,7 @@ ImageSpec defines the image for the component
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsphinxspec[$$SystemSphinxSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyspec[$$TwemproxySpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncrailsconsolespec[$$ZyncRailsConsoleSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]
 ****
 
@@ -1254,6 +1255,7 @@ ResourceRequirementsSpec defines the resource requirements for the component
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsphinxspec[$$SystemSphinxSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyspec[$$TwemproxySpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncrailsconsolespec[$$ZyncRailsConsoleSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -2104,6 +2106,27 @@ ZyncConfig configures app behavior for Zync
 |===
 
 
+[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncrailsconsolespec"]
+==== ZyncRailsConsoleSpec 
+
+ZyncRailsConsoleSpec configures the Console component of Zync
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`enabled`* __boolean__ | Enables or disables the Zync Console statefulset
+| *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Defaults to zync image if not defined.
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
+| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
+|===
+
+
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncrailsspec"]
 ==== ZyncRailsSpec 
 
@@ -2141,6 +2164,7 @@ ZyncSpec defines the desired state of Zync
 | *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
 | *`api`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apispec[$$APISpec$$]__ | Configures the main zync api component
 | *`que`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-quespec[$$QueSpec$$]__ | Configures the zync que component
+| *`console`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncrailsconsolespec[$$ZyncRailsConsoleSpec$$]__ | Console specific configuration options
 |===
 
 

@@ -94,6 +94,9 @@ func (r *ZyncReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	}
 	resources = append(resources, que_resources...)
 
+	// Console resources
+	resources = append(resources, gen.Console.StatefulSet())
+
 	// Reconcile all resources
 	err = r.ReconcileOwnedResources(ctx, instance, resources)
 	if err != nil {
@@ -109,6 +112,7 @@ func (r *ZyncReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&saasv1alpha1.Zync{}).
 		Owns(&appsv1.Deployment{}).
+		Owns(&appsv1.StatefulSet{}).
 		Owns(&corev1.Service{}).
 		Owns(&policyv1.PodDisruptionBudget{}).
 		Owns(&autoscalingv2.HorizontalPodAutoscaler{}).
