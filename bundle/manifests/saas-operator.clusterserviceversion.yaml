@@ -627,7 +627,7 @@ metadata:
     capabilities: Basic Install
     categories: Integration & Delivery
     containerImage: quay.io/3scale/saas-operator
-    createdAt: "2023-06-14T11:40:44Z"
+    createdAt: "2023-06-15T20:42:59Z"
     description: |-
       The 3scale SaaS Operator creates and maintains a SaaS-ready deployment
       of the Red Hat 3scale API Management on OpenShift.
@@ -635,7 +635,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/3scale/saas-operator
     support: Red Hat
-  name: saas-operator.v0.19.9-alpha.1
+  name: saas-operator.v0.19.9
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -4491,7 +4491,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/3scale/saas-operator:v0.19.9-alpha.1
+                image: quay.io/3scale/saas-operator:v0.19.9
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -5005,4 +5005,4 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
-  version: 0.19.9-alpha.1
+  version: 0.19.9
