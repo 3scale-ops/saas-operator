@@ -186,6 +186,15 @@ var _ = Describe("System controller", func() {
 					PodMonitor: true,
 				}).Assert(k8sClient, dep, timeout, poll))
 
+			for _, env := range dep.Spec.Template.Spec.Containers[0].Env {
+				switch env.Name {
+				case "THINKING_SPHINX_ADDRESS":
+					Expect(env.Value).To(Equal("system-searchd"))
+				case "THINKING_SPHINX_PORT":
+					Expect(env.Value).To(Equal("9306"))
+				}
+			}
+
 			Expect(dep.Spec.Template.Spec.Volumes[0].Secret.SecretName).To(Equal("system-config"))
 			Expect(dep.Spec.Strategy.Type).To(Equal(appsv1.RollingUpdateDeploymentStrategyType))
 			Expect(dep.Spec.Strategy.RollingUpdate.MaxSurge).To(Equal(util.IntStrPtr(intstr.FromString("20%"))))
@@ -273,35 +282,22 @@ var _ = Describe("System controller", func() {
 
 		})
 
-		It("creates the system-sphinx resources", func() {
+		It("creates the system-searchd resources", func() {
 
 			sts := &appsv1.StatefulSet{}
-			By("deploying the system-sphinx statefulset",
-				(&testutil.ExpectedResource{Name: "system-sphinx", Namespace: namespace}).
+			By("deploying the system-searchd statefulset",
+				(&testutil.ExpectedResource{Name: "system-searchd", Namespace: namespace}).
 					Assert(k8sClient, sts, timeout, poll))
 
+			Expect(sts.Spec.Template.Spec.Containers[0].Args).To(BeEmpty())
 			Expect(sts.Spec.Template.Spec.TerminationGracePeriodSeconds).To(Equal(pointer.Int64(60)))
-
-			Expect(sts.Spec.Template.Spec.Containers[0].Env).To(
-				ContainElement(
-					HaveField("Name", "SECRET_KEY_BASE"),
-				),
-			)
-
-			for _, env := range sts.Spec.Template.Spec.Containers[0].Env {
-				switch env.Name {
-				case "SECRET_KEY_BASE":
-					Expect(env.Value).NotTo(Equal(""))
-				case "THINKING_SPHINX_ADDRESS":
-					Expect(env.Value).NotTo(Equal("system-sphinx"))
-				}
-			}
+			Expect(sts.Spec.Template.Spec.Containers[0].Env).To(BeEmpty())
 
 			svc := &corev1.Service{}
-			By("deploying the system-sphinx service",
-				(&testutil.ExpectedResource{Name: "system-sphinx", Namespace: namespace}).
+			By("deploying the system-searchd service",
+				(&testutil.ExpectedResource{Name: "system-searchd", Namespace: namespace}).
 					Assert(k8sClient, svc, timeout, poll))
-			Expect(svc.Spec.Selector["deployment"]).To(Equal("system-sphinx"))
+			Expect(svc.Spec.Selector["deployment"]).To(Equal("system-searchd"))
 
 		})
 
@@ -355,10 +351,6 @@ var _ = Describe("System controller", func() {
 				(&testutil.ExpectedResource{Name: "system-console", Namespace: namespace, Missing: true}).
 					Assert(k8sClient, sts, timeout, poll))
 
-			By("ensuring the system-searchd statefulset",
-				(&testutil.ExpectedResource{Name: "system-searchd", Namespace: namespace, Missing: true}).
-					Assert(k8sClient, sts, timeout, poll))
-
 			dep := &appsv1.Deployment{}
 			By("ensuring the system-app-canary deployment",
 				(&testutil.ExpectedResource{Name: "system-app-canary", Namespace: namespace, Missing: true}).
@@ -378,10 +370,7 @@ var _ = Describe("System controller", func() {
 
 		})
 
-		When("updating a System resource with searchd", func() {
-
-			// Resource Versions
-			rvs := make(map[string]string)
+		When("updating a System resource without searchd", func() {
 
 			BeforeEach(func() {
 				Eventually(func() error {
@@ -392,104 +381,22 @@ var _ = Describe("System controller", func() {
 					)
 					Expect(err).ToNot(HaveOccurred())
 
-					rvs["deployment/system-app"] = testutil.GetResourceVersion(
-						k8sClient, &appsv1.Deployment{}, "system-app", namespace, timeout, poll)
-
 					patch := client.MergeFrom(system.DeepCopy())
-					system.Spec.Config.SearchServer = saasv1alpha1.SearchServerSpec{
-						AddressSpec: saasv1alpha1.AddressSpec{
-							Host: pointer.String("system-searchd"),
-							Port: pointer.Int32(1234),
-						},
-						BatchSize: pointer.Int32(222),
-					}
-
 					system.Spec.Searchd = &saasv1alpha1.SystemSearchdSpec{
-						Enabled: pointer.Bool(true),
-						Image: &saasv1alpha1.ImageSpec{
-							Name: pointer.String("newImage"),
-							Tag:  pointer.String("newTag"),
-						},
+						Enabled: pointer.Bool(false),
 					}
 					return k8sClient.Patch(context.Background(), system, patch)
 				}, timeout, poll).ShouldNot(HaveOccurred())
 			})
 
-			It("creates the system-searchd resources", func() {
-
-				dep := &appsv1.Deployment{}
-				By("deploying a system-app workload",
-					(&testutil.ExpectedWorkload{
-						Name:          "system-app",
-						Namespace:     namespace,
-						Replicas:      2,
-						ContainerName: "system-app",
-						PDB:           true,
-						HPA:           true,
-						PodMonitor:    true,
-						LastVersion:   rvs["deployment/system-app"],
-					}).Assert(k8sClient, dep, timeout, poll))
-
-				for _, env := range dep.Spec.Template.Spec.Containers[0].Env {
-					switch env.Name {
-					case "THINKING_SPHINX_ADDRESS":
-						Expect(env.Value).To(Equal("system-searchd"))
-					case "THINKING_SPHINX_PORT":
-						Expect(env.Value).To(Equal("1234"))
-					case "THINKING_SPHINX_BATCH_SIZE":
-						Expect(env.Value).To(Equal("222"))
-					}
-				}
+			It("removes the system-searchd resources", func() {
 
 				sts := &appsv1.StatefulSet{}
-				By("deploying the system-searchd statefulset",
-					(&testutil.ExpectedResource{Name: "system-searchd", Namespace: namespace}).
-						Assert(k8sClient, sts, timeout, poll))
-
-				Expect(sts.Spec.Template.Spec.Containers[0].Args).To(BeEmpty())
-				Expect(sts.Spec.Template.Spec.TerminationGracePeriodSeconds).To(Equal(pointer.Int64(60)))
-
-				Expect(sts.Spec.Template.Spec.Containers[0].Env).To(BeEmpty())
-
-				svc := &corev1.Service{}
-				By("deploying the system-searchd service",
-					(&testutil.ExpectedResource{Name: "system-searchd", Namespace: namespace}).
-						Assert(k8sClient, svc, timeout, poll))
-				Expect(svc.Spec.Selector["deployment"]).To(Equal("system-searchd"))
-
-			})
-
-		})
-
-		When("updating a System resource disabling sphinx", func() {
-
-			BeforeEach(func() {
-				Eventually(func() error {
-					err := k8sClient.Get(
-						context.Background(),
-						types.NamespacedName{Name: "instance", Namespace: namespace},
-						system,
-					)
-					Expect(err).ToNot(HaveOccurred())
-					patch := client.MergeFrom(system.DeepCopy())
-					system.Spec.Sphinx = &saasv1alpha1.SystemSphinxSpec{
-						Config: &saasv1alpha1.SphinxConfig{
-							Enabled: pointer.Bool(false),
-						},
-					}
-					return k8sClient.Patch(context.Background(), system, patch)
-				}, timeout, poll).ShouldNot(HaveOccurred())
-			})
-
-			It("removes the system-sphinx resources", func() {
-
-				sts := &appsv1.StatefulSet{}
-				By("removing the system-sphinx statefulset",
-					(&testutil.ExpectedResource{Name: "system-sphinx", Namespace: namespace, Missing: true}).
+				By("removing the system-searchd statefulset",
+					(&testutil.ExpectedResource{Name: "system-searchd", Namespace: namespace, Missing: true}).
 						Assert(k8sClient, sts, timeout, poll))
 
 			})
-
 		})
 
 		When("updating a System resource with console", func() {
