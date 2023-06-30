@@ -59,7 +59,7 @@ var (
 	systemDefaultTerminationGracePeriodSeconds *int64           = pointer.Int64(60)
 	systemDefaultSearchServer                  SearchServerSpec = SearchServerSpec{
 		AddressSpec: AddressSpec{
-			Host: pointer.String("system-sphinx"),
+			Host: pointer.String("system-searchd"),
 			Port: pointer.Int32(9306),
 		},
 		BatchSize: pointer.Int32(100),
@@ -164,7 +164,7 @@ var (
 	}
 
 	// Sphinx
-	systemDefaultSphinxEnabled             bool                            = true
+	systemDefaultSphinxEnabled             bool                            = false
 	systemDefaultSphinxServiceName         string                          = "system-sphinx"
 	systemDefaultSphinxPort                int32                           = 9306
 	systemDefaultSphinxBindAddress         string                          = "0.0.0.0"
@@ -198,7 +198,7 @@ var (
 		FailureThreshold:    pointer.Int32(5),
 	}
 	// Searchd
-	systemDefaultSearchdEnabled bool             = false
+	systemDefaultSearchdEnabled bool             = true
 	systemDefaultSearchdImage   defaultImageSpec = defaultImageSpec{
 		Name:       pointer.String("quay.io/3scale/searchd"),
 		Tag:        pointer.String("latest"),
