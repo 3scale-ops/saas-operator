@@ -12,7 +12,7 @@ const (
 	leACMEStagingEndpoint = "https://acme-staging-v02.api.letsencrypt.org/directory"
 )
 
-// Options holds configuration for the sphinx pods
+// Options holds configuration for the autossl pods
 type Options struct {
 	ACMEStaging          pod.EnvVarValue `env:"ACME_STAGING"`
 	ContactEmail         pod.EnvVarValue `env:"CONTACT_EMAIL"`

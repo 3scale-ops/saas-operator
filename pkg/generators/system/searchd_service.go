@@ -7,7 +7,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-// service returns a function that will return the corev1.Service for sphinx
+// service returns a function that will return the corev1.Service for searchd
 func (gen *SearchdGenerator) service() func() *corev1.Service {
 
 	return func() *corev1.Service {

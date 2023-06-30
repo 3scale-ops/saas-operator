@@ -7,7 +7,7 @@ import (
 	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
 )
 
-// EnvOptions holds configuration for the sphinx pods
+// EnvOptions holds configuration for the apicasts pods
 type EnvOptions struct {
 	ApicastConfigurationLoader pod.EnvVarValue `env:"APICAST_CONFIGURATION_LOADER"`
 	ApicastConfigurationCache  pod.EnvVarValue `env:"APICAST_CONFIGURATION_CACHE"`
