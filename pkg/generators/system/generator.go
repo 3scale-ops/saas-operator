@@ -26,7 +26,6 @@ const (
 	sidekiqDefault string = "sidekiq-default"
 	sidekiqBilling string = "sidekiq-billing"
 	sidekiqLow     string = "sidekiq-low"
-	sphinx         string = "sphinx"
 	searchd        string = "searchd"
 )
 
@@ -41,7 +40,6 @@ type Generator struct {
 	CanarySidekiqBilling *SidekiqGenerator
 	SidekiqLow           SidekiqGenerator
 	CanarySidekiqLow     *SidekiqGenerator
-	Sphinx               SphinxGenerator
 	Searchd              SearchdGenerator
 	Console              ConsoleGenerator
 	Config               saasv1alpha1.SystemConfig
@@ -151,26 +149,6 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) (Gen
 			DatabaseStorageSize:  *spec.Searchd.Config.DatabaseStorageSize,
 			DatabaseStorageClass: spec.Searchd.Config.DatabaseStorageClass,
 		},
-		Sphinx: SphinxGenerator{
-			BaseOptionsV2: generators.BaseOptionsV2{
-				Component:    strings.Join([]string{component, sphinx}, "-"),
-				InstanceName: instance,
-				Namespace:    namespace,
-				Labels: map[string]string{
-					"app":                          "3scale-api-management",
-					"threescale_component":         component,
-					"threescale_component_element": sphinx,
-				},
-			},
-			Enabled:              *spec.Sphinx.Config.Enabled,
-			Spec:                 *spec.Sphinx,
-			Options:              config.NewSphinxOptions(spec),
-			Image:                *spec.Sphinx.Image,
-			DatabasePort:         *spec.Sphinx.Config.Thinking.Port,
-			DatabasePath:         *spec.Sphinx.Config.Thinking.DatabasePath,
-			DatabaseStorageSize:  *spec.Sphinx.Config.Thinking.DatabaseStorageSize,
-			DatabaseStorageClass: spec.Sphinx.Config.Thinking.DatabaseStorageClass,
-		},
 		Console: ConsoleGenerator{
 			BaseOptionsV2: generators.BaseOptionsV2{
 				Component:    strings.Join([]string{component, console}, "-"),
@@ -179,7 +157,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) (Gen
 				Labels: map[string]string{
 					"app":                          "3scale-api-management",
 					"threescale_component":         component,
-					"threescale_component_element": sphinx,
+					"threescale_component_element": console,
 				},
 			},
 			Spec:              *spec.Console,
@@ -464,42 +442,6 @@ func (gen *SidekiqGenerator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpo
 	return pmes
 }
 
-// SphinxGenerator has methods to generate resources for system-sphinx
-type SphinxGenerator struct {
-	generators.BaseOptionsV2
-	Spec                 saasv1alpha1.SystemSphinxSpec
-	Options              config.SphinxOptions
-	Image                saasv1alpha1.ImageSpec
-	DatabasePort         int32
-	DatabasePath         string
-	DatabaseStorageSize  resource.Quantity
-	DatabaseStorageClass *string
-	Enabled              bool
-}
-
-func (gen *SphinxGenerator) StatefulSetWithTraffic() []basereconciler.Resource {
-	return []basereconciler.Resource{
-		gen.StatefulSet(), gen.Service(),
-	}
-}
-
-func (gen *SphinxGenerator) StatefulSet() basereconciler_resources.StatefulSetTemplate {
-	return basereconciler_resources.StatefulSetTemplate{
-		Template: gen.statefulset(),
-		RolloutTriggers: []basereconciler_resources.RolloutTrigger{
-			{Name: "system-database", SecretName: pointer.String("system-database")},
-		},
-		IsEnabled: gen.Enabled,
-	}
-}
-
-func (gen *SphinxGenerator) Service() basereconciler_resources.ServiceTemplate {
-	return basereconciler_resources.ServiceTemplate{
-		Template:  gen.service(),
-		IsEnabled: gen.Enabled,
-	}
-}
-
 // SearchdGenerator has methods to generate resources for system-Searchd
 type SearchdGenerator struct {
 	generators.BaseOptionsV2
@@ -532,7 +474,7 @@ func (gen *SearchdGenerator) Service() basereconciler_resources.ServiceTemplate 
 	}
 }
 
-// ConsoleGenerator has methods to generate resources for system-sphinx
+// ConsoleGenerator has methods to generate resources for system-console
 type ConsoleGenerator struct {
 	generators.BaseOptionsV2
 	Spec              saasv1alpha1.SystemRailsConsoleSpec
