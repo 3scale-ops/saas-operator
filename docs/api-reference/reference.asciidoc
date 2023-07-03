@@ -721,7 +721,6 @@ ImageSpec defines the image for the component
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemrailsconsolespec[$$SystemRailsConsoleSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsearchdspec[$$SystemSearchdSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsphinxspec[$$SystemSphinxSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyspec[$$TwemproxySpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncrailsconsolespec[$$ZyncRailsConsoleSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]
@@ -1025,7 +1024,6 @@ ProbeSpec specifies configuration for a probe
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsearchdspec[$$SystemSearchdSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsphinxspec[$$SystemSphinxSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyspec[$$TwemproxySpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
 ****
@@ -1252,7 +1250,6 @@ ResourceRequirementsSpec defines the resource requirements for the component
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemrailsconsolespec[$$SystemRailsConsoleSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsearchdspec[$$SystemSearchdSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsphinxspec[$$SystemSphinxSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyspec[$$TwemproxySpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncrailsconsolespec[$$ZyncRailsConsoleSpec$$]
@@ -1565,7 +1562,6 @@ SphinxConfig has configuration options for System's sphinx
 |===
 | Field | Description
 | *`enabled`* __boolean__ | Deploy Sphinx instance
-| *`thinking`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-thinkingspec[$$ThinkingSpec$$]__ | Thinking configuration for sphinx
 |===
 
 
@@ -1808,7 +1804,7 @@ SystemSpec defines the desired state of System
 | *`sidekiqDefault`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]__ | Sidekiq Default specific configuration options
 | *`sidekiqBilling`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]__ | Sidekiq Billing specific configuration options
 | *`sidekiqLow`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]__ | Sidekiq Low specific configuration options
-| *`sphinx`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsphinxspec[$$SystemSphinxSpec$$]__ | Sphinx specific configuration options
+| *`sphinx`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsphinxspec[$$SystemSphinxSpec$$]__ | DEPRECATED Sphinx specific configuration options
 | *`searchd`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsearchdspec[$$SystemSearchdSpec$$]__ | Searchd specific configuration options
 | *`console`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemrailsconsolespec[$$SystemRailsConsoleSpec$$]__ | Console specific configuration options
 | *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
@@ -1829,14 +1825,7 @@ SystemSphinxSpec configures the App component of System
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the Sphinx component. Defaults to system image if not defined.
 | *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sphinxconfig[$$SphinxConfig$$]__ | Configuration options for System's sphinx
-| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
-| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
-| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
-| *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
-| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
-| *`terminationGracePeriodSeconds`* __integer__ | Configures the TerminationGracePeriodSeconds
 |===
 
 
@@ -1870,31 +1859,6 @@ SystemZyncSpec has configuration options for zync
 - xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyserverpool[$$TwemproxyServerPool$$]
 ****
 
-
-
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-thinkingspec"]
-==== ThinkingSpec 
-
-ThinkingSpec configures the thinking library for sphinx
-
-.Appears In:
-****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sphinxconfig[$$SphinxConfig$$]
-****
-
-[cols="25a,75a", options="header"]
-|===
-| Field | Description
-| *`serviceName`* __string__ | Allows setting the service name for Sphinx
-| *`port`* __integer__ | The TCP port Sphinx will run its daemon on
-| *`bindAddress`* __string__ | Allows setting the TCP host for Sphinx to a different address
-| *`configFile`* __string__ | Sphinx configuration file path
-| *`batchSize`* __integer__ | Sphinx batch size
-| *`databasePath`* __string__ | Sphinx database path
-| *`databaseStorageSize`* __Quantity__ | Sphinx database storage size
-| *`databaseStorageClass`* __string__ | Sphinx database storage type
-| *`pidFile`* __string__ | Sphinx PID file path
-|===
 
 
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfig"]

@@ -59,7 +59,7 @@ var (
 	systemDefaultTerminationGracePeriodSeconds *int64           = pointer.Int64(60)
 	systemDefaultSearchServer                  SearchServerSpec = SearchServerSpec{
 		AddressSpec: AddressSpec{
-			Host: pointer.String("system-sphinx"),
+			Host: pointer.String("system-searchd"),
 			Port: pointer.Int32(9306),
 		},
 		BatchSize: pointer.Int32(100),
@@ -164,41 +164,10 @@ var (
 	}
 
 	// Sphinx
-	systemDefaultSphinxEnabled             bool                            = true
-	systemDefaultSphinxServiceName         string                          = "system-sphinx"
-	systemDefaultSphinxPort                int32                           = 9306
-	systemDefaultSphinxBindAddress         string                          = "0.0.0.0"
-	systemDefaultSphinxConfigFile          string                          = "/opt/system/db/sphinx/sphinx.conf"
-	systemDefaultSphinxBatchSize           int32                           = 100
-	systemDefaultSphinxDBPath              string                          = "/opt/system/db/sphinx"
-	systemDefaultSphinxDatabaseStorageSize string                          = "30Gi"
-	systemDefaultSphinxPIDFile             string                          = "/opt/system/tmp/pids/searchd.pid"
-	systemDefaultSphinxResources           defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
-		Requests: corev1.ResourceList{
-			corev1.ResourceCPU:    resource.MustParse("250m"),
-			corev1.ResourceMemory: resource.MustParse("4Gi"),
-		},
-		Limits: corev1.ResourceList{
-			corev1.ResourceCPU:    resource.MustParse("750m"),
-			corev1.ResourceMemory: resource.MustParse("5Gi"),
-		},
-	}
-	systemDefaultSphinxLivenessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32(60),
-		TimeoutSeconds:      pointer.Int32(3),
-		PeriodSeconds:       pointer.Int32(15),
-		SuccessThreshold:    pointer.Int32(1),
-		FailureThreshold:    pointer.Int32(5),
-	}
-	systemDefaultSphinxReadinessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32(60),
-		TimeoutSeconds:      pointer.Int32(5),
-		PeriodSeconds:       pointer.Int32(30),
-		SuccessThreshold:    pointer.Int32(1),
-		FailureThreshold:    pointer.Int32(5),
-	}
+	systemDefaultSphinxEnabled bool = false
+
 	// Searchd
-	systemDefaultSearchdEnabled bool             = false
+	systemDefaultSearchdEnabled bool             = true
 	systemDefaultSearchdImage   defaultImageSpec = defaultImageSpec{
 		Name:       pointer.String("quay.io/3scale/searchd"),
 		Tag:        pointer.String("latest"),
@@ -269,7 +238,7 @@ type SystemSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	SidekiqLow *SystemSidekiqSpec `json:"sidekiqLow,omitempty"`
-	// Sphinx specific configuration options
+	// DEPRECATED Sphinx specific configuration options
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Sphinx *SystemSphinxSpec `json:"sphinx,omitempty"`
@@ -819,53 +788,19 @@ func (spec *SystemSidekiqSpec) Default(sidekiqType systemSidekiqType) {
 
 // SystemSphinxSpec configures the App component of System
 type SystemSphinxSpec struct {
-	// Image specification for the Sphinx component.
-	// Defaults to system image if not defined.
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	Image *ImageSpec `json:"image,omitempty"`
 	// Configuration options for System's sphinx
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Config *SphinxConfig `json:"config,omitempty"`
-	// Resource requirements for the component
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	Resources *ResourceRequirementsSpec `json:"resources,omitempty"`
-	// Liveness probe for the component
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	LivenessProbe *ProbeSpec `json:"livenessProbe,omitempty"`
-	// Readiness probe for the component
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	ReadinessProbe *ProbeSpec `json:"readinessProbe,omitempty"`
-	// Describes node affinity scheduling rules for the pod.
-	// +optional
-	NodeAffinity *corev1.NodeAffinity `json:"nodeAffinity,omitempty" protobuf:"bytes,1,opt,name=nodeAffinity"`
-	// If specified, the pod's tolerations.
-	// +optional
-	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
-	// Configures the TerminationGracePeriodSeconds
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty"`
 }
 
 // Default implements defaulting for the system sphinx component
 func (spec *SystemSphinxSpec) Default(systemDefaultImage *ImageSpec) {
 
-	spec.Image = InitializeImageSpec(spec.Image, defaultImageSpec(*systemDefaultImage))
-	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, systemDefaultSphinxResources)
-	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, systemDefaultSphinxLivenessProbe)
-	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, systemDefaultSphinxReadinessProbe)
 	if spec.Config == nil {
 		spec.Config = &SphinxConfig{}
 	}
 	spec.Config.Default()
-	spec.TerminationGracePeriodSeconds = int64OrDefault(
-		spec.TerminationGracePeriodSeconds, systemDefaultTerminationGracePeriodSeconds,
-	)
 }
 
 // SphinxConfig has configuration options for System's sphinx
@@ -874,10 +809,6 @@ type SphinxConfig struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Enabled *bool `json:"enabled,omitempty"`
-	// Thinking configuration for sphinx
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	Thinking *ThinkingSpec `json:"thinking,omitempty"`
 }
 
 // Default implements defaulting for SphinxConfig
@@ -886,66 +817,6 @@ func (sc *SphinxConfig) Default() {
 	sc.Enabled = boolOrDefault(
 		sc.Enabled, pointer.Bool(systemDefaultSphinxEnabled),
 	)
-
-	if sc.Thinking == nil {
-		sc.Thinking = &ThinkingSpec{}
-	}
-	sc.Thinking.Default()
-}
-
-// ThinkingSpec configures the thinking library for sphinx
-type ThinkingSpec struct {
-	// Allows setting the service name for Sphinx
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	ServiceName *string `json:"serviceName,omitempty"`
-	// The TCP port Sphinx will run its daemon on
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	Port *int32 `json:"port,omitempty"`
-	// Allows setting the TCP host for Sphinx to a different address
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	BindAddress *string `json:"bindAddress,omitempty"`
-	// Sphinx configuration file path
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	ConfigFile *string `json:"configFile,omitempty"`
-	// Sphinx batch size
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	BatchSize *int32 `json:"batchSize,omitempty"`
-	// Sphinx database path
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	DatabasePath *string `json:"databasePath,omitempty"`
-	// Sphinx database storage size
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	DatabaseStorageSize *resource.Quantity `json:"databaseStorageSize,omitempty"`
-	// Sphinx database storage type
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	DatabaseStorageClass *string `json:"databaseStorageClass,omitempty"`
-	// Sphinx PID file path
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	PIDFile *string `json:"pidFile,omitempty"`
-}
-
-// Default implements defaulting for ThinkingSpec
-func (tc *ThinkingSpec) Default() {
-	tc.ServiceName = stringOrDefault(tc.ServiceName, pointer.String(systemDefaultSphinxServiceName))
-	tc.Port = intOrDefault(tc.Port, pointer.Int32(systemDefaultSphinxPort))
-	tc.BindAddress = stringOrDefault(tc.BindAddress, pointer.String(systemDefaultSphinxBindAddress))
-	tc.ConfigFile = stringOrDefault(tc.ConfigFile, pointer.String(systemDefaultSphinxConfigFile))
-	tc.BatchSize = intOrDefault(tc.BatchSize, pointer.Int32(systemDefaultSphinxBatchSize))
-	tc.DatabasePath = stringOrDefault(tc.DatabasePath, pointer.String(systemDefaultSphinxDBPath))
-	tc.PIDFile = stringOrDefault(tc.PIDFile, pointer.String(systemDefaultSphinxPIDFile))
-	if tc.DatabaseStorageSize == nil {
-		size := resource.MustParse(systemDefaultSphinxDatabaseStorageSize)
-		tc.DatabaseStorageSize = &size
-	}
 }
 
 // SystemSearchdSpec configures the App component of System
