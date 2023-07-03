@@ -627,7 +627,7 @@ metadata:
     capabilities: Basic Install
     categories: Integration & Delivery
     containerImage: quay.io/3scale/saas-operator
-    createdAt: "2023-06-15T20:42:59Z"
+    createdAt: "2023-07-03T08:35:48Z"
     description: |-
       The 3scale SaaS Operator creates and maintains a SaaS-ready deployment
       of the Red Hat 3scale API Management on OpenShift.
@@ -635,7 +635,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/3scale/saas-operator
     support: Red Hat
-  name: saas-operator.v0.19.9
+  name: saas-operator.v0.19.10-alpha.1
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -3803,7 +3803,7 @@ spec:
       - description: Configures the TerminationGracePeriodSeconds
         displayName: Termination Grace Period Seconds
         path: sidekiqLow.terminationGracePeriodSeconds
-      - description: Sphinx specific configuration options
+      - description: DEPRECATED Sphinx specific configuration options
         displayName: Sphinx
         path: sphinx
       - description: Configuration options for System's sphinx
@@ -3812,111 +3812,6 @@ spec:
       - description: Deploy Sphinx instance
         displayName: Enabled
         path: sphinx.config.enabled
-      - description: Thinking configuration for sphinx
-        displayName: Thinking
-        path: sphinx.config.thinking
-      - description: Sphinx batch size
-        displayName: Batch Size
-        path: sphinx.config.thinking.batchSize
-      - description: Allows setting the TCP host for Sphinx to a different address
-        displayName: Bind Address
-        path: sphinx.config.thinking.bindAddress
-      - description: Sphinx configuration file path
-        displayName: Config File
-        path: sphinx.config.thinking.configFile
-      - description: Sphinx database path
-        displayName: Database Path
-        path: sphinx.config.thinking.databasePath
-      - description: Sphinx database storage type
-        displayName: Database Storage Class
-        path: sphinx.config.thinking.databaseStorageClass
-      - description: Sphinx database storage size
-        displayName: Database Storage Size
-        path: sphinx.config.thinking.databaseStorageSize
-      - description: Sphinx PID file path
-        displayName: PIDFile
-        path: sphinx.config.thinking.pidFile
-      - description: The TCP port Sphinx will run its daemon on
-        displayName: Port
-        path: sphinx.config.thinking.port
-      - description: Allows setting the service name for Sphinx
-        displayName: Service Name
-        path: sphinx.config.thinking.serviceName
-      - description: Image specification for the Sphinx component. Defaults to system
-          image if not defined.
-        displayName: Image
-        path: sphinx.image
-      - description: Docker repository of the image
-        displayName: Name
-        path: sphinx.image.name
-      - description: Pull policy for the image
-        displayName: Pull Policy
-        path: sphinx.image.pullPolicy
-      - description: Name of the Secret that holds quay.io credentials to access the
-          image repository
-        displayName: Pull Secret Name
-        path: sphinx.image.pullSecretName
-      - description: Image tag
-        displayName: Tag
-        path: sphinx.image.tag
-      - description: Liveness probe for the component
-        displayName: Liveness Probe
-        path: sphinx.livenessProbe
-      - description: Minimum consecutive failures for the probe to be considered failed
-          after having succeeded
-        displayName: Failure Threshold
-        path: sphinx.livenessProbe.failureThreshold
-      - description: Number of seconds after the container has started before liveness
-          probes are initiated
-        displayName: Initial Delay Seconds
-        path: sphinx.livenessProbe.initialDelaySeconds
-      - description: How often (in seconds) to perform the probe
-        displayName: Period Seconds
-        path: sphinx.livenessProbe.periodSeconds
-      - description: Minimum consecutive successes for the probe to be considered
-          successful after having failed
-        displayName: Success Threshold
-        path: sphinx.livenessProbe.successThreshold
-      - description: Number of seconds after which the probe times out
-        displayName: Timeout Seconds
-        path: sphinx.livenessProbe.timeoutSeconds
-      - description: Readiness probe for the component
-        displayName: Readiness Probe
-        path: sphinx.readinessProbe
-      - description: Minimum consecutive failures for the probe to be considered failed
-          after having succeeded
-        displayName: Failure Threshold
-        path: sphinx.readinessProbe.failureThreshold
-      - description: Number of seconds after the container has started before liveness
-          probes are initiated
-        displayName: Initial Delay Seconds
-        path: sphinx.readinessProbe.initialDelaySeconds
-      - description: How often (in seconds) to perform the probe
-        displayName: Period Seconds
-        path: sphinx.readinessProbe.periodSeconds
-      - description: Minimum consecutive successes for the probe to be considered
-          successful after having failed
-        displayName: Success Threshold
-        path: sphinx.readinessProbe.successThreshold
-      - description: Number of seconds after which the probe times out
-        displayName: Timeout Seconds
-        path: sphinx.readinessProbe.timeoutSeconds
-      - description: Resource requirements for the component
-        displayName: Resources
-        path: sphinx.resources
-      - description: 'Limits describes the maximum amount of compute resources allowed.
-          More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
-        displayName: Limits
-        path: sphinx.resources.limits
-      - description: 'Requests describes the minimum amount of compute resources required.
-          If Requests is omitted for a container, it defaults to Limits if that is
-          explicitly specified, otherwise to an implementation-defined value. More
-          info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
-        displayName: Requests
-        path: sphinx.resources.requests
-      - description: Configures the TerminationGracePeriodSeconds
-        displayName: Termination Grace Period Seconds
-        path: sphinx.terminationGracePeriodSeconds
       - description: Configures twemproxy
         displayName: Twemproxy
         path: twemproxy
@@ -4491,7 +4386,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/3scale/saas-operator:v0.19.9
+                image: quay.io/3scale/saas-operator:v0.19.10-alpha.1
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -5005,4 +4900,4 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
-  version: 0.19.9
+  version: 0.19.10-alpha.1
