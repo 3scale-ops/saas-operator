@@ -163,9 +163,6 @@ var (
 		MaxThreads: pointer.Int32(15),
 	}
 
-	// Sphinx
-	systemDefaultSphinxEnabled bool = false
-
 	// Searchd
 	systemDefaultSearchdEnabled bool             = true
 	systemDefaultSearchdImage   defaultImageSpec = defaultImageSpec{
@@ -238,10 +235,6 @@ type SystemSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	SidekiqLow *SystemSidekiqSpec `json:"sidekiqLow,omitempty"`
-	// DEPRECATED Sphinx specific configuration options
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	Sphinx *SystemSphinxSpec `json:"sphinx,omitempty"`
 	// Searchd specific configuration options
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -290,11 +283,6 @@ func (spec *SystemSpec) Default() {
 		spec.Searchd = &SystemSearchdSpec{}
 	}
 	spec.Searchd.Default()
-
-	if spec.Sphinx == nil {
-		spec.Sphinx = &SystemSphinxSpec{}
-	}
-	spec.Sphinx.Default(spec.Image)
 
 	if spec.Console == nil {
 		spec.Console = &SystemRailsConsoleSpec{}
@@ -786,39 +774,6 @@ func (spec *SystemSidekiqSpec) Default(sidekiqType systemSidekiqType) {
 	}
 }
 
-// SystemSphinxSpec configures the App component of System
-type SystemSphinxSpec struct {
-	// Configuration options for System's sphinx
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	Config *SphinxConfig `json:"config,omitempty"`
-}
-
-// Default implements defaulting for the system sphinx component
-func (spec *SystemSphinxSpec) Default(systemDefaultImage *ImageSpec) {
-
-	if spec.Config == nil {
-		spec.Config = &SphinxConfig{}
-	}
-	spec.Config.Default()
-}
-
-// SphinxConfig has configuration options for System's sphinx
-type SphinxConfig struct {
-	// Deploy Sphinx instance
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	Enabled *bool `json:"enabled,omitempty"`
-}
-
-// Default implements defaulting for SphinxConfig
-func (sc *SphinxConfig) Default() {
-
-	sc.Enabled = boolOrDefault(
-		sc.Enabled, pointer.Bool(systemDefaultSphinxEnabled),
-	)
-}
-
 // SystemSearchdSpec configures the App component of System
 type SystemSearchdSpec struct {
 	// Deploy searchd instance
@@ -858,7 +813,7 @@ type SystemSearchdSpec struct {
 	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty"`
 }
 
-// Default implements defaulting for the system sphinx component
+// Default implements defaulting for the system searchd component
 func (spec *SystemSearchdSpec) Default() {
 	spec.Enabled = boolOrDefault(spec.Enabled, pointer.Bool(systemDefaultSearchdEnabled))
 	spec.Image = InitializeImageSpec(spec.Image, defaultImageSpec(systemDefaultSearchdImage))
@@ -874,7 +829,7 @@ func (spec *SystemSearchdSpec) Default() {
 	)
 }
 
-// SearchdConfig has configuration options for System's sphinx
+// SearchdConfig has configuration options for System's searchd
 type SearchdConfig struct {
 	// Allows setting the service name for Searchd
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
