@@ -627,7 +627,7 @@ metadata:
     capabilities: Basic Install
     categories: Integration & Delivery
     containerImage: quay.io/3scale/saas-operator
-    createdAt: "2023-07-03T09:28:53Z"
+    createdAt: "2023-07-03T15:07:19Z"
     description: |-
       The 3scale SaaS Operator creates and maintains a SaaS-ready deployment
       of the Red Hat 3scale API Management on OpenShift.
@@ -635,7 +635,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/3scale/saas-operator
     support: Red Hat
-  name: saas-operator.v0.19.10
+  name: saas-operator.v0.19.11-alpha.1
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -3803,15 +3803,6 @@ spec:
       - description: Configures the TerminationGracePeriodSeconds
         displayName: Termination Grace Period Seconds
         path: sidekiqLow.terminationGracePeriodSeconds
-      - description: DEPRECATED Sphinx specific configuration options
-        displayName: Sphinx
-        path: sphinx
-      - description: Configuration options for System's sphinx
-        displayName: Config
-        path: sphinx.config
-      - description: Deploy Sphinx instance
-        displayName: Enabled
-        path: sphinx.config.enabled
       - description: Configures twemproxy
         displayName: Twemproxy
         path: twemproxy
@@ -4386,7 +4377,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/3scale/saas-operator:v0.19.10
+                image: quay.io/3scale/saas-operator:v0.19.11-alpha.1
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -4900,4 +4891,4 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
-  version: 0.19.10
+  version: 0.19.11-alpha.1

@@ -3315,15 +3315,6 @@ spec:
       - description: Configures the TerminationGracePeriodSeconds
         displayName: Termination Grace Period Seconds
         path: sidekiqLow.terminationGracePeriodSeconds
-      - description: DEPRECATED Sphinx specific configuration options
-        displayName: Sphinx
-        path: sphinx
-      - description: Configuration options for System's sphinx
-        displayName: Config
-        path: sphinx.config
-      - description: Deploy Sphinx instance
-        displayName: Enabled
-        path: sphinx.config.enabled
       - description: Configures twemproxy
         displayName: Twemproxy
         path: twemproxy
