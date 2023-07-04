@@ -4026,17 +4026,6 @@ spec:
                       type: object
                     type: array
                 type: object
-              sphinx:
-                description: DEPRECATED Sphinx specific configuration options
-                properties:
-                  config:
-                    description: Configuration options for System's sphinx
-                    properties:
-                      enabled:
-                        description: Deploy Sphinx instance
-                        type: boolean
-                    type: object
-                type: object
               twemproxy:
                 description: Configures twemproxy
                 properties:

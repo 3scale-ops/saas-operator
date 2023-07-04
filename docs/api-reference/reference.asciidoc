@@ -1343,7 +1343,7 @@ SMTPSpec has options to configure system's SMTP
 [id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-searchdconfig"]
 ==== SearchdConfig 
 
-SearchdConfig has configuration options for System's sphinx
+SearchdConfig has configuration options for System's searchd
 
 .Appears In:
 ****
@@ -1545,23 +1545,6 @@ SidekiqConfig configures app behavior for System Sidekiq
 | Field | Description
 | *`queues`* __string array__ | List of queues to be consumed by sidekiq. Format: queue[,Priority]
 | *`maxThreads`* __integer__ | Number of rails max threads per sidekiq pod
-|===
-
-
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sphinxconfig"]
-==== SphinxConfig 
-
-SphinxConfig has configuration options for System's sphinx
-
-.Appears In:
-****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsphinxspec[$$SystemSphinxSpec$$]
-****
-
-[cols="25a,75a", options="header"]
-|===
-| Field | Description
-| *`enabled`* __boolean__ | Deploy Sphinx instance
 |===
 
 
@@ -1804,28 +1787,10 @@ SystemSpec defines the desired state of System
 | *`sidekiqDefault`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]__ | Sidekiq Default specific configuration options
 | *`sidekiqBilling`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]__ | Sidekiq Billing specific configuration options
 | *`sidekiqLow`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]__ | Sidekiq Low specific configuration options
-| *`sphinx`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsphinxspec[$$SystemSphinxSpec$$]__ | DEPRECATED Sphinx specific configuration options
 | *`searchd`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsearchdspec[$$SystemSearchdSpec$$]__ | Searchd specific configuration options
 | *`console`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemrailsconsolespec[$$SystemRailsConsoleSpec$$]__ | Console specific configuration options
 | *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
 | *`twemproxy`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyspec[$$TwemproxySpec$$]__ | Configures twemproxy
-|===
-
-
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsphinxspec"]
-==== SystemSphinxSpec 
-
-SystemSphinxSpec configures the App component of System
-
-.Appears In:
-****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
-****
-
-[cols="25a,75a", options="header"]
-|===
-| Field | Description
-| *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sphinxconfig[$$SphinxConfig$$]__ | Configuration options for System's sphinx
 |===
 
 
