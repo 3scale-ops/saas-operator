@@ -15,3 +15,7 @@ func Metav1DurationPtr(value time.Duration) *metav1.Duration {
 	d := &metav1.Duration{Duration: value}
 	return d
 }
+
+func Pointer[T any](t T) *T {
+	return &t
+}
