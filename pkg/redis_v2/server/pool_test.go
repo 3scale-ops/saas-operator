@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/3scale/saas-operator/pkg/util"
-	"github.com/davecgh/go-spew/spew"
 )
 
 func TestServerPool_GetServer(t *testing.T) {
@@ -24,44 +23,30 @@ func TestServerPool_GetServer(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Gets the server by alias",
+			name: "Gets the server by hostport",
 			fields: fields{
 				servers: []*Server{
-					{Alias: "host1", Client: nil, Host: "127.0.0.1", Port: "1000"},
-					{Alias: "host2", Client: nil, Host: "127.0.0.2", Port: "2000"},
+					{alias: "host1", client: nil, host: "127.0.0.1", port: "1000"},
+					{alias: "host2", client: nil, host: "127.0.0.2", port: "2000"},
+				}},
+			args: args{
+				connectionString: "redis://127.0.0.2:2000",
+			},
+			want:    &Server{alias: "host2", client: nil, host: "127.0.0.2", port: "2000"},
+			wantErr: false,
+		},
+		{
+			name: "Gets the server by hostport and sets the alias",
+			fields: fields{
+				servers: []*Server{
+					{alias: "host1", client: nil, host: "127.0.0.1", port: "1000"},
+					{alias: "", client: nil, host: "127.0.0.2", port: "2000"},
 				}},
 			args: args{
 				connectionString: "redis://127.0.0.2:2000",
 				alias:            util.Pointer("host2"),
 			},
-			want:    &Server{Alias: "host2", Client: nil, Host: "127.0.0.2", Port: "2000"},
-			wantErr: false,
-		},
-		{
-			name: "Gets the server by host",
-			fields: fields{
-				servers: []*Server{
-					{Alias: "host1", Client: nil, Host: "127.0.0.1", Port: "1000"},
-					{Alias: "host2", Client: nil, Host: "127.0.0.2", Port: "2000"},
-				}},
-			args: args{
-				connectionString: "redis://127.0.0.2:2000",
-			},
-			want:    &Server{Alias: "host2", Client: nil, Host: "127.0.0.2", Port: "2000"},
-			wantErr: false,
-		},
-		{
-			name: "Gets the server by host and sets the alias",
-			fields: fields{
-				servers: []*Server{
-					{Alias: "host1", Client: nil, Host: "127.0.0.1", Port: "1000"},
-					{Alias: "", Client: nil, Host: "127.0.0.2", Port: "2000"},
-				}},
-			args: args{
-				connectionString: "redis://127.0.0.2:2000",
-				alias:            util.Pointer("host2"),
-			},
-			want:    &Server{Alias: "host2", Client: nil, Host: "127.0.0.2", Port: "2000"},
+			want:    &Server{alias: "host2", client: nil, host: "127.0.0.2", port: "2000"},
 			wantErr: false,
 		},
 		{
@@ -86,8 +71,6 @@ func TestServerPool_GetServer(t *testing.T) {
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				spew.Dump(got)
-				spew.Dump(tt.want)
 				t.Errorf("ServerPool.GetServer() = %v, want %v", got, tt.want)
 			}
 		})
@@ -95,7 +78,7 @@ func TestServerPool_GetServer(t *testing.T) {
 
 	t.Run("Adds a new server to the pool", func(t *testing.T) {
 		pool := &ServerPool{
-			servers: []*Server{{Alias: "host1", Client: nil, Host: "127.0.0.1", Port: "1000"}},
+			servers: []*Server{{alias: "host1", client: nil, host: "127.0.0.1", port: "1000"}},
 		}
 		new, _ := pool.GetServer("redis://127.0.0.2:2000", util.Pointer("host2"))
 		exists, _ := pool.GetServer("redis://127.0.0.2:2000", util.Pointer("host2"))
@@ -118,13 +101,13 @@ func TestServerPool_indexByAlias(t *testing.T) {
 			name: "Returns a map indexed by host",
 			fields: fields{
 				servers: []*Server{
-					{Alias: "host1", Client: nil, Host: "127.0.0.1", Port: "1000"},
-					{Alias: "host2", Client: nil, Host: "127.0.0.2", Port: "2000"},
+					{alias: "host1", client: nil, host: "127.0.0.1", port: "1000"},
+					{alias: "host2", client: nil, host: "127.0.0.2", port: "2000"},
 				},
 			},
 			want: map[string]*Server{
-				"host1": {Alias: "host1", Client: nil, Host: "127.0.0.1", Port: "1000"},
-				"host2": {Alias: "host2", Client: nil, Host: "127.0.0.2", Port: "2000"},
+				"host1": {alias: "host1", client: nil, host: "127.0.0.1", port: "1000"},
+				"host2": {alias: "host2", client: nil, host: "127.0.0.2", port: "2000"},
 			},
 		}}
 	for _, tt := range tests {
@@ -152,13 +135,13 @@ func TestServerPool_indexByHost(t *testing.T) {
 			name: "Returns a map indexed by host",
 			fields: fields{
 				servers: []*Server{
-					{Alias: "host1", Client: nil, Host: "127.0.0.1", Port: "1000"},
-					{Alias: "host2", Client: nil, Host: "127.0.0.2", Port: "2000"},
+					{alias: "host1", client: nil, host: "127.0.0.1", port: "1000"},
+					{alias: "host2", client: nil, host: "127.0.0.2", port: "2000"},
 				},
 			},
 			want: map[string]*Server{
-				"127.0.0.1:1000": {Alias: "host1", Client: nil, Host: "127.0.0.1", Port: "1000"},
-				"127.0.0.2:2000": {Alias: "host2", Client: nil, Host: "127.0.0.2", Port: "2000"},
+				"127.0.0.1:1000": {alias: "host1", client: nil, host: "127.0.0.1", port: "1000"},
+				"127.0.0.2:2000": {alias: "host2", client: nil, host: "127.0.0.2", port: "2000"},
 			},
 		},
 	}
@@ -167,7 +150,7 @@ func TestServerPool_indexByHost(t *testing.T) {
 			pool := &ServerPool{
 				servers: tt.fields.servers,
 			}
-			if got := pool.indexByHost(); !reflect.DeepEqual(got, tt.want) {
+			if got := pool.indexByHostPort(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ServerPool.indexByHost() = %v, want %v", got, tt.want)
 			}
 		})

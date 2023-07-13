@@ -32,6 +32,14 @@ func NewFromConnectionString(connectionString string) (*GoRedisClient, error) {
 	return c, nil
 }
 
+func MustNewFromConnectionString(connectionString string) *GoRedisClient {
+	c, err := NewFromConnectionString(connectionString)
+	if err != nil {
+		panic(err)
+	}
+	return c
+}
+
 func NewFromOptions(opt *redis.Options) *GoRedisClient {
 	return &GoRedisClient{
 		redis:    redis.NewClient(opt),
@@ -98,6 +106,11 @@ func (c *GoRedisClient) SentinelPSubscribe(ctx context.Context, events ...string
 func (c *GoRedisClient) SentinelInfoCache(ctx context.Context) (interface{}, error) {
 	val, err := c.redis.Do(ctx, "sentinel", "info-cache").Result()
 	return val, err
+}
+
+func (c *GoRedisClient) SentinelPing(ctx context.Context) error {
+	_, err := c.sentinel.Ping(ctx).Result()
+	return err
 }
 
 func (c *GoRedisClient) RedisRole(ctx context.Context) (interface{}, error) {

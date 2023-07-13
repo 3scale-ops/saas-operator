@@ -2,11 +2,14 @@ package server
 
 import (
 	"net"
+	"sort"
 	"sync"
 
 	"github.com/go-redis/redis/v8"
 )
 
+// SentinelPool holds a thread safe list of Servers.
+// It is intended for client reuse throughout the code.
 type ServerPool struct {
 	servers []*Server
 	mu      sync.Mutex
@@ -33,20 +36,14 @@ func (pool *ServerPool) GetServer(connectionString string, alias *string) (*Serv
 	pool.mu.Lock()
 	defer pool.mu.Unlock()
 
-	if alias != nil {
-		if srv = pool.indexByAlias()[*alias]; srv != nil {
-			return srv, nil
-		}
-	}
-
 	opts, err := redis.ParseURL(connectionString)
 	if err != nil {
 		return nil, err
 	}
-	if srv = pool.indexByHost()[opts.Addr]; srv != nil {
+	if srv = pool.indexByHostPort()[opts.Addr]; srv != nil {
 		// set the alias if it has been passed down
 		if alias != nil {
-			srv.Alias = *alias
+			srv.alias = *alias
 		}
 		return srv, nil
 	}
@@ -57,24 +54,29 @@ func (pool *ServerPool) GetServer(connectionString string, alias *string) (*Serv
 	}
 	pool.servers = append(pool.servers, srv)
 
+	// sort the slice to obtain consistent results
+	sort.Slice(pool.servers, func(i, j int) bool {
+		return pool.servers[i].ID() < pool.servers[j].ID()
+	})
+
 	return srv, nil
 }
 
 func (pool *ServerPool) indexByAlias() map[string]*Server {
 	index := make(map[string]*Server, len(pool.servers))
 	for _, srv := range pool.servers {
-		if srv.Alias != "" {
-			index[srv.Alias] = srv
+		if srv.alias != "" {
+			index[srv.alias] = srv
 		}
 	}
 
 	return index
 }
 
-func (pool *ServerPool) indexByHost() map[string]*Server {
+func (pool *ServerPool) indexByHostPort() map[string]*Server {
 	index := make(map[string]*Server, len(pool.servers))
 	for _, srv := range pool.servers {
-		index[net.JoinHostPort(srv.Host, srv.Port)] = srv
+		index[net.JoinHostPort(srv.host, srv.port)] = srv
 	}
 
 	return index

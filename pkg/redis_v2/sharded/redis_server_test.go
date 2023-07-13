@@ -1,4 +1,4 @@
-package server
+package sharded
 
 import (
 	"context"
@@ -6,8 +6,55 @@ import (
 	"testing"
 
 	"github.com/3scale/saas-operator/pkg/redis_v2/client"
-	"github.com/google/go-cmp/cmp"
+	redis "github.com/3scale/saas-operator/pkg/redis_v2/server"
+	"github.com/3scale/saas-operator/pkg/util"
+	"github.com/go-test/deep"
 )
+
+func init() {
+	deep.CompareUnexportedFields = true
+}
+
+func TestNewRedisServerFromParams(t *testing.T) {
+	type args struct {
+		connectionString string
+		alias            *string
+		pool             *redis.ServerPool
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *RedisServer
+		wantErr bool
+	}{
+		{
+			name: "Retuns a RedisServer",
+			args: args{
+				connectionString: "redis://127.0.0.1:1000",
+				alias:            util.Pointer("host1"),
+				pool:             redis.NewServerPool(redis.NewServerFromParams("host1", "127.0.0.1", "1000", client.MustNewFromConnectionString("redis://127.0.0.1:1000"))),
+			},
+			want: &RedisServer{
+				Server: redis.NewServerFromParams("host1", "127.0.0.1", "1000", client.MustNewFromConnectionString("redis://127.0.0.1:1000")),
+				Role:   client.Unknown,
+				Config: map[string]string{},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := NewRedisServerFromPool(tt.args.connectionString, tt.args.alias, tt.args.pool)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NewServerFromParams() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if diff := deep.Equal(got, tt.want); len(diff) > 0 {
+				t.Errorf("NewServerFromParams() = got diff %v", diff)
+			}
+		})
+	}
+}
 
 func TestDiscoveryOptionSet_Has(t *testing.T) {
 	type args struct {
@@ -41,18 +88,15 @@ func TestDiscoveryOptionSet_Has(t *testing.T) {
 	}
 }
 
-func TestServer_Discover(t *testing.T) {
+func TestRedisServer_Discover(t *testing.T) {
 	type fields struct {
-		Alias  string
-		Client client.TestableInterface
-		Host   string
-		Port   string
+		Server *redis.Server
 		Role   client.Role
 		Config map[string]string
 	}
 	type args struct {
 		ctx  context.Context
-		opts DiscoveryOptionSet
+		opts []DiscoveryOption
 	}
 	tests := []struct {
 		name       string
@@ -65,16 +109,15 @@ func TestServer_Discover(t *testing.T) {
 		{
 			name: "Discovers a master",
 			fields: fields{
-				Client: client.NewFakeClient(
+				Server: redis.NewFakeServerWithFakeClient("127.0.0.1", "1000",
 					client.FakeResponse{
 						InjectResponse: func() interface{} {
 							return []interface{}{"master", ""}
 						},
 						InjectError: func() error { return nil },
 					},
-				),
-			},
-			args:       args{ctx: context.TODO(), opts: DiscoveryOptionSet{RoleDiscoveryOpt}},
+				)},
+			args:       args{ctx: context.TODO(), opts: DiscoveryOptionSet{}},
 			wantRole:   client.Master,
 			wantConfig: map[string]string{},
 			wantErr:    false,
@@ -82,7 +125,7 @@ func TestServer_Discover(t *testing.T) {
 		{
 			name: "Discovers a master with save config",
 			fields: fields{
-				Client: client.NewFakeClient(
+				Server: redis.NewFakeServerWithFakeClient("127.0.0.1", "1000",
 					client.FakeResponse{
 						InjectResponse: func() interface{} {
 							return []interface{}{"master", ""}
@@ -98,7 +141,7 @@ func TestServer_Discover(t *testing.T) {
 					},
 				),
 			},
-			args:       args{ctx: context.TODO(), opts: DiscoveryOptionSet{RoleDiscoveryOpt, SaveConfigDiscoveryOpt}},
+			args:       args{ctx: context.TODO(), opts: DiscoveryOptionSet{SaveConfigDiscoveryOpt}},
 			wantRole:   client.Master,
 			wantConfig: map[string]string{"save": "900 1 300 10"},
 			wantErr:    false,
@@ -106,7 +149,7 @@ func TestServer_Discover(t *testing.T) {
 		{
 			name: "Discovers a ro slave",
 			fields: fields{
-				Client: client.NewFakeClient(
+				Server: redis.NewFakeServerWithFakeClient("127.0.0.1", "1000",
 					client.FakeResponse{
 						InjectResponse: func() interface{} {
 							return []interface{}{"slave", "127.0.0.1:3333"}
@@ -121,7 +164,7 @@ func TestServer_Discover(t *testing.T) {
 					},
 				),
 			},
-			args:       args{ctx: context.TODO(), opts: DiscoveryOptionSet{RoleDiscoveryOpt, SlaveReadOnlyDiscoveryOpt}},
+			args:       args{ctx: context.TODO(), opts: DiscoveryOptionSet{SlaveReadOnlyDiscoveryOpt}},
 			wantRole:   client.Slave,
 			wantConfig: map[string]string{"slave-read-only": "yes"},
 			wantErr:    false,
@@ -129,7 +172,7 @@ func TestServer_Discover(t *testing.T) {
 		{
 			name: "Discovers a rw slave",
 			fields: fields{
-				Client: client.NewFakeClient(
+				Server: redis.NewFakeServerWithFakeClient("127.0.0.1", "1000",
 					client.FakeResponse{
 						InjectResponse: func() interface{} {
 							return []interface{}{"slave", "127.0.0.1:3333"}
@@ -144,7 +187,7 @@ func TestServer_Discover(t *testing.T) {
 					},
 				),
 			},
-			args:       args{ctx: context.TODO(), opts: DiscoveryOptionSet{RoleDiscoveryOpt, SlaveReadOnlyDiscoveryOpt}},
+			args:       args{ctx: context.TODO(), opts: DiscoveryOptionSet{SlaveReadOnlyDiscoveryOpt}},
 			wantRole:   client.Slave,
 			wantConfig: map[string]string{"slave-read-only": "no"},
 			wantErr:    false,
@@ -152,14 +195,14 @@ func TestServer_Discover(t *testing.T) {
 		{
 			name: "'role' command fails, returns an error",
 			fields: fields{
-				Client: client.NewFakeClient(
+				Server: redis.NewFakeServerWithFakeClient("127.0.0.1", "1000",
 					client.FakeResponse{
 						InjectResponse: func() interface{} { return []interface{}{} },
 						InjectError:    func() error { return errors.New("error") },
 					},
 				),
 			},
-			args:       args{ctx: context.TODO(), opts: DiscoveryOptionSet{RoleDiscoveryOpt}},
+			args:       args{ctx: context.TODO(), opts: DiscoveryOptionSet{}},
 			wantRole:   client.Unknown,
 			wantConfig: nil,
 			wantErr:    true,
@@ -167,14 +210,12 @@ func TestServer_Discover(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			srv := &Server{
-				Alias:  tt.fields.Alias,
-				Host:   tt.fields.Host,
-				Port:   tt.fields.Port,
-				Client: tt.fields.Client,
+			srv := &RedisServer{
+				Server: tt.fields.Server,
 				Role:   tt.fields.Role,
 				Config: tt.fields.Config,
 			}
+
 			if err := srv.Discover(tt.args.ctx, tt.args.opts...); (err != nil) != tt.wantErr {
 				t.Errorf("RedisServer.Discover() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -182,7 +223,7 @@ func TestServer_Discover(t *testing.T) {
 			if tt.wantRole != srv.Role {
 				t.Errorf("RedisServer.Discover() got = %v, want %v", srv.Role, tt.wantRole)
 			}
-			if diff := cmp.Diff(srv.Config, tt.wantConfig); len(diff) > 0 {
+			if diff := deep.Equal(srv.Config, tt.wantConfig); len(diff) > 0 {
 				t.Errorf("RedisServer.Discover() got diff: %v", diff)
 			}
 		})

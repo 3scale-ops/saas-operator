@@ -32,12 +32,12 @@ func TestNewGoRedisClientFromConnectionString(t *testing.T) {
 				connectionString: "redis://127.0.0.1:1234",
 			},
 			want: &Server{
-				Client: func() client.TestableInterface {
+				client: func() client.TestableInterface {
 					c, _ := client.NewFromConnectionString("redis://127.0.0.1:1234")
 					return c
 				}(),
-				Host: "127.0.0.1",
-				Port: "1234",
+				host: "127.0.0.1",
+				port: "1234",
 			},
 			wantErr: false,
 		},
@@ -88,9 +88,9 @@ func TestClient_GetHost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			sc := &Server{
-				Client: tt.fields.client,
-				Host:   tt.fields.ip,
-				Port:   tt.fields.port,
+				client: tt.fields.client,
+				host:   tt.fields.ip,
+				port:   tt.fields.port,
 			}
 			if got := sc.GetHost(); got != tt.want {
 				t.Errorf("Client.GetHost() = %v, want %v", got, tt.want)
@@ -123,9 +123,9 @@ func TestClient_GetPort(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			sc := &Server{
-				Client: tt.fields.client,
-				Host:   tt.fields.ip,
-				Port:   tt.fields.port,
+				client: tt.fields.client,
+				host:   tt.fields.ip,
+				port:   tt.fields.port,
 			}
 			if got := sc.GetPort(); got != tt.want {
 				t.Errorf("Client.GetPort() = %v, want %v", got, tt.want)
@@ -231,9 +231,9 @@ func TestClient_SentinelMaster(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			sc := &Server{
-				Client: tt.fields.client,
-				Host:   tt.fields.ip,
-				Port:   tt.fields.port,
+				client: tt.fields.client,
+				host:   tt.fields.ip,
+				port:   tt.fields.port,
 			}
 			got, err := sc.SentinelMaster(tt.args.ctx, tt.args.shard)
 			if (err != nil) != tt.wantErr {
@@ -391,9 +391,9 @@ func TestClient_SentinelMasters(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			sc := &Server{
-				Client: tt.fields.client,
-				Host:   tt.fields.ip,
-				Port:   tt.fields.port,
+				client: tt.fields.client,
+				host:   tt.fields.ip,
+				port:   tt.fields.port,
 			}
 			got, err := sc.SentinelMasters(tt.args.ctx)
 			if (err != nil) != tt.wantErr {
@@ -551,9 +551,9 @@ func TestClient_SentinelSlaves(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			sc := &Server{
-				Client: tt.fields.client,
-				Host:   tt.fields.ip,
-				Port:   tt.fields.port,
+				client: tt.fields.client,
+				host:   tt.fields.ip,
+				port:   tt.fields.port,
 			}
 			got, err := sc.SentinelSlaves(tt.args.ctx, tt.args.shard)
 			if (err != nil) != tt.wantErr {
@@ -624,9 +624,9 @@ func TestClient_SentinelMonitor(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			sc := &Server{
-				Client: tt.fields.client,
-				Host:   tt.fields.ip,
-				Port:   tt.fields.port,
+				client: tt.fields.client,
+				host:   tt.fields.ip,
+				port:   tt.fields.port,
 			}
 			if err := sc.SentinelMonitor(tt.args.ctx, tt.args.name, tt.args.host, tt.args.port, tt.args.quorum); (err != nil) != tt.wantErr {
 				t.Errorf("Client.SentinelMonitor() error = %v, wantErr %v", err, tt.wantErr)
@@ -692,9 +692,9 @@ func TestClient_SentinelSet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			sc := &Server{
-				Client: tt.fields.client,
-				Host:   tt.fields.ip,
-				Port:   tt.fields.port,
+				client: tt.fields.client,
+				host:   tt.fields.ip,
+				port:   tt.fields.port,
 			}
 			if err := sc.SentinelSet(tt.args.ctx, tt.args.shard, tt.args.parameter, tt.args.value); (err != nil) != tt.wantErr {
 				t.Errorf("Client.SentinelSet() error = %v, wantErr %v", err, tt.wantErr)
@@ -751,9 +751,9 @@ func TestCRUD_SentinelPSubscribe(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			crud := &Server{
-				Client: tt.fields.client,
-				Host:   tt.fields.ip,
-				Port:   tt.fields.port,
+				client: tt.fields.client,
+				host:   tt.fields.ip,
+				port:   tt.fields.port,
 			}
 			timeout := time.After(100 * time.Millisecond)
 			done := make(chan bool)
@@ -950,9 +950,9 @@ func TestCRUD_SentinelInfoCache(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			crud := &Server{
-				Client: tt.fields.Client,
-				Host:   tt.fields.IP,
-				Port:   tt.fields.Port,
+				client: tt.fields.Client,
+				host:   tt.fields.IP,
+				port:   tt.fields.Port,
 			}
 			got, err := crud.SentinelInfoCache(tt.args.ctx)
 			if (err != nil) != tt.wantErr {
@@ -1061,9 +1061,9 @@ func TestClient_RedisRole(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			sc := &Server{
-				Client: tt.fields.client,
-				Host:   tt.fields.ip,
-				Port:   tt.fields.port,
+				client: tt.fields.client,
+				host:   tt.fields.ip,
+				port:   tt.fields.port,
 			}
 			got, got1, err := sc.RedisRole(tt.args.ctx)
 			if (err != nil) != tt.wantErr {
@@ -1143,9 +1143,9 @@ func TestClient_RedisConfigGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			sc := &Server{
-				Client: tt.fields.client,
-				Host:   tt.fields.ip,
-				Port:   tt.fields.port,
+				client: tt.fields.client,
+				host:   tt.fields.ip,
+				port:   tt.fields.port,
 			}
 			got, err := sc.RedisConfigGet(tt.args.ctx, tt.args.parameter)
 			if (err != nil) != tt.wantErr {
@@ -1210,9 +1210,9 @@ func TestClient_RedisSlaveOf(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			sc := &Server{
-				Client: tt.fields.client,
-				Host:   tt.fields.ip,
-				Port:   tt.fields.port,
+				client: tt.fields.client,
+				host:   tt.fields.ip,
+				port:   tt.fields.port,
 			}
 			if err := sc.RedisSlaveOf(tt.args.ctx, tt.args.host, tt.args.port); (err != nil) != tt.wantErr {
 				t.Errorf("Client.RedisSlaveOf() error = %v, wantErr %v", err, tt.wantErr)

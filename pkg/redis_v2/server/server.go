@@ -6,19 +6,21 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/3scale/saas-operator/pkg/redis_v2/client"
 	"github.com/go-redis/redis/v8"
 )
 
+// Server is a host that talks the redis protocol
+// Contains methods to use a subset of redis commands
 type Server struct {
-	Alias  string
-	Client client.TestableInterface
-	Host   string
-	Port   string
-	Role   client.Role
-	Config map[string]string
+	alias  string
+	client client.TestableInterface
+	host   string
+	port   string
+	mu     sync.Mutex
 }
 
 // NewServer returns a new client for this redis server from the given connection
@@ -30,55 +32,65 @@ func NewServer(connectionString string, alias *string) (*Server, error) {
 		return nil, err
 	}
 
-	parts := strings.Split(opt.Addr, ":")
-	if len(parts) != 2 {
-		return nil, fmt.Errorf("error parsing redis/sentinel address")
+	host, port, err := net.SplitHostPort(opt.Addr)
+	if err != nil {
+		return nil, err
 	}
 
 	srv := &Server{
-		Host:   parts[0],
-		Port:   parts[1],
-		Client: client.NewFromOptions(opt),
-		Role:   client.Unknown,
-		Config: map[string]string{},
+		host:   host,
+		port:   port,
+		client: client.NewFromOptions(opt),
 	}
 
 	if alias != nil {
-		srv.Alias = *alias
+		srv.SetAlias(*alias)
 	}
 
 	return srv, nil
 }
 
-func (srv *Server) CloseClient() error {
-	return srv.Client.Close()
+func MustNewServer(connectionString string, alias *string) *Server {
+	srv, err := NewServer(connectionString, alias)
+	if err != nil {
+		panic(err)
+	}
+	return srv
 }
 
-// NewFakeServer returns a fake client that will return the provided responses
-// when called. This is only intended for testing.
-func NewFakeServer(responses ...client.FakeResponse) *Server {
-
+func NewServerFromParams(alias, host, port string, c client.TestableInterface) *Server {
 	return &Server{
-		Host:   "fake-ip",
-		Port:   "fake-port",
-		Client: &client.FakeClient{Responses: responses},
+		alias:  alias,
+		host:   host,
+		port:   port,
+		client: c,
 	}
+}
+
+func (srv *Server) CloseClient() error {
+	return srv.client.Close()
 }
 
 func (srv *Server) GetHost() string {
-	return srv.Host
+	return srv.host
 }
 
 func (srv *Server) GetPort() string {
-	return srv.Port
+	return srv.port
+}
+
+func (srv *Server) GetAlias() string {
+	return srv.alias
+}
+
+func (srv *Server) SetAlias(alias string) {
+	srv.mu.Lock()
+	srv.alias = alias
+	srv.mu.Unlock()
 }
 
 func (srv *Server) ID() string {
-	if srv.Alias != "" {
-		return srv.Alias
-	} else {
-		return net.JoinHostPort(srv.Host, srv.Port)
-	}
+	return net.JoinHostPort(srv.host, srv.port)
 }
 
 func (rs *Server) IP() (string, error) {
@@ -87,7 +99,7 @@ func (rs *Server) IP() (string, error) {
 		ip = r.String()
 	} else {
 		// if it is not an IP, try to resolve a DNS
-		ips, err := net.LookupIP(rs.Host)
+		ips, err := net.LookupIP(rs.host)
 		if err != nil {
 			return "", err
 		}
@@ -102,7 +114,7 @@ func (rs *Server) IP() (string, error) {
 
 func (srv *Server) SentinelMaster(ctx context.Context, shard string) (*client.SentinelMasterCmdResult, error) {
 
-	result, err := srv.Client.SentinelMaster(ctx, shard)
+	result, err := srv.client.SentinelMaster(ctx, shard)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +123,7 @@ func (srv *Server) SentinelMaster(ctx context.Context, shard string) (*client.Se
 
 func (srv *Server) SentinelMasters(ctx context.Context) ([]client.SentinelMasterCmdResult, error) {
 
-	values, err := srv.Client.SentinelMasters(ctx)
+	values, err := srv.client.SentinelMasters(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +143,7 @@ func (srv *Server) SentinelMasters(ctx context.Context) ([]client.SentinelMaster
 
 func (srv *Server) SentinelSlaves(ctx context.Context, shard string) ([]client.SentinelSlaveCmdResult, error) {
 
-	values, err := srv.Client.SentinelSlaves(ctx, shard)
+	values, err := srv.client.SentinelSlaves(ctx, shard)
 	if err != nil {
 		return nil, err
 	}
@@ -150,21 +162,21 @@ func (srv *Server) SentinelSlaves(ctx context.Context, shard string) ([]client.S
 }
 
 func (srv *Server) SentinelMonitor(ctx context.Context, name, host string, port string, quorum int) error {
-	return srv.Client.SentinelMonitor(ctx, name, host, port, quorum)
+	return srv.client.SentinelMonitor(ctx, name, host, port, quorum)
 }
 
 func (srv *Server) SentinelSet(ctx context.Context, shard, parameter, value string) error {
-	return srv.Client.SentinelSet(ctx, shard, parameter, value)
+	return srv.client.SentinelSet(ctx, shard, parameter, value)
 }
 
 func (srv *Server) SentinelPSubscribe(ctx context.Context, events ...string) (<-chan *redis.Message, func() error) {
-	return srv.Client.SentinelPSubscribe(ctx, events...)
+	return srv.client.SentinelPSubscribe(ctx, events...)
 }
 
 func (srv *Server) SentinelInfoCache(ctx context.Context) (client.SentinelInfoCache, error) {
 	result := client.SentinelInfoCache{}
 
-	raw, err := srv.Client.SentinelInfoCache(ctx)
+	raw, err := srv.client.SentinelInfoCache(ctx)
 	mval := islice2imap(raw)
 
 	for shard, servers := range mval {
@@ -186,8 +198,12 @@ func (srv *Server) SentinelInfoCache(ctx context.Context) (client.SentinelInfoCa
 	return result, err
 }
 
+func (srv *Server) SentinelPing(ctx context.Context) error {
+	return srv.client.SentinelPing(ctx)
+}
+
 func (srv *Server) RedisRole(ctx context.Context) (client.Role, string, error) {
-	val, err := srv.Client.RedisRole(ctx)
+	val, err := srv.client.RedisRole(ctx)
 	if err != nil {
 		return client.Unknown, "", err
 	}
@@ -200,7 +216,7 @@ func (srv *Server) RedisRole(ctx context.Context) (client.Role, string, error) {
 }
 
 func (srv *Server) RedisConfigGet(ctx context.Context, parameter string) (string, error) {
-	val, err := srv.Client.RedisConfigGet(ctx, parameter)
+	val, err := srv.client.RedisConfigGet(ctx, parameter)
 	if err != nil {
 		return "", err
 	}
@@ -208,15 +224,15 @@ func (srv *Server) RedisConfigGet(ctx context.Context, parameter string) (string
 }
 
 func (srv *Server) RedisConfigSet(ctx context.Context, parameter, value string) error {
-	return srv.Client.RedisConfigSet(ctx, parameter, value)
+	return srv.client.RedisConfigSet(ctx, parameter, value)
 }
 
 func (srv *Server) RedisSlaveOf(ctx context.Context, host, port string) error {
-	return srv.Client.RedisSlaveOf(ctx, host, port)
+	return srv.client.RedisSlaveOf(ctx, host, port)
 }
 
 func (srv *Server) RedisDebugSleep(ctx context.Context, duration time.Duration) error {
-	return srv.Client.RedisDebugSleep(ctx, duration)
+	return srv.client.RedisDebugSleep(ctx, duration)
 }
 
 // This is a horrible function to parse the horrible structs that the go-redis

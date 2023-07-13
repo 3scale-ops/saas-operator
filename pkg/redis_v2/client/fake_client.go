@@ -7,6 +7,41 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
+type FakeResponse struct {
+	InjectResponse func() interface{}
+	InjectError    func() error
+}
+
+// Some predefined responses used in many tests
+func NewPredefinedRedisFakeResponse(dictionary string, err error) FakeResponse {
+	var rsp []interface{}
+
+	switch dictionary {
+	case "save":
+		rsp = []interface{}{"save", "900 1 300 10"}
+	case "no-save":
+		rsp = []interface{}{"save", ""}
+	case "slave-read-only-no":
+		rsp = []interface{}{"read-only", "no"}
+	case "slave-read-only-yes":
+		rsp = []interface{}{"read-only", "yes"}
+	case "role-slave":
+		rsp = []interface{}{"slave", "127.0.0.1:3333"}
+	case "role-master":
+		rsp = []interface{}{"master", ""}
+	default:
+		panic("response not defined")
+	}
+
+	return FakeResponse{
+		// cmd: RedisConfigGet("save")
+		InjectResponse: func() interface{} {
+			return rsp
+		},
+		InjectError: func() error { return err },
+	}
+}
+
 type FakeClient struct {
 	Responses []FakeResponse
 }
@@ -16,11 +51,6 @@ func NewFakeClient(responses ...FakeResponse) TestableInterface {
 	return &FakeClient{
 		Responses: responses,
 	}
-}
-
-type FakeResponse struct {
-	InjectResponse func() interface{}
-	InjectError    func() error
 }
 
 func (fc *FakeClient) SentinelMaster(ctx context.Context, shard string) (*SentinelMasterCmdResult, error) {
@@ -56,6 +86,11 @@ func (fc *FakeClient) SentinelPSubscribe(ctx context.Context, events ...string) 
 func (fc *FakeClient) SentinelInfoCache(ctx context.Context) (interface{}, error) {
 	rsp := fc.pop()
 	return rsp.InjectResponse(), rsp.InjectError()
+}
+
+func (fc *FakeClient) SentinelPing(ctx context.Context) error {
+	rsp := fc.pop()
+	return rsp.InjectError()
 }
 
 func (fc *FakeClient) RedisRole(ctx context.Context) (interface{}, error) {
