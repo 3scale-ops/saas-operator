@@ -10,7 +10,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
-	"sigs.k8s.io/controller-runtime/pkg/metrics"
 )
 
 var (
@@ -67,8 +66,8 @@ var (
 
 func init() {
 	// Register custom metrics with the global prometheus registry
-	metrics.Registry.MustRegister(switchMasterCount, failoverAbortNoGoodSlaveCount,
-		sdownCount, sdownSentinelCount, sdownClearedCount, sdownClearedSentinelCount)
+	// metrics.Registry.MustRegister(switchMasterCount, failoverAbortNoGoodSlaveCount,
+	// 	sdownCount, sdownSentinelCount, sdownClearedCount, sdownClearedSentinelCount)
 }
 
 // SentinelEventWatcher implements RunnableThread

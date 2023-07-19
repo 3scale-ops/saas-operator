@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/3scale/saas-operator/pkg/redis/crud/client"
+	"github.com/3scale/saas-operator/pkg/redis_v2/client"
 	"github.com/3scale/saas-operator/pkg/util"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -167,7 +167,7 @@ type SentinelStatus struct {
 	// Addresses of the sentinel instances currently running
 	// +operator-sdk:csv:customresourcedefinitions:type=status
 	// +optional
-	Sentinels []string `json:"sentinels,omitempty"`
+	Sentinels map[string]string `json:"sentinels,omitempty"`
 	// MonitoredShards is the list of shards that the Sentinel
 	// resource is currently monitoring
 	// +operator-sdk:csv:customresourcedefinitions:type=status
@@ -188,24 +188,6 @@ type MonitoredShard struct {
 	// Name is the name of the redis shard
 	// +operator-sdk:csv:customresourcedefinitions:type=status
 	Name string `json:"name"`
-	// Master is the address of the master redis server of
-	// this shard, in the format "127.0.0.1:6379"
-	// DEPRECATED - this field will be removed in an upcoming release
-	// +operator-sdk:csv:customresourcedefinitions:type=status
-	// +optional
-	Master string `json:"master,omitempty"`
-	// SlavesRO is the list of addresses of the read-only slave
-	// servers in this shard, in the format "127.0.0.1:6379"
-	// DEPRECATED - this field will be removed in an upcoming release
-	// +operator-sdk:csv:customresourcedefinitions:type=status
-	// +optional
-	SlavesRO []string `json:"slavesRO,omitempty"`
-	// SlavesRW is the list of addresses of the read-write slave
-	// servers in this shard, in the format "127.0.0.1:6379"
-	// DEPRECATED - this field will be removed in an upcoming release
-	// +operator-sdk:csv:customresourcedefinitions:type=status
-	// +optional
-	SlavesRW []string `json:"slavesRW,omitempty"`
 	// Server is a map intended to store configuration information
 	// of each of the RedisServer instances that belong to the MonitoredShard
 	// +operator-sdk:csv:customresourcedefinitions:type=status
@@ -250,6 +232,9 @@ func (ms MonitoredShard) GetSlavesRO() map[string]RedisServerDetails {
 type RedisServerDetails struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=status
 	Role client.Role `json:"role"`
+	// +operator-sdk:csv:customresourcedefinitions:type=status
+	// +optional
+	Address string `json:"address,omitempty"`
 	// +operator-sdk:csv:customresourcedefinitions:type=status
 	// +optional
 	Config map[string]string `json:"config,omitempty"`

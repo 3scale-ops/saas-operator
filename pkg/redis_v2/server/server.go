@@ -3,7 +3,6 @@ package server
 import (
 	"bufio"
 	"context"
-	"fmt"
 	"net"
 	"strings"
 	"sync"
@@ -80,7 +79,10 @@ func (srv *Server) GetPort() string {
 }
 
 func (srv *Server) GetAlias() string {
-	return srv.alias
+	if srv.alias != "" {
+		return srv.alias
+	}
+	return srv.ID()
 }
 
 func (srv *Server) SetAlias(alias string) {
@@ -91,25 +93,6 @@ func (srv *Server) SetAlias(alias string) {
 
 func (srv *Server) ID() string {
 	return net.JoinHostPort(srv.host, srv.port)
-}
-
-func (rs *Server) IP() (string, error) {
-	var ip string
-	if r := net.ParseIP(rs.GetHost()); r != nil {
-		ip = r.String()
-	} else {
-		// if it is not an IP, try to resolve a DNS
-		ips, err := net.LookupIP(rs.host)
-		if err != nil {
-			return "", err
-		}
-		if len(ips) > 1 {
-			return "", fmt.Errorf("dns resolves to more than 1 IP")
-		}
-		ip = ips[0].String()
-	}
-
-	return ip, nil
 }
 
 func (srv *Server) SentinelMaster(ctx context.Context, shard string) (*client.SentinelMasterCmdResult, error) {

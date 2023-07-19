@@ -27,7 +27,7 @@ func TestNewGoRedisClientFromConnectionString(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Returns a CRUD object",
+			name: "Returns a client object",
 			args: args{
 				connectionString: "redis://127.0.0.1:1234",
 			},
@@ -67,6 +67,7 @@ func TestNewGoRedisClientFromConnectionString(t *testing.T) {
 func TestClient_GetHost(t *testing.T) {
 	type fields struct {
 		client client.TestableInterface
+		host   string
 		ip     string
 		port   string
 	}
@@ -76,9 +77,10 @@ func TestClient_GetHost(t *testing.T) {
 		want   string
 	}{
 		{
-			name: "Returns the server IP",
+			name: "Returns the server host",
 			fields: fields{
 				client: nil,
+				host:   "127.0.0.1",
 				ip:     "127.0.0.1",
 				port:   "2222",
 			},
@@ -89,7 +91,6 @@ func TestClient_GetHost(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			sc := &Server{
 				client: tt.fields.client,
-				host:   tt.fields.ip,
 				port:   tt.fields.port,
 			}
 			if got := sc.GetHost(); got != tt.want {
@@ -102,6 +103,7 @@ func TestClient_GetHost(t *testing.T) {
 func TestClient_GetPort(t *testing.T) {
 	type fields struct {
 		client client.TestableInterface
+		host   string
 		ip     string
 		port   string
 	}
@@ -114,6 +116,7 @@ func TestClient_GetPort(t *testing.T) {
 			name: "Returns the server port",
 			fields: fields{
 				client: nil,
+				host:   "127.0.0.1",
 				ip:     "127.0.0.1",
 				port:   "2222",
 			},
@@ -124,7 +127,6 @@ func TestClient_GetPort(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			sc := &Server{
 				client: tt.fields.client,
-				host:   tt.fields.ip,
 				port:   tt.fields.port,
 			}
 			if got := sc.GetPort(); got != tt.want {
@@ -137,6 +139,7 @@ func TestClient_GetPort(t *testing.T) {
 func TestClient_SentinelMaster(t *testing.T) {
 	type fields struct {
 		client client.TestableInterface
+		host   string
 		ip     string
 		port   string
 	}
@@ -220,6 +223,7 @@ func TestClient_SentinelMaster(t *testing.T) {
 						InjectError:    func() error { return errors.New("error") },
 					}},
 				},
+				host: "127.0.0.1",
 				ip:   "abc",
 				port: "abc",
 			},
@@ -232,7 +236,6 @@ func TestClient_SentinelMaster(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			sc := &Server{
 				client: tt.fields.client,
-				host:   tt.fields.ip,
 				port:   tt.fields.port,
 			}
 			got, err := sc.SentinelMaster(tt.args.ctx, tt.args.shard)
@@ -392,7 +395,6 @@ func TestClient_SentinelMasters(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			sc := &Server{
 				client: tt.fields.client,
-				host:   tt.fields.ip,
 				port:   tt.fields.port,
 			}
 			got, err := sc.SentinelMasters(tt.args.ctx)
@@ -552,7 +554,6 @@ func TestClient_SentinelSlaves(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			sc := &Server{
 				client: tt.fields.client,
-				host:   tt.fields.ip,
 				port:   tt.fields.port,
 			}
 			got, err := sc.SentinelSlaves(tt.args.ctx, tt.args.shard)
@@ -570,6 +571,7 @@ func TestClient_SentinelSlaves(t *testing.T) {
 func TestClient_SentinelMonitor(t *testing.T) {
 	type fields struct {
 		client client.TestableInterface
+		host   string
 		ip     string
 		port   string
 	}
@@ -625,7 +627,7 @@ func TestClient_SentinelMonitor(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			sc := &Server{
 				client: tt.fields.client,
-				host:   tt.fields.ip,
+				host:   tt.fields.host,
 				port:   tt.fields.port,
 			}
 			if err := sc.SentinelMonitor(tt.args.ctx, tt.args.name, tt.args.host, tt.args.port, tt.args.quorum); (err != nil) != tt.wantErr {
@@ -638,6 +640,7 @@ func TestClient_SentinelMonitor(t *testing.T) {
 func TestClient_SentinelSet(t *testing.T) {
 	type fields struct {
 		client client.TestableInterface
+		host   string
 		ip     string
 		port   string
 	}
@@ -693,7 +696,7 @@ func TestClient_SentinelSet(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			sc := &Server{
 				client: tt.fields.client,
-				host:   tt.fields.ip,
+				host:   tt.fields.host,
 				port:   tt.fields.port,
 			}
 			if err := sc.SentinelSet(tt.args.ctx, tt.args.shard, tt.args.parameter, tt.args.value); (err != nil) != tt.wantErr {
@@ -706,6 +709,7 @@ func TestClient_SentinelSet(t *testing.T) {
 func TestCRUD_SentinelPSubscribe(t *testing.T) {
 	type fields struct {
 		client client.TestableInterface
+		host   string
 		ip     string
 		port   string
 	}
@@ -752,7 +756,7 @@ func TestCRUD_SentinelPSubscribe(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			crud := &Server{
 				client: tt.fields.client,
-				host:   tt.fields.ip,
+				host:   tt.fields.host,
 				port:   tt.fields.port,
 			}
 			timeout := time.After(100 * time.Millisecond)
@@ -951,7 +955,6 @@ func TestCRUD_SentinelInfoCache(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			crud := &Server{
 				client: tt.fields.Client,
-				host:   tt.fields.IP,
 				port:   tt.fields.Port,
 			}
 			got, err := crud.SentinelInfoCache(tt.args.ctx)
@@ -1062,7 +1065,6 @@ func TestClient_RedisRole(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			sc := &Server{
 				client: tt.fields.client,
-				host:   tt.fields.ip,
 				port:   tt.fields.port,
 			}
 			got, got1, err := sc.RedisRole(tt.args.ctx)
@@ -1144,7 +1146,6 @@ func TestClient_RedisConfigGet(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			sc := &Server{
 				client: tt.fields.client,
-				host:   tt.fields.ip,
 				port:   tt.fields.port,
 			}
 			got, err := sc.RedisConfigGet(tt.args.ctx, tt.args.parameter)
@@ -1211,7 +1212,6 @@ func TestClient_RedisSlaveOf(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			sc := &Server{
 				client: tt.fields.client,
-				host:   tt.fields.ip,
 				port:   tt.fields.port,
 			}
 			if err := sc.RedisSlaveOf(tt.args.ctx, tt.args.host, tt.args.port); (err != nil) != tt.wantErr {

@@ -1,6 +1,6 @@
 module github.com/3scale/saas-operator
 
-go 1.19
+go 1.20
 
 require (
 	github.com/3scale-ops/basereconciler v0.1.0

@@ -31,6 +31,10 @@ func (me MultiError) Error() string {
 	return string(b)
 }
 
+func (me MultiError) Unwrap() []error {
+	return []error(me)
+}
+
 func (me MultiError) ErrorOrNil() error {
 	if len(me) > 0 {
 		return me

@@ -59,7 +59,7 @@ func (shard *Shard) Discover(ctx context.Context, sentinel *SentinelServer, opti
 		for idx := range shard.Servers {
 			if err := shard.Servers[idx].Discover(ctx, options...); err != nil {
 				logger.Error(err, "unable to discover redis server %s", shard.Servers[idx].ID())
-				merr = append(merr, err)
+				merr = append(merr, DiscoveryError_UnknownRole_SingleServerFailure{err})
 				continue
 			}
 		}
@@ -68,55 +68,59 @@ func (shard *Shard) Discover(ctx context.Context, sentinel *SentinelServer, opti
 	default:
 		sentinelMasterResult, err := sentinel.SentinelMaster(ctx, shard.Name)
 		if err != nil {
-			return append(merr, err)
+			return append(merr, DiscoveryError_Sentinel_Failure{err})
 		}
 
 		// Get the corresponding server or add a new one if not found
 		srv, err := shard.GetServerByID(fmt.Sprintf("%s:%d", sentinelMasterResult.IP, sentinelMasterResult.Port))
 		if err != nil {
-			return append(merr, err)
+			return append(merr, DiscoveryError_Master_SingleServerFailure{err})
 		}
 
 		// do not try to discover a master flagged as "s_down" or "o_down"
 		if strings.Contains(sentinelMasterResult.Flags, "s_down") || strings.Contains(sentinelMasterResult.Flags, "o_down") {
-			return append(merr, fmt.Errorf("%s master %s is s_down/o_down", sentinelMasterResult.Name, fmt.Sprintf("%s:%d", sentinelMasterResult.IP, sentinelMasterResult.Port)))
+			return append(merr, DiscoveryError_Master_SingleServerFailure{
+				fmt.Errorf("master %s is s_down/o_down", sentinelMasterResult.Name)})
+
 		} else {
 			// Confirm the server role
 			if err = srv.Discover(ctx, options...); err != nil {
 				srv.Role = client.Role(client.Unknown)
-				return append(merr, err)
+				return append(merr, DiscoveryError_Master_SingleServerFailure{err})
 			} else if srv.Role != client.Master {
 				// the role that the server reports is different from the role that
 				// sentinel sees. Probably the sentinel configuration hasn't converged yet
 				// this is an error and should be retried
 				srv.Role = client.Role(client.Unknown)
-				return append(merr, fmt.Errorf("sentinel config has not yet converged for %s", srv.ID()))
+				return append(merr, DiscoveryError_Master_SingleServerFailure{fmt.Errorf("sentinel config has not yet converged for %s", srv.ID())})
 			}
 		}
 
 		// discover slaves
 		sentinelSlavesResult, err := sentinel.SentinelSlaves(ctx, shard.Name)
 		if err != nil {
-			return append(merr, err)
+			return append(merr, DiscoveryError_Sentinel_Failure{err})
 		}
 		for _, slave := range sentinelSlavesResult {
 
 			// Get the corresponding server or add a new one if not found
 			srv, err := shard.GetServerByID(fmt.Sprintf("%s:%d", slave.IP, slave.Port))
 			if err != nil {
-				merr = append(merr, err)
+				merr = append(merr, DiscoveryError_Slave_SingleServerFailure{err})
 				continue
 			}
 
 			// do not try to discover a slave flagged as "s_down" or "o_down"
 			if strings.Contains(slave.Flags, "s_down") || strings.Contains(slave.Flags, "o_down") {
-				merr = append(merr, fmt.Errorf("%s slave %s is s_down/o_down", slave.Name, fmt.Sprintf("%s:%d", slave.IP, slave.Port)))
+				merr = append(merr, DiscoveryError_Slave_SingleServerFailure{
+					fmt.Errorf("slave %s is s_down/o_down", slave.Name)})
 				continue
+
 			} else {
 				if err := srv.Discover(ctx, options...); err != nil {
 					srv.Role = client.Role(client.Unknown)
 					logger.Error(err, "unable to discover redis server %s", srv.ID())
-					merr = append(merr, err)
+					merr = append(merr, DiscoveryError_Slave_SingleServerFailure{err})
 					continue
 				}
 				if srv.Role != client.Slave {
@@ -124,7 +128,7 @@ func (shard *Shard) Discover(ctx context.Context, sentinel *SentinelServer, opti
 					// sentinel sees. Probably the sentinel configuration hasn't converged yet
 					// this is an error and should be retried
 					srv.Role = client.Role(client.Unknown)
-					merr = append(merr, fmt.Errorf("sentinel config has not yet converged for %s", srv.ID()))
+					merr = append(merr, DiscoveryError_Slave_SingleServerFailure{fmt.Errorf("sentinel config has not yet converged for %s", srv.ID())})
 					continue
 				}
 			}
@@ -149,11 +153,7 @@ func (shard *Shard) GetMasterAddr() (string, string, error) {
 		return "", "", util.WrapError("(*Shard).GetMasterAddr", fmt.Errorf("wrong number of masters: %d != 1", len(master)))
 	}
 
-	ip, err := master[0].IP()
-	if err != nil {
-		return "", "", util.WrapError("(*Shard).GetMasterAddr", err)
-	}
-	return ip, master[0].GetPort(), nil
+	return master[0].GetHost(), master[0].GetPort(), nil
 }
 
 func (shard *Shard) GetServerByID(hostport string) (*RedisServer, error) {

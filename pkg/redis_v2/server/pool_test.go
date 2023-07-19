@@ -78,7 +78,7 @@ func TestServerPool_GetServer(t *testing.T) {
 
 	t.Run("Adds a new server to the pool", func(t *testing.T) {
 		pool := &ServerPool{
-			servers: []*Server{{alias: "host1", client: nil, host: "127.0.0.1", port: "1000"}},
+			servers: []*Server{{alias: "host1", client: nil, port: "1000"}},
 		}
 		new, _ := pool.GetServer("redis://127.0.0.2:2000", util.Pointer("host2"))
 		exists, _ := pool.GetServer("redis://127.0.0.2:2000", util.Pointer("host2"))

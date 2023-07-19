@@ -8,7 +8,7 @@ import (
 	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	redisclient "github.com/3scale/saas-operator/pkg/redis/crud/client"
+	redisclient "github.com/3scale/saas-operator/pkg/redis_v2/client"
 	testutil "github.com/3scale/saas-operator/test/util"
 	"github.com/google/go-cmp/cmp"
 	. "github.com/onsi/ginkgo/v2"
@@ -160,8 +160,7 @@ var _ = Describe("sentinel e2e suite", func() {
 
 					if diff := cmp.Diff(sentinel.Status.MonitoredShards[i],
 						saasv1alpha1.MonitoredShard{
-							Name:   shard.GetName(),
-							Master: "",
+							Name: shard.GetName(),
 							Servers: map[string]saasv1alpha1.RedisServerDetails{
 								strings.TrimPrefix(*shard.Status.ShardNodes.Master, "redis://"): {
 									Role:   redisclient.Master,

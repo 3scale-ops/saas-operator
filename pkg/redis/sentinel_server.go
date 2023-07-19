@@ -8,7 +8,7 @@ import (
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/redis/crud"
-	redis_client "github.com/3scale/saas-operator/pkg/redis/crud/client"
+	redis_client "github.com/3scale/saas-operator/pkg/redis_v2/client"
 	"github.com/3scale/saas-operator/pkg/util"
 	"github.com/go-logr/logr"
 	"sigs.k8s.io/controller-runtime/pkg/log"

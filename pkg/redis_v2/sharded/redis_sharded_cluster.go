@@ -113,7 +113,8 @@ func (cluster Cluster) SentinelDiscover(ctx context.Context, opts ...DiscoveryOp
 		}
 
 		if err := shard.Discover(ctx, sentinel, opts...); err != nil {
-			merr = append(merr, fmt.Errorf("errors occurred for shard %s: '%s'", master.Name, err))
+			// merr = append(merr, fmt.Errorf("errors occurred for shard %s: '%s'", master.Name, err))
+			merr = append(merr, ShardDiscoveryError{ShardName: master.Name, Errors: err.(util.MultiError)})
 			// keep going with the other shards
 			continue
 		}
@@ -150,4 +151,17 @@ func (cluster Cluster) GetSentinel(pctx context.Context) *SentinelServer {
 	}
 
 	return nil
+}
+
+type ShardDiscoveryError struct {
+	ShardName string
+	Errors    util.MultiError
+}
+
+func (e ShardDiscoveryError) Error() string {
+	return fmt.Sprintf("errors occurred for shard %s: '%s'", e.ShardName, e.Errors)
+}
+
+func (e ShardDiscoveryError) Unwrap() []error {
+	return []error(e.Errors)
 }

@@ -11,7 +11,6 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/prometheus/client_golang/prometheus"
 	"sigs.k8s.io/controller-runtime/pkg/event"
-	"sigs.k8s.io/controller-runtime/pkg/metrics"
 )
 
 var (
@@ -84,10 +83,10 @@ var (
 
 func init() {
 	// Register custom metrics with the global prometheus registry
-	metrics.Registry.MustRegister(
-		serverInfo, linkPendingCommands, lastOkPingReply, roleReportedTime,
-		numSlaves, numOtherSentinels, masterLinkDownTime, slaveReplOffset,
-	)
+	// metrics.Registry.MustRegister(
+	// 	serverInfo, linkPendingCommands, lastOkPingReply, roleReportedTime,
+	// 	numSlaves, numOtherSentinels, masterLinkDownTime, slaveReplOffset,
+	// )
 }
 
 // SentinelEventWatcher implements RunnableThread

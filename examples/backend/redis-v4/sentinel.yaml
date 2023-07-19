@@ -7,8 +7,7 @@ spec:
   config:
     monitoredShards:
       # DNS should not be used in production. DNS is
-      # used here for convenience as redis IPs might change
-      # inside the cluster.
+      # just convenient for testing purposes
       shard01:
         - redis://redis-shard-shard01-0.redis-shard-shard01:6379
         - redis://redis-shard-shard01-1.redis-shard-shard01:6379

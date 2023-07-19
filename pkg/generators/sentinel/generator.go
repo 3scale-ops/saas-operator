@@ -1,6 +1,11 @@
 package sentinel
 
 import (
+	"context"
+	"net"
+	"net/url"
+	"strings"
+
 	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
 	basereconciler_resources "github.com/3scale-ops/basereconciler/resources"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
@@ -8,6 +13,7 @@ import (
 	"github.com/3scale/saas-operator/pkg/generators/sentinel/config"
 	"github.com/3scale/saas-operator/pkg/resource_builders/grafanadashboard"
 	"github.com/3scale/saas-operator/pkg/resource_builders/pdb"
+	"github.com/3scale/saas-operator/pkg/util"
 )
 
 const (
@@ -70,4 +76,45 @@ func (gen *Generator) Resources() []basereconciler.Resource {
 	}
 
 	return resources
+}
+
+func (gen *Generator) ClusterTopology(ctx context.Context) (map[string]map[string]string, error) {
+
+	clustermap := map[string]map[string]string{}
+
+	for shard, servers := range gen.Spec.Config.MonitoredShards {
+		shardmap := map[string]string{}
+		for _, server := range servers {
+			// the redis servesr must be defined using IP
+			// addresses, so this tries to resolve a hostname
+			// if present in the connection string.
+			u, err := url.Parse(server)
+			alias := u.Host
+			if err != nil {
+				return nil, err
+			}
+			ip, err := util.LookupIPv4(ctx, u.Hostname())
+			if err != nil {
+				return nil, err
+			}
+			u.Host = net.JoinHostPort(ip, u.Port())
+			if err != nil {
+				return nil, err
+			}
+			shardmap[alias] = u.String()
+		}
+		clustermap[shard] = shardmap
+	}
+
+	clustermap["sentinel"] = make(map[string]string, int(*gen.Spec.Replicas))
+	for _, uri := range gen.SentinelURIs() {
+		u, err := url.Parse(uri)
+		if err != nil {
+			return nil, err
+		}
+		alias := strings.Split(u.Hostname(), ".")[0]
+		clustermap["sentinel"][alias] = u.String()
+	}
+
+	return clustermap, nil
 }
