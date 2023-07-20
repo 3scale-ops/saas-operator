@@ -96,6 +96,10 @@ func (shard *Shard) Discover(ctx context.Context, sentinel *SentinelServer, opti
 			}
 		}
 
+		if DiscoveryOptionSet(options).Has(OnlyMasterDiscoveryOpt) {
+			return merr.ErrorOrNil()
+		}
+
 		// discover slaves
 		sentinelSlavesResult, err := sentinel.SentinelSlaves(ctx, shard.Name)
 		if err != nil {

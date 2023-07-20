@@ -677,6 +677,38 @@ func TestShard_Discover(t *testing.T) {
 				}},
 			wantErr: true,
 		},
+		{
+			name: "Sentinel: Discover() only masters",
+			fields: fields{
+				Name:    "test",
+				Servers: []*RedisServer{},
+				pool: redis.NewServerPool(
+					redis.NewFakeServerWithFakeClient("127.0.0.1", "1000",
+						client.NewPredefinedRedisFakeResponse("role-master", nil),
+					),
+					redis.NewFakeServerWithFakeClient("127.0.0.1", "2000"),
+					redis.NewFakeServerWithFakeClient("127.0.0.1", "3000"),
+				),
+			},
+			args: args{
+				ctx: context.TODO(),
+				sentinel: NewSentinelServerFromParams(redis.NewFakeServerWithFakeClient("host", "port",
+					client.FakeResponse{
+						// cmd: SentinelMaster
+						InjectResponse: func() interface{} {
+							return &client.SentinelMasterCmdResult{Name: "test", IP: "127.0.0.1", Port: 1000, Flags: "master"}
+						},
+						InjectError: func() error { return nil },
+					},
+				)),
+				options: []DiscoveryOption{OnlyMasterDiscoveryOpt},
+			},
+			want: &Shard{Name: "test",
+				Servers: []*RedisServer{
+					{Role: client.Master, Config: map[string]string{}},
+				}},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -15,6 +15,7 @@ type DiscoveryOption int
 const (
 	SlaveReadOnlyDiscoveryOpt DiscoveryOption = iota
 	SaveConfigDiscoveryOpt
+	OnlyMasterDiscoveryOpt
 )
 
 func (set DiscoveryOptionSet) Has(opt DiscoveryOption) bool {
