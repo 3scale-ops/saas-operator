@@ -7,6 +7,7 @@ import (
 	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
 	"github.com/3scale-ops/marin3r/pkg/envoy"
 	envoy_serializer "github.com/3scale-ops/marin3r/pkg/envoy/serializer"
+	marin3r_pointer "github.com/3scale-ops/marin3r/pkg/util/pointer"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	descriptor "github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 	"github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/factory"
@@ -75,8 +76,8 @@ func TestNew(t *testing.T) {
 				},
 				Spec: marin3rv1alpha1.EnvoyConfigSpec{
 					NodeID:        "test",
-					Serialization: pointer.String(string(envoy_serializer.YAML)),
-					EnvoyAPI:      pointer.String(envoy.APIv3.String()),
+					Serialization: marin3r_pointer.New(envoy_serializer.YAML),
+					EnvoyAPI:      marin3r_pointer.New(envoy.APIv3),
 					EnvoyResources: &marin3rv1alpha1.EnvoyResources{
 						Clusters: []marin3rv1alpha1.EnvoyResource{{
 							Value: heredoc.Doc(`
@@ -259,8 +260,8 @@ func Test_newFromProtos(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{Name: "test", Namespace: "ns"},
 				Spec: marin3rv1alpha1.EnvoyConfigSpec{
 					NodeID:        "test",
-					Serialization: pointer.String(string(envoy_serializer.YAML)),
-					EnvoyAPI:      pointer.String(envoy.APIv3.String()),
+					Serialization: marin3r_pointer.New(envoy_serializer.YAML),
+					EnvoyAPI:      marin3r_pointer.New(envoy.APIv3),
 					EnvoyResources: &marin3rv1alpha1.EnvoyResources{
 						Clusters: []marin3rv1alpha1.EnvoyResource{{
 							Value: heredoc.Doc(`

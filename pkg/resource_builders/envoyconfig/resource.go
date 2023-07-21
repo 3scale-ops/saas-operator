@@ -7,6 +7,7 @@ import (
 	"github.com/3scale-ops/marin3r/pkg/envoy"
 	envoy_serializer "github.com/3scale-ops/marin3r/pkg/envoy/serializer"
 	envoy_serializer_v3 "github.com/3scale-ops/marin3r/pkg/envoy/serializer/v3"
+	marin3r_pointer "github.com/3scale-ops/marin3r/pkg/util/pointer"
 	"github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/auto"
 	descriptor "github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 	"github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/factory"
@@ -16,7 +17,6 @@ import (
 	envoy_service_runtime_v3 "github.com/envoyproxy/go-control-plane/envoy/service/runtime/v3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/utils/pointer"
 	"sigs.k8s.io/yaml"
 )
 
@@ -92,9 +92,9 @@ func newFromProtos(key types.NamespacedName, nodeID string, resources []envoy.Re
 				Namespace: key.Namespace,
 			},
 			Spec: marin3rv1alpha1.EnvoyConfigSpec{
-				EnvoyAPI:      pointer.String(envoy.APIv3.String()),
+				EnvoyAPI:      marin3r_pointer.New(envoy.APIv3),
 				NodeID:        nodeID,
-				Serialization: pointer.String(string(envoy_serializer.YAML)),
+				Serialization: marin3r_pointer.New(envoy_serializer.YAML),
 				EnvoyResources: &marin3rv1alpha1.EnvoyResources{
 					Clusters:  clusters,
 					Routes:    routes,

@@ -58,9 +58,9 @@ func (r *RedisShardReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	instance := &saasv1alpha1.RedisShard{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx, key, instance, nil, nil)
-	if result != nil || err != nil {
-		return *result, err
+	err := r.GetInstance(ctx, key, instance, nil, nil)
+	if err != nil {
+		return ctrl.Result{}, err
 	}
 
 	// Apply defaults for reconcile but do not store them in the API

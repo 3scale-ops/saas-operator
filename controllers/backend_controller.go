@@ -65,9 +65,9 @@ func (r *BackendReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	instance := &saasv1alpha1.Backend{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx, key, instance, nil, nil)
-	if result != nil || err != nil {
-		return *result, err
+	err := r.GetInstance(ctx, key, instance, nil, nil)
+	if err != nil {
+		return ctrl.Result{}, err
 	}
 
 	// Apply defaults for reconcile but do not store them in the API

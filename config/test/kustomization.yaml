@@ -2,12 +2,14 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: default
 resources:
-- ../default
-- external-apis/grafanadashboards.integreatly.org.yaml
-- external-apis/podmonitors.monitoring.coreos.com.yaml
-- external-apis/servicemonitors.monitoring.coreos.com.yaml
-- external-apis/externalsecrets.external-secrets.io.yaml
-- external-apis/envoyconfigs.marin3r.3scale.net.yaml
+  - ../default
+  - external-apis/grafanadashboards.integreatly.org.yaml
+  - external-apis/podmonitors.monitoring.coreos.com.yaml
+  - external-apis/servicemonitors.monitoring.coreos.com.yaml
+  - external-apis/externalsecrets.external-secrets.io.yaml
+  - external-apis/envoyconfigs.marin3r.3scale.net.yaml
+  - external-apis/pipelines.tekton.dev.yaml
+  - external-apis/tasks.tekton.dev.yaml
 patches:
   - target:
       group: apps

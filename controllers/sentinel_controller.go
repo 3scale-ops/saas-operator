@@ -73,13 +73,13 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	instance := &saasv1alpha1.Sentinel{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx,
+	err := r.GetInstance(ctx,
 		key,
 		instance,
 		pointer.String(saasv1alpha1.Finalizer),
 		[]func(){r.SentinelEvents.CleanupThreads(instance), r.Metrics.CleanupThreads(instance)})
-	if result != nil || err != nil {
-		return *result, err
+	if err != nil {
+		return ctrl.Result{}, err
 	}
 
 	// Apply defaults for reconcile but do not store them in the API
