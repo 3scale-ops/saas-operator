@@ -46,6 +46,7 @@ type Generator struct {
 	GrafanaDashboardSpec saasv1alpha1.GrafanaDashboardSpec
 	ConfigFilesSecret    string
 	Options              config.Options
+	Tekton               []SystemTektonGenerator
 }
 
 // NewGenerator returns a new Options struct
@@ -282,6 +283,28 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) (Gen
 		generator.CanarySidekiqBilling.Spec.PDB = &saasv1alpha1.PodDisruptionBudgetSpec{}
 	}
 
+	for _, task := range spec.Tasks {
+		generator.Tekton = append(generator.Tekton,
+			SystemTektonGenerator{
+				BaseOptionsV2: generators.BaseOptionsV2{
+					Component:    strings.Join([]string{component, *task.Name}, "-"),
+					InstanceName: instance,
+					Namespace:    namespace,
+					Labels: map[string]string{
+						"app":                          "3scale-api-management",
+						"threescale_component":         component,
+						"threescale_component_element": fmt.Sprintf("task-%s", *task.Name),
+					},
+				},
+				Spec:              task,
+				Image:             *task.Config.Image,
+				Options:           config.NewOptions(spec),
+				ConfigFilesSecret: *spec.Config.ConfigFilesSecret,
+				TwemproxySpec:     spec.Twemproxy,
+				Enabled:           *task.Enabled,
+			})
+	}
+
 	return generator, nil
 }
 
@@ -491,4 +514,38 @@ func (gen *ConsoleGenerator) StatefulSet() basereconciler_resources.StatefulSetT
 		RolloutTriggers: getSystemSecretsRolloutTriggers(gen.ConfigFilesSecret),
 		IsEnabled:       gen.Enabled,
 	}
+}
+
+// SystemTektonGenerator has methods to generate resources for system tekton tasks
+type SystemTektonGenerator struct {
+	generators.BaseOptionsV2
+	Spec              saasv1alpha1.SystemTektonTaskSpec
+	Options           config.Options
+	Image             saasv1alpha1.ImageSpec
+	ConfigFilesSecret string
+	TwemproxySpec     *saasv1alpha1.TwemproxySpec
+	Enabled           bool
+}
+
+// Resources returns functions to generate all System's tekton pipeline resources
+func (gen *Generator) Pipelines() []basereconciler.Resource {
+
+	resources := []basereconciler.Resource{}
+
+	// Tekton resources
+	for _, tr := range gen.Tekton {
+		tektonResource := tr
+		resources = append(resources,
+			&basereconciler_resources.TaskTemplate{
+				Template:  tektonResource.task(),
+				IsEnabled: tektonResource.Enabled,
+			},
+			&basereconciler_resources.PipelineTemplate{
+				Template:  tektonResource.pipeline(),
+				IsEnabled: tektonResource.Enabled,
+			},
+		)
+	}
+
+	return resources
 }

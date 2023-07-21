@@ -26,6 +26,7 @@ import (
 	"github.com/go-logr/logr"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
@@ -63,9 +64,9 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 
 	instance := &saasv1alpha1.System{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx, key, instance, nil, nil)
-	if result != nil || err != nil {
-		return *result, err
+	err := r.GetInstance(ctx, key, instance, nil, nil)
+	if err != nil {
+		return ctrl.Result{}, err
 	}
 
 	// Apply defaults for reconcile but do not store them in the API
@@ -81,41 +82,48 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 
 	// Shared resources
-	resources := append(gen.ExternalSecrets(), gen.GrafanaDashboard())
+	// resources := append(gen.ExternalSecrets(), gen.GrafanaDashboard())
 
-	// System APP
-	app_resources, err := r.NewDeploymentWorkload(&gen.App, gen.CanaryApp)
-	if err != nil {
-		return ctrl.Result{}, err
-	}
-	resources = append(resources, app_resources...)
+	// // System APP
+	// app_resources, err := r.NewDeploymentWorkload(&gen.App, gen.CanaryApp)
+	// if err != nil {
+	// 	return ctrl.Result{}, err
+	// }
+	// resources = append(resources, app_resources...)
 
-	// Sidekiq Default resources
-	sidekiq_default_resources, err := r.NewDeploymentWorkload(&gen.SidekiqDefault, gen.CanarySidekiqDefault)
-	if err != nil {
-		return ctrl.Result{}, err
-	}
-	resources = append(resources, sidekiq_default_resources...)
+	// // Sidekiq Default resources
+	// sidekiq_default_resources, err := r.NewDeploymentWorkload(&gen.SidekiqDefault, gen.CanarySidekiqDefault)
+	// if err != nil {
+	// 	return ctrl.Result{}, err
+	// }
+	// resources = append(resources, sidekiq_default_resources...)
 
-	// Sidekiq Billing resources
-	sidekiq_billing_resources, err := r.NewDeploymentWorkload(&gen.SidekiqBilling, gen.CanarySidekiqBilling)
-	if err != nil {
-		return ctrl.Result{}, err
-	}
-	resources = append(resources, sidekiq_billing_resources...)
+	// // Sidekiq Billing resources
+	// sidekiq_billing_resources, err := r.NewDeploymentWorkload(&gen.SidekiqBilling, gen.CanarySidekiqBilling)
+	// if err != nil {
+	// 	return ctrl.Result{}, err
+	// }
+	// resources = append(resources, sidekiq_billing_resources...)
 
-	// Sidekiq Low resources
-	sidekiq_low_resources, err := r.NewDeploymentWorkload(&gen.SidekiqLow, gen.CanarySidekiqLow)
-	if err != nil {
-		return ctrl.Result{}, err
-	}
-	resources = append(resources, sidekiq_low_resources...)
+	// // Sidekiq Low resources
+	// sidekiq_low_resources, err := r.NewDeploymentWorkload(&gen.SidekiqLow, gen.CanarySidekiqLow)
+	// if err != nil {
+	// 	return ctrl.Result{}, err
+	// }
+	// resources = append(resources, sidekiq_low_resources...)
 
-	// Searchd resources
-	resources = append(resources, gen.Searchd.StatefulSetWithTraffic()...)
+	// // Searchd resources
+	// resources = append(resources, gen.Searchd.StatefulSetWithTraffic()...)
 
-	// Console resources
-	resources = append(resources, gen.Console.StatefulSet())
+	// // Console resources
+	// resources = append(resources, gen.Console.StatefulSet())
+
+	// // Tekton resources
+	// for _, task := range gen.Tasks {
+	// 	resources = append(resources, task.PipelineWithTask()...)
+	// }
+
+	resources := append(gen.Pipelines(), gen.GrafanaDashboard())
 
 	err = r.ReconcileOwnedResources(ctx, instance, resources)
 	if err != nil {
@@ -138,6 +146,8 @@ func (r *SystemReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&monitoringv1.PodMonitor{}).
 		Owns(&externalsecretsv1beta1.ExternalSecret{}).
 		Owns(&grafanav1alpha1.GrafanaDashboard{}).
+		Owns(&pipelinev1beta1.Pipeline{}).
+		Owns(&pipelinev1beta1.Task{}).
 		Watches(&source.Kind{Type: &corev1.Secret{TypeMeta: metav1.TypeMeta{Kind: "Secret"}}},
 			r.SecretEventHandler(&saasv1alpha1.SystemList{}, r.Log)).
 		Complete(r)

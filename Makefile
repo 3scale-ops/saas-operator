@@ -53,8 +53,8 @@ IMG ?= $(IMAGE_TAG_BASE):v$(VERSION)
 ENVTEST_K8S_VERSION = 1.24
 
 # KIND_K8S_VERSION refers to the version of the kind k8s cluster for e2e testing.
-# OCP 4.10 uses k8s 1.23
-KIND_K8S_VERSION = v1.23.13
+# OCP 4.11 uses k8s 1.24
+KIND_K8S_VERSION = v1.24.0
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -264,6 +264,8 @@ kind-deploy: manifests kustomize ## Deploy operator to the Kind K8s cluster
 		find config/test/external-apis/ -name '*yaml' -type f \
             | sed -n 's/.*\/\(.*\).yaml/\1/p' \
             | xargs -n1 kubectl wait --for condition=established --timeout=60s crd
+	kubectl apply \
+		--filename https://storage.googleapis.com/tekton-releases/pipeline/previous/$(TEKTON_VERSION)/release.yaml
 	$(KIND) load docker-image $(IMG)
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/test | kubectl apply -f -
@@ -295,12 +297,13 @@ GOBINDATA ?= $(LOCALBIN)/go-bindata
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v3.8.7
-CONTROLLER_TOOLS_VERSION ?= v0.10.0
+CONTROLLER_TOOLS_VERSION ?= v0.11.0
 GINKGO_VERSION ?= v2.9.1
 CRD_REFDOCS_VERSION ?= v0.0.8
 KIND_VERSION ?= v0.16.0
 ENVTEST_VERSION ?= latest
 GOBINDATA_VERSION ?= latest
+TEKTON_VERSION ?= v0.49.0
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
