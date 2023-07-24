@@ -627,7 +627,7 @@ metadata:
     capabilities: Basic Install
     categories: Integration & Delivery
     containerImage: quay.io/3scale/saas-operator
-    createdAt: "2023-07-03T15:19:09Z"
+    createdAt: "2023-07-24T09:15:04Z"
     description: |-
       The 3scale SaaS Operator creates and maintains a SaaS-ready deployment
       of the Red Hat 3scale API Management on OpenShift.
@@ -635,7 +635,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/3scale/saas-operator
     support: Red Hat
-  name: saas-operator.v0.19.11
+  name: saas-operator.v0.20.0-alpha.1
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -3803,6 +3803,61 @@ spec:
       - description: Configures the TerminationGracePeriodSeconds
         displayName: Termination Grace Period Seconds
         path: sidekiqLow.terminationGracePeriodSeconds
+      - description: Configures the Tekton Tasks for the component
+        displayName: Tasks
+        path: tasks
+      - description: System Tekton Task specific configuration options for the component
+          element
+        displayName: Config
+        path: tasks[0].config
+      - description: 'List of args to be consumed by the task. Format: queue[,Priority]'
+        displayName: Command
+        path: tasks[0].config.args
+      - description: List of extra evironment variables to be consumed by the task.
+        displayName: Extra Env
+        path: tasks[0].config.extraEnv
+      - description: Image specification for the Console component. Defaults to system
+          image if not defined.
+        displayName: Image
+        path: tasks[0].config.image
+      - description: Docker repository of the image
+        displayName: Name
+        path: tasks[0].config.image.name
+      - description: Pull policy for the image
+        displayName: Pull Policy
+        path: tasks[0].config.image.pullPolicy
+      - description: Name of the Secret that holds quay.io credentials to access the
+          image repository
+        displayName: Pull Secret Name
+        path: tasks[0].config.image.pullSecretName
+      - description: Image tag
+        displayName: Tag
+        path: tasks[0].config.image.tag
+      - description: Description for the Tekton task and pipeline
+        displayName: Description
+        path: tasks[0].description
+      - description: Deploy task instance
+        displayName: Enabled
+        path: tasks[0].enabled
+      - description: Name for the Tekton task and pipeline
+        displayName: Name
+        path: tasks[0].name
+      - description: Pod Disruption Budget for the component
+        displayName: Resources
+        path: tasks[0].resources
+      - description: 'Limits describes the maximum amount of compute resources allowed.
+          More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Limits
+        path: tasks[0].resources.limits
+      - description: 'Requests describes the minimum amount of compute resources required.
+          If Requests is omitted for a container, it defaults to Limits if that is
+          explicitly specified, otherwise to an implementation-defined value. More
+          info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Requests
+        path: tasks[0].resources.requests
+      - description: Configures the TerminationGracePeriodSeconds
+        displayName: Termination Grace Period Seconds
+        path: tasks[0].terminationGracePeriodSeconds
       - description: Configures twemproxy
         displayName: Twemproxy
         path: twemproxy
@@ -4377,7 +4432,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/3scale/saas-operator:v0.19.11
+                image: quay.io/3scale/saas-operator:v0.20.0-alpha.1
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -4891,4 +4946,4 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
-  version: 0.19.11
+  version: 0.20.0-alpha.1
