@@ -20,7 +20,6 @@ func (gen *SystemTektonGenerator) pipeline() func() *pipelinev1beta1.Pipeline {
 				Labels:    gen.GetLabels(),
 			},
 			Spec: pipelinev1beta1.PipelineSpec{
-				DisplayName: fmt.Sprintf("%s pipeline", *gen.Spec.Name),
 				Description: *gen.Spec.Description,
 				Params: []pipelinev1beta1.ParamSpec{
 					{
@@ -60,7 +59,7 @@ func (gen *SystemTektonGenerator) pipeline() func() *pipelinev1beta1.Pipeline {
 							},
 						},
 						TaskRef: &pipelinev1beta1.TaskRef{
-							Name: *gen.Spec.Name,
+							Name: gen.GetComponent(),
 							Kind: pipelinev1beta1.NamespacedTaskKind,
 						},
 					},
