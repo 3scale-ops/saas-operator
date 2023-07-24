@@ -627,7 +627,7 @@ metadata:
     capabilities: Basic Install
     categories: Integration & Delivery
     containerImage: quay.io/3scale/saas-operator
-    createdAt: "2023-07-24T09:15:04Z"
+    createdAt: "2023-07-24T14:29:05Z"
     description: |-
       The 3scale SaaS Operator creates and maintains a SaaS-ready deployment
       of the Red Hat 3scale API Management on OpenShift.
@@ -4919,6 +4919,30 @@ spec:
           - get
           - patch
           - update
+        - apiGroups:
+          - tekton.dev
+          resources:
+          - pipelines
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - tekton.dev
+          resources:
+          - tasks
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
         serviceAccountName: saas-operator-controller-manager
     strategy: deployment
   installModes:
