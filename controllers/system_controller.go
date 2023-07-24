@@ -84,48 +84,44 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 
 	// Shared resources
-	// resources := append(gen.ExternalSecrets(), gen.GrafanaDashboard())
+	resources := append(gen.ExternalSecrets(), gen.GrafanaDashboard())
 
-	// // System APP
-	// app_resources, err := r.NewDeploymentWorkload(&gen.App, gen.CanaryApp)
-	// if err != nil {
-	// 	return ctrl.Result{}, err
-	// }
-	// resources = append(resources, app_resources...)
+	// System APP
+	app_resources, err := r.NewDeploymentWorkload(&gen.App, gen.CanaryApp)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+	resources = append(resources, app_resources...)
 
-	// // Sidekiq Default resources
-	// sidekiq_default_resources, err := r.NewDeploymentWorkload(&gen.SidekiqDefault, gen.CanarySidekiqDefault)
-	// if err != nil {
-	// 	return ctrl.Result{}, err
-	// }
-	// resources = append(resources, sidekiq_default_resources...)
+	// Sidekiq Default resources
+	sidekiq_default_resources, err := r.NewDeploymentWorkload(&gen.SidekiqDefault, gen.CanarySidekiqDefault)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+	resources = append(resources, sidekiq_default_resources...)
 
-	// // Sidekiq Billing resources
-	// sidekiq_billing_resources, err := r.NewDeploymentWorkload(&gen.SidekiqBilling, gen.CanarySidekiqBilling)
-	// if err != nil {
-	// 	return ctrl.Result{}, err
-	// }
-	// resources = append(resources, sidekiq_billing_resources...)
+	// Sidekiq Billing resources
+	sidekiq_billing_resources, err := r.NewDeploymentWorkload(&gen.SidekiqBilling, gen.CanarySidekiqBilling)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+	resources = append(resources, sidekiq_billing_resources...)
 
-	// // Sidekiq Low resources
-	// sidekiq_low_resources, err := r.NewDeploymentWorkload(&gen.SidekiqLow, gen.CanarySidekiqLow)
-	// if err != nil {
-	// 	return ctrl.Result{}, err
-	// }
-	// resources = append(resources, sidekiq_low_resources...)
+	// Sidekiq Low resources
+	sidekiq_low_resources, err := r.NewDeploymentWorkload(&gen.SidekiqLow, gen.CanarySidekiqLow)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+	resources = append(resources, sidekiq_low_resources...)
 
-	// // Searchd resources
-	// resources = append(resources, gen.Searchd.StatefulSetWithTraffic()...)
+	// Searchd resources
+	resources = append(resources, gen.Searchd.StatefulSetWithTraffic()...)
 
-	// // Console resources
-	// resources = append(resources, gen.Console.StatefulSet())
+	// Console resources
+	resources = append(resources, gen.Console.StatefulSet())
 
-	// // Tekton resources
-	// for _, task := range gen.Tasks {
-	// 	resources = append(resources, task.PipelineWithTask()...)
-	// }
-
-	resources := append(gen.Pipelines(), gen.GrafanaDashboard())
+	// Tekton resources
+	resources = append(resources, gen.Pipelines()...)
 
 	err = r.ReconcileOwnedResources(ctx, instance, resources)
 	if err != nil {
