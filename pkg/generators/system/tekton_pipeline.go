@@ -2,6 +2,7 @@ package system
 
 import (
 	"fmt"
+	"strings"
 
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -38,6 +39,14 @@ func (gen *SystemTektonGenerator) pipeline() func() *pipelinev1beta1.Pipeline {
 							Type:      pipelinev1beta1.ParamTypeString,
 						},
 					},
+					{
+						Name:        "command",
+						Description: "Command for the task",
+						Default: &pipelinev1beta1.ParamValue{
+							StringVal: strings.Join(gen.Spec.Config.Command, " "),
+							Type:      pipelinev1beta1.ParamTypeString,
+						},
+					},
 				},
 				Tasks: []pipelinev1beta1.PipelineTask{
 					{
@@ -54,6 +63,13 @@ func (gen *SystemTektonGenerator) pipeline() func() *pipelinev1beta1.Pipeline {
 								Name: "container-tag",
 								Value: pipelinev1beta1.ParamValue{
 									StringVal: "$(params.container-tag)",
+									Type:      pipelinev1beta1.ParamTypeString,
+								},
+							},
+							pipelinev1beta1.Param{
+								Name: "command",
+								Value: pipelinev1beta1.ParamValue{
+									StringVal: "$(params.command)",
 									Type:      pipelinev1beta1.ParamTypeString,
 								},
 							},

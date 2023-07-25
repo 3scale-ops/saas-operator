@@ -2,6 +2,7 @@ package system
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
 	"github.com/3scale/saas-operator/pkg/resource_builders/twemproxy"
@@ -42,6 +43,14 @@ func (gen *SystemTektonGenerator) task() func() *pipelinev1beta1.Task {
 							Type:      pipelinev1beta1.ParamTypeString,
 						},
 					},
+					{
+						Name:        "command",
+						Description: "Command for the task",
+						Default: &pipelinev1beta1.ParamValue{
+							StringVal: strings.Join(gen.Spec.Config.Command, " "),
+							Type:      pipelinev1beta1.ParamTypeString,
+						},
+					},
 				},
 				StepTemplate: &pipelinev1beta1.StepTemplate{
 					Env: append(
@@ -51,7 +60,7 @@ func (gen *SystemTektonGenerator) task() func() *pipelinev1beta1.Task {
 				},
 				Steps: []pipelinev1beta1.Step{
 					{
-						Command:   gen.Spec.Config.Command,
+						Command:   strings.Split("$(params.command)", " "),
 						Image:     "$(params.container-image):$(params.container-tag)",
 						Resources: corev1.ResourceRequirements(*gen.Spec.Resources),
 						VolumeMounts: []corev1.VolumeMount{
