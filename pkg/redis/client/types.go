@@ -17,8 +17,6 @@ const (
 	Slave Role = "slave"
 	// Unknown represents a state in which the role of the server is still unknown
 	Unknown Role = "unknown"
-	// Sentinel is a redis server running in sentinel mode
-	Sentinel Role = "sentinel"
 )
 
 // SentinelMasterCmdResult represents the output of the "sentinel master" command
