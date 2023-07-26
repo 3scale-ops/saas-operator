@@ -62,17 +62,6 @@ func (pool *ServerPool) GetServer(connectionString string, alias *string) (*Serv
 	return srv, nil
 }
 
-func (pool *ServerPool) indexByAlias() map[string]*Server {
-	index := make(map[string]*Server, len(pool.servers))
-	for _, srv := range pool.servers {
-		if srv.alias != "" {
-			index[srv.alias] = srv
-		}
-	}
-
-	return index
-}
-
 func (pool *ServerPool) indexByHostPort() map[string]*Server {
 	index := make(map[string]*Server, len(pool.servers))
 	for _, srv := range pool.servers {

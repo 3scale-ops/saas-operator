@@ -88,40 +88,6 @@ func TestServerPool_GetServer(t *testing.T) {
 	})
 }
 
-func TestServerPool_indexByAlias(t *testing.T) {
-	type fields struct {
-		servers []*Server
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		want   map[string]*Server
-	}{
-		{
-			name: "Returns a map indexed by host",
-			fields: fields{
-				servers: []*Server{
-					{alias: "host1", client: nil, host: "127.0.0.1", port: "1000"},
-					{alias: "host2", client: nil, host: "127.0.0.2", port: "2000"},
-				},
-			},
-			want: map[string]*Server{
-				"host1": {alias: "host1", client: nil, host: "127.0.0.1", port: "1000"},
-				"host2": {alias: "host2", client: nil, host: "127.0.0.2", port: "2000"},
-			},
-		}}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			pool := &ServerPool{
-				servers: tt.fields.servers,
-			}
-			if got := pool.indexByAlias(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ServerPool.indexByAlias() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestServerPool_indexByHost(t *testing.T) {
 	type fields struct {
 		servers []*Server
