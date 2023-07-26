@@ -85,7 +85,7 @@ func (gen *Generator) ClusterTopology(ctx context.Context) (map[string]map[strin
 	for shard, servers := range gen.Spec.Config.MonitoredShards {
 		shardmap := map[string]string{}
 		for _, server := range servers {
-			// the redis servesr must be defined using IP
+			// the redis servers must be defined using IP
 			// addresses, so this tries to resolve a hostname
 			// if present in the connection string.
 			u, err := url.Parse(server)

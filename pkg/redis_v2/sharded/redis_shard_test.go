@@ -911,7 +911,6 @@ func TestShard_GetMasterAddr(t *testing.T) {
 		name    string
 		fields  fields
 		want    string
-		want1   string
 		wantErr bool
 	}{
 		{
@@ -937,8 +936,7 @@ func TestShard_GetMasterAddr(t *testing.T) {
 				},
 				pool: redis.NewServerPool(),
 			},
-			want:    "127.0.0.1",
-			want1:   "1000",
+			want:    "127.0.0.1:1000",
 			wantErr: false,
 		},
 		{
@@ -965,7 +963,6 @@ func TestShard_GetMasterAddr(t *testing.T) {
 				pool: redis.NewServerPool(),
 			},
 			want:    "",
-			want1:   "",
 			wantErr: true,
 		},
 		{
@@ -992,7 +989,6 @@ func TestShard_GetMasterAddr(t *testing.T) {
 				pool: redis.NewServerPool(),
 			},
 			want:    "",
-			want1:   "",
 			wantErr: true,
 		},
 	}
@@ -1003,16 +999,13 @@ func TestShard_GetMasterAddr(t *testing.T) {
 				Servers: tt.fields.Servers,
 				pool:    tt.fields.pool,
 			}
-			got, got1, err := shard.GetMasterAddr()
+			got, err := shard.GetMaster()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Shard.GetMasterAddr() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
 				t.Errorf("Shard.GetMasterAddr() got = %v, want %v", got, tt.want)
-			}
-			if got1 != tt.want1 {
-				t.Errorf("Shard.GetMasterAddr() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}

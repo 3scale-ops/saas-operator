@@ -263,8 +263,7 @@ var _ = Describe("sentinel e2e suite", func() {
 
 					if diff := cmp.Diff(sentinel.Status.MonitoredShards[0],
 						saasv1alpha1.MonitoredShard{
-							Name:   shards[0].GetName(),
-							Master: "",
+							Name: shards[0].GetName(),
 							Servers: map[string]saasv1alpha1.RedisServerDetails{
 								// old master is now a slave
 								strings.TrimPrefix(*shards[0].Status.ShardNodes.Master, "redis://"): {

@@ -17,7 +17,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/3scale/saas-operator/pkg/redis_v2/client"
@@ -193,40 +192,6 @@ type MonitoredShard struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=status
 	// +optional
 	Servers map[string]RedisServerDetails `json:"servers,omitempty"`
-}
-
-func (ms MonitoredShard) GetMaster() (string, RedisServerDetails, error) {
-	for address, srv := range ms.Servers {
-		if srv.Role == client.Master {
-			// there is only one master, so we return
-			return address, srv, nil
-		}
-	}
-	return "", RedisServerDetails{}, fmt.Errorf("unable to find master")
-}
-
-func (ms MonitoredShard) GetSlavesRW() map[string]RedisServerDetails {
-	servers := map[string]RedisServerDetails{}
-	for address, srv := range ms.Servers {
-		if srv.Role == client.Slave {
-			if val, ok := srv.Config["slave-read-only"]; ok && val == "no" {
-				servers[address] = srv
-			}
-		}
-	}
-	return servers
-}
-
-func (ms MonitoredShard) GetSlavesRO() map[string]RedisServerDetails {
-	servers := map[string]RedisServerDetails{}
-	for address, srv := range ms.Servers {
-		if srv.Role == client.Slave {
-			if val, ok := srv.Config["slave-read-only"]; ok && val == "yes" {
-				servers[address] = srv
-			}
-		}
-	}
-	return servers
 }
 
 type RedisServerDetails struct {

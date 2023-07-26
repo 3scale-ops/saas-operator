@@ -106,14 +106,18 @@ func (cluster Cluster) SentinelDiscover(ctx context.Context, opts ...DiscoveryOp
 
 		// Get the corresponding shard
 		shard := cluster.GetShardByName(master.Name)
+
+		// Add the shard if not already present
 		if shard == nil {
-			merr = append(merr, fmt.Errorf("shard %s is not declared in the config", master.Name))
-			// ignore this shard
-			continue
+			shard = &Shard{
+				Name:    master.Name,
+				Servers: []*RedisServer{},
+				pool:    cluster.pool,
+			}
+			cluster.Shards = append(cluster.Shards, *shard)
 		}
 
 		if err := shard.Discover(ctx, sentinel, opts...); err != nil {
-			// merr = append(merr, fmt.Errorf("errors occurred for shard %s: '%s'", master.Name, err))
 			merr = append(merr, ShardDiscoveryError{ShardName: master.Name, Errors: err.(util.MultiError)})
 			// keep going with the other shards
 			continue

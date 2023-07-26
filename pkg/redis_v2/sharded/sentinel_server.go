@@ -2,6 +2,7 @@ package sharded
 
 import (
 	"context"
+	"net"
 	"sort"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
@@ -99,11 +100,12 @@ func (sentinel *SentinelServer) Monitor(ctx context.Context, cluster *Cluster) (
 			if err.Error() == shardNotInitializedError {
 
 				shard := cluster.GetShardByName(name)
-				host, port, err := shard.GetMasterAddr()
+				hostport, err := shard.GetMaster()
 				if err != nil {
 					return changed, err
 				}
 
+				host, port, _ := net.SplitHostPort(hostport)
 				err = sentinel.SentinelMonitor(ctx, name, host, port, saasv1alpha1.SentinelDefaultQuorum)
 				if err != nil {
 					return changed, util.WrapError("redis-sentinel/SentinelServer.Monitor", err)

@@ -373,65 +373,157 @@ func TestCluster_SentinelDiscover(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
+		// {
+		// 	name: "Discovers roles for all cluster servers using sentinel",
+		// 	fields: fields{
+		// 		Shards: []Shard{
+		// 			{
+		// 				Name: "shard0",
+		// 				Servers: []*RedisServer{
+		// 					{
+		// 						Server: redis.NewFakeServerWithFakeClient("127.0.0.1", "1000",
+		// 							client.NewPredefinedRedisFakeResponse("role-master", nil),
+		// 						),
+		// 						Role:   client.Unknown,
+		// 						Config: map[string]string{},
+		// 					},
+		// 					{
+		// 						Server: redis.NewFakeServerWithFakeClient("127.0.0.1", "2000",
+		// 							client.NewPredefinedRedisFakeResponse("role-slave", nil),
+		// 						),
+		// 						Role:   client.Unknown,
+		// 						Config: map[string]string{},
+		// 					},
+		// 					{
+		// 						Server: redis.NewFakeServerWithFakeClient("127.0.0.1", "3000",
+		// 							client.NewPredefinedRedisFakeResponse("role-slave", nil),
+		// 						),
+		// 						Role:   client.Unknown,
+		// 						Config: map[string]string{},
+		// 					},
+		// 				},
+		// 				pool: redis.NewServerPool(),
+		// 			},
+		// 			{
+		// 				Name: "shard1",
+		// 				Servers: []*RedisServer{
+		// 					{
+		// 						Server: redis.NewFakeServerWithFakeClient("127.0.0.1", "4000",
+		// 							client.NewPredefinedRedisFakeResponse("role-slave", nil),
+		// 						),
+		// 						Role:   client.Unknown,
+		// 						Config: map[string]string{},
+		// 					},
+		// 					{
+		// 						Server: redis.NewFakeServerWithFakeClient("127.0.0.1", "5000",
+		// 							client.NewPredefinedRedisFakeResponse("role-master", nil),
+		// 						),
+		// 						Role:   client.Unknown,
+		// 						Config: map[string]string{},
+		// 					},
+		// 					{
+		// 						Server: redis.NewFakeServerWithFakeClient("127.0.0.1", "6000",
+		// 							client.NewPredefinedRedisFakeResponse("role-slave", nil),
+		// 						),
+		// 						Role:   client.Unknown,
+		// 						Config: map[string]string{},
+		// 					},
+		// 				},
+		// 				pool: redis.NewServerPool(),
+		// 			},
+		// 		},
+		// 		Sentinels: []*SentinelServer{
+		// 			NewSentinelServerFromParams(redis.NewFakeServerWithFakeClient("sentinel-0", "1000",
+		// 				client.FakeResponse{
+		// 					// cmd: Ping
+		// 					InjectResponse: func() interface{} { return nil },
+		// 					InjectError:    func() error { return nil },
+		// 				},
+		// 				client.FakeResponse{
+		// 					// cmd: SentinelMasters()
+		// 					InjectResponse: func() interface{} {
+		// 						return []interface{}{
+		// 							[]interface{}{"name", "shard0", "ip", "127.0.0.1", "port", "1000"},
+		// 							[]interface{}{"name", "shard1", "ip", "127.0.0.1", "port", "5000"},
+		// 						}
+		// 					},
+		// 					InjectError: func() error { return nil },
+		// 				},
+		// 				client.FakeResponse{
+		// 					// cmd: SentinelMaster (shard0)
+		// 					InjectResponse: func() interface{} {
+		// 						return &client.SentinelMasterCmdResult{Name: "shard0", IP: "127.0.0.1", Port: 1000, Flags: "master"}
+		// 					},
+		// 					InjectError: func() error { return nil },
+		// 				},
+		// 				client.FakeResponse{
+		// 					// cmd: SentinelSlaves (shard0)
+		// 					InjectResponse: func() interface{} {
+		// 						return []interface{}{
+		// 							[]interface{}{
+		// 								"name", "127.0.0.1:2000",
+		// 								"ip", "127.0.0.1",
+		// 								"port", "2000",
+		// 								"flags", "slave",
+		// 							},
+		// 							[]interface{}{
+		// 								"name", "127.0.0.1:3000",
+		// 								"ip", "127.0.0.1",
+		// 								"port", "3000",
+		// 								"flags", "slave",
+		// 							},
+		// 						}
+		// 					},
+		// 					InjectError: func() error { return nil },
+		// 				},
+		// 				client.FakeResponse{
+		// 					// cmd: SentinelMaster (shard1)
+		// 					InjectResponse: func() interface{} {
+		// 						return &client.SentinelMasterCmdResult{Name: "shard1", IP: "127.0.0.1", Port: 5000, Flags: "master"}
+		// 					},
+		// 					InjectError: func() error { return nil },
+		// 				},
+		// 				client.FakeResponse{
+		// 					// cmd: SentinelSlaves (shard1)
+		// 					InjectResponse: func() interface{} {
+		// 						return []interface{}{
+		// 							[]interface{}{
+		// 								"name", "127.0.0.1:4000",
+		// 								"ip", "127.0.0.1",
+		// 								"port", "4000",
+		// 								"flags", "slave",
+		// 							},
+		// 							[]interface{}{
+		// 								"name", "127.0.0.1:6000",
+		// 								"ip", "127.0.0.1",
+		// 								"port", "6000",
+		// 								"flags", "slave",
+		// 							},
+		// 						}
+		// 					},
+		// 					InjectError: func() error { return nil },
+		// 				},
+		// 			)),
+		// 			NewSentinelServerFromParams(redis.NewFakeServerWithFakeClient("sentinel-1", "2000",
+		// 				client.FakeResponse{
+		// 					// cmd: Ping
+		// 					InjectResponse: func() interface{} { return nil },
+		// 					InjectError:    func() error { return errors.New("ping failed") },
+		// 				},
+		// 			)),
+		// 		},
+		// 		pool: &redis.ServerPool{},
+		// 	},
+		// 	args: args{
+		// 		ctx:  context.TODO(),
+		// 		opts: []DiscoveryOption{},
+		// 	},
+		// 	wantErr: false,
+		// },
 		{
-			name: "Discovers roles for all cluster servers using sentinel",
+			name: "Discovers shards when not provided",
 			fields: fields{
-				Shards: []Shard{
-					{
-						Name: "shard0",
-						Servers: []*RedisServer{
-							{
-								Server: redis.NewFakeServerWithFakeClient("127.0.0.1", "1000",
-									client.NewPredefinedRedisFakeResponse("role-master", nil),
-								),
-								Role:   client.Unknown,
-								Config: map[string]string{},
-							},
-							{
-								Server: redis.NewFakeServerWithFakeClient("127.0.0.1", "2000",
-									client.NewPredefinedRedisFakeResponse("role-slave", nil),
-								),
-								Role:   client.Unknown,
-								Config: map[string]string{},
-							},
-							{
-								Server: redis.NewFakeServerWithFakeClient("127.0.0.1", "3000",
-									client.NewPredefinedRedisFakeResponse("role-slave", nil),
-								),
-								Role:   client.Unknown,
-								Config: map[string]string{},
-							},
-						},
-						pool: redis.NewServerPool(),
-					},
-					{
-						Name: "shard1",
-						Servers: []*RedisServer{
-							{
-								Server: redis.NewFakeServerWithFakeClient("127.0.0.1", "4000",
-									client.NewPredefinedRedisFakeResponse("role-slave", nil),
-								),
-								Role:   client.Unknown,
-								Config: map[string]string{},
-							},
-							{
-								Server: redis.NewFakeServerWithFakeClient("127.0.0.1", "5000",
-									client.NewPredefinedRedisFakeResponse("role-master", nil),
-								),
-								Role:   client.Unknown,
-								Config: map[string]string{},
-							},
-							{
-								Server: redis.NewFakeServerWithFakeClient("127.0.0.1", "6000",
-									client.NewPredefinedRedisFakeResponse("role-slave", nil),
-								),
-								Role:   client.Unknown,
-								Config: map[string]string{},
-							},
-						},
-						pool: redis.NewServerPool(),
-					},
-				},
+				Shards: nil,
 				Sentinels: []*SentinelServer{
 					NewSentinelServerFromParams(redis.NewFakeServerWithFakeClient("sentinel-0", "1000",
 						client.FakeResponse{
@@ -512,7 +604,14 @@ func TestCluster_SentinelDiscover(t *testing.T) {
 						},
 					)),
 				},
-				pool: &redis.ServerPool{},
+				pool: redis.NewServerPool(
+					redis.NewFakeServerWithFakeClient("127.0.0.1", "1000", client.NewPredefinedRedisFakeResponse("role-master", nil)),
+					redis.NewFakeServerWithFakeClient("127.0.0.1", "2000", client.NewPredefinedRedisFakeResponse("role-slave", nil)),
+					redis.NewFakeServerWithFakeClient("127.0.0.1", "3000", client.NewPredefinedRedisFakeResponse("role-slave", nil)),
+					redis.NewFakeServerWithFakeClient("127.0.0.1", "4000", client.NewPredefinedRedisFakeResponse("role-slave", nil)),
+					redis.NewFakeServerWithFakeClient("127.0.0.1", "5000", client.NewPredefinedRedisFakeResponse("role-master", nil)),
+					redis.NewFakeServerWithFakeClient("127.0.0.1", "6000", client.NewPredefinedRedisFakeResponse("role-slave", nil)),
+				),
 			},
 			args: args{
 				ctx:  context.TODO(),

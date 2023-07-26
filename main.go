@@ -151,6 +151,7 @@ func main() {
 		Reconciler:     basereconciler.NewFromManager(mgr),
 		SentinelEvents: threads.NewManager(),
 		Log:            ctrl.Log.WithName("controllers").WithName("TwemproxyConfig"),
+		Pool:           redisPool,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TwemproxyConfig")
 		os.Exit(1)

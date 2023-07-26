@@ -3,6 +3,7 @@ package sharded
 import (
 	"context"
 	"fmt"
+	"net"
 	"sort"
 	"strings"
 
@@ -142,9 +143,9 @@ func (shard *Shard) Discover(ctx context.Context, sentinel *SentinelServer, opti
 	return merr.ErrorOrNil()
 }
 
-// GetMasterAddr returns the URL of the master server in a shard or error if zero
-// or more than one master is found
-func (shard *Shard) GetMasterAddr() (string, string, error) {
+// GetMaster returns the host:port of the master server
+// in a shard or error if zero or more than one master is found
+func (shard *Shard) GetMaster() (string, error) {
 	master := []*RedisServer{}
 
 	for _, srv := range shard.Servers {
@@ -154,10 +155,34 @@ func (shard *Shard) GetMasterAddr() (string, string, error) {
 	}
 
 	if len(master) != 1 {
-		return "", "", util.WrapError("(*Shard).GetMasterAddr", fmt.Errorf("wrong number of masters: %d != 1", len(master)))
+		return "", util.WrapError("(*Shard).GetMasterAddr", fmt.Errorf("wrong number of masters: %d != 1", len(master)))
 	}
 
-	return master[0].GetHost(), master[0].GetPort(), nil
+	return net.JoinHostPort(master[0].GetHost(), master[0].GetPort()), nil
+}
+
+func (shard *Shard) GetSlavesRW() []string {
+	servers := []string{}
+	for _, srv := range shard.Servers {
+		if srv.Role == client.Slave {
+			if val, ok := srv.Config["slave-read-only"]; ok && val == "no" {
+				servers = append(servers, net.JoinHostPort(srv.GetHost(), srv.GetPort()))
+			}
+		}
+	}
+	return sort.StringSlice(servers)
+}
+
+func (shard *Shard) GetSlavesRO() []string {
+	servers := []string{}
+	for _, srv := range shard.Servers {
+		if srv.Role == client.Slave {
+			if val, ok := srv.Config["slave-read-only"]; ok && val == "yes" {
+				servers = append(servers, net.JoinHostPort(srv.GetHost(), srv.GetPort()))
+			}
+		}
+	}
+	return sort.StringSlice(servers)
 }
 
 func (shard *Shard) GetServerByID(hostport string) (*RedisServer, error) {

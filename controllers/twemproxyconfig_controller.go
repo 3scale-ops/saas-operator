@@ -28,6 +28,7 @@ import (
 	"github.com/3scale/saas-operator/pkg/generators/twemproxyconfig"
 	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
 	"github.com/3scale/saas-operator/pkg/redis/events"
+	redis "github.com/3scale/saas-operator/pkg/redis_v2/server"
 	"github.com/3scale/saas-operator/pkg/util"
 	"github.com/go-logr/logr"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
@@ -48,6 +49,7 @@ type TwemproxyConfigReconciler struct {
 	basereconciler.Reconciler
 	Log            logr.Logger
 	SentinelEvents threads.Manager
+	Pool           *redis.ServerPool
 }
 
 // +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=twemproxyconfigs,verbs=get;list;watch;create;update;patch;delete
@@ -77,7 +79,7 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	// Generate the ConfigMap
 	gen, err := twemproxyconfig.NewGenerator(
-		ctx, instance, r.Client, logger.WithName("generator"),
+		ctx, instance, r.Client, r.Pool, logger.WithName("generator"),
 	)
 
 	if err != nil {
@@ -105,11 +107,11 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	// Reconcile sentinel event watchers
 	eventWatchers := make([]threads.RunnableThread, 0, len(gen.Spec.SentinelURIs))
 	for _, uri := range gen.Spec.SentinelURIs {
-		eventWatchers = append(eventWatchers, &events.SentinelEventWatcher{
-			Instance:      instance,
-			SentinelURI:   uri,
-			ExportMetrics: false,
-		})
+		watcher, err := events.NewSentinelEventWatcher(uri, instance, nil, false, r.Pool)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		eventWatchers = append(eventWatchers, watcher)
 	}
 	r.SentinelEvents.ReconcileThreads(ctx, instance, eventWatchers, logger.WithName("event-watcher"))
 
