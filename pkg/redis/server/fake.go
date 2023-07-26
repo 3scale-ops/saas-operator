@@ -1,6 +1,6 @@
 package server
 
-import "github.com/3scale/saas-operator/pkg/redis_v2/client"
+import "github.com/3scale/saas-operator/pkg/redis/client"
 
 // NewFakeServerWithFakeClient returns a fake server with a fake client that will return the
 // provided responses when called. This is only intended for testing.

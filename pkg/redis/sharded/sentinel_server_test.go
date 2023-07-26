@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/3scale/saas-operator/pkg/redis_v2/client"
-	redis "github.com/3scale/saas-operator/pkg/redis_v2/server"
+	"github.com/3scale/saas-operator/pkg/redis/client"
+	redis "github.com/3scale/saas-operator/pkg/redis/server"
 	"github.com/3scale/saas-operator/pkg/util"
 	"github.com/go-test/deep"
 )

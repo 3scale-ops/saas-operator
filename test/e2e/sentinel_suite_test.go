@@ -8,7 +8,7 @@ import (
 	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	redisclient "github.com/3scale/saas-operator/pkg/redis_v2/client"
+	redisclient "github.com/3scale/saas-operator/pkg/redis/client"
 	testutil "github.com/3scale/saas-operator/test/util"
 	"github.com/google/go-cmp/cmp"
 	. "github.com/onsi/ginkgo/v2"

@@ -28,7 +28,7 @@ import (
 	"github.com/3scale/saas-operator/pkg/generators/twemproxyconfig"
 	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
 	"github.com/3scale/saas-operator/pkg/redis/events"
-	redis "github.com/3scale/saas-operator/pkg/redis_v2/server"
+	redis "github.com/3scale/saas-operator/pkg/redis/server"
 	"github.com/3scale/saas-operator/pkg/util"
 	"github.com/go-logr/logr"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"

@@ -6,7 +6,7 @@ import (
 	"sort"
 	"time"
 
-	redis "github.com/3scale/saas-operator/pkg/redis_v2/server"
+	redis "github.com/3scale/saas-operator/pkg/redis/server"
 	"github.com/3scale/saas-operator/pkg/util"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )

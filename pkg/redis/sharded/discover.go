@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/3scale/saas-operator/pkg/redis_v2/client"
+	"github.com/3scale/saas-operator/pkg/redis/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 

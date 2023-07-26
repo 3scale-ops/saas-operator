@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	"time"
 
-	"github.com/3scale/saas-operator/pkg/redis_v2/client"
+	"github.com/3scale/saas-operator/pkg/redis/client"
 	"github.com/3scale/saas-operator/pkg/util"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"

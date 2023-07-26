@@ -34,7 +34,7 @@ import (
 	"github.com/3scale/saas-operator/controllers"
 	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
-	redis "github.com/3scale/saas-operator/pkg/redis_v2/server"
+	redis "github.com/3scale/saas-operator/pkg/redis/server"
 	"github.com/3scale/saas-operator/pkg/util"
 	"github.com/3scale/saas-operator/pkg/version"
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"

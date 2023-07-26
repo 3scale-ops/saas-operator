@@ -6,7 +6,7 @@ import (
 	"sort"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	redis "github.com/3scale/saas-operator/pkg/redis_v2/server"
+	redis "github.com/3scale/saas-operator/pkg/redis/server"
 	"github.com/3scale/saas-operator/pkg/util"
 )
 
