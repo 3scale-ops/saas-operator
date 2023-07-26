@@ -8,7 +8,7 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-// SentinelPool holds a thread safe list of Servers.
+// ServerPool holds a thread safe list of Servers.
 // It is intended for client reuse throughout the code.
 type ServerPool struct {
 	servers []*Server
@@ -42,8 +42,8 @@ func (pool *ServerPool) GetServer(connectionString string, alias *string) (*Serv
 	}
 	if srv = pool.indexByHostPort()[opts.Addr]; srv != nil {
 		// set the alias if it has been passed down
-		if alias != nil {
-			srv.alias = *alias
+		if alias != nil && srv.GetAlias() != *alias {
+			srv.SetAlias(*alias)
 		}
 		return srv, nil
 	}
