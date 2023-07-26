@@ -68,7 +68,6 @@ func TestClient_GetHost(t *testing.T) {
 	type fields struct {
 		client client.TestableInterface
 		host   string
-		ip     string
 		port   string
 	}
 	tests := []struct {
@@ -81,7 +80,6 @@ func TestClient_GetHost(t *testing.T) {
 			fields: fields{
 				client: nil,
 				host:   "127.0.0.1",
-				ip:     "127.0.0.1",
 				port:   "2222",
 			},
 			want: "127.0.0.1",
@@ -92,6 +90,7 @@ func TestClient_GetHost(t *testing.T) {
 			sc := &Server{
 				client: tt.fields.client,
 				port:   tt.fields.port,
+				host:   tt.fields.host,
 			}
 			if got := sc.GetHost(); got != tt.want {
 				t.Errorf("Client.GetHost() = %v, want %v", got, tt.want)
