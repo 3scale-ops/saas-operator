@@ -59,7 +59,7 @@ func (shard *Shard) Discover(ctx context.Context, sentinel *SentinelServer, opti
 	case nil:
 		for idx := range shard.Servers {
 			if err := shard.Servers[idx].Discover(ctx, options...); err != nil {
-				logger.Error(err, "unable to discover redis server %s", shard.Servers[idx].ID())
+				logger.Error(err, fmt.Sprintf("unable to discover redis server %s", shard.Servers[idx].ID()))
 				merr = append(merr, DiscoveryError_UnknownRole_SingleServerFailure{err})
 				continue
 			}
@@ -124,7 +124,7 @@ func (shard *Shard) Discover(ctx context.Context, sentinel *SentinelServer, opti
 			} else {
 				if err := srv.Discover(ctx, options...); err != nil {
 					srv.Role = client.Role(client.Unknown)
-					logger.Error(err, "unable to discover redis server %s", srv.ID())
+					logger.Error(err, fmt.Sprintf("unable to discover redis server %s", srv.ID()))
 					merr = append(merr, DiscoveryError_Slave_SingleServerFailure{err})
 					continue
 				}
@@ -209,7 +209,7 @@ func (shard *Shard) GetServerByID(hostport string) (*RedisServer, error) {
 }
 
 // Init initializes the shard if not already initialized
-func (shard *Shard) Init(ctx context.Context, masterIndex int32) ([]string, error) {
+func (shard *Shard) Init(ctx context.Context, masterHostPort string) ([]string, error) {
 	logger := log.FromContext(ctx, "function", "(*Shard).Init")
 	changed := []string{}
 
@@ -223,14 +223,15 @@ func (shard *Shard) Init(ctx context.Context, masterIndex int32) ([]string, erro
 
 			if slaveof == "127.0.0.1" {
 
-				if idx == int(masterIndex) {
+				if masterHostPort == srv.ID() {
 					if err := srv.RedisSlaveOf(ctx, "NO", "ONE"); err != nil {
 						return changed, err
 					}
 					logger.Info(fmt.Sprintf("configured %s as master", srv.ID()))
 					changed = append(changed, srv.ID())
 				} else {
-					if err := srv.RedisSlaveOf(ctx, shard.Servers[masterIndex].GetHost(), shard.Servers[masterIndex].GetPort()); err != nil {
+					host, port, _ := net.SplitHostPort(masterHostPort)
+					if err := srv.RedisSlaveOf(ctx, host, port); err != nil {
 						return changed, err
 					}
 					logger.Info(fmt.Sprintf("configured %s as slave", srv.ID()))

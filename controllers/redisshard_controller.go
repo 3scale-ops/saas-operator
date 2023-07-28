@@ -27,7 +27,6 @@ import (
 	"github.com/3scale/saas-operator/pkg/redis/client"
 	redis "github.com/3scale/saas-operator/pkg/redis/server"
 	"github.com/3scale/saas-operator/pkg/redis/sharded"
-	"github.com/3scale/saas-operator/pkg/util"
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -104,6 +103,7 @@ func (r *RedisShardReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 func (r *RedisShardReconciler) setRedisRoles(ctx context.Context, key types.NamespacedName, masterIndex, replicas int32, serviceName string, log logr.Logger) (*sharded.Shard, *ctrl.Result, error) {
 
+	var masterHostPort string
 	redisURLs := make(map[string]string, replicas)
 	for i := 0; i < int(replicas); i++ {
 		pod := &corev1.Pod{}
@@ -112,8 +112,10 @@ func (r *RedisShardReconciler) setRedisRoles(ctx context.Context, key types.Name
 		if err != nil {
 			return &sharded.Shard{Name: key.Name}, &ctrl.Result{}, err
 		}
-
-		redisURLs[fmt.Sprintf("redis://%s:%d", pod.Status.PodIP, 6379)] = fmt.Sprintf("redis://%s:%d", pod.Status.PodIP, 6379)
+		redisURLs[fmt.Sprintf("%s-%d", serviceName, i)] = fmt.Sprintf("redis://%s:%d", pod.Status.PodIP, 6379)
+		if int(masterIndex) == i {
+			masterHostPort = fmt.Sprintf("%s:%d", pod.Status.PodIP, 6379)
+		}
 	}
 
 	shard, err := sharded.NewShard(key.Name, redisURLs, r.Pool)
@@ -121,7 +123,7 @@ func (r *RedisShardReconciler) setRedisRoles(ctx context.Context, key types.Name
 		return shard, &ctrl.Result{}, err
 	}
 
-	_, err = shard.Init(ctx, masterIndex)
+	_, err = shard.Init(ctx, masterHostPort)
 	if err != nil {
 		log.Info("waiting for redis shard init")
 		return shard, &ctrl.Result{Requeue: true, RequeueAfter: 10 * time.Second}, nil
@@ -133,14 +135,14 @@ func (r *RedisShardReconciler) setRedisRoles(ctx context.Context, key types.Name
 func (r *RedisShardReconciler) updateStatus(ctx context.Context, shard *sharded.Shard, instance *saasv1alpha1.RedisShard, log logr.Logger) error {
 
 	status := saasv1alpha1.RedisShardStatus{
-		ShardNodes: &saasv1alpha1.RedisShardNodes{Master: nil, Slaves: []string{}},
+		ShardNodes: &saasv1alpha1.RedisShardNodes{Master: map[string]string{}, Slaves: map[string]string{}},
 	}
 
 	for _, server := range shard.Servers {
 		if server.Role == client.Master {
-			status.ShardNodes.Master = util.Pointer(server.GetAlias())
+			status.ShardNodes.Master[server.GetAlias()] = server.ID()
 		} else if server.Role == client.Slave {
-			status.ShardNodes.Slaves = append(status.ShardNodes.Slaves, server.GetAlias())
+			status.ShardNodes.Slaves[server.GetAlias()] = server.ID()
 		}
 	}
 	if !equality.Semantic.DeepEqual(status, instance.Status) {

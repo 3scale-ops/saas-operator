@@ -55,7 +55,6 @@ const (
 	// which specifies the Namespace to watch.
 	// An empty value means the operator is running with cluster scope.
 	watchNamespaceEnvVar string = "WATCH_NAMESPACE"
-	debugLevelEnvVar     string = "DEBUG_LEVEL"
 )
 
 var (

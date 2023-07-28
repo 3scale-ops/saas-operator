@@ -89,10 +89,10 @@ func (gen *Generator) ClusterTopology(ctx context.Context) (map[string]map[strin
 			// addresses, so this tries to resolve a hostname
 			// if present in the connection string.
 			u, err := url.Parse(server)
-			alias := u.Host
 			if err != nil {
 				return nil, err
 			}
+			alias := u.Host
 			ip, err := util.LookupIPv4(ctx, u.Hostname())
 			if err != nil {
 				return nil, err

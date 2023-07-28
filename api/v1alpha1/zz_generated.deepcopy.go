@@ -2167,13 +2167,17 @@ func (in *RedisShardNodes) DeepCopyInto(out *RedisShardNodes) {
 	*out = *in
 	if in.Master != nil {
 		in, out := &in.Master, &out.Master
-		*out = new(string)
-		**out = **in
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
 	}
 	if in.Slaves != nil {
 		in, out := &in.Slaves, &out.Slaves
-		*out = make([]string, len(*in))
-		copy(*out, *in)
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
 	}
 }
 

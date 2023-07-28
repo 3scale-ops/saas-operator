@@ -733,8 +733,8 @@ func TestShard_Init(t *testing.T) {
 		Servers []*RedisServer
 	}
 	type args struct {
-		ctx         context.Context
-		masterIndex int32
+		ctx            context.Context
+		masterHostPort string
 	}
 	tests := []struct {
 		name    string
@@ -798,14 +798,14 @@ func TestShard_Init(t *testing.T) {
 					),
 				},
 			},
-			args:    args{ctx: context.TODO(), masterIndex: 0},
+			args:    args{ctx: context.TODO(), masterHostPort: "127.0.0.1:1000"},
 			want:    []string{"127.0.0.1:1000", "127.0.0.1:2000", "127.0.0.1:3000"},
 			wantErr: false,
 		},
 		{
 			name: "No configuration needed",
 			fields: fields{
-				Name: "All redis servers configured",
+				Name: "test",
 				Servers: []*RedisServer{
 					NewRedisServerFromParams(
 						redis.NewFakeServerWithFakeClient("127.0.0.1", "1000",
@@ -857,14 +857,14 @@ func TestShard_Init(t *testing.T) {
 					),
 				},
 			},
-			args:    args{ctx: context.TODO(), masterIndex: 0},
+			args:    args{ctx: context.TODO(), masterHostPort: "127.0.0.1:1000"},
 			want:    []string{},
 			wantErr: false,
 		},
 		{
 			name: "Returns error",
 			fields: fields{
-				Name: "All redis servers configured",
+				Name: "test",
 				Servers: []*RedisServer{
 					NewRedisServerFromParams(
 						redis.NewFakeServerWithFakeClient("127.0.0.1", "1000",
@@ -878,7 +878,7 @@ func TestShard_Init(t *testing.T) {
 					),
 				},
 			},
-			args:    args{ctx: context.TODO(), masterIndex: 0},
+			args:    args{ctx: context.TODO(), masterHostPort: "127.0.0.1:1000"},
 			want:    []string{},
 			wantErr: true,
 		},
@@ -889,7 +889,7 @@ func TestShard_Init(t *testing.T) {
 				Name:    tt.fields.Name,
 				Servers: tt.fields.Servers,
 			}
-			got, err := s.Init(tt.args.ctx, tt.args.masterIndex)
+			got, err := s.Init(tt.args.ctx, tt.args.masterHostPort)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Shard.Init() error = %v, wantErr %v", err, tt.wantErr)
 				return

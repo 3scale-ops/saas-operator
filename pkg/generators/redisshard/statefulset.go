@@ -40,6 +40,7 @@ func (gen *Generator) statefulSet() func() *appsv1.StatefulSet {
 							}
 							return nil
 						}(),
+						RestartPolicy: corev1.RestartPolicyAlways,
 						Containers: []corev1.Container{
 							{
 								Command: []string{"redis-server", "/redis/redis.conf"},
