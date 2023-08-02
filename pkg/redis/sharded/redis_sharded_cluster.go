@@ -13,7 +13,7 @@ import (
 
 // Cluster represents a sharded redis cluster, composed by several Shards
 type Cluster struct {
-	Shards    []Shard
+	Shards    []*Shard
 	Sentinels []*SentinelServer
 	pool      *redis.ServerPool
 }
@@ -22,7 +22,7 @@ type Cluster struct {
 func NewShardedCluster(ctx context.Context, serverList map[string]map[string]string, pool *redis.ServerPool) (*Cluster, error) {
 	logger := log.FromContext(ctx, "function", "NewShardedCluster")
 	cluster := Cluster{pool: pool}
-	cluster.Shards = make([]Shard, 0, len(serverList))
+	cluster.Shards = make([]*Shard, 0, len(serverList))
 
 	for shardName, shardServers := range serverList {
 
@@ -41,7 +41,7 @@ func NewShardedCluster(ctx context.Context, serverList map[string]map[string]str
 				logger.Error(err, "unable to create sharded cluster")
 				return nil, err
 			}
-			cluster.Shards = append(cluster.Shards, *shard)
+			cluster.Shards = append(cluster.Shards, shard)
 
 		}
 	}
@@ -57,7 +57,7 @@ func NewShardedCluster(ctx context.Context, serverList map[string]map[string]str
 	return &cluster, nil
 }
 
-func (cluster Cluster) GetShardNames() []string {
+func (cluster *Cluster) GetShardNames() []string {
 	shards := make([]string, len(cluster.Shards))
 	for i, shard := range cluster.Shards {
 		shards[i] = shard.Name
@@ -69,13 +69,13 @@ func (cluster Cluster) GetShardNames() []string {
 func (cluster Cluster) GetShardByName(name string) *Shard {
 	for _, shard := range cluster.Shards {
 		if shard.Name == name {
-			return &shard
+			return shard
 		}
 	}
 	return nil
 }
 
-func (cluster Cluster) Discover(ctx context.Context, options ...DiscoveryOption) error {
+func (cluster *Cluster) Discover(ctx context.Context, options ...DiscoveryOption) error {
 	var merr util.MultiError
 
 	for _, shard := range cluster.Shards {
@@ -88,7 +88,7 @@ func (cluster Cluster) Discover(ctx context.Context, options ...DiscoveryOption)
 }
 
 // Updates the status of the cluster as seen from sentinel
-func (cluster Cluster) SentinelDiscover(ctx context.Context, opts ...DiscoveryOption) error {
+func (cluster *Cluster) SentinelDiscover(ctx context.Context, opts ...DiscoveryOption) error {
 	merr := util.MultiError{}
 
 	// Get a healthy sentinel server
@@ -114,7 +114,7 @@ func (cluster Cluster) SentinelDiscover(ctx context.Context, opts ...DiscoveryOp
 				Servers: []*RedisServer{},
 				pool:    cluster.pool,
 			}
-			cluster.Shards = append(cluster.Shards, *shard)
+			cluster.Shards = append(cluster.Shards, shard)
 		}
 
 		if err := shard.Discover(ctx, sentinel, opts...); err != nil {
@@ -129,7 +129,7 @@ func (cluster Cluster) SentinelDiscover(ctx context.Context, opts ...DiscoveryOp
 
 // GetSentinel returns a healthy SentinelServer from the list of sentinels
 // Returns nil if no healthy SentinelServer was found
-func (cluster Cluster) GetSentinel(pctx context.Context) *SentinelServer {
+func (cluster *Cluster) GetSentinel(pctx context.Context) *SentinelServer {
 	ctx, cancel := context.WithTimeout(pctx, 5*time.Second)
 	defer cancel()
 

@@ -2,8 +2,10 @@ package twemproxyconfig
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/url"
+	"sort"
 	"strings"
 
 	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
@@ -101,14 +103,26 @@ func NewGenerator(ctx context.Context, instance *saasv1alpha1.TwemproxyConfig, c
 	switch discoverSlavesRW {
 
 	case false:
-		shardedCluster.Discover(ctx, sharded.OnlyMasterDiscoveryOpt)
+		// any error discovering masters should return
+		if merr := shardedCluster.SentinelDiscover(ctx, sharded.OnlyMasterDiscoveryOpt); merr != nil {
+			return Generator{}, merr
+		}
 		gen.masterTargets, err = gen.getMonitoredMasters(ctx, shardedCluster, log.WithName("masterTargets"))
 		if err != nil {
 			return Generator{}, err
 		}
 
 	case true:
-		shardedCluster.Discover(ctx, sharded.SlaveReadOnlyDiscoveryOpt)
+		merr := shardedCluster.SentinelDiscover(ctx, sharded.SlaveReadOnlyDiscoveryOpt)
+		// only sentinel/master discovery errors should return
+		// slave failures will just failover to the master
+		sentinelError := &sharded.DiscoveryError_Sentinel_Failure{}
+		masterError := &sharded.DiscoveryError_Master_SingleServerFailure{}
+		if errors.As(merr, sentinelError) || errors.As(merr, masterError) {
+			log.Error(merr, "errors occurred during discovery")
+			return Generator{}, merr
+		}
+
 		gen.masterTargets, err = gen.getMonitoredMasters(ctx, shardedCluster, log.WithName("masterTargets"))
 		if err != nil {
 			return Generator{}, err
@@ -152,7 +166,6 @@ func (gen *Generator) getMonitoredMasters(ctx context.Context,
 			return nil, err
 		}
 		m[shard.Name] = twemproxy.Server{
-			Name:     shard.Name,
 			Address:  hostport,
 			Priority: 1,
 		}
@@ -168,8 +181,13 @@ func (gen *Generator) getMonitoredReadWriteSlavesWithFallbackToMasters(ctx conte
 	for _, shard := range cluster.Shards {
 
 		if slavesRW := shard.GetSlavesRW(); len(slavesRW) > 0 {
+			// In the (unlikely) case that there are more than 1 slaveRW
+			// we need to consistenly choose the same in all reconcile loops, otherwise
+			// we would be forcing twemproxy restart if we are constantly changing the chosen server.
+			// Due to the lack of a better criteria, we just choose the server address that scores
+			// lowest in alphabetical order.
+			sort.Strings(slavesRW)
 			m[shard.Name] = twemproxy.Server{
-				Name:     shard.Name,
 				Address:  slavesRW[0],
 				Priority: 1,
 			}
@@ -183,7 +201,6 @@ func (gen *Generator) getMonitoredReadWriteSlavesWithFallbackToMasters(ctx conte
 				return nil, err
 			}
 			m[shard.Name] = twemproxy.Server{
-				Name:     shard.Name,
 				Address:  hostport,
 				Priority: 1,
 			}

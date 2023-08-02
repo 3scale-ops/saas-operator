@@ -14,7 +14,7 @@ import (
 
 var (
 	testShardedCluster *Cluster = &Cluster{
-		Shards: []Shard{
+		Shards: []*Shard{
 			{
 				Name: "shard00",
 				Servers: []*RedisServer{
@@ -558,7 +558,7 @@ func TestSentinelServer_Monitor(t *testing.T) {
 			args: args{
 				ctx: context.TODO(),
 				shards: &Cluster{
-					Shards: []Shard{
+					Shards: []*Shard{
 						{
 							Name: "shard00",
 							Servers: []*RedisServer{
