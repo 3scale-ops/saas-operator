@@ -145,7 +145,7 @@ func (shard *Shard) Discover(ctx context.Context, sentinel *SentinelServer, opti
 
 // GetMaster returns the host:port of the master server
 // in a shard or error if zero or more than one master is found
-func (shard *Shard) GetMaster() (string, error) {
+func (shard *Shard) GetMaster() (*RedisServer, error) {
 	master := []*RedisServer{}
 
 	for _, srv := range shard.Servers {
@@ -155,34 +155,40 @@ func (shard *Shard) GetMaster() (string, error) {
 	}
 
 	if len(master) != 1 {
-		return "", util.WrapError("(*Shard).GetMasterAddr", fmt.Errorf("wrong number of masters: %d != 1", len(master)))
+		return nil, util.WrapError("(*Shard).GetMasterAddr", fmt.Errorf("wrong number of masters: %d != 1", len(master)))
 	}
 
-	return net.JoinHostPort(master[0].GetHost(), master[0].GetPort()), nil
+	return master[0], nil
 }
 
-func (shard *Shard) GetSlavesRW() []string {
-	servers := []string{}
+func (shard *Shard) GetSlavesRW() []*RedisServer {
+	servers := []*RedisServer{}
 	for _, srv := range shard.Servers {
 		if srv.Role == client.Slave {
 			if val, ok := srv.Config["slave-read-only"]; ok && val == "no" {
-				servers = append(servers, net.JoinHostPort(srv.GetHost(), srv.GetPort()))
+				servers = append(servers, srv)
 			}
 		}
 	}
-	return sort.StringSlice(servers)
+	sort.Slice(servers, func(i, j int) bool {
+		return servers[i].ID() < servers[j].ID()
+	})
+	return servers
 }
 
-func (shard *Shard) GetSlavesRO() []string {
-	servers := []string{}
+func (shard *Shard) GetSlavesRO() []*RedisServer {
+	servers := []*RedisServer{}
 	for _, srv := range shard.Servers {
 		if srv.Role == client.Slave {
 			if val, ok := srv.Config["slave-read-only"]; ok && val == "yes" {
-				servers = append(servers, net.JoinHostPort(srv.GetHost(), srv.GetPort()))
+				servers = append(servers, srv)
 			}
 		}
 	}
-	return sort.StringSlice(servers)
+	sort.Slice(servers, func(i, j int) bool {
+		return servers[i].ID() < servers[j].ID()
+	})
+	return servers
 }
 
 func (shard *Shard) GetServerByID(hostport string) (*RedisServer, error) {

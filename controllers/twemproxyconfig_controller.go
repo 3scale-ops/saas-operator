@@ -33,6 +33,7 @@ import (
 	"github.com/go-logr/logr"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/pointer"
@@ -119,6 +120,11 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	gd, _ := t.Build(ctx, r.Client)
 	controllerutil.SetControllerReference(instance, gd, r.Scheme)
 	if err := t.ResourceReconciler(ctx, r.Client, gd); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	// Reconcile status of the TwemproxyConfig resource
+	if err := r.reconcileStatus(ctx, &gen, instance, logger); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -226,6 +232,33 @@ func (r *TwemproxyConfigReconciler) syncPod(ctx context.Context, pod corev1.Pod,
 		}
 		log.V(1).Info(fmt.Sprintf("configmap re-sync forced in target pod %s", util.ObjectKey(&pod)))
 	}
+}
+
+func (r *TwemproxyConfigReconciler) reconcileStatus(ctx context.Context, gen *twemproxyconfig.Generator,
+	instance *saasv1alpha1.TwemproxyConfig, log logr.Logger) error {
+	selectedTargets := map[string]saasv1alpha1.TargetServer{}
+
+	// The TwemproxyConfig api was initially conceived to support several server pools
+	// but this is actually not used, so just assume there's only one pool for simplicity
+	for pshard, server := range gen.GetTargets(gen.Spec.ServerPools[0].Name) {
+		selectedTargets[pshard] = saasv1alpha1.TargetServer{
+			ServerAlias:   util.Pointer(server.Alias()),
+			ServerAddress: server.Address,
+		}
+	}
+
+	status := saasv1alpha1.TwemproxyConfigStatus{
+		SelectedTargets: selectedTargets,
+	}
+	if !equality.Semantic.DeepEqual(status, instance.Status) {
+		instance.Status = status
+		if err := r.Client.Status().Update(ctx, instance); err != nil {
+			return err
+		}
+		log.Info("status updated")
+	}
+
+	return nil
 }
 
 // SetupWithManager sets up the controller with the Manager.

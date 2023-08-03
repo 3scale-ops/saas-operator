@@ -14,9 +14,18 @@ const (
 )
 
 type Server struct {
+	alias    string
 	Address  string
 	Priority int
 	Name     string
+}
+
+func NewServer(hostport string, alias string) Server {
+	return Server{
+		alias:    alias,
+		Address:  hostport,
+		Priority: 1,
+	}
 }
 
 func (srv *Server) MarshalJSON() ([]byte, error) {
@@ -34,6 +43,13 @@ func (srv *Server) UnmarshalJSON(data []byte) error {
 	srv.Priority = p
 	srv.Address = strings.Join(parts[0:len(parts)-1], ":")
 	return nil
+}
+
+func (srv *Server) Alias() string {
+	if srv.alias != "" {
+		return srv.alias
+	}
+	return srv.Address
 }
 
 type ServerPoolConfig struct {

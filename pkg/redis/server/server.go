@@ -91,6 +91,7 @@ func (srv *Server) SetAlias(alias string) {
 	srv.mu.Unlock()
 }
 
+// ID returns the ID of the server, which takes the form "host:port"
 func (srv *Server) ID() string {
 	return net.JoinHostPort(srv.host, srv.port)
 }

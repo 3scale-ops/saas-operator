@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
-	"sort"
 	"strings"
 
 	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
@@ -138,6 +137,19 @@ func NewGenerator(ctx context.Context, instance *saasv1alpha1.TwemproxyConfig, c
 	return gen, nil
 }
 
+func (gen *Generator) GetTargets(poolName string) map[string]twemproxy.Server {
+	for _, pool := range gen.Spec.ServerPools {
+		if pool.Name == poolName {
+			if *pool.Target == saasv1alpha1.Masters {
+				return gen.masterTargets
+			} else {
+				return gen.slaverwTargets
+			}
+		}
+	}
+	return nil
+}
+
 func discoverSentinels(ctx context.Context, cl client.Client, namespace string) ([]string, error) {
 	sl := &saasv1alpha1.SentinelList{}
 	if err := cl.List(ctx, sl, client.InNamespace(namespace)); err != nil {
@@ -161,14 +173,15 @@ func (gen *Generator) getMonitoredMasters(ctx context.Context,
 
 	m := make(map[string]twemproxy.Server, len(cluster.Shards))
 	for _, shard := range cluster.Shards {
-		hostport, err := shard.GetMaster()
+		master, err := shard.GetMaster()
 		if err != nil {
 			return nil, err
 		}
 		m[shard.Name] = twemproxy.Server{
-			Address:  hostport,
+			Address:  master.ID(),
 			Priority: 1,
 		}
+		m[shard.Name] = twemproxy.NewServer(master.ID(), master.GetAlias())
 	}
 
 	return m, nil
@@ -181,29 +194,17 @@ func (gen *Generator) getMonitoredReadWriteSlavesWithFallbackToMasters(ctx conte
 	for _, shard := range cluster.Shards {
 
 		if slavesRW := shard.GetSlavesRW(); len(slavesRW) > 0 {
-			// In the (unlikely) case that there are more than 1 slaveRW
-			// we need to consistenly choose the same in all reconcile loops, otherwise
-			// we would be forcing twemproxy restart if we are constantly changing the chosen server.
-			// Due to the lack of a better criteria, we just choose the server address that scores
-			// lowest in alphabetical order.
-			sort.Strings(slavesRW)
-			m[shard.Name] = twemproxy.Server{
-				Address:  slavesRW[0],
-				Priority: 1,
-			}
+			m[shard.Name] = twemproxy.NewServer(slavesRW[0].ID(), slavesRW[0].GetAlias())
 			slaveRwConfigured.With(prometheus.Labels{"twemproxy_config": gen.InstanceName, "shard": shard.Name}).Set(1)
 
 		} else {
 			// Fall back to the master if there are no
 			// available RW slaves for this shard
-			hostport, err := shard.GetMaster()
+			master, err := shard.GetMaster()
 			if err != nil {
 				return nil, err
 			}
-			m[shard.Name] = twemproxy.Server{
-				Address:  hostport,
-				Priority: 1,
-			}
+			m[shard.Name] = twemproxy.NewServer(master.ID(), master.GetAlias())
 			slaveRwConfigured.With(prometheus.Labels{"twemproxy_config": gen.InstanceName, "shard": shard.Name}).Set(0)
 		}
 	}

@@ -76,7 +76,13 @@ type SentinelConfig struct {
 	// Monitored shards indicates the redis servers that form
 	// part of each shard monitored by sentinel
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
 	MonitoredShards map[string][]string `json:"monitoredShards,"`
+	// ClusterTopology indicates the redis servers that form
+	// part of each shard monitored by sentinel
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ClusterTopology map[string]map[string]string `json:"clusterTopology,"`
 	// StorageClass is the storage class to be used for
 	// the persistent sentinel config file where the shards
 	// state is stored

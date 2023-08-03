@@ -2,6 +2,7 @@ package sentinel
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"net/url"
 	"strings"
@@ -82,28 +83,57 @@ func (gen *Generator) ClusterTopology(ctx context.Context) (map[string]map[strin
 
 	clustermap := map[string]map[string]string{}
 
-	for shard, servers := range gen.Spec.Config.MonitoredShards {
-		shardmap := map[string]string{}
-		for _, server := range servers {
-			// the redis servers must be defined using IP
-			// addresses, so this tries to resolve a hostname
-			// if present in the connection string.
-			u, err := url.Parse(server)
-			if err != nil {
-				return nil, err
+	if gen.Spec.Config.ClusterTopology != nil {
+		for shard, serversdef := range gen.Spec.Config.ClusterTopology {
+			shardmap := map[string]string{}
+			for alias, server := range serversdef {
+				// the redis servers must be defined using IP
+				// addresses, so this tries to resolve a hostname
+				// if present in the connection string.
+				u, err := url.Parse(server)
+				if err != nil {
+					return nil, err
+				}
+				ip, err := util.LookupIPv4(ctx, u.Hostname())
+				if err != nil {
+					return nil, err
+				}
+				u.Host = net.JoinHostPort(ip, u.Port())
+				if err != nil {
+					return nil, err
+				}
+				shardmap[alias] = u.String()
 			}
-			alias := u.Host
-			ip, err := util.LookupIPv4(ctx, u.Hostname())
-			if err != nil {
-				return nil, err
-			}
-			u.Host = net.JoinHostPort(ip, u.Port())
-			if err != nil {
-				return nil, err
-			}
-			shardmap[alias] = u.String()
+			clustermap[shard] = shardmap
 		}
-		clustermap[shard] = shardmap
+
+	} else if gen.Spec.Config.MonitoredShards != nil {
+		for shard, servers := range gen.Spec.Config.MonitoredShards {
+			shardmap := map[string]string{}
+			for _, server := range servers {
+				// the redis servers must be defined using IP
+				// addresses, so this tries to resolve a hostname
+				// if present in the connection string.
+				u, err := url.Parse(server)
+				if err != nil {
+					return nil, err
+				}
+				alias := u.Host
+				ip, err := util.LookupIPv4(ctx, u.Hostname())
+				if err != nil {
+					return nil, err
+				}
+				u.Host = net.JoinHostPort(ip, u.Port())
+				if err != nil {
+					return nil, err
+				}
+				shardmap[alias] = u.String()
+			}
+			clustermap[shard] = shardmap
+		}
+
+	} else {
+		return nil, fmt.Errorf("either 'spec.config.clusterTopology' or 'spec.cluster.MonitoredShards' must be set")
 	}
 
 	clustermap["sentinel"] = make(map[string]string, int(*gen.Spec.Replicas))

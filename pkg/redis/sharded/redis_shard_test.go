@@ -901,7 +901,7 @@ func TestShard_Init(t *testing.T) {
 	}
 }
 
-func TestShard_GetMasterAddr(t *testing.T) {
+func TestShard_GetMaster(t *testing.T) {
 	type fields struct {
 		Name    string
 		Servers []*RedisServer
@@ -1004,7 +1004,7 @@ func TestShard_GetMasterAddr(t *testing.T) {
 				t.Errorf("Shard.GetMasterAddr() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if got != tt.want {
+			if got.ID() != tt.want {
 				t.Errorf("Shard.GetMasterAddr() got = %v, want %v", got, tt.want)
 			}
 		})
