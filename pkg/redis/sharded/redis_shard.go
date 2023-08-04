@@ -81,20 +81,20 @@ func (shard *Shard) Discover(ctx context.Context, sentinel *SentinelServer, opti
 		// do not try to discover a master flagged as "s_down" or "o_down"
 		if strings.Contains(sentinelMasterResult.Flags, "s_down") || strings.Contains(sentinelMasterResult.Flags, "o_down") {
 			return append(merr, DiscoveryError_Master_SingleServerFailure{
-				fmt.Errorf("master %s is s_down/o_down", sentinelMasterResult.Name)})
+				fmt.Errorf("master %s is s_down/o_down", srv.GetAlias())})
 
-		} else {
-			// Confirm the server role
-			if err = srv.Discover(ctx, options...); err != nil {
-				srv.Role = client.Role(client.Unknown)
-				return append(merr, DiscoveryError_Master_SingleServerFailure{err})
-			} else if srv.Role != client.Master {
-				// the role that the server reports is different from the role that
-				// sentinel sees. Probably the sentinel configuration hasn't converged yet
-				// this is an error and should be retried
-				srv.Role = client.Role(client.Unknown)
-				return append(merr, DiscoveryError_Master_SingleServerFailure{fmt.Errorf("sentinel config has not yet converged for %s", srv.ID())})
-			}
+		}
+
+		// Confirm the server role
+		if err = srv.Discover(ctx, options...); err != nil {
+			srv.Role = client.Role(client.Unknown)
+			return append(merr, DiscoveryError_Master_SingleServerFailure{err})
+		} else if srv.Role != client.Master {
+			// the role that the server reports is different from the role that
+			// sentinel sees. Probably the sentinel configuration hasn't converged yet
+			// this is an error and should be retried
+			srv.Role = client.Role(client.Unknown)
+			return append(merr, DiscoveryError_Master_SingleServerFailure{fmt.Errorf("sentinel config has not yet converged for %s", srv.GetAlias())})
 		}
 
 		if DiscoveryOptionSet(options).Has(OnlyMasterDiscoveryOpt) {
@@ -118,13 +118,13 @@ func (shard *Shard) Discover(ctx context.Context, sentinel *SentinelServer, opti
 			// do not try to discover a slave flagged as "s_down" or "o_down"
 			if strings.Contains(slave.Flags, "s_down") || strings.Contains(slave.Flags, "o_down") {
 				merr = append(merr, DiscoveryError_Slave_SingleServerFailure{
-					fmt.Errorf("slave %s is s_down/o_down", slave.Name)})
+					fmt.Errorf("slave %s is s_down/o_down", srv.GetAlias())})
 				continue
 
 			} else {
 				if err := srv.Discover(ctx, options...); err != nil {
 					srv.Role = client.Role(client.Unknown)
-					logger.Error(err, fmt.Sprintf("unable to discover redis server %s", srv.ID()))
+					logger.Error(err, fmt.Sprintf("unable to discover redis server %s", srv.GetAlias()))
 					merr = append(merr, DiscoveryError_Slave_SingleServerFailure{err})
 					continue
 				}
@@ -133,7 +133,7 @@ func (shard *Shard) Discover(ctx context.Context, sentinel *SentinelServer, opti
 					// sentinel sees. Probably the sentinel configuration hasn't converged yet
 					// this is an error and should be retried
 					srv.Role = client.Role(client.Unknown)
-					merr = append(merr, DiscoveryError_Slave_SingleServerFailure{fmt.Errorf("sentinel config has not yet converged for %s", srv.ID())})
+					merr = append(merr, DiscoveryError_Slave_SingleServerFailure{fmt.Errorf("sentinel config has not yet converged for %s", srv.GetAlias())})
 					continue
 				}
 			}

@@ -113,13 +113,15 @@ func NewGenerator(ctx context.Context, instance *saasv1alpha1.TwemproxyConfig, c
 
 	case true:
 		merr := shardedCluster.SentinelDiscover(ctx, sharded.SlaveReadOnlyDiscoveryOpt)
-		// only sentinel/master discovery errors should return
-		// slave failures will just failover to the master
-		sentinelError := &sharded.DiscoveryError_Sentinel_Failure{}
-		masterError := &sharded.DiscoveryError_Master_SingleServerFailure{}
-		if errors.As(merr, sentinelError) || errors.As(merr, masterError) {
+		if merr != nil {
 			log.Error(merr, "errors occurred during discovery")
-			return Generator{}, merr
+			// Only sentinel/master discovery errors should return.
+			// Slave failures will just failover to the master without returning error (although it will be logged)
+			sentinelError := &sharded.DiscoveryError_Sentinel_Failure{}
+			masterError := &sharded.DiscoveryError_Master_SingleServerFailure{}
+			if errors.As(merr, sentinelError) || errors.As(merr, masterError) {
+				return Generator{}, merr
+			}
 		}
 
 		gen.masterTargets, err = gen.getMonitoredMasters(ctx, shardedCluster, log.WithName("masterTargets"))

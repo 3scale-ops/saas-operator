@@ -86,3 +86,147 @@ func TestRedisShardNodes_GetNodeByPodIndex(t *testing.T) {
 		})
 	}
 }
+
+func TestRedisShardNodes_MasterHostPort(t *testing.T) {
+	type fields struct {
+		Master map[string]string
+		Slaves map[string]string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "Returns master hostport",
+			fields: fields{
+				Master: map[string]string{"rs0-0": "127.0.0.1:1000"},
+			},
+			want: "127.0.0.1:1000",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rsn := &RedisShardNodes{
+				Master: tt.fields.Master,
+				Slaves: tt.fields.Slaves,
+			}
+			if got := rsn.MasterHostPort(); got != tt.want {
+				t.Errorf("RedisShardNodes.MasterHostPort() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestRedisShardNodes_GetHostPortByPodIndex(t *testing.T) {
+	type fields struct {
+		Master map[string]string
+		Slaves map[string]string
+	}
+	type args struct {
+		podIndex int
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   string
+	}{
+		{
+			name: "Returns the hosport of the node with the given replicaset index",
+			fields: fields{
+				Master: map[string]string{"rs0-0": "127.0.0.1:1000"},
+				Slaves: map[string]string{"rs0-1": "127.0.0.1:2000", "rs0-2": "127.0.0.1:3000"},
+			},
+			args: args{podIndex: 2},
+			want: "127.0.0.1:3000",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rsn := &RedisShardNodes{
+				Master: tt.fields.Master,
+				Slaves: tt.fields.Slaves,
+			}
+			if got := rsn.GetHostPortByPodIndex(tt.args.podIndex); got != tt.want {
+				t.Errorf("RedisShardNodes.GetHostPortByPodIndex() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestRedisShardNodes_GetAliasByPodIndex(t *testing.T) {
+	type fields struct {
+		Master map[string]string
+		Slaves map[string]string
+	}
+	type args struct {
+		podIndex int
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   string
+	}{
+		{
+			name: "Returns the alias of the node with the given replicaset index",
+			fields: fields{
+				Master: map[string]string{"rs0-0": "127.0.0.1:1000"},
+				Slaves: map[string]string{"rs0-1": "127.0.0.1:2000", "rs0-2": "127.0.0.1:3000"},
+			},
+			args: args{podIndex: 1},
+			want: "rs0-1",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rsn := &RedisShardNodes{
+				Master: tt.fields.Master,
+				Slaves: tt.fields.Slaves,
+			}
+			if got := rsn.GetAliasByPodIndex(tt.args.podIndex); got != tt.want {
+				t.Errorf("RedisShardNodes.GetAliasByPodIndex() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestRedisShardNodes_GetIndexByHostPort(t *testing.T) {
+	type fields struct {
+		Master map[string]string
+		Slaves map[string]string
+	}
+	type args struct {
+		hostport string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   int
+	}{
+		{
+			name: "Returns the index of the provided hostport",
+			fields: fields{
+				Master: map[string]string{"rs0-0": "127.0.0.1:1000"},
+				Slaves: map[string]string{"rs0-1": "127.0.0.1:2000", "rs0-2": "127.0.0.1:3000"},
+			},
+			args: args{
+				hostport: "127.0.0.1:3000",
+			},
+			want: 2,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rsn := &RedisShardNodes{
+				Master: tt.fields.Master,
+				Slaves: tt.fields.Slaves,
+			}
+			if got := rsn.GetIndexByHostPort(tt.args.hostport); got != tt.want {
+				t.Errorf("RedisShardNodes.GetIndexByHostPort() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

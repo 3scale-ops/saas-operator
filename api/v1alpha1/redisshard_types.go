@@ -103,6 +103,18 @@ func (rsn *RedisShardNodes) GetAliasByPodIndex(podIndex int) string {
 	return alias
 }
 
+func (rsn *RedisShardNodes) GetIndexByHostPort(hostport string) int {
+	nodes := util.MergeMaps(map[string]string{}, rsn.Master, rsn.Slaves)
+	for alias, hp := range nodes {
+		if hostport == hp {
+			i := alias[strings.LastIndex(alias, "-")+1:]
+			index, _ := strconv.Atoi(i)
+			return index
+		}
+	}
+	return -1
+}
+
 // RedisShardStatus defines the observed state of RedisShard
 type RedisShardStatus struct {
 	// ShardNodes describes the nodes in the redis shard
