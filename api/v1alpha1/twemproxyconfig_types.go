@@ -143,9 +143,9 @@ type TargetServer struct {
 	ServerAddress string  `json:"serverAddress"`
 }
 
-//+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
-
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:JSONPath=`.status.targets`,name=Selected Targets,type=string
 // TwemproxyConfig is the Schema for the twemproxyconfigs API
 type TwemproxyConfig struct {
 	metav1.TypeMeta   `json:",inline"`

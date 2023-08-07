@@ -15,7 +15,11 @@ spec:
     singular: twemproxyconfig
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - jsonPath: .status.targets
+      name: Selected Targets
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: TwemproxyConfig is the Schema for the twemproxyconfigs API

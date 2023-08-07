@@ -3,7 +3,6 @@ package sharded
 import (
 	"context"
 	"fmt"
-	"net"
 	"sort"
 	"strings"
 
@@ -51,7 +50,7 @@ func NewShard(name string, servers map[string]string, pool *redis.ServerPool) (*
 // If a SentinelServer is provided, it will be used to autodiscover servers and roles in the shard
 func (shard *Shard) Discover(ctx context.Context, sentinel *SentinelServer, options ...DiscoveryOption) error {
 	var merr util.MultiError
-	logger := log.FromContext(ctx, "function", "(*Shard).Discover")
+	logger := log.FromContext(ctx, "function", "(*Shard).Discover", "shard", shard.Name)
 
 	switch sentinel {
 
@@ -80,9 +79,9 @@ func (shard *Shard) Discover(ctx context.Context, sentinel *SentinelServer, opti
 
 		// do not try to discover a master flagged as "s_down" or "o_down"
 		if strings.Contains(sentinelMasterResult.Flags, "s_down") || strings.Contains(sentinelMasterResult.Flags, "o_down") {
-			return append(merr, DiscoveryError_Master_SingleServerFailure{
-				fmt.Errorf("master %s is s_down/o_down", srv.GetAlias())})
-
+			err := fmt.Errorf("master %s is s_down/o_down", srv.GetAlias())
+			logger.Error(err, "master down")
+			return append(merr, DiscoveryError_Master_SingleServerFailure{err})
 		}
 
 		// Confirm the server role
@@ -117,8 +116,9 @@ func (shard *Shard) Discover(ctx context.Context, sentinel *SentinelServer, opti
 
 			// do not try to discover a slave flagged as "s_down" or "o_down"
 			if strings.Contains(slave.Flags, "s_down") || strings.Contains(slave.Flags, "o_down") {
-				merr = append(merr, DiscoveryError_Slave_SingleServerFailure{
-					fmt.Errorf("slave %s is s_down/o_down", srv.GetAlias())})
+				err := fmt.Errorf("slave %s is s_down/o_down", srv.GetAlias())
+				log.Log.Error(err, "slave is down")
+				merr = append(merr, DiscoveryError_Slave_SingleServerFailure{err})
 				continue
 
 			} else {
@@ -216,44 +216,36 @@ func (shard *Shard) GetServerByID(hostport string) (*RedisServer, error) {
 
 // Init initializes the shard if not already initialized
 func (shard *Shard) Init(ctx context.Context, masterHostPort string) ([]string, error) {
-	logger := log.FromContext(ctx, "function", "(*Shard).Init")
-	changed := []string{}
+	merr := util.MultiError{}
+	listChanged := []string{}
+	var master *RedisServer
 
-	for idx, srv := range shard.Servers {
-		role, slaveof, err := srv.RedisRole(ctx)
-		if err != nil {
-			return changed, err
-		}
-
-		if role == client.Slave {
-
-			if slaveof == "127.0.0.1" {
-
-				if masterHostPort == srv.ID() {
-					if err := srv.RedisSlaveOf(ctx, "NO", "ONE"); err != nil {
-						return changed, err
-					}
-					logger.Info(fmt.Sprintf("configured %s as master", srv.ID()))
-					changed = append(changed, srv.ID())
-				} else {
-					host, port, _ := net.SplitHostPort(masterHostPort)
-					if err := srv.RedisSlaveOf(ctx, host, port); err != nil {
-						return changed, err
-					}
-					logger.Info(fmt.Sprintf("configured %s as slave", srv.ID()))
-					changed = append(changed, srv.ID())
-				}
-
-			} else {
-				shard.Servers[idx].Role = client.Slave
+	// Init the master
+	for _, srv := range shard.Servers {
+		if srv.ID() == masterHostPort {
+			master = srv
+			changed, err := master.InitMaster(ctx)
+			if err != nil {
+				return listChanged, append(merr, err)
 			}
-
-		} else if role == client.Master {
-			shard.Servers[idx].Role = client.Master
-		} else {
-			return changed, fmt.Errorf("unable to get role for server %s", srv.ID())
+			if changed {
+				listChanged = append(listChanged, master.ID())
+			}
 		}
 	}
 
-	return changed, nil
+	// Init the slaves
+	for _, srv := range shard.Servers {
+		if srv.ID() != masterHostPort {
+			changed, err := srv.InitSlave(ctx, master)
+			if err != nil {
+				merr = append(merr, err)
+			}
+			if changed {
+				listChanged = append(listChanged, srv.ID())
+			}
+		}
+	}
+
+	return listChanged, merr.ErrorOrNil()
 }

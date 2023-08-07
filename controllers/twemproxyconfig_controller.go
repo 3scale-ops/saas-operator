@@ -39,6 +39,7 @@ import (
 	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -82,10 +83,10 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	gen, err := twemproxyconfig.NewGenerator(
 		ctx, instance, r.Client, r.Pool, logger.WithName("generator"),
 	)
-
 	if err != nil {
 		return ctrl.Result{}, err
 	}
+
 	cm, err := gen.ConfigMap().Build(ctx, r.Client)
 	if err != nil {
 		return ctrl.Result{}, err
@@ -268,5 +269,10 @@ func (r *TwemproxyConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&corev1.ConfigMap{}).
 		Owns(&grafanav1alpha1.GrafanaDashboard{}).
 		Watches(&source.Channel{Source: r.SentinelEvents.GetChannel()}, &handler.EnqueueRequestForObject{}).
+		WithOptions(controller.Options{
+			RateLimiter: AggressiveRateLimiter(),
+			// this allows for different resources to be reconciled in parallel
+			MaxConcurrentReconciles: 2,
+		}).
 		Complete(r)
 }

@@ -13,6 +13,8 @@ import (
 	"github.com/3scale/saas-operator/pkg/util"
 	"github.com/go-logr/logr"
 	"github.com/go-test/deep"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -634,7 +636,7 @@ func TestNewGenerator(t *testing.T) {
 				return
 			}
 			deep.CompareUnexportedFields = true
-			if diff := deep.Equal(got, tt.want); len(diff) != 0 {
+			if diff := cmp.Diff(got, tt.want, cmp.AllowUnexported(Generator{}), cmpopts.IgnoreUnexported(twemproxy.Server{})); len(diff) != 0 {
 				t.Errorf("NewGenerator() = diff %v", diff)
 			}
 		})

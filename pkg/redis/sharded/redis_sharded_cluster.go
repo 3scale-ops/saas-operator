@@ -122,7 +122,6 @@ func (cluster *Cluster) SentinelDiscover(ctx context.Context, opts ...DiscoveryO
 			// keep going with the other shards
 			continue
 		}
-
 	}
 	return merr.ErrorOrNil()
 }

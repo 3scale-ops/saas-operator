@@ -31,15 +31,19 @@ import (
 	"github.com/3scale/saas-operator/pkg/redis/sharded"
 	"github.com/go-logr/logr"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
+	"golang.org/x/time/rate"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/util/workqueue"
 	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/ratelimiter"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
@@ -151,9 +155,9 @@ func (r *SentinelReconciler) reconcileStatus(ctx context.Context, instance *saas
 	log logr.Logger) error {
 
 	// sentinels info to the status
-	sentinels := make(map[string]string, len(cluster.Sentinels))
-	for _, srv := range cluster.Sentinels {
-		sentinels[srv.GetAlias()] = srv.ID()
+	sentinels := make([]string, len(cluster.Sentinels))
+	for idx, srv := range cluster.Sentinels {
+		sentinels[idx] = srv.ID()
 	}
 
 	// redis shards info to the status
@@ -171,7 +175,7 @@ func (r *SentinelReconciler) reconcileStatus(ctx context.Context, instance *saas
 	masterError := &sharded.DiscoveryError_Master_SingleServerFailure{}
 	slaveError := &sharded.DiscoveryError_Slave_SingleServerFailure{}
 	if errors.As(merr, masterError) || errors.As(merr, slaveError) {
-		log.Error(merr, "errors occurred during discovery")
+		log.Error(merr, "DiscoveryError")
 	}
 
 	shards := make(saasv1alpha1.MonitoredShards, len(cluster.Shards))
@@ -215,5 +219,19 @@ func (r *SentinelReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&grafanav1alpha1.GrafanaDashboard{}).
 		Owns(&corev1.ConfigMap{}).
 		Watches(&source.Channel{Source: r.SentinelEvents.GetChannel()}, &handler.EnqueueRequestForObject{}).
+		WithOptions(controller.Options{
+			RateLimiter: AggressiveRateLimiter(),
+		}).
 		Complete(r)
+}
+
+func AggressiveRateLimiter() ratelimiter.RateLimiter {
+	// return workqueue.DefaultControllerRateLimiter()
+	return workqueue.NewMaxOfRateLimiter(
+		// First retries are more spaced that default
+		// Max retry time is limited to 10 seconds
+		workqueue.NewItemExponentialFailureRateLimiter(5*time.Millisecond, 10*time.Second),
+		// 10 qps, 100 bucket size.  This is only for retry speed and its only the overall factor (not per item)
+		&workqueue.BucketRateLimiter{Limiter: rate.NewLimiter(rate.Limit(10), 100)},
+	)
 }

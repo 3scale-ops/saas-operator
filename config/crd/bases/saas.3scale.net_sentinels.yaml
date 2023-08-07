@@ -516,10 +516,10 @@ spec:
                   type: object
                 type: array
               sentinels:
-                additionalProperties:
-                  type: string
                 description: Addresses of the sentinel instances currently running
-                type: object
+                items:
+                  type: string
+                type: array
             type: object
         type: object
     served: true

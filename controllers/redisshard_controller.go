@@ -112,6 +112,11 @@ func (r *RedisShardReconciler) setRedisRoles(ctx context.Context, key types.Name
 		if err != nil {
 			return &sharded.Shard{Name: key.Name}, &ctrl.Result{}, err
 		}
+		if pod.Status.PodIP == "" {
+			log.Info("waiting for pod IP to be allocated")
+			return &sharded.Shard{Name: key.Name}, &ctrl.Result{RequeueAfter: 5 * time.Second}, nil
+		}
+
 		redisURLs[fmt.Sprintf("%s-%d", serviceName, i)] = fmt.Sprintf("redis://%s:%d", pod.Status.PodIP, 6379)
 		if int(masterIndex) == i {
 			masterHostPort = fmt.Sprintf("%s:%d", pod.Status.PodIP, 6379)

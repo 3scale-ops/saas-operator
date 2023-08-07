@@ -70,6 +70,10 @@ func (srv *Server) CloseClient() error {
 	return srv.client.Close()
 }
 
+func (srv *Server) GetClient() client.TestableInterface {
+	return srv.client
+}
+
 func (srv *Server) GetHost() string {
 	return srv.host
 }
@@ -170,7 +174,7 @@ func (srv *Server) SentinelInfoCache(ctx context.Context) (client.SentinelInfoCa
 			// When sentinel is unable to reach the redis slave the info field can be nil
 			// so we have to check this to avoid panics
 			if server.([]interface{})[1] != nil {
-				info := infoStringToMap(server.([]interface{})[1].(string))
+				info := InfoStringToMap(server.([]interface{})[1].(string))
 				result[shard][info["run_id"]] = client.RedisServerInfoCache{
 					CacheAge: time.Duration(server.([]interface{})[0].(int64)) * time.Millisecond,
 					Info:     info,
@@ -248,7 +252,7 @@ func islice2imap(in interface{}) map[string]interface{} {
 	return m
 }
 
-func infoStringToMap(in string) map[string]string {
+func InfoStringToMap(in string) map[string]string {
 
 	m := map[string]string{}
 	scanner := bufio.NewScanner(strings.NewReader(in))

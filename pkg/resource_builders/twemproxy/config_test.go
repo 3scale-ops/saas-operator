@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 func TestTwemproxyServer_MarshalJSON(t *testing.T) {
@@ -90,7 +91,7 @@ func TestTwemproxyServer_UnmarshalJSON(t *testing.T) {
 				}
 				return
 			} else {
-				if diff := cmp.Diff(srv, tt.want); len(diff) != 0 {
+				if diff := cmp.Diff(srv, tt.want, cmpopts.IgnoreUnexported(Server{})); len(diff) != 0 {
 					t.Fatalf("TwemproxyServer.UnmarshalJSON() diff = %v", diff)
 				}
 			}

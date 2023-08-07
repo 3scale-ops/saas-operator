@@ -172,7 +172,7 @@ type SentinelStatus struct {
 	// Addresses of the sentinel instances currently running
 	// +operator-sdk:csv:customresourcedefinitions:type=status
 	// +optional
-	Sentinels map[string]string `json:"sentinels,omitempty"`
+	Sentinels []string `json:"sentinels,omitempty"`
 	// MonitoredShards is the list of shards that the Sentinel
 	// resource is currently monitoring
 	// +operator-sdk:csv:customresourcedefinitions:type=status

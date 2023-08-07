@@ -31,7 +31,7 @@ func (set DiscoveryOptionSet) Has(opt DiscoveryOption) bool {
 // redis Server
 // It always gets the role first
 func (srv *RedisServer) Discover(ctx context.Context, opts ...DiscoveryOption) error {
-	logger := log.FromContext(ctx, "function", "(*RedisServer).DiscoverWithOptions()")
+	logger := log.FromContext(ctx, "function", "(*RedisServer).Discover()")
 
 	role, _, err := srv.RedisRole(ctx)
 	if err != nil {

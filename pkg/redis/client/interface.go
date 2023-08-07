@@ -18,12 +18,14 @@ type TestableInterface interface {
 	SentinelSet(context.Context, string, string, string) error
 	SentinelPSubscribe(context.Context, ...string) (<-chan *redis.Message, func() error)
 	SentinelInfoCache(context.Context) (interface{}, error)
+	SentinelDo(context.Context, ...interface{}) (interface{}, error)
 	SentinelPing(ctx context.Context) error
 	RedisRole(context.Context) (interface{}, error)
 	RedisConfigGet(context.Context, string) ([]interface{}, error)
 	RedisConfigSet(context.Context, string, string) error
 	RedisSlaveOf(context.Context, string, string) error
 	RedisDebugSleep(context.Context, time.Duration) error
+	RedisDo(context.Context, ...interface{}) (interface{}, error)
 	Close() error
 }
 

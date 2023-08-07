@@ -2655,10 +2655,8 @@ func (in *SentinelStatus) DeepCopyInto(out *SentinelStatus) {
 	*out = *in
 	if in.Sentinels != nil {
 		in, out := &in.Sentinels, &out.Sentinels
-		*out = make(map[string]string, len(*in))
-		for key, val := range *in {
-			(*out)[key] = val
-		}
+		*out = make([]string, len(*in))
+		copy(*out, *in)
 	}
 	if in.MonitoredShards != nil {
 		in, out := &in.MonitoredShards, &out.MonitoredShards

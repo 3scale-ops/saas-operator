@@ -114,7 +114,7 @@ func NewGenerator(ctx context.Context, instance *saasv1alpha1.TwemproxyConfig, c
 	case true:
 		merr := shardedCluster.SentinelDiscover(ctx, sharded.SlaveReadOnlyDiscoveryOpt)
 		if merr != nil {
-			log.Error(merr, "errors occurred during discovery")
+			log.Error(merr, "DiscoveryError")
 			// Only sentinel/master discovery errors should return.
 			// Slave failures will just failover to the master without returning error (although it will be logged)
 			sentinelError := &sharded.DiscoveryError_Sentinel_Failure{}

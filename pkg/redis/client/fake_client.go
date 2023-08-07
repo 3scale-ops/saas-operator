@@ -93,6 +93,11 @@ func (fc *FakeClient) SentinelPing(ctx context.Context) error {
 	return rsp.InjectError()
 }
 
+func (fc *FakeClient) SentinelDo(ctx context.Context, args ...interface{}) (interface{}, error) {
+	rsp := fc.pop()
+	return rsp.InjectResponse(), rsp.InjectError()
+}
+
 func (fc *FakeClient) RedisRole(ctx context.Context) (interface{}, error) {
 	rsp := fc.pop()
 	return rsp.InjectResponse(), rsp.InjectError()
@@ -123,6 +128,11 @@ func (fc *FakeClient) RedisDebugSleep(ctx context.Context, duration time.Duratio
 
 	time.Sleep(duration)
 	return nil
+}
+
+func (fc *FakeClient) RedisDo(ctx context.Context, args ...interface{}) (interface{}, error) {
+	rsp := fc.pop()
+	return rsp.InjectResponse(), rsp.InjectError()
 }
 
 func (fc *FakeClient) pop() (fakeRsp FakeResponse) {
