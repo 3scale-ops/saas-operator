@@ -19,8 +19,16 @@ type Shard struct {
 	pool    *redis.ServerPool
 }
 
-// NewShard returns a Shard object given the passed redis server URLs
-func NewShard(name string, servers map[string]string, pool *redis.ServerPool) (*Shard, error) {
+func NewShardFromServers(name string, pool *redis.ServerPool, servers ...*RedisServer) *Shard {
+	shard := &Shard{}
+	shard.Name = name
+	shard.Servers = append(shard.Servers, servers...)
+	shard.pool = pool
+	return shard
+}
+
+// NewShardFromTopology returns a Shard object given the passed redis server URLs
+func NewShardFromTopology(name string, servers map[string]string, pool *redis.ServerPool) (*Shard, error) {
 	var merr util.MultiError
 	shard := &Shard{Name: name, pool: pool}
 	shard.Servers = make([]*RedisServer, 0, len(servers))

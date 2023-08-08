@@ -156,7 +156,7 @@ func TestNewShard(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewShard(tt.args.name, tt.args.servers, tt.args.pool)
+			got, err := NewShardFromTopology(tt.args.name, tt.args.servers, tt.args.pool)
 			if (error(err) != nil) != tt.wantErr {
 				t.Errorf("NewShard() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1033,7 +1033,7 @@ func TestShard_GetServerByID(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			shard, _ := NewShard("test", tt.servers, redis.NewServerPool())
+			shard, _ := NewShardFromTopology("test", tt.servers, redis.NewServerPool())
 			got, err := shard.GetServerByID(tt.args.hostport)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Shard.GetServerByID() error = %v, wantErr %v", err, tt.wantErr)

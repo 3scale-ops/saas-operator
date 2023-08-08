@@ -135,6 +135,16 @@ func (fc *FakeClient) RedisDo(ctx context.Context, args ...interface{}) (interfa
 	return rsp.InjectResponse(), rsp.InjectError()
 }
 
+func (fc *FakeClient) RedisBGSave(ctx context.Context) error {
+	rsp := fc.pop()
+	return rsp.InjectError()
+}
+
+func (fc *FakeClient) RedisLastSave(ctx context.Context) (int64, error) {
+	rsp := fc.pop()
+	return rsp.InjectResponse().(int64), rsp.InjectError()
+}
+
 func (fc *FakeClient) pop() (fakeRsp FakeResponse) {
 	fakeRsp, fc.Responses = fc.Responses[0], fc.Responses[1:]
 	return fakeRsp

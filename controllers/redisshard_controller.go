@@ -128,7 +128,7 @@ func (r *RedisShardReconciler) setRedisRoles(ctx context.Context, key types.Name
 		}
 	}
 
-	shard, err := sharded.NewShard(key.Name, redisURLs, r.Pool)
+	shard, err := sharded.NewShardFromTopology(key.Name, redisURLs, r.Pool)
 	if err != nil {
 		return shard, &ctrl.Result{}, err
 	}

@@ -105,7 +105,7 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	shardedCluster, err := sharded.NewShardedCluster(ctx, clustermap, r.Pool)
+	shardedCluster, err := sharded.NewShardedClusterFromTopology(ctx, clustermap, r.Pool)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -120,7 +120,7 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			if err := shardedCluster.Discover(ctx); err != nil {
 				return ctrl.Result{}, err
 			}
-			if _, err := sentinel.Monitor(ctx, shardedCluster); err != nil {
+			if _, err := sentinel.Monitor(ctx, shardedCluster, saasv1alpha1.SentinelDefaultQuorum); err != nil {
 				return ctrl.Result{}, err
 			}
 		}

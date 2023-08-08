@@ -4,7 +4,6 @@ import (
 	"context"
 	"sort"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	redis "github.com/3scale/saas-operator/pkg/redis/server"
 	"github.com/3scale/saas-operator/pkg/util"
 )
@@ -87,7 +86,7 @@ func (sentinel *SentinelServer) IsMonitoringShards(ctx context.Context, shards [
 }
 
 // Monitor ensures that all the shards in the ShardedCluster object are monitored by the SentinelServer
-func (sentinel *SentinelServer) Monitor(ctx context.Context, cluster *Cluster) ([]string, error) {
+func (sentinel *SentinelServer) Monitor(ctx context.Context, cluster *Cluster, quorum int) ([]string, error) {
 	changed := []string{}
 
 	// Initialize unmonitored shards
@@ -104,7 +103,7 @@ func (sentinel *SentinelServer) Monitor(ctx context.Context, cluster *Cluster) (
 					return changed, err
 				}
 
-				err = sentinel.SentinelMonitor(ctx, name, master.GetHost(), master.GetPort(), saasv1alpha1.SentinelDefaultQuorum)
+				err = sentinel.SentinelMonitor(ctx, name, master.GetHost(), master.GetPort(), quorum)
 				if err != nil {
 					return changed, util.WrapError("redis-sentinel/SentinelServer.Monitor", err)
 				}
