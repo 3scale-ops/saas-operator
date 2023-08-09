@@ -17,6 +17,7 @@ type RunnableThread interface {
 	Start(context.Context, logr.Logger) error
 	Stop()
 	IsStarted() bool
+	CanBeDeleted() bool
 }
 
 // Manager is a struct that holds configuration to
@@ -35,23 +36,29 @@ func NewManager() Manager {
 	}
 }
 
-// RunThread runs thread and associates it with a given key so it can later be stopped
-func (mgr *Manager) RunThread(ctx context.Context, key string, thread RunnableThread, log logr.Logger) error {
+// runThread runs thread and associates it with a given key so it can later be stopped
+func (mgr *Manager) runThread(ctx context.Context, key string, thread RunnableThread, log logr.Logger) error {
 	thread.SetChannel(mgr.channel)
-	// run the exporter for this instance if it is not running, do nothing otherwise
-	if w, ok := mgr.threads[key]; !ok || !w.IsStarted() {
-		mgr.mu.Lock()
+
+	t, ok := mgr.threads[key]
+	// do nothing if present and already started
+	if ok && t.IsStarted() {
+		return nil
+	}
+
+	mgr.mu.Lock()
+	defer mgr.mu.Unlock()
+	if !ok {
 		mgr.threads[key] = thread
-		if err := mgr.threads[key].Start(ctx, log); err != nil {
-			return err
-		}
-		mgr.mu.Unlock()
+	}
+	if err := mgr.threads[key].Start(ctx, log); err != nil {
+		return err
 	}
 	return nil
 }
 
-// StopThread stops the thread identified by the given key
-func (mgr *Manager) StopThread(key string) {
+// stopThread stops the thread identified by the given key
+func (mgr *Manager) stopThread(key string) {
 	mgr.mu.Lock()
 	if _, ok := mgr.threads[key]; !ok {
 		return
@@ -69,23 +76,23 @@ func (mgr *Manager) GetChannel() <-chan event.GenericEvent {
 
 // ReconcileThreads ensures that the threads identified by the provided keys are running. prefix() is used to identify
 // which threads belong to each resource.
-func (mgr *Manager) ReconcileThreads(ctx context.Context, instance client.Object, threads []RunnableThread, log logr.Logger) error {
+func (mgr *Manager) ReconcileThreads(ctx context.Context, owner client.Object, threads []RunnableThread, log logr.Logger) error {
 
 	shouldRun := map[string]int{}
 
 	for _, thread := range threads {
-		key := prefix(instance) + thread.GetID()
+		key := prefix(owner) + thread.GetID()
 		shouldRun[key] = 1
-		if err := mgr.RunThread(ctx, key, thread, log); err != nil {
+		if err := mgr.runThread(ctx, key, thread, log); err != nil {
 			return err
 		}
 	}
 
 	// Stop threads that should not be running anymore
 	for key := range mgr.threads {
-		if strings.Contains(key, prefix(instance)) {
-			if _, ok := shouldRun[key]; !ok {
-				mgr.StopThread(key)
+		if strings.Contains(key, prefix(owner)) {
+			if _, ok := shouldRun[key]; !ok && mgr.threads[key].CanBeDeleted() {
+				mgr.stopThread(key)
 			}
 		}
 	}
@@ -96,14 +103,32 @@ func (mgr *Manager) ReconcileThreads(ctx context.Context, instance client.Object
 // CleanupThreads returns a function that cleans matching threads when invoked.
 // This is intended for use as a cleanup function in the finalize phase of a controller's
 // reconcile loop.
-func (mgr *Manager) CleanupThreads(instance client.Object) func() {
+func (mgr *Manager) CleanupThreads(owner client.Object) func() {
 	return func() {
 		for key := range mgr.threads {
-			if strings.Contains(key, prefix(instance)) {
-				mgr.StopThread(key)
+			if strings.Contains(key, prefix(owner)) {
+				mgr.stopThread(key)
 			}
 		}
 	}
+}
+
+// Returns a thread, typically for inspection by the caller (ie get status/errors)
+func (mgr *Manager) GetThread(id string, owner client.Object, log logr.Logger) RunnableThread {
+	key := prefix(owner) + id
+	if _, ok := mgr.threads[key]; ok {
+		return mgr.threads[key]
+	} else {
+		return nil
+	}
+}
+
+func (mgr *Manager) GetKeys() []string {
+	keys := make([]string, 0, len(mgr.threads))
+	for k, _ := range mgr.threads {
+		keys = append(keys, k)
+	}
+	return keys
 }
 
 func prefix(o client.Object) string {

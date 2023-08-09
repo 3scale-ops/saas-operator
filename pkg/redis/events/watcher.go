@@ -111,6 +111,10 @@ func (sew *SentinelEventWatcher) IsStarted() bool {
 	return sew.started
 }
 
+func (sew *SentinelEventWatcher) CanBeDeleted() bool {
+	return true
+}
+
 func (sew *SentinelEventWatcher) SetChannel(ch chan event.GenericEvent) {
 	sew.eventsCh = ch
 }

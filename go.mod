@@ -23,6 +23,7 @@ require (
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.42.1
 	github.com/prometheus/client_golang v1.14.0
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/tektoncd/pipeline v0.49.0
 	go.uber.org/zap v1.24.0
 	golang.org/x/time v0.3.0

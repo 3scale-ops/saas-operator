@@ -189,7 +189,7 @@ func (ss *SentinelStatus) ShardedCluster(ctx context.Context, pool *redis.Server
 	// TODO: at some point change the SentinelStatus.Sentinels to also have a map and avoid this
 	msentinel := make(map[string]string, len(ss.Sentinels))
 	for _, s := range ss.Sentinels {
-		msentinel[s] = s
+		msentinel[s] = "redis://" + s
 	}
 
 	shards := make([]*sharded.Shard, 0, len(ss.MonitoredShards))

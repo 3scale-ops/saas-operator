@@ -97,7 +97,7 @@ func (sentinel *SentinelServer) Monitor(ctx context.Context, cluster *Cluster, q
 		if err != nil {
 			if err.Error() == shardNotInitializedError {
 
-				shard := cluster.GetShardByName(name)
+				shard := cluster.LookupShardByName(name)
 				master, err := shard.GetMaster()
 				if err != nil {
 					return changed, err

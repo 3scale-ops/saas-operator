@@ -1,0 +1,27 @@
+# permissions for end users to view shardedredisbackups.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: shardedredisbackup-viewer-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: saas-operator
+    app.kubernetes.io/part-of: saas-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: shardedredisbackup-viewer-role
+rules:
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - shardedredisbackups
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - shardedredisbackups/status
+  verbs:
+  - get

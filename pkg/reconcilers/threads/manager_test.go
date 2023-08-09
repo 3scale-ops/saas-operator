@@ -28,8 +28,9 @@ func (trt *TestRunnableThread) Start(context.Context, logr.Logger) error {
 	}
 	return trt.TStartError
 }
-func (trt *TestRunnableThread) Stop()           { trt.started = false }
-func (trt *TestRunnableThread) IsStarted() bool { return trt.started }
+func (trt *TestRunnableThread) Stop()              { trt.started = false }
+func (trt *TestRunnableThread) IsStarted() bool    { return trt.started }
+func (trt *TestRunnableThread) CanBeDeleted() bool { return true }
 
 func TestManager_RunThread(t *testing.T) {
 	type fields struct {
@@ -87,7 +88,7 @@ func TestManager_RunThread(t *testing.T) {
 				threads: tt.fields.threads,
 			}
 
-			if err := mgr.RunThread(tt.args.ctx, tt.args.key, tt.args.thread, tt.args.log); (err != nil) != tt.wantErr {
+			if err := mgr.runThread(tt.args.ctx, tt.args.key, tt.args.thread, tt.args.log); (err != nil) != tt.wantErr {
 				t.Errorf("Manager.RunThread() error = %v, wantErr %v", err, tt.wantErr)
 			} else {
 				if _, ok := mgr.threads[tt.args.key]; !ok {
@@ -130,7 +131,7 @@ func TestManager_StopThread(t *testing.T) {
 				channel: tt.fields.channel,
 				threads: tt.fields.threads,
 			}
-			mgr.StopThread(tt.args.key)
+			mgr.stopThread(tt.args.key)
 			if _, ok := mgr.threads[tt.args.key]; ok {
 				t.Errorf("Manager.RunThread() RunnableThread should have been deleted from manager")
 			}

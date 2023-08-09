@@ -83,10 +83,21 @@ func (cluster *Cluster) GetShardNames() []string {
 	return shards
 }
 
-func (cluster Cluster) GetShardByName(name string) *Shard {
+func (cluster Cluster) LookupShardByName(name string) *Shard {
 	for _, shard := range cluster.Shards {
 		if shard.Name == name {
 			return shard
+		}
+	}
+	return nil
+}
+
+func (cluster Cluster) LookupServerByID(hostport string) *RedisServer {
+	for _, shard := range cluster.Shards {
+		for _, srv := range shard.Servers {
+			if hostport == srv.ID() {
+				return srv
+			}
 		}
 	}
 	return nil
@@ -122,7 +133,7 @@ func (cluster *Cluster) SentinelDiscover(ctx context.Context, opts ...DiscoveryO
 	for _, master := range masters {
 
 		// Get the corresponding shard
-		shard := cluster.GetShardByName(master.Name)
+		shard := cluster.LookupShardByName(master.Name)
 
 		// Add the shard if not already present
 		if shard == nil {
