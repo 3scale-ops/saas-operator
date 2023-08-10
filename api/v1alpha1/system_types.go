@@ -213,8 +213,8 @@ var (
 			Name:        pointer.String("backend-sync"),
 			Description: pointer.String("Runs the Backend Synchronization task"),
 			Config: &SystemTektonTaskConfig{
-				Command: []string{
-					"container-entrypoint",
+				Command: []string{"container-entrypoint"},
+				Args: []string{
 					"bundle",
 					"exec",
 					"rails",
@@ -226,8 +226,8 @@ var (
 			Name:        pointer.String("db-migrate"),
 			Description: pointer.String("Runs the Database Migration task"),
 			Config: &SystemTektonTaskConfig{
-				Command: []string{
-					"container-entrypoint",
+				Command: []string{"container-entrypoint"},
+				Args: []string{
 					"bundle",
 					"exec",
 					"rails",
@@ -239,8 +239,10 @@ var (
 			Name:        pointer.String("searchd-reindex"),
 			Description: pointer.String("Runs the Searchd Rendexation task"),
 			Config: &SystemTektonTaskConfig{
-				Command: []string{
-					"container-entrypoint",
+				Command: []string{"container-entrypoint"},
+				Args: []string{
+					"bundle",
+					"exec",
 					"rake",
 					"searchd:optimal_index",
 				},
@@ -1044,10 +1046,14 @@ type SystemTektonTaskConfig struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Image *ImageSpec `json:"image,omitempty"`
-	// List of args to be consumed by the task. Format: queue[,Priority]
+	// List of commands to be consumed by the task.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	Command []string `json:"args,omitempty"`
+	Command []string `json:"command,omitempty"`
+	// List of args to be consumed by the task.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Args []string `json:"args,omitempty"`
 	// List of extra evironment variables to be consumed by the task.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -1057,7 +1063,8 @@ type SystemTektonTaskConfig struct {
 // Default sets default values for any value not specifically set in the SystemTektonTaskConfig struct
 func (cfg *SystemTektonTaskConfig) Default(systemDefaultImage *ImageSpec) {
 	cfg.Image = InitializeImageSpec(cfg.Image, defaultImageSpec(*systemDefaultImage))
-	cfg.Command = stringSliceOrDefault(cfg.Command, []string{"echo", "Step command not set."})
+	cfg.Command = stringSliceOrDefault(cfg.Command, []string{"echo"})
+	cfg.Args = stringSliceOrDefault(cfg.Args, []string{"Step command not set."})
 	if len(cfg.ExtraEnv) == 0 {
 		cfg.ExtraEnv = []corev1.EnvVar{}
 	}

@@ -4038,8 +4038,12 @@ spec:
                         for the component element
                       properties:
                         args:
-                          description: 'List of args to be consumed by the task. Format:
-                            queue[,Priority]'
+                          description: List of args to be consumed by the task.
+                          items:
+                            type: string
+                          type: array
+                        command:
+                          description: List of commands to be consumed by the task.
                           items:
                             type: string
                           type: array
