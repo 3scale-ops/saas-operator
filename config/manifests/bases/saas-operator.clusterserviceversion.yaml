@@ -3322,9 +3322,12 @@ spec:
           element
         displayName: Config
         path: tasks[0].config
-      - description: 'List of args to be consumed by the task. Format: queue[,Priority]'
-        displayName: Command
+      - description: List of args to be consumed by the task.
+        displayName: Args
         path: tasks[0].config.args
+      - description: List of commands to be consumed by the task.
+        displayName: Command
+        path: tasks[0].config.command
       - description: List of extra evironment variables to be consumed by the task.
         displayName: Extra Env
         path: tasks[0].config.extraEnv
