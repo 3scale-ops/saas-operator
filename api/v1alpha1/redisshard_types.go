@@ -32,8 +32,9 @@ var (
 		Tag:        pointer.String("4.0.11-alpine"),
 		PullPolicy: (*corev1.PullPolicy)(pointer.String(string(corev1.PullIfNotPresent))),
 	}
-	redisShardDefaultMasterIndex int32 = 0
-	RedisShardDefaultReplicas    int32 = 3
+	redisShardDefaultMasterIndex int32  = 0
+	redisShardDefaultCommand     string = "redis-server /redis/redis.conf"
+	RedisShardDefaultReplicas    int32  = 3
 )
 
 // RedisShardSpec defines the desired state of RedisShard
@@ -51,6 +52,10 @@ type RedisShardSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	SlaveCount *int32 `json:"slaveCount,omitempty"`
+	// Command overrides the redis container command
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Command *string `json:"command,omitempty"`
 }
 
 // Default implements defaulting for RedisShardSpec
@@ -58,7 +63,8 @@ func (spec *RedisShardSpec) Default() {
 
 	spec.Image = InitializeImageSpec(spec.Image, redisShardDefaultImage)
 	spec.MasterIndex = intOrDefault(spec.MasterIndex, &redisShardDefaultMasterIndex)
-	spec.SlaveCount = intOrDefault(spec.SlaveCount, pointer.Int32(RedisShardDefaultReplicas-1))
+	spec.SlaveCount = intOrDefault(spec.SlaveCount, util.Pointer(RedisShardDefaultReplicas-1))
+	spec.Command = stringOrDefault(spec.Command, &redisShardDefaultCommand)
 }
 
 type RedisShardNodes struct {

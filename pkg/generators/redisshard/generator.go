@@ -19,6 +19,7 @@ type Generator struct {
 	Image       saasv1alpha1.ImageSpec
 	MasterIndex int32
 	Replicas    int32
+	Command     string
 }
 
 // Override the GetSelector function as it needs to be different in this case
@@ -42,6 +43,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.RedisShardSpec) 
 		Image:       *spec.Image,
 		MasterIndex: *spec.MasterIndex,
 		Replicas:    *spec.SlaveCount + 1,
+		Command:     *spec.Command,
 	}
 }
 

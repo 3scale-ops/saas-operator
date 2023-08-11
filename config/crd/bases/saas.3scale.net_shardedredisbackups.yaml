@@ -36,19 +36,70 @@ spec:
           spec:
             description: ShardedRedisBackupSpec defines the desired state of ShardedRedisBackup
             properties:
+              dbFile:
+                type: string
               historyLimit:
                 format: int32
                 type: integer
+              pollInterval:
+                type: string
+              s3Options:
+                properties:
+                  bucket:
+                    type: string
+                  credentialsSecretRef:
+                    description: LocalObjectReference contains enough information
+                      to let you locate the referenced object inside the same namespace.
+                    properties:
+                      name:
+                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        type: string
+                    type: object
+                    x-kubernetes-map-type: atomic
+                  path:
+                    type: string
+                  region:
+                    type: string
+                required:
+                - bucket
+                - credentialsSecretRef
+                - path
+                - region
+                type: object
               schedule:
                 type: string
               sentinelRef:
                 type: string
+              sshOptions:
+                properties:
+                  port:
+                    format: int32
+                    type: integer
+                  privateKeySecretRef:
+                    description: LocalObjectReference contains enough information
+                      to let you locate the referenced object inside the same namespace.
+                    properties:
+                      name:
+                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        type: string
+                    type: object
+                    x-kubernetes-map-type: atomic
+                  user:
+                    type: string
+                required:
+                - privateKeySecretRef
+                - user
+                type: object
               timeout:
                 type: string
             required:
+            - dbFile
+            - s3Options
             - schedule
             - sentinelRef
-            - timeout
+            - sshOptions
             type: object
           status:
             description: ShardedRedisBackupStatus defines the observed state of ShardedRedisBackup

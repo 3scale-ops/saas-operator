@@ -10,13 +10,13 @@ import (
 
 func (br *Runner) BackgroundSave(ctx context.Context) error {
 	logger := log.FromContext(ctx, "function", "(br *Runner) BackgroundSave")
-	prevsave, err := br.server.RedisLastSave(ctx)
+	prevsave, err := br.Server.RedisLastSave(ctx)
 	if err != nil {
 		logger.Error(errLastSave(err), "backup error")
 		return errLastSave(err)
 	}
 
-	err = br.server.RedisBGSave(ctx)
+	err = br.Server.RedisBGSave(ctx)
 	if err != nil {
 		// TODO: need to hanlde the case that a save is already running
 		logger.Error(errBGSave(err), "backup error")
@@ -24,13 +24,13 @@ func (br *Runner) BackgroundSave(ctx context.Context) error {
 	}
 	logger.V(1).Info("BGSave running")
 
-	ticker := time.NewTicker(60 * time.Second)
+	ticker := time.NewTicker(br.PollInterval)
 
 	// wait until BGSAVE completes
 	for {
 		select {
 		case <-ticker.C:
-			lastsave, err := br.server.RedisLastSave(ctx)
+			lastsave, err := br.Server.RedisLastSave(ctx)
 			if err != nil {
 				// retry at next tick
 				logger.Error(errLastSave(err), "transient backup error")
@@ -45,12 +45,4 @@ func (br *Runner) BackgroundSave(ctx context.Context) error {
 			return fmt.Errorf("context cancelled")
 		}
 	}
-}
-
-func (br *Runner) UploadBackup(ctx context.Context) error {
-	return nil
-}
-
-func (br *Runner) TagBackup(ctx context.Context) error {
-	return nil
 }

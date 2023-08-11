@@ -18,8 +18,10 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"time"
 
+	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -96,6 +98,23 @@ func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.R
 		return ctrl.Result{}, err
 	}
 
+	// Get SSH key
+	sshPrivateKey := &corev1.Secret{ObjectMeta: metav1.ObjectMeta{
+		Name: instance.Spec.SSHOptions.PrivateKeySecretRef.Name, Namespace: req.Namespace}}
+	if err := r.Client.Get(ctx, client.ObjectKeyFromObject(sshPrivateKey), sshPrivateKey); err != nil {
+		return ctrl.Result{}, err
+	}
+	if sshPrivateKey.Type != corev1.SecretTypeSSHAuth {
+		return ctrl.Result{}, fmt.Errorf("secret %s must be of 'kubernetes.io/ssh-auth' type", sshPrivateKey.GetName())
+	}
+
+	// Get AWS credentials
+	awsCredentials := &corev1.Secret{ObjectMeta: metav1.ObjectMeta{
+		Name: instance.Spec.S3Options.CredentialsSecretRef.Name, Namespace: req.Namespace}}
+	if err := r.Client.Get(ctx, client.ObjectKeyFromObject(awsCredentials), awsCredentials); err != nil {
+		return ctrl.Result{}, err
+	}
+
 	// ----------------------------------------
 	// ----- Phase 2: run pending backups -----
 	// ----------------------------------------
@@ -104,19 +123,38 @@ func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.R
 	runners := make([]threads.RunnableThread, 0, len(cluster.Shards))
 	for _, shard := range cluster.Shards {
 		scheduledBackup := instance.Status.FindLastBackup(shard.Name, saasv1alpha1.BackupPendingState)
-		if scheduledBackup != nil {
-			if scheduledBackup.State == saasv1alpha1.BackupPendingState && scheduledBackup.ScheduledFor.Time.Before(time.Now()) {
-				// add the backup runner thread
-				target := shard.GetSlavesRO()[0]
-				runners = append(runners, backup.NewBackupRunner(shard.Name, target, scheduledBackup.ScheduledFor.Time, 10*time.Minute, instance))
-				scheduledBackup.ServerAlias = util.Pointer(target.GetAlias())
-				scheduledBackup.ServerID = util.Pointer(target.ID())
-				now := metav1.Now()
-				scheduledBackup.StartedAt = util.Pointer(now)
-				scheduledBackup.Message = "backup is running"
-				scheduledBackup.State = saasv1alpha1.BackupRunningState
-				statusChanged = true
+		if scheduledBackup != nil && scheduledBackup.ScheduledFor.Time.Before(time.Now()) {
+			// add the backup runner thread
+			minSize, err := instance.Spec.GetMinSize()
+			if err != nil {
+				return ctrl.Result{}, fmt.Errorf("invalid 'spec.minSize' specification: %w", err)
 			}
+			target := shard.GetSlavesRO()[0]
+			runners = append(runners, &backup.Runner{
+				ShardName:          shard.Name,
+				Server:             target,
+				Timestamp:          scheduledBackup.ScheduledFor.Time,
+				Timeout:            instance.Spec.Timeout.Duration,
+				PollInterval:       instance.Spec.PollInterval.Duration,
+				MinSize:            minSize,
+				RedisDBFile:        instance.Spec.DBFile,
+				Instance:           instance,
+				SSHUser:            instance.Spec.SSHOptions.User,
+				SSHKey:             string(sshPrivateKey.Data[corev1.SSHAuthPrivateKey]),
+				SSHPort:            *instance.Spec.SSHOptions.Port,
+				S3Bucket:           instance.Spec.S3Options.Bucket,
+				S3Path:             instance.Spec.S3Options.Path,
+				AWSAccessKeyID:     string(awsCredentials.Data[saasv1alpha1.AWSAccessKeyID_SecretKey]),
+				AWSSecretAccessKey: string(awsCredentials.Data[saasv1alpha1.AWSSecretAccessKey_SecretKey]),
+				AWSRegion:          instance.Spec.S3Options.Region,
+			})
+			scheduledBackup.ServerAlias = util.Pointer(target.GetAlias())
+			scheduledBackup.ServerID = util.Pointer(target.ID())
+			now := metav1.Now()
+			scheduledBackup.StartedAt = util.Pointer(now)
+			scheduledBackup.Message = "backup is running"
+			scheduledBackup.State = saasv1alpha1.BackupRunningState
+			statusChanged = true
 		}
 	}
 
@@ -125,7 +163,6 @@ func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.R
 	}
 
 	if statusChanged {
-		logger.V(1).Info("backup runners started")
 		err := r.Client.Status().Update(ctx, instance)
 		return ctrl.Result{}, err
 	}
@@ -133,6 +170,7 @@ func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.R
 	// --------------------------------------------------------
 	// ----- Phase 3: reconcile status of running backups -----
 	// --------------------------------------------------------
+
 	for _, b := range instance.Status.GetRunningBackups() {
 		var thread *backup.Runner
 		var srv *sharded.RedisServer
@@ -166,7 +204,6 @@ func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.R
 	}
 
 	if statusChanged {
-		logger.V(1).Info("backup schedule updated")
 		err := r.Client.Status().Update(ctx, instance)
 		return ctrl.Result{}, err
 	}
@@ -187,7 +224,6 @@ func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.R
 	}
 
 	if statusChanged {
-		logger.V(1).Info("backup schedule updated")
 		err := r.Client.Status().Update(ctx, instance)
 		return ctrl.Result{}, err
 	}

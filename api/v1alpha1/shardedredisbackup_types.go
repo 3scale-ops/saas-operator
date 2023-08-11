@@ -20,28 +20,86 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+	"time"
 
 	"github.com/3scale/saas-operator/pkg/util"
+	"github.com/dustin/go-humanize"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var (
-	backupHistoryLimit int32 = 10
+const (
+	AWSAccessKeyID_SecretKey     string = "AWS_ACCESS_KEY_ID"
+	AWSSecretAccessKey_SecretKey string = "AWS_SECRET_ACCESS_KEY"
+	BackupFile                   string = "redis_backup.rdb"
+
+	// defaults
+	backupHistoryLimit        int32  = 10
+	backupDefaultTimeout      string = "10m"
+	backupDefaultPollInterval string = "60s"
+	backupDefaultSSHPort      uint32 = 22
+	backupDefaultMinSize      string = "1 GB"
 )
 
 // ShardedRedisBackupSpec defines the desired state of ShardedRedisBackup
 type ShardedRedisBackupSpec struct {
-	SentinelRef string `json:"sentinelRef"`
-	Schedule    string `json:"schedule"`
-	Timeout     string `json:"timeout"`
+	SentinelRef string     `json:"sentinelRef"`
+	Schedule    string     `json:"schedule"`
+	DBFile      string     `json:"dbFile"`
+	SSHOptions  SSHOptions `json:"sshOptions"`
+	S3Options   S3Options  `json:"s3Options"`
+	//+optional
+	Timeout *metav1.Duration `json:"timeout"`
 	//+optional
 	HistoryLimit *int32 `json:"historyLimit,omitempty"`
+	//+optional
+	PollInterval *metav1.Duration `json:"pollInterval,omitempty"`
+	// +optional
+	MinSize *string `json:"minSize,omitempty"`
 }
 
 // Default implements defaulting for ShardedRedisBackuppec
 func (spec *ShardedRedisBackupSpec) Default() {
 
-	spec.HistoryLimit = intOrDefault(spec.HistoryLimit, &backupHistoryLimit)
+	if spec.Timeout == nil {
+		d, _ := time.ParseDuration(backupDefaultTimeout)
+		spec.Timeout = &metav1.Duration{Duration: d}
+	}
+	if spec.PollInterval == nil {
+		d, _ := time.ParseDuration(backupDefaultPollInterval)
+		spec.PollInterval = &metav1.Duration{Duration: d}
+	}
+	spec.HistoryLimit = intOrDefault(spec.HistoryLimit, util.Pointer(backupHistoryLimit))
+	spec.MinSize = stringOrDefault(spec.MinSize, util.Pointer(backupDefaultMinSize))
+	spec.SSHOptions.Default()
+}
+
+func (spec *ShardedRedisBackupSpec) GetMinSize() (uint64, error) {
+	if spec.MinSize == nil {
+		return humanize.ParseBytes(backupDefaultMinSize)
+	} else {
+		return humanize.ParseBytes(*spec.MinSize)
+	}
+}
+
+type SSHOptions struct {
+	User                string                      `json:"user"`
+	PrivateKeySecretRef corev1.LocalObjectReference `json:"privateKeySecretRef"`
+	// +optional
+	Port *uint32 `json:"port,omitempty"`
+}
+
+func (opts *SSHOptions) Default() {
+	if opts.Port == nil {
+		opts.Port = util.Pointer(backupDefaultSSHPort)
+	}
+}
+
+type S3Options struct {
+	Bucket               string                      `json:"bucket"`
+	Path                 string                      `json:"path"`
+	Region               string                      `json:"region"`
+	CredentialsSecretRef corev1.LocalObjectReference `json:"credentialsSecretRef"`
 }
 
 // ShardedRedisBackupStatus defines the observed state of ShardedRedisBackup

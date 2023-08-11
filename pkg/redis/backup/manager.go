@@ -13,14 +13,25 @@ import (
 )
 
 type Runner struct {
-	shardName string
-	server    *sharded.RedisServer
-	timeout   time.Duration
-	timestamp time.Time
-	eventsCh  chan event.GenericEvent
-	cancel    context.CancelFunc
-	status    RunnerStatus
-	instance  client.Object
+	Instance           client.Object
+	ShardName          string
+	Server             *sharded.RedisServer
+	Timeout            time.Duration
+	PollInterval       time.Duration
+	MinSize            uint64
+	Timestamp          time.Time
+	RedisDBFile        string
+	SSHUser            string
+	SSHKey             string
+	SSHPort            uint32
+	S3Bucket           string
+	S3Path             string
+	AWSAccessKeyID     string
+	AWSSecretAccessKey string
+	AWSRegion          string
+	eventsCh           chan event.GenericEvent
+	cancel             context.CancelFunc
+	status             RunnerStatus
 }
 
 type RunnerStatus struct {
@@ -29,22 +40,12 @@ type RunnerStatus struct {
 	Error    error
 }
 
-func NewBackupRunner(shardName string, server *sharded.RedisServer, timestamp time.Time, timeout time.Duration, instance client.Object) *Runner {
-	return &Runner{
-		shardName: shardName,
-		server:    server,
-		timestamp: timestamp,
-		timeout:   timeout,
-		instance:  instance,
-	}
-}
-
 func ID(shard, alias string, ts time.Time) string {
 	return fmt.Sprintf("%s-%s-%d", shard, alias, ts.UTC().UnixMilli())
 }
 
 func (br *Runner) GetID() string {
-	return ID(br.shardName, br.server.GetAlias(), br.timestamp)
+	return ID(br.ShardName, br.Server.GetAlias(), br.Timestamp)
 }
 
 // IsStarted returns whether the backup runner is started or not
@@ -53,7 +54,7 @@ func (br *Runner) IsStarted() bool {
 }
 
 func (br *Runner) CanBeDeleted() bool {
-	return time.Since(br.timestamp) > 1*time.Hour
+	return time.Since(br.Timestamp) > 1*time.Hour
 }
 
 func (br *Runner) SetChannel(ch chan event.GenericEvent) {
@@ -62,7 +63,7 @@ func (br *Runner) SetChannel(ch chan event.GenericEvent) {
 
 // Start starts the backup runner
 func (br *Runner) Start(parentCtx context.Context, l logr.Logger) error {
-	logger := l.WithValues("server", br.server.GetAlias(), "shard", br.shardName)
+	logger := l.WithValues("server", br.Server.GetAlias(), "shard", br.ShardName)
 
 	var ctx context.Context
 	ctx, br.cancel = context.WithCancel(parentCtx)
@@ -75,6 +76,15 @@ func (br *Runner) Start(parentCtx context.Context, l logr.Logger) error {
 	go func() {
 		if err := br.BackgroundSave(ctx); err != nil {
 			errCh <- err
+			return
+		}
+		if err := br.UploadBackup(ctx); err != nil {
+			errCh <- err
+			return
+		}
+		if err := br.TagBackup(ctx); err != nil {
+			errCh <- err
+			return
 		}
 		close(done)
 	}()
@@ -86,30 +96,30 @@ func (br *Runner) Start(parentCtx context.Context, l logr.Logger) error {
 	// and listens for status updates
 	go func() {
 		// apply a time boundary to the backup and listen for errors
-		timer := time.NewTimer(br.timeout)
+		timer := time.NewTimer(br.Timeout)
 		for {
 			select {
 
 			case <-timer.C:
-				err := fmt.Errorf("timeout reached (%v)", br.timeout)
+				err := fmt.Errorf("timeout reached (%v)", br.Timeout)
 				br.cancel()
 				logger.Error(err, "backup failed")
 				br.status.Finished = true
 				br.status.Error = err
-				br.eventsCh <- event.GenericEvent{Object: br.instance}
+				br.eventsCh <- event.GenericEvent{Object: br.Instance}
 				return
 
 			case err := <-errCh:
 				logger.Error(err, "backup failed")
 				br.status.Finished = true
 				br.status.Error = err
-				br.eventsCh <- event.GenericEvent{Object: br.instance}
+				br.eventsCh <- event.GenericEvent{Object: br.Instance}
 				return
 
 			case <-done:
 				logger.V(1).Info("backup completed")
 				br.status.Finished = true
-				br.eventsCh <- event.GenericEvent{Object: br.instance}
+				br.eventsCh <- event.GenericEvent{Object: br.Instance}
 				return
 			}
 		}

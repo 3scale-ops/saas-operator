@@ -20,8 +20,8 @@ func (gen *Generator) redisConfigConfigMap() func() *corev1.ConfigMap {
 				"redis.conf": heredoc.Doc(`
 					slaveof 127.0.0.1 6379
 					tcp-keepalive 60
-					save 900 1
-					save 300 10
+					daemonize yes
+					logfile /dev/stdout
 				`),
 			},
 		}
