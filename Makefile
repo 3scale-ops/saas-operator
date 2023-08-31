@@ -264,8 +264,6 @@ kind-deploy: manifests kustomize ## Deploy operator to the Kind K8s cluster
 		find config/test/external-apis/ -name '*yaml' -type f \
             | sed -n 's/.*\/\(.*\).yaml/\1/p' \
             | xargs -n1 kubectl wait --for condition=established --timeout=60s crd
-	kubectl apply \
-		--filename https://storage.googleapis.com/tekton-releases/pipeline/previous/$(TEKTON_VERSION)/release.yaml
 	$(KIND) load docker-image $(IMG)
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/test | kubectl apply -f -

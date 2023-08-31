@@ -13,6 +13,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
@@ -344,30 +345,26 @@ var _ = Describe("System controller", func() {
 			}
 		})
 
-		//
-		// Requires conversion webhook for tekton.dev/v1beta1
-		//
+		It("creates the required tekton resources", func() {
 
-		// It("creates the required system shared resources", func() {
+			for _, tr := range []string{
+				"system-db-migrate",
+				"system-searchd-reindex",
+				"system-backend-sync",
+			} {
+				task := &pipelinev1beta1.Task{}
+				pipeline := &pipelinev1beta1.Pipeline{}
 
-		// 	for _, tr := range []string{
-		// 		"system-db-migrate",
-		// 		"system-searchd-reindex",
-		// 		"system-backend-sync",
-		// 	} {
-		// 		task := &pipelinev1beta1.Task{}
-		// 		pipeline := &pipelinev1beta1.Pipeline{}
+				By("deploying the system task",
+					(&testutil.ExpectedResource{Name: tr, Namespace: namespace}).
+						Assert(k8sClient, task, timeout, poll))
 
-		// 		By("deploying the system task",
-		// 			(&testutil.ExpectedResource{Name: tr, Namespace: namespace}).
-		// 				Assert(k8sClient, task, timeout, poll))
+				By("deploying the system pipeline",
+					(&testutil.ExpectedResource{Name: tr, Namespace: namespace}).
+						Assert(k8sClient, pipeline, timeout, poll))
+			}
 
-		// 		By("deploying the system pipeline",
-		// 			(&testutil.ExpectedResource{Name: tr, Namespace: namespace}).
-		// 				Assert(k8sClient, pipeline, timeout, poll))
-		// 	}
-
-		// })
+		})
 
 		It("doesn't creates the non-default resources", func() {
 
