@@ -92,7 +92,7 @@ func (br *Runner) Start(parentCtx context.Context, l logr.Logger) error {
 	br.status = RunnerStatus{Started: true, Finished: false, Error: nil}
 	logger.Info("backup running")
 
-	// this goroutine listens controls the max time execution of the backup
+	// this goroutine controls the max time execution of the backup
 	// and listens for status updates
 	go func() {
 		// apply a time boundary to the backup and listen for errors
