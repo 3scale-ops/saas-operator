@@ -18,7 +18,6 @@ type Runner struct {
 	Server             *sharded.RedisServer
 	Timeout            time.Duration
 	PollInterval       time.Duration
-	MinSize            uint64
 	Timestamp          time.Time
 	RedisDBFile        string
 	SSHUser            string

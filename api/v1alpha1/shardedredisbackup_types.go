@@ -23,7 +23,6 @@ import (
 	"time"
 
 	"github.com/3scale/saas-operator/pkg/util"
-	"github.com/dustin/go-humanize"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -70,10 +69,6 @@ type ShardedRedisBackupSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	PollInterval *metav1.Duration `json:"pollInterval,omitempty"`
-	// Min size the backup must have to be considered successful
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	MinSize *string `json:"minSize,omitempty"`
 	// If true, backup execution is stopped
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -92,17 +87,8 @@ func (spec *ShardedRedisBackupSpec) Default() {
 		spec.PollInterval = &metav1.Duration{Duration: d}
 	}
 	spec.HistoryLimit = intOrDefault(spec.HistoryLimit, util.Pointer(backupHistoryLimit))
-	spec.MinSize = stringOrDefault(spec.MinSize, util.Pointer(backupDefaultMinSize))
 	spec.Pause = boolOrDefault(spec.Pause, util.Pointer(backupDefaultPause))
 	spec.SSHOptions.Default()
-}
-
-func (spec *ShardedRedisBackupSpec) GetMinSize() (uint64, error) {
-	if spec.MinSize == nil {
-		return humanize.ParseBytes(backupDefaultMinSize)
-	} else {
-		return humanize.ParseBytes(*spec.MinSize)
-	}
 }
 
 type SSHOptions struct {

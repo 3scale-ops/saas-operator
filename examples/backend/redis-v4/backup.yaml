@@ -21,3 +21,4 @@ spec:
     region: us-east-1
     credentialsSecretRef:
       name: aws-credentials
+  pause: false

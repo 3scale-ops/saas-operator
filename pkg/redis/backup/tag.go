@@ -59,11 +59,6 @@ func (br *Runner) TagBackup(ctx context.Context) error {
 		return fmt.Errorf("last backup %s has different key than expected (%s)", *last.Key, br.BackupFileS3Path())
 	}
 
-	// check backup size of last (given a size passed as threshold in the CR)
-	if last.Size < int64(br.MinSize) {
-		return fmt.Errorf("last backup %s is smaller that declared min size of %d", *last.Key, br.MinSize)
-	}
-
 	tags := []types.Tag{
 		{Key: aws.String("Layer"), Value: aws.String("bck-storage")},
 		{Key: aws.String("App"), Value: aws.String("Backend")},

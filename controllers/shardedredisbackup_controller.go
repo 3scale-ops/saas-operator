@@ -125,10 +125,6 @@ func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.R
 		scheduledBackup := instance.Status.FindLastBackup(shard.Name, saasv1alpha1.BackupPendingState)
 		if scheduledBackup != nil && scheduledBackup.ScheduledFor.Time.Before(time.Now()) {
 			// add the backup runner thread
-			minSize, err := instance.Spec.GetMinSize()
-			if err != nil {
-				return ctrl.Result{}, fmt.Errorf("invalid 'spec.minSize' specification: %w", err)
-			}
 			target := shard.GetSlavesRO()[0]
 			runners = append(runners, &backup.Runner{
 				ShardName:          shard.Name,
@@ -136,7 +132,6 @@ func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.R
 				Timestamp:          scheduledBackup.ScheduledFor.Time,
 				Timeout:            instance.Spec.Timeout.Duration,
 				PollInterval:       instance.Spec.PollInterval.Duration,
-				MinSize:            minSize,
 				RedisDBFile:        instance.Spec.DBFile,
 				Instance:           instance,
 				SSHUser:            instance.Spec.SSHOptions.User,
