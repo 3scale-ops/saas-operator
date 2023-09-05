@@ -43,19 +43,41 @@ const (
 
 // ShardedRedisBackupSpec defines the desired state of ShardedRedisBackup
 type ShardedRedisBackupSpec struct {
-	SentinelRef string     `json:"sentinelRef"`
-	Schedule    string     `json:"schedule"`
-	DBFile      string     `json:"dbFile"`
-	SSHOptions  SSHOptions `json:"sshOptions"`
-	S3Options   S3Options  `json:"s3Options"`
-	//+optional
+	// Reference to a sentinel instance
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	SentinelRef string `json:"sentinelRef"`
+	// Cron-like schedule specification
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	Schedule string `json:"schedule"`
+	// Name of the dbfile in the redis instances
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	DBFile string `json:"dbFile"`
+	// SSH connection options
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	SSHOptions SSHOptions `json:"sshOptions"`
+	// S3 storage options
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	S3Options S3Options `json:"s3Options"`
+	// Max allowed time for a backup to complete
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
 	Timeout *metav1.Duration `json:"timeout"`
-	//+optional
+	// Max number of backup history to keep
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
 	HistoryLimit *int32 `json:"historyLimit,omitempty"`
-	//+optional
+	// How frequently redis is polled for the BGSave status
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
 	PollInterval *metav1.Duration `json:"pollInterval,omitempty"`
+	// Min size the backup must have to be considered successful
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	MinSize *string `json:"minSize,omitempty"`
+	// If true, backup execution is stopped
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Pause *bool `json:"pause,omitempty"`
 }
 
 // Default implements defaulting for ShardedRedisBackuppec
@@ -83,8 +105,14 @@ func (spec *ShardedRedisBackupSpec) GetMinSize() (uint64, error) {
 }
 
 type SSHOptions struct {
-	User                string                      `json:"user"`
+	// SSH user
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	User string `json:"user"`
+	// Reference to a Secret that contains the SSH private key
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	PrivateKeySecretRef corev1.LocalObjectReference `json:"privateKeySecretRef"`
+	// SSH port (default is 22)
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Port *uint32 `json:"port,omitempty"`
 }
@@ -96,9 +124,19 @@ func (opts *SSHOptions) Default() {
 }
 
 type S3Options struct {
-	Bucket               string                      `json:"bucket"`
-	Path                 string                      `json:"path"`
-	Region               string                      `json:"region"`
+	// S3 bucket name
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	Bucket string `json:"bucket"`
+	// S3 path where backups should be uploaded
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	Path string `json:"path"`
+	// AWS region
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	Region string `json:"region"`
+	// Reference to a Secret tha contains credentials to access S3 API. The credentials
+	// must have the following permissions: s3:GetObject, s3:PutObject, and s3:ListBucket,
+	// s3:ListObjects, s3:PutObjectTagging.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	CredentialsSecretRef corev1.LocalObjectReference `json:"credentialsSecretRef"`
 }
 
@@ -173,16 +211,31 @@ func (bsl BackupStatusList) Swap(i, j int) { bsl[i], bsl[j] = bsl[j], bsl[i] }
 type BackupState string
 
 type BackupStatus struct {
+	// Name of the shard
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Shard string `json:"shard"`
-	//+optional
+	// Redis server alias
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
 	ServerAlias *string `json:"serverAlias,omitempty"`
-	//+optional
-	ServerID     *string     `json:"serverID,omitempty"`
+	// Server host:port
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ServerID *string `json:"serverID,omitempty"`
+	// Scheduled time for the backup to start
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	ScheduledFor metav1.Time `json:"scheduledFor"`
-	//+optional
+	// Actual time the backup starts
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
 	StartedAt *metav1.Time `json:"startedAt,omitempty"`
-	Message   string       `json:"message"`
-	State     BackupState  `json:"state"`
+	// Descriptive message of the backup status
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	Message string `json:"message"`
+	// Backup status
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	State BackupState `json:"state"`
 }
 
 const (
