@@ -2,14 +2,24 @@ apiVersion: saas.3scale.net/v1alpha1
 kind: RedisShard
 metadata:
   name: shard01
-spec: {}
+spec:
+  command: /entrypoint.sh
+  image:
+    name: quay.io/roivaz/redis-with-ssh
+    tag: 4.0.11-alpine
+    pullPolicy: Always
 
 ---
 apiVersion: saas.3scale.net/v1alpha1
 kind: RedisShard
 metadata:
   name: shard02
-spec: {}
+spec:
+  command: /entrypoint.sh
+  image:
+    name: quay.io/roivaz/redis-with-ssh
+    tag: 4.0.11-alpine
+    pullPolicy: Always
 
 ---
 apiVersion: saas.3scale.net/v1alpha1
