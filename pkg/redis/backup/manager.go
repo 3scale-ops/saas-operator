@@ -35,9 +35,10 @@ type Runner struct {
 }
 
 type RunnerStatus struct {
-	Started  bool
-	Finished bool
-	Error    error
+	Started    bool
+	Finished   bool
+	Error      error
+	BackupFile string
 }
 
 func ID(shard, alias string, ts time.Time) string {
@@ -119,6 +120,7 @@ func (br *Runner) Start(parentCtx context.Context, l logr.Logger) error {
 			case <-done:
 				logger.V(1).Info("backup completed")
 				br.status.Finished = true
+				br.status.BackupFile = fmt.Sprintf("s3://%s/%s/%s", br.S3Bucket, br.S3Path, br.BackupFileCompressed())
 				br.eventsCh <- event.GenericEvent{Object: br.Instance}
 				return
 			}

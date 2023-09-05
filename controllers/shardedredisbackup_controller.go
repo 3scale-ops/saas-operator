@@ -191,13 +191,14 @@ func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.R
 			continue
 		}
 
-		if thread.Status().Finished {
-			if err := thread.Status().Error; err != nil {
+		if status := thread.Status(); status.Finished {
+			if err := status.Error; err != nil {
 				b.State = saasv1alpha1.BackupFailedState
 				b.Message = err.Error()
 			} else {
 				b.State = saasv1alpha1.BackupCompletedState
 				b.Message = "backup complete"
+				b.BackupFile = &status.BackupFile
 			}
 			statusChanged = true
 		}
@@ -218,14 +219,17 @@ func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.R
 	}
 	nextRun := schedule.Next(now)
 
-	statusChanged, err = r.reconcileBackupList(ctx, instance, nextRun, cluster.GetShardNames())
-	if err != nil {
-		return reconcile.Result{}, err
-	}
+	// only actually add the schedule if pause == false
+	if !*instance.Spec.Pause {
+		statusChanged, err = r.reconcileBackupList(ctx, instance, nextRun, cluster.GetShardNames())
+		if err != nil {
+			return reconcile.Result{}, err
+		}
 
-	if statusChanged {
-		err := r.Client.Status().Update(ctx, instance)
-		return ctrl.Result{}, err
+		if statusChanged {
+			err := r.Client.Status().Update(ctx, instance)
+			return ctrl.Result{}, err
+		}
 	}
 
 	// requeue for next schedule

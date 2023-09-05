@@ -10,7 +10,6 @@ spec:
   historyLimit: 2
   pollInterval: 10s
   dbFile: /data/dump.rdb
-  minSize: 0 MB
   sshOptions:
     privateKeySecretRef:
       name: redis-backup-ssh-private-key

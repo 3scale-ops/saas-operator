@@ -38,7 +38,7 @@ const (
 	backupDefaultTimeout      string = "10m"
 	backupDefaultPollInterval string = "60s"
 	backupDefaultSSHPort      uint32 = 22
-	backupDefaultMinSize      string = "1 GB"
+	backupDefaultPause        bool   = false
 )
 
 // ShardedRedisBackupSpec defines the desired state of ShardedRedisBackup
@@ -93,6 +93,7 @@ func (spec *ShardedRedisBackupSpec) Default() {
 	}
 	spec.HistoryLimit = intOrDefault(spec.HistoryLimit, util.Pointer(backupHistoryLimit))
 	spec.MinSize = stringOrDefault(spec.MinSize, util.Pointer(backupDefaultMinSize))
+	spec.Pause = boolOrDefault(spec.Pause, util.Pointer(backupDefaultPause))
 	spec.SSHOptions.Default()
 }
 
@@ -236,6 +237,10 @@ type BackupStatus struct {
 	// Backup status
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	State BackupState `json:"state"`
+	// Final storage location of the backup
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	BackupFile *string `json:"backupFile"`
 }
 
 const (

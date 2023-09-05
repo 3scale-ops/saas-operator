@@ -43,9 +43,6 @@ spec:
                 description: Max number of backup history to keep
                 format: int32
                 type: integer
-              minSize:
-                description: Min size the backup must have to be considered successful
-                type: string
               pause:
                 description: If true, backup execution is stopped
                 type: boolean
@@ -128,6 +125,9 @@ spec:
               backups:
                 items:
                   properties:
+                    backupFile:
+                      description: Final storage location of the backup
+                      type: string
                     message:
                       description: Descriptive message of the backup status
                       type: string
