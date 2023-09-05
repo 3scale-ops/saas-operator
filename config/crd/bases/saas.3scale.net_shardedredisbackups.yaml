@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.10.0
+    controller-gen.kubebuilder.io/version: v0.11.0
   creationTimestamp: null
   name: shardedredisbackups.saas.3scale.net
 spec:
@@ -37,19 +37,32 @@ spec:
             description: ShardedRedisBackupSpec defines the desired state of ShardedRedisBackup
             properties:
               dbFile:
+                description: Name of the dbfile in the redis instances
                 type: string
               historyLimit:
+                description: Max number of backup history to keep
                 format: int32
                 type: integer
+              minSize:
+                description: Min size the backup must have to be considered successful
+                type: string
+              pause:
+                description: If true, backup execution is stopped
+                type: boolean
               pollInterval:
+                description: How frequently redis is polled for the BGSave status
                 type: string
               s3Options:
+                description: S3 storage options
                 properties:
                   bucket:
+                    description: S3 bucket name
                     type: string
                   credentialsSecretRef:
-                    description: LocalObjectReference contains enough information
-                      to let you locate the referenced object inside the same namespace.
+                    description: 'Reference to a Secret tha contains credentials to
+                      access S3 API. The credentials must have the following permissions:
+                      s3:GetObject, s3:PutObject, and s3:ListBucket, s3:ListObjects,
+                      s3:PutObjectTagging.'
                     properties:
                       name:
                         description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
@@ -58,8 +71,10 @@ spec:
                     type: object
                     x-kubernetes-map-type: atomic
                   path:
+                    description: S3 path where backups should be uploaded
                     type: string
                   region:
+                    description: AWS region
                     type: string
                 required:
                 - bucket
@@ -68,17 +83,21 @@ spec:
                 - region
                 type: object
               schedule:
+                description: Cron-like schedule specification
                 type: string
               sentinelRef:
+                description: Reference to a sentinel instance
                 type: string
               sshOptions:
+                description: SSH connection options
                 properties:
                   port:
+                    description: SSH port (default is 22)
                     format: int32
                     type: integer
                   privateKeySecretRef:
-                    description: LocalObjectReference contains enough information
-                      to let you locate the referenced object inside the same namespace.
+                    description: Reference to a Secret that contains the SSH private
+                      key
                     properties:
                       name:
                         description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
@@ -87,12 +106,14 @@ spec:
                     type: object
                     x-kubernetes-map-type: atomic
                   user:
+                    description: SSH user
                     type: string
                 required:
                 - privateKeySecretRef
                 - user
                 type: object
               timeout:
+                description: Max allowed time for a backup to complete
                 type: string
             required:
             - dbFile
@@ -108,20 +129,27 @@ spec:
                 items:
                   properties:
                     message:
+                      description: Descriptive message of the backup status
                       type: string
                     scheduledFor:
+                      description: Scheduled time for the backup to start
                       format: date-time
                       type: string
                     serverAlias:
+                      description: Redis server alias
                       type: string
                     serverID:
+                      description: Server host:port
                       type: string
                     shard:
+                      description: Name of the shard
                       type: string
                     startedAt:
+                      description: Actual time the backup starts
                       format: date-time
                       type: string
                     state:
+                      description: Backup status
                       type: string
                   required:
                   - message
