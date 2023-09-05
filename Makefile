@@ -110,10 +110,10 @@ TEST_PKG = ./api/... ./controllers/... ./pkg/...
 KUBEBUILDER_ASSETS = "$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)"
 
 test: manifests generate fmt vet envtest assets ginkgo ## Run tests.
-	KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) $(GINKGO) -p -r $(TEST_PKG)  -coverprofile cover.out
+	KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) $(GINKGO) -p -v -r $(TEST_PKG)  -coverprofile cover.out
 
 test-sequential: manifests generate fmt vet envtest assets ginkgo ## Run tests.
-	KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) $(GINKGO) -r $(TEST_PKG)  -coverprofile cover.out
+	KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) $(GINKGO) -v -r $(TEST_PKG)  -coverprofile cover.out
 
 test-e2e: export KUBECONFIG = $(PWD)/kubeconfig
 test-e2e: manifests ginkgo kind-create kind-deploy ## Runs e2e tests

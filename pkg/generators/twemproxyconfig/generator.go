@@ -2,14 +2,17 @@ package twemproxyconfig
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"sort"
+	"net/url"
+	"strings"
 
 	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
 	basereconciler_resources "github.com/3scale-ops/basereconciler/resources"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators"
-	"github.com/3scale/saas-operator/pkg/redis"
+	"github.com/3scale/saas-operator/pkg/redis/server"
+	"github.com/3scale/saas-operator/pkg/redis/sharded"
 	"github.com/3scale/saas-operator/pkg/resource_builders/grafanadashboard"
 	"github.com/3scale/saas-operator/pkg/resource_builders/twemproxy"
 	"github.com/go-logr/logr"
@@ -48,7 +51,8 @@ type Generator struct {
 }
 
 // NewGenerator returns a new Options struct
-func NewGenerator(ctx context.Context, instance *saasv1alpha1.TwemproxyConfig, cl client.Client, log logr.Logger) (Generator, error) {
+func NewGenerator(ctx context.Context, instance *saasv1alpha1.TwemproxyConfig, cl client.Client,
+	pool *server.ServerPool, log logr.Logger) (Generator, error) {
 
 	gen := Generator{
 		BaseOptionsV2: generators.BaseOptionsV2{
@@ -71,9 +75,18 @@ func NewGenerator(ctx context.Context, instance *saasv1alpha1.TwemproxyConfig, c
 		}
 	}
 
-	gen.masterTargets, err = gen.getMonitoredMasters(
-		ctx, log.WithName("masterTargets"),
-	)
+	clustermap := map[string]map[string]string{}
+	clustermap["sentinel"] = make(map[string]string, len(gen.Spec.SentinelURIs))
+	for _, uri := range gen.Spec.SentinelURIs {
+		u, err := url.Parse(uri)
+		if err != nil {
+			return Generator{}, err
+		}
+		alias := strings.Split(u.Hostname(), ".")[0]
+		clustermap["sentinel"][alias] = u.String()
+	}
+
+	shardedCluster, err := sharded.NewShardedCluster(ctx, clustermap, pool)
 	if err != nil {
 		return Generator{}, err
 	}
@@ -85,9 +98,38 @@ func NewGenerator(ctx context.Context, instance *saasv1alpha1.TwemproxyConfig, c
 			discoverSlavesRW = true
 		}
 	}
-	if discoverSlavesRW {
+
+	switch discoverSlavesRW {
+
+	case false:
+		// any error discovering masters should return
+		if merr := shardedCluster.SentinelDiscover(ctx, sharded.OnlyMasterDiscoveryOpt); merr != nil {
+			return Generator{}, merr
+		}
+		gen.masterTargets, err = gen.getMonitoredMasters(ctx, shardedCluster, log.WithName("masterTargets"))
+		if err != nil {
+			return Generator{}, err
+		}
+
+	case true:
+		merr := shardedCluster.SentinelDiscover(ctx, sharded.SlaveReadOnlyDiscoveryOpt)
+		if merr != nil {
+			log.Error(merr, "DiscoveryError")
+			// Only sentinel/master discovery errors should return.
+			// Slave failures will just failover to the master without returning error (although it will be logged)
+			sentinelError := &sharded.DiscoveryError_Sentinel_Failure{}
+			masterError := &sharded.DiscoveryError_Master_SingleServerFailure{}
+			if errors.As(merr, sentinelError) || errors.As(merr, masterError) {
+				return Generator{}, merr
+			}
+		}
+
+		gen.masterTargets, err = gen.getMonitoredMasters(ctx, shardedCluster, log.WithName("masterTargets"))
+		if err != nil {
+			return Generator{}, err
+		}
 		gen.slaverwTargets, err = gen.getMonitoredReadWriteSlavesWithFallbackToMasters(
-			ctx, log.WithName("slaverwTargets"),
+			ctx, shardedCluster, log.WithName("slaverwTargets"),
 		)
 		if err != nil {
 			return Generator{}, err
@@ -95,6 +137,19 @@ func NewGenerator(ctx context.Context, instance *saasv1alpha1.TwemproxyConfig, c
 	}
 
 	return gen, nil
+}
+
+func (gen *Generator) GetTargets(poolName string) map[string]twemproxy.Server {
+	for _, pool := range gen.Spec.ServerPools {
+		if pool.Name == poolName {
+			if *pool.Target == saasv1alpha1.Masters {
+				return gen.masterTargets
+			} else {
+				return gen.slaverwTargets
+			}
+		}
+	}
+	return nil
 }
 
 func discoverSentinels(ctx context.Context, cl client.Client, namespace string) ([]string, error) {
@@ -115,92 +170,43 @@ func discoverSentinels(ctx context.Context, cl client.Client, namespace string) 
 	return uris, nil
 }
 
-func (gen *Generator) getMonitoredMasters(ctx context.Context, log logr.Logger) (map[string]twemproxy.Server, error) {
+func (gen *Generator) getMonitoredMasters(ctx context.Context,
+	cluster *sharded.Cluster, log logr.Logger) (map[string]twemproxy.Server, error) {
 
-	spool := make(redis.SentinelPool, 0, len(gen.Spec.SentinelURIs))
-
-	for _, uri := range gen.Spec.SentinelURIs {
-		sentinel, err := redis.NewSentinelServerFromConnectionString("sentinel", uri)
-		defer sentinel.Cleanup(log)
-		if err != nil {
-			return nil, err
-		}
-
-		spool = append(spool, *sentinel)
-	}
-
-	monitoredShards, err := spool.MonitoredShards(ctx, 2, redis.OnlyMasterDiscoveryOpt)
-	if err != nil {
-		return nil, err
-	}
-
-	m := make(map[string]twemproxy.Server, len(monitoredShards))
-	for _, shard := range monitoredShards {
-		masterAddress, _, err := shard.GetMaster()
+	m := make(map[string]twemproxy.Server, len(cluster.Shards))
+	for _, shard := range cluster.Shards {
+		master, err := shard.GetMaster()
 		if err != nil {
 			return nil, err
 		}
 		m[shard.Name] = twemproxy.Server{
-			Name:     shard.Name,
-			Address:  masterAddress,
+			Address:  master.ID(),
 			Priority: 1,
 		}
+		m[shard.Name] = twemproxy.NewServer(master.ID(), master.GetAlias())
 	}
 
 	return m, nil
 }
 
-func (gen *Generator) getMonitoredReadWriteSlavesWithFallbackToMasters(ctx context.Context, log logr.Logger) (map[string]twemproxy.Server, error) {
+func (gen *Generator) getMonitoredReadWriteSlavesWithFallbackToMasters(ctx context.Context,
+	cluster *sharded.Cluster, log logr.Logger) (map[string]twemproxy.Server, error) {
 
-	spool := make(redis.SentinelPool, 0, len(gen.Spec.SentinelURIs))
-
-	for _, uri := range gen.Spec.SentinelURIs {
-		sentinel, err := redis.NewSentinelServerFromConnectionString("sentinel", uri)
-		defer sentinel.Cleanup(log)
-		if err != nil {
-			return nil, err
-		}
-
-		spool = append(spool, *sentinel)
-	}
-
-	monitoredShards, err := spool.MonitoredShards(ctx, 2, redis.SlaveReadOnlyDiscoveryOpt)
-	if err != nil {
-		return nil, err
-	}
-
-	m := make(map[string]twemproxy.Server, len(monitoredShards))
-	for _, shard := range monitoredShards {
+	m := make(map[string]twemproxy.Server, len(cluster.Shards))
+	for _, shard := range cluster.Shards {
 
 		if slavesRW := shard.GetSlavesRW(); len(slavesRW) > 0 {
-			// In the (unlikely) case that there are more than 1 slaveRW
-			// we need to consistenly choose the same in all reconcile loops, otherwise
-			// we would be forcing twemproxy restart if we are constantly changing the chosen server.
-			// Due to the lack of a better criteria, we just choose the server address that scores
-			// lowest in alphabetical order.
-			var address []string
-			for k := range slavesRW {
-				address = append(address, k)
-			}
-			sort.Strings(address)
-			m[shard.Name] = twemproxy.Server{
-				Name:     shard.Name,
-				Address:  address[0],
-				Priority: 1,
-			}
+			m[shard.Name] = twemproxy.NewServer(slavesRW[0].ID(), slavesRW[0].GetAlias())
 			slaveRwConfigured.With(prometheus.Labels{"twemproxy_config": gen.InstanceName, "shard": shard.Name}).Set(1)
+
 		} else {
-			// Fall back to masters if there are no
-			// available RW slaves
-			masterAddress, _, err := shard.GetMaster()
+			// Fall back to the master if there are no
+			// available RW slaves for this shard
+			master, err := shard.GetMaster()
 			if err != nil {
 				return nil, err
 			}
-			m[shard.Name] = twemproxy.Server{
-				Name:     shard.Name,
-				Address:  masterAddress,
-				Priority: 1,
-			}
+			m[shard.Name] = twemproxy.NewServer(master.ID(), master.GetAlias())
 			slaveRwConfigured.With(prometheus.Labels{"twemproxy_config": gen.InstanceName, "shard": shard.Name}).Set(0)
 		}
 	}

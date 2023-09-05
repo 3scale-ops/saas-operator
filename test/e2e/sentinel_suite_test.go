@@ -8,7 +8,7 @@ import (
 	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	redisclient "github.com/3scale/saas-operator/pkg/redis/crud/client"
+	redisclient "github.com/3scale/saas-operator/pkg/redis/client"
 	testutil "github.com/3scale/saas-operator/test/util"
 	"github.com/google/go-cmp/cmp"
 	. "github.com/onsi/ginkgo/v2"
@@ -66,6 +66,7 @@ var _ = Describe("sentinel e2e suite", func() {
 				if shard.Status.ShardNodes != nil && shard.Status.ShardNodes.Master != nil {
 					// store the resource for later use
 					shards[i] = shard
+					GinkgoWriter.Printf("[debug] Shard %s topology: %+v\n", shard.GetName(), *shard.Status.ShardNodes)
 					return nil
 				} else {
 					return fmt.Errorf("RedisShard %s not ready", shard.ObjectMeta.Name)
@@ -84,14 +85,14 @@ var _ = Describe("sentinel e2e suite", func() {
 					Config: &saasv1alpha1.SentinelConfig{
 						MonitoredShards: map[string][]string{
 							shards[0].GetName(): {
-								*shards[0].Status.ShardNodes.Master,
-								shards[0].Status.ShardNodes.Slaves[0],
-								shards[0].Status.ShardNodes.Slaves[1],
+								"redis://" + shards[0].Status.ShardNodes.GetHostPortByPodIndex(0),
+								"redis://" + shards[0].Status.ShardNodes.GetHostPortByPodIndex(1),
+								"redis://" + shards[0].Status.ShardNodes.GetHostPortByPodIndex(2),
 							},
 							shards[1].GetName(): {
-								*shards[1].Status.ShardNodes.Master,
-								shards[1].Status.ShardNodes.Slaves[0],
-								shards[1].Status.ShardNodes.Slaves[1],
+								"redis://" + shards[1].Status.ShardNodes.GetHostPortByPodIndex(0),
+								"redis://" + shards[1].Status.ShardNodes.GetHostPortByPodIndex(1),
+								"redis://" + shards[1].Status.ShardNodes.GetHostPortByPodIndex(2),
 							},
 						},
 					},
@@ -135,7 +136,7 @@ var _ = Describe("sentinel e2e suite", func() {
 				for _, shard := range shards {
 					found := false
 					for _, master := range masters {
-						if strings.Contains(*shard.Status.ShardNodes.Master, master.IP) {
+						if strings.Contains(shard.Status.ShardNodes.MasterHostPort(), master.IP) {
 							found = true
 							break
 						}
@@ -156,30 +157,49 @@ var _ = Describe("sentinel e2e suite", func() {
 					return err
 				}
 
-				for i, shard := range shards {
-
-					if diff := cmp.Diff(sentinel.Status.MonitoredShards[i],
-						saasv1alpha1.MonitoredShard{
-							Name:   shard.GetName(),
-							Master: "",
-							Servers: map[string]saasv1alpha1.RedisServerDetails{
-								strings.TrimPrefix(*shard.Status.ShardNodes.Master, "redis://"): {
-									Role:   redisclient.Master,
-									Config: map[string]string{"save": "900 1 300 10"},
-								},
-								strings.TrimPrefix(shard.Status.ShardNodes.Slaves[0], "redis://"): {
-									Role:   redisclient.Slave,
-									Config: map[string]string{"save": "900 1 300 10", "slave-read-only": "yes"},
-								},
-								strings.TrimPrefix(shard.Status.ShardNodes.Slaves[1], "redis://"): {
-									Role:   redisclient.Slave,
-									Config: map[string]string{"save": "900 1 300 10", "slave-read-only": "yes"},
-								},
+				if diff := cmp.Diff(sentinel.Status.MonitoredShards, saasv1alpha1.MonitoredShards{
+					saasv1alpha1.MonitoredShard{
+						Name: "rs0",
+						Servers: map[string]saasv1alpha1.RedisServerDetails{
+							shards[0].Status.ShardNodes.GetHostPortByPodIndex(0): {
+								Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(0),
+								Role:    redisclient.Master,
+								Config:  map[string]string{"save": "900 1 300 10"},
+							},
+							shards[0].Status.ShardNodes.GetHostPortByPodIndex(1): {
+								Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(1),
+								Role:    redisclient.Slave,
+								Config:  map[string]string{"save": "900 1 300 10", "slave-read-only": "yes"},
+							},
+							shards[0].Status.ShardNodes.GetHostPortByPodIndex(2): {
+								Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(2),
+								Role:    redisclient.Slave,
+								Config:  map[string]string{"save": "900 1 300 10", "slave-read-only": "yes"},
 							},
 						},
-					); diff != "" {
-						return fmt.Errorf("got unexpected sentinel status %s", diff)
-					}
+					},
+					saasv1alpha1.MonitoredShard{
+						Name: "rs1",
+						Servers: map[string]saasv1alpha1.RedisServerDetails{
+							shards[1].Status.ShardNodes.GetHostPortByPodIndex(0): {
+								Address: shards[1].Status.ShardNodes.GetHostPortByPodIndex(0),
+								Role:    redisclient.Slave,
+								Config:  map[string]string{"save": "900 1 300 10", "slave-read-only": "yes"},
+							},
+							shards[1].Status.ShardNodes.GetHostPortByPodIndex(1): {
+								Address: shards[1].Status.ShardNodes.GetHostPortByPodIndex(1),
+								Role:    redisclient.Slave,
+								Config:  map[string]string{"save": "900 1 300 10", "slave-read-only": "yes"},
+							},
+							shards[1].Status.ShardNodes.GetHostPortByPodIndex(2): {
+								Address: shards[1].Status.ShardNodes.GetHostPortByPodIndex(2),
+								Role:    redisclient.Master,
+								Config:  map[string]string{"save": "900 1 300 10"},
+							},
+						},
+					},
+				}); diff != "" {
+					return fmt.Errorf("got unexpected sentinel status %s", diff)
 				}
 
 				return nil
@@ -262,28 +282,48 @@ var _ = Describe("sentinel e2e suite", func() {
 						return err
 					}
 
-					if diff := cmp.Diff(sentinel.Status.MonitoredShards[0],
+					if diff := cmp.Diff(sentinel.Status.MonitoredShards, saasv1alpha1.MonitoredShards{
 						saasv1alpha1.MonitoredShard{
-							Name:   shards[0].GetName(),
-							Master: "",
+							Name: "rs0",
 							Servers: map[string]saasv1alpha1.RedisServerDetails{
-								// old master is now a slave
-								strings.TrimPrefix(*shards[0].Status.ShardNodes.Master, "redis://"): {
-									Role:   redisclient.Slave,
-									Config: map[string]string{"save": "900 1 300 10", "slave-read-only": "yes"},
+								shards[0].Status.ShardNodes.GetHostPortByPodIndex(0): {
+									Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(0),
+									Role:    redisclient.Slave,
+									Config:  map[string]string{"save": "900 1 300 10", "slave-read-only": "yes"},
 								},
-								// first slave is now the master
-								strings.TrimPrefix(shards[0].Status.ShardNodes.Slaves[0], "redis://"): {
-									Role:   redisclient.Master,
-									Config: map[string]string{"save": "900 1 300 10"},
+								shards[0].Status.ShardNodes.GetHostPortByPodIndex(1): {
+									Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(1),
+									Role:    redisclient.Master,
+									Config:  map[string]string{"save": "900 1 300 10"},
 								},
-								strings.TrimPrefix(shards[0].Status.ShardNodes.Slaves[1], "redis://"): {
-									Role:   redisclient.Slave,
-									Config: map[string]string{"save": "900 1 300 10", "slave-read-only": "yes"},
+								shards[0].Status.ShardNodes.GetHostPortByPodIndex(2): {
+									Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(2),
+									Role:    redisclient.Slave,
+									Config:  map[string]string{"save": "900 1 300 10", "slave-read-only": "yes"},
 								},
 							},
 						},
-					); diff != "" {
+						saasv1alpha1.MonitoredShard{
+							Name: "rs1",
+							Servers: map[string]saasv1alpha1.RedisServerDetails{
+								shards[1].Status.ShardNodes.GetHostPortByPodIndex(0): {
+									Address: shards[1].Status.ShardNodes.GetHostPortByPodIndex(0),
+									Role:    redisclient.Slave,
+									Config:  map[string]string{"save": "900 1 300 10", "slave-read-only": "yes"},
+								},
+								shards[1].Status.ShardNodes.GetHostPortByPodIndex(1): {
+									Address: shards[1].Status.ShardNodes.GetHostPortByPodIndex(1),
+									Role:    redisclient.Slave,
+									Config:  map[string]string{"save": "900 1 300 10", "slave-read-only": "yes"},
+								},
+								shards[1].Status.ShardNodes.GetHostPortByPodIndex(2): {
+									Address: shards[1].Status.ShardNodes.GetHostPortByPodIndex(2),
+									Role:    redisclient.Master,
+									Config:  map[string]string{"save": "900 1 300 10"},
+								},
+							},
+						},
+					}); diff != "" {
 						return fmt.Errorf("got unexpected sentinel status %s", diff)
 					}
 

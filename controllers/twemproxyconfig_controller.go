@@ -28,15 +28,18 @@ import (
 	"github.com/3scale/saas-operator/pkg/generators/twemproxyconfig"
 	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
 	"github.com/3scale/saas-operator/pkg/redis/events"
+	redis "github.com/3scale/saas-operator/pkg/redis/server"
 	"github.com/3scale/saas-operator/pkg/util"
 	"github.com/go-logr/logr"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -48,6 +51,7 @@ type TwemproxyConfigReconciler struct {
 	basereconciler.Reconciler
 	Log            logr.Logger
 	SentinelEvents threads.Manager
+	Pool           *redis.ServerPool
 }
 
 // +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=twemproxyconfigs,verbs=get;list;watch;create;update;patch;delete
@@ -77,12 +81,12 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	// Generate the ConfigMap
 	gen, err := twemproxyconfig.NewGenerator(
-		ctx, instance, r.Client, logger.WithName("generator"),
+		ctx, instance, r.Client, r.Pool, logger.WithName("generator"),
 	)
-
 	if err != nil {
 		return ctrl.Result{}, err
 	}
+
 	cm, err := gen.ConfigMap().Build(ctx, r.Client)
 	if err != nil {
 		return ctrl.Result{}, err
@@ -105,11 +109,11 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	// Reconcile sentinel event watchers
 	eventWatchers := make([]threads.RunnableThread, 0, len(gen.Spec.SentinelURIs))
 	for _, uri := range gen.Spec.SentinelURIs {
-		eventWatchers = append(eventWatchers, &events.SentinelEventWatcher{
-			Instance:      instance,
-			SentinelURI:   uri,
-			ExportMetrics: false,
-		})
+		watcher, err := events.NewSentinelEventWatcher(uri, instance, nil, false, r.Pool)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		eventWatchers = append(eventWatchers, watcher)
 	}
 	r.SentinelEvents.ReconcileThreads(ctx, instance, eventWatchers, logger.WithName("event-watcher"))
 
@@ -117,6 +121,11 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	gd, _ := t.Build(ctx, r.Client)
 	controllerutil.SetControllerReference(instance, gd, r.Scheme)
 	if err := t.ResourceReconciler(ctx, r.Client, gd); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	// Reconcile status of the TwemproxyConfig resource
+	if err := r.reconcileStatus(ctx, &gen, instance, logger); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -226,6 +235,33 @@ func (r *TwemproxyConfigReconciler) syncPod(ctx context.Context, pod corev1.Pod,
 	}
 }
 
+func (r *TwemproxyConfigReconciler) reconcileStatus(ctx context.Context, gen *twemproxyconfig.Generator,
+	instance *saasv1alpha1.TwemproxyConfig, log logr.Logger) error {
+	selectedTargets := map[string]saasv1alpha1.TargetServer{}
+
+	// The TwemproxyConfig api was initially conceived to support several server pools
+	// but this is actually not used, so just assume there's only one pool for simplicity
+	for pshard, server := range gen.GetTargets(gen.Spec.ServerPools[0].Name) {
+		selectedTargets[pshard] = saasv1alpha1.TargetServer{
+			ServerAlias:   util.Pointer(server.Alias()),
+			ServerAddress: server.Address,
+		}
+	}
+
+	status := saasv1alpha1.TwemproxyConfigStatus{
+		SelectedTargets: selectedTargets,
+	}
+	if !equality.Semantic.DeepEqual(status, instance.Status) {
+		instance.Status = status
+		if err := r.Client.Status().Update(ctx, instance); err != nil {
+			return err
+		}
+		log.Info("status updated")
+	}
+
+	return nil
+}
+
 // SetupWithManager sets up the controller with the Manager.
 func (r *TwemproxyConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
@@ -233,5 +269,10 @@ func (r *TwemproxyConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&corev1.ConfigMap{}).
 		Owns(&grafanav1alpha1.GrafanaDashboard{}).
 		Watches(&source.Channel{Source: r.SentinelEvents.GetChannel()}, &handler.EnqueueRequestForObject{}).
+		WithOptions(controller.Options{
+			RateLimiter: AggressiveRateLimiter(),
+			// this allows for different resources to be reconciled in parallel
+			MaxConcurrentReconciles: 2,
+		}).
 		Complete(r)
 }

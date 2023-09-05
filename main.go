@@ -34,6 +34,7 @@ import (
 	"github.com/3scale/saas-operator/controllers"
 	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
+	redis "github.com/3scale/saas-operator/pkg/redis/server"
 	"github.com/3scale/saas-operator/pkg/util"
 	"github.com/3scale/saas-operator/pkg/version"
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
@@ -54,7 +55,6 @@ const (
 	// which specifies the Namespace to watch.
 	// An empty value means the operator is running with cluster scope.
 	watchNamespaceEnvVar string = "WATCH_NAMESPACE"
-	debugLevelEnvVar     string = "DEBUG_LEVEL"
 )
 
 var (
@@ -127,11 +127,13 @@ func main() {
 
 	/* BASERECONCILER_V2 BASED CONTROLLERS*/
 
+	redisPool := redis.NewServerPool()
 	if err = (&controllers.SentinelReconciler{
 		Reconciler:     basereconciler.NewFromManager(mgr),
 		SentinelEvents: threads.NewManager(),
 		Metrics:        threads.NewManager(),
 		Log:            ctrl.Log.WithName("controllers").WithName("Sentinel"),
+		Pool:           redisPool,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Sentinel")
 		os.Exit(1)
@@ -139,6 +141,7 @@ func main() {
 	if err = (&controllers.RedisShardReconciler{
 		Reconciler: basereconciler.NewFromManager(mgr),
 		Log:        ctrl.Log.WithName("controllers").WithName("RedisShard"),
+		Pool:       redisPool,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "RedisShard")
 		os.Exit(1)
@@ -147,6 +150,7 @@ func main() {
 		Reconciler:     basereconciler.NewFromManager(mgr),
 		SentinelEvents: threads.NewManager(),
 		Log:            ctrl.Log.WithName("controllers").WithName("TwemproxyConfig"),
+		Pool:           redisPool,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TwemproxyConfig")
 		os.Exit(1)

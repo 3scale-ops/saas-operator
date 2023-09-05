@@ -43,6 +43,7 @@ type TwemproxyConfigSpec struct {
 	// +optional
 	SentinelURIs []string `json:"sentinelURIs,omitempty"`
 	// ServerPools is the list of Twemproxy server pools
+	// WARNING: only 1 pool is supported at this time
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	ServerPools []TwemproxyServerPool `json:"serverPools"`
 	// ReconcileServerPools is a flag that allows to deactivate
@@ -129,11 +130,22 @@ type ShardedRedisTopology struct {
 }
 
 // TwemproxyConfigStatus defines the observed state of TwemproxyConfig
-type TwemproxyConfigStatus struct{}
+type TwemproxyConfigStatus struct {
+	// The list of serves currently targeted by this TwemproxyConfig
+	// +operator-sdk:csv:customresourcedefinitions:type=status
+	// +optional
+	SelectedTargets map[string]TargetServer `json:"targets,omitempty"`
+}
 
-//+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
+// Defines a server targeted by one of the TwemproxyConfig server pools
+type TargetServer struct {
+	ServerAlias   *string `json:"serverAlias,omitempty"`
+	ServerAddress string  `json:"serverAddress"`
+}
 
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:JSONPath=`.status.targets`,name=Selected Targets,type=string
 // TwemproxyConfig is the Schema for the twemproxyconfigs API
 type TwemproxyConfig struct {
 	metav1.TypeMeta   `json:",inline"`

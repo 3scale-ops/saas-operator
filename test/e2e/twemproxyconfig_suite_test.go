@@ -2,16 +2,16 @@ package e2e
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"sort"
-	"strings"
 	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/resource_builders/twemproxy"
+	"github.com/3scale/saas-operator/pkg/util"
 	testutil "github.com/3scale/saas-operator/test/util"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
@@ -41,9 +41,8 @@ var _ = Describe("twemproxyconfig e2e suite", func() {
 		err := k8sClient.Create(context.Background(), testNamespace)
 		Expect(err).ToNot(HaveOccurred())
 
-		n := &corev1.Namespace{}
 		Eventually(func() error {
-			return k8sClient.Get(context.Background(), types.NamespacedName{Name: ns}, n)
+			return k8sClient.Get(context.Background(), client.ObjectKeyFromObject(testNamespace), testNamespace)
 		}, timeout, poll).ShouldNot(HaveOccurred())
 
 		shards = []saasv1alpha1.RedisShard{
@@ -62,7 +61,7 @@ var _ = Describe("twemproxyconfig e2e suite", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(func() error {
-				err := k8sClient.Get(context.Background(), types.NamespacedName{Name: shard.GetName(), Namespace: ns}, &shard)
+				err := k8sClient.Get(context.Background(), client.ObjectKeyFromObject(&shard), &shard)
 				if err != nil {
 					return err
 				}
@@ -81,16 +80,16 @@ var _ = Describe("twemproxyconfig e2e suite", func() {
 			ObjectMeta: metav1.ObjectMeta{Name: "sentinel", Namespace: ns},
 			Spec: saasv1alpha1.SentinelSpec{
 				Config: &saasv1alpha1.SentinelConfig{
-					MonitoredShards: map[string][]string{
+					ClusterTopology: map[string]map[string]string{
 						shards[0].GetName(): {
-							*shards[0].Status.ShardNodes.Master,
-							shards[0].Status.ShardNodes.Slaves[0],
-							shards[0].Status.ShardNodes.Slaves[1],
+							"redis-shard-rs0-0": "redis://" + shards[0].Status.ShardNodes.GetHostPortByPodIndex(0), // master
+							"redis-shard-rs0-1": "redis://" + shards[0].Status.ShardNodes.GetHostPortByPodIndex(1),
+							"redis-shard-rs0-2": "redis://" + shards[0].Status.ShardNodes.GetHostPortByPodIndex(2),
 						},
 						shards[1].GetName(): {
-							*shards[1].Status.ShardNodes.Master,
-							shards[1].Status.ShardNodes.Slaves[0],
-							shards[1].Status.ShardNodes.Slaves[1],
+							"redis-shard-rs1-0": "redis://" + shards[1].Status.ShardNodes.GetHostPortByPodIndex(0), // master
+							"redis-shard-rs1-1": "redis://" + shards[1].Status.ShardNodes.GetHostPortByPodIndex(1),
+							"redis-shard-rs1-2": "redis://" + shards[1].Status.ShardNodes.GetHostPortByPodIndex(2),
 						},
 					},
 				},
@@ -102,7 +101,7 @@ var _ = Describe("twemproxyconfig e2e suite", func() {
 
 		Eventually(func() error {
 
-			err := k8sClient.Get(context.Background(), types.NamespacedName{Name: sentinel.GetName(), Namespace: ns}, &sentinel)
+			err := k8sClient.Get(context.Background(), client.ObjectKeyFromObject(&sentinel), &sentinel)
 			Expect(err).ToNot(HaveOccurred())
 
 			if len(sentinel.Status.MonitoredShards) != len(shards) {
@@ -117,57 +116,69 @@ var _ = Describe("twemproxyconfig e2e suite", func() {
 
 		BeforeEach(func() {
 
-			twemproxyconfig = saasv1alpha1.TwemproxyConfig{
-				ObjectMeta: metav1.ObjectMeta{Name: "tmc-instance", Namespace: ns},
-				Spec: saasv1alpha1.TwemproxyConfigSpec{
-					ServerPools: []saasv1alpha1.TwemproxyServerPool{{
-						Name: "test-pool",
-						Topology: []saasv1alpha1.ShardedRedisTopology{
-							{ShardName: "l-shard00", PhysicalShard: shards[0].GetName()},
-							{ShardName: "l-shard01", PhysicalShard: shards[0].GetName()},
-							{ShardName: "l-shard02", PhysicalShard: shards[0].GetName()},
-							{ShardName: "l-shard03", PhysicalShard: shards[1].GetName()},
-							{ShardName: "l-shard04", PhysicalShard: shards[1].GetName()},
-						},
-						BindAddress: "0.0.0.0:22121",
-						Timeout:     5000,
-						TCPBacklog:  512,
-						PreConnect:  false,
-					}},
-					GrafanaDashboard: &saasv1alpha1.GrafanaDashboardSpec{},
-				},
-			}
+			By("creating the TwemproxyConfig resource targeting masters", func() {
+				twemproxyconfig = saasv1alpha1.TwemproxyConfig{
+					ObjectMeta: metav1.ObjectMeta{Name: "tmc-instance", Namespace: ns},
+					Spec: saasv1alpha1.TwemproxyConfigSpec{
+						ServerPools: []saasv1alpha1.TwemproxyServerPool{{
+							Name: "test-pool",
+							Topology: []saasv1alpha1.ShardedRedisTopology{
+								{ShardName: "l-shard00", PhysicalShard: shards[0].GetName()},
+								{ShardName: "l-shard01", PhysicalShard: shards[0].GetName()},
+								{ShardName: "l-shard02", PhysicalShard: shards[0].GetName()},
+								{ShardName: "l-shard03", PhysicalShard: shards[1].GetName()},
+								{ShardName: "l-shard04", PhysicalShard: shards[1].GetName()},
+							},
+							BindAddress: "0.0.0.0:22121",
+							Timeout:     5000,
+							TCPBacklog:  512,
+							PreConnect:  false,
+						}},
+						GrafanaDashboard: &saasv1alpha1.GrafanaDashboardSpec{},
+					},
+				}
 
-			err := k8sClient.Create(context.Background(), &twemproxyconfig)
-			Expect(err).ToNot(HaveOccurred())
+				err := k8sClient.Create(context.Background(), &twemproxyconfig)
+				Expect(err).ToNot(HaveOccurred())
+			})
 
-			Eventually(func() error {
-				return k8sClient.Get(context.Background(), types.NamespacedName{Name: twemproxyconfig.GetName(), Namespace: ns}, &twemproxyconfig)
-			}, timeout, poll).ShouldNot(HaveOccurred())
+			By("wating until the TwemproxyConfig resource is ready", func() {
+				Eventually(func() error {
+					if err := k8sClient.Get(context.Background(), client.ObjectKeyFromObject(&twemproxyconfig), &twemproxyconfig); err != nil {
+						return err
+					}
+					if twemproxyconfig.Status.SelectedTargets == nil {
+						return fmt.Errorf("status.targets is empty")
+					}
+					return nil
+				}, timeout, poll).ShouldNot(HaveOccurred())
+			})
 		})
 
 		It("deploys a ConfigMap with twemproxy configuration that points to redis masters", func() {
+			Eventually(assertTwemproxyConfigStatus(&twemproxyconfig, &sentinel,
+				&saasv1alpha1.TwemproxyConfigStatus{
+					SelectedTargets: map[string]saasv1alpha1.TargetServer{
+						shards[0].GetName(): {
+							ServerAlias:   util.Pointer(shards[0].Status.ShardNodes.GetAliasByPodIndex(0)),
+							ServerAddress: shards[0].Status.ShardNodes.GetHostPortByPodIndex(0),
+						},
+						shards[1].GetName(): {
+							ServerAlias:   util.Pointer(shards[1].Status.ShardNodes.GetAliasByPodIndex(0)),
+							ServerAddress: shards[1].Status.ShardNodes.GetHostPortByPodIndex(0),
+						},
+					},
+				}), timeout, poll).Should(Not(HaveOccurred()))
 
-			cm := &corev1.ConfigMap{}
-			By("getting the generated ConfigMap",
-				(&testutil.ExpectedResource{Name: "tmc-instance", Namespace: ns}).
-					Assert(k8sClient, cm, timeout, poll))
-
-			config := map[string]twemproxy.ServerPoolConfig{}
-			data, err := yaml.YAMLToJSON([]byte(cm.Data["nutcracker.yml"]))
-			Expect(err).ToNot(HaveOccurred())
-			err = json.Unmarshal(data, &config)
-			Expect(err).ToNot(HaveOccurred())
-
-			Expect(config["test-pool"].Servers).To(Equal(
+			Eventually(assertTwemproxyConfigServerPool(&twemproxyconfig,
 				[]twemproxy.Server{
-					{Address: strings.TrimPrefix(*shards[0].Status.ShardNodes.Master, "redis://"), Priority: 1, Name: "l-shard00"},
-					{Address: strings.TrimPrefix(*shards[0].Status.ShardNodes.Master, "redis://"), Priority: 1, Name: "l-shard01"},
-					{Address: strings.TrimPrefix(*shards[0].Status.ShardNodes.Master, "redis://"), Priority: 1, Name: "l-shard02"},
-					{Address: strings.TrimPrefix(*shards[1].Status.ShardNodes.Master, "redis://"), Priority: 1, Name: "l-shard03"},
-					{Address: strings.TrimPrefix(*shards[1].Status.ShardNodes.Master, "redis://"), Priority: 1, Name: "l-shard04"},
-				},
-			))
+					{Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(0), Priority: 1, Name: "l-shard00"},
+					{Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(0), Priority: 1, Name: "l-shard01"},
+					{Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(0), Priority: 1, Name: "l-shard02"},
+					{Address: shards[1].Status.ShardNodes.GetHostPortByPodIndex(0), Priority: 1, Name: "l-shard03"},
+					{Address: shards[1].Status.ShardNodes.GetHostPortByPodIndex(0), Priority: 1, Name: "l-shard04"},
+				}), timeout, poll).Should(Not(HaveOccurred()))
+
 		})
 
 		When("a redis master is unavailable", func() {
@@ -215,39 +226,30 @@ var _ = Describe("twemproxyconfig e2e suite", func() {
 
 			})
 
-			It("updates the twemproxy configuration with new master", func() {
-				Eventually(func() error {
+			It("updates the twemproxy configuration with the new master", func() {
 
-					cm := &corev1.ConfigMap{}
-					err := k8sClient.Get(context.Background(), types.NamespacedName{Name: twemproxyconfig.GetName(), Namespace: ns}, cm)
-					if err != nil {
-						return err
-					}
-
-					config := map[string]twemproxy.ServerPoolConfig{}
-					data, err := yaml.YAMLToJSON([]byte(cm.Data["nutcracker.yml"]))
-					if err != nil {
-						return err
-					}
-					err = json.Unmarshal(data, &config)
-					if err != nil {
-						return err
-					}
-
-					if diff := cmp.Diff(config["test-pool"].Servers,
-						[]twemproxy.Server{
-							{Address: strings.TrimPrefix(shards[0].Status.ShardNodes.Slaves[0], "redis://"), Priority: 1, Name: "l-shard00"},
-							{Address: strings.TrimPrefix(shards[0].Status.ShardNodes.Slaves[0], "redis://"), Priority: 1, Name: "l-shard01"},
-							{Address: strings.TrimPrefix(shards[0].Status.ShardNodes.Slaves[0], "redis://"), Priority: 1, Name: "l-shard02"},
-							{Address: strings.TrimPrefix(*shards[1].Status.ShardNodes.Master, "redis://"), Priority: 1, Name: "l-shard03"},
-							{Address: strings.TrimPrefix(*shards[1].Status.ShardNodes.Master, "redis://"), Priority: 1, Name: "l-shard04"},
+				Eventually(assertTwemproxyConfigStatus(&twemproxyconfig, &sentinel,
+					&saasv1alpha1.TwemproxyConfigStatus{
+						SelectedTargets: map[string]saasv1alpha1.TargetServer{
+							shards[0].GetName(): {
+								ServerAlias:   util.Pointer(shards[0].Status.ShardNodes.GetAliasByPodIndex(1)),
+								ServerAddress: shards[0].Status.ShardNodes.GetHostPortByPodIndex(1),
+							},
+							shards[1].GetName(): {
+								ServerAlias:   util.Pointer(shards[1].Status.ShardNodes.GetAliasByPodIndex(0)),
+								ServerAddress: shards[1].Status.ShardNodes.GetHostPortByPodIndex(0),
+							},
 						},
-					); diff != "" {
-						return fmt.Errorf("got unexpected pool servers %s", diff)
-					}
+					}), timeout, poll).Should(Not(HaveOccurred()))
 
-					return nil
-				}, timeout, poll).ShouldNot(HaveOccurred())
+				Eventually(assertTwemproxyConfigServerPool(&twemproxyconfig,
+					[]twemproxy.Server{
+						{Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(1), Priority: 1, Name: "l-shard00"},
+						{Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(1), Priority: 1, Name: "l-shard01"},
+						{Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(1), Priority: 1, Name: "l-shard02"},
+						{Address: shards[1].Status.ShardNodes.GetHostPortByPodIndex(0), Priority: 1, Name: "l-shard03"},
+						{Address: shards[1].Status.ShardNodes.GetHostPortByPodIndex(0), Priority: 1, Name: "l-shard04"},
+					}), timeout, poll).Should(Not(HaveOccurred()))
 			})
 		})
 
@@ -260,7 +262,6 @@ var _ = Describe("twemproxyconfig e2e suite", func() {
 	})
 
 	When("TwemproxyConfig resource is created targeting redis rw-slaves", func() {
-		cm := &corev1.ConfigMap{}
 
 		BeforeEach(func() {
 
@@ -285,7 +286,7 @@ var _ = Describe("twemproxyconfig e2e suite", func() {
 
 			})
 
-			By("creating the TwemproxyConfig resource pointing to rw-slaves", func() {
+			By("creating the TwemproxyConfig resource targeting rw-slaves", func() {
 				twemproxyconfig = saasv1alpha1.TwemproxyConfig{
 					ObjectMeta: metav1.ObjectMeta{Name: "tmc-instance", Namespace: ns},
 					Spec: saasv1alpha1.TwemproxyConfigSpec{
@@ -310,35 +311,45 @@ var _ = Describe("twemproxyconfig e2e suite", func() {
 
 				err := k8sClient.Create(context.Background(), &twemproxyconfig)
 				Expect(err).ToNot(HaveOccurred())
-
-				Eventually(func() error {
-					return k8sClient.Get(context.Background(), types.NamespacedName{Name: twemproxyconfig.GetName(), Namespace: ns}, &twemproxyconfig)
-				}, timeout, poll).ShouldNot(HaveOccurred())
-
-				By("getting the generated ConfigMap",
-					(&testutil.ExpectedResource{Name: "tmc-instance", Namespace: ns}).
-						Assert(k8sClient, cm, timeout, poll))
 			})
 
+			By("wating until the TwemproxyConfig resource is ready", func() {
+				Eventually(func() error {
+					if err := k8sClient.Get(context.Background(), client.ObjectKeyFromObject(&twemproxyconfig), &twemproxyconfig); err != nil {
+						return err
+					}
+					if twemproxyconfig.Status.SelectedTargets == nil {
+						return fmt.Errorf("status.targets is empty")
+					}
+					return nil
+				}, timeout, poll).ShouldNot(HaveOccurred())
+			})
 		})
 
 		It("deploys a ConfigMap with twemproxy configuration that points to redis rw-slaves", func() {
 
-			config := map[string]twemproxy.ServerPoolConfig{}
-			data, err := yaml.YAMLToJSON([]byte(cm.Data["nutcracker.yml"]))
-			Expect(err).ToNot(HaveOccurred())
-			err = json.Unmarshal(data, &config)
-			Expect(err).ToNot(HaveOccurred())
+			Eventually(assertTwemproxyConfigStatus(&twemproxyconfig, &sentinel,
+				&saasv1alpha1.TwemproxyConfigStatus{
+					SelectedTargets: map[string]saasv1alpha1.TargetServer{
+						shards[0].GetName(): {
+							ServerAlias:   util.Pointer(shards[0].Status.ShardNodes.GetAliasByPodIndex(2)),
+							ServerAddress: shards[0].Status.ShardNodes.GetHostPortByPodIndex(2),
+						},
+						shards[1].GetName(): {
+							ServerAlias:   util.Pointer(shards[1].Status.ShardNodes.GetAliasByPodIndex(2)),
+							ServerAddress: shards[1].Status.ShardNodes.GetHostPortByPodIndex(2),
+						},
+					},
+				}), timeout, poll).Should(Not(HaveOccurred()))
 
-			Expect(config["test-pool"].Servers).To(Equal(
+			Eventually(assertTwemproxyConfigServerPool(&twemproxyconfig,
 				[]twemproxy.Server{
-					{Address: strings.TrimPrefix(shards[0].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard00"},
-					{Address: strings.TrimPrefix(shards[0].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard01"},
-					{Address: strings.TrimPrefix(shards[0].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard02"},
-					{Address: strings.TrimPrefix(shards[1].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard03"},
-					{Address: strings.TrimPrefix(shards[1].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard04"},
-				},
-			))
+					{Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(2), Priority: 1, Name: "l-shard00"},
+					{Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(2), Priority: 1, Name: "l-shard01"},
+					{Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(2), Priority: 1, Name: "l-shard02"},
+					{Address: shards[1].Status.ShardNodes.GetHostPortByPodIndex(2), Priority: 1, Name: "l-shard03"},
+					{Address: shards[1].Status.ShardNodes.GetHostPortByPodIndex(2), Priority: 1, Name: "l-shard04"},
+				}), timeout, poll).Should(Not(HaveOccurred()))
 		})
 
 		When("there are no rw-slaves available in a shard it failovers to the master", func() {
@@ -367,55 +378,54 @@ var _ = Describe("twemproxyconfig e2e suite", func() {
 
 				By("checking the config for rs0 points to master", func() {
 
-					Eventually(func() []twemproxy.Server {
+					Eventually(assertTwemproxyConfigStatus(&twemproxyconfig, &sentinel,
+						&saasv1alpha1.TwemproxyConfigStatus{
+							SelectedTargets: map[string]saasv1alpha1.TargetServer{
+								shards[0].GetName(): {
+									ServerAlias:   util.Pointer(shards[0].Status.ShardNodes.GetAliasByPodIndex(0)),
+									ServerAddress: shards[0].Status.ShardNodes.GetHostPortByPodIndex(0),
+								},
+								shards[1].GetName(): {
+									ServerAlias:   util.Pointer(shards[1].Status.ShardNodes.GetAliasByPodIndex(2)),
+									ServerAddress: shards[1].Status.ShardNodes.GetHostPortByPodIndex(2),
+								},
+							},
+						}), timeout, poll).Should(Not(HaveOccurred()))
 
-						By("getting the ConfigMap",
-							(&testutil.ExpectedResource{Name: "tmc-instance", Namespace: ns}).
-								Assert(k8sClient, cm, timeout, poll))
-
-						config := map[string]twemproxy.ServerPoolConfig{}
-						data, err := yaml.YAMLToJSON([]byte(cm.Data["nutcracker.yml"]))
-						Expect(err).ToNot(HaveOccurred())
-						err = json.Unmarshal(data, &config)
-						Expect(err).ToNot(HaveOccurred())
-						return config["test-pool"].Servers
-
-					}, timeout, poll).Should(Equal(
+					Eventually(assertTwemproxyConfigServerPool(&twemproxyconfig,
 						[]twemproxy.Server{
-							{Address: strings.TrimPrefix(*shards[0].Status.ShardNodes.Master, "redis://"), Priority: 1, Name: "l-shard00"},
-							{Address: strings.TrimPrefix(*shards[0].Status.ShardNodes.Master, "redis://"), Priority: 1, Name: "l-shard01"},
-							{Address: strings.TrimPrefix(*shards[0].Status.ShardNodes.Master, "redis://"), Priority: 1, Name: "l-shard02"},
-							{Address: strings.TrimPrefix(shards[1].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard03"},
-							{Address: strings.TrimPrefix(shards[1].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard04"},
-						},
-					))
-
+							{Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(0), Priority: 1, Name: "l-shard00"},
+							{Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(0), Priority: 1, Name: "l-shard01"},
+							{Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(0), Priority: 1, Name: "l-shard02"},
+							{Address: shards[1].Status.ShardNodes.GetHostPortByPodIndex(2), Priority: 1, Name: "l-shard03"},
+							{Address: shards[1].Status.ShardNodes.GetHostPortByPodIndex(2), Priority: 1, Name: "l-shard04"},
+						}), timeout, poll).Should(Not(HaveOccurred()))
 				})
 
 				By("checking the config for rs0 points back to rw-slave once it's recovered", func() {
 
-					Eventually(func() []twemproxy.Server {
+					Eventually(assertTwemproxyConfigStatus(&twemproxyconfig, &sentinel,
+						&saasv1alpha1.TwemproxyConfigStatus{
+							SelectedTargets: map[string]saasv1alpha1.TargetServer{
+								shards[0].GetName(): {
+									ServerAlias:   util.Pointer(shards[0].Status.ShardNodes.GetAliasByPodIndex(2)),
+									ServerAddress: shards[0].Status.ShardNodes.GetHostPortByPodIndex(2),
+								},
+								shards[1].GetName(): {
+									ServerAlias:   util.Pointer(shards[1].Status.ShardNodes.GetAliasByPodIndex(2)),
+									ServerAddress: shards[1].Status.ShardNodes.GetHostPortByPodIndex(2),
+								},
+							},
+						}), timeout, poll).Should(Not(HaveOccurred()))
 
-						By("getting the ConfigMap",
-							(&testutil.ExpectedResource{Name: "tmc-instance", Namespace: ns}).
-								Assert(k8sClient, cm, timeout, poll))
-
-						config := map[string]twemproxy.ServerPoolConfig{}
-						data, err := yaml.YAMLToJSON([]byte(cm.Data["nutcracker.yml"]))
-						Expect(err).ToNot(HaveOccurred())
-						err = json.Unmarshal(data, &config)
-						Expect(err).ToNot(HaveOccurred())
-						return config["test-pool"].Servers
-
-					}, timeout, poll).Should(Equal(
+					Eventually(assertTwemproxyConfigServerPool(&twemproxyconfig,
 						[]twemproxy.Server{
-							{Address: strings.TrimPrefix(shards[0].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard00"},
-							{Address: strings.TrimPrefix(shards[0].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard01"},
-							{Address: strings.TrimPrefix(shards[0].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard02"},
-							{Address: strings.TrimPrefix(shards[1].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard03"},
-							{Address: strings.TrimPrefix(shards[1].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard04"},
-						},
-					))
+							{Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(2), Priority: 1, Name: "l-shard00"},
+							{Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(2), Priority: 1, Name: "l-shard01"},
+							{Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(2), Priority: 1, Name: "l-shard02"},
+							{Address: shards[1].Status.ShardNodes.GetHostPortByPodIndex(2), Priority: 1, Name: "l-shard03"},
+							{Address: shards[1].Status.ShardNodes.GetHostPortByPodIndex(2), Priority: 1, Name: "l-shard04"},
+						}), timeout, poll).Should(Not(HaveOccurred()))
 
 				})
 
@@ -444,40 +454,40 @@ var _ = Describe("twemproxyconfig e2e suite", func() {
 				})
 			})
 
-			It("reconfigures shard rs0 to point to the first slave in alphabetical order (by address)", func() {
+			It("reconfigures shard rs0 to point to the first slave in alphabetical order (by hostport)", func() {
 
 				By("checking the twemproxy config for shard rs0", func() {
 
 					// determine which should be the chosen rw-slave
 					addresses := []string{
-						strings.TrimPrefix(shards[0].Status.ShardNodes.Slaves[0], "redis://"),
-						strings.TrimPrefix(shards[0].Status.ShardNodes.Slaves[1], "redis://"),
+						shards[0].Status.ShardNodes.GetHostPortByPodIndex(1),
+						shards[0].Status.ShardNodes.GetHostPortByPodIndex(2),
 					}
 					sort.Strings(addresses)
-					expectedRWSlave := addresses[0]
+					idx := shards[0].Status.ShardNodes.GetIndexByHostPort(addresses[0])
 
-					Eventually(func() []twemproxy.Server {
+					Eventually(assertTwemproxyConfigStatus(&twemproxyconfig, &sentinel,
+						&saasv1alpha1.TwemproxyConfigStatus{
+							SelectedTargets: map[string]saasv1alpha1.TargetServer{
+								shards[0].GetName(): {
+									ServerAlias:   util.Pointer(shards[0].Status.ShardNodes.GetAliasByPodIndex(idx)),
+									ServerAddress: shards[0].Status.ShardNodes.GetHostPortByPodIndex(idx),
+								},
+								shards[1].GetName(): {
+									ServerAlias:   util.Pointer(shards[1].Status.ShardNodes.GetAliasByPodIndex(2)),
+									ServerAddress: shards[1].Status.ShardNodes.GetHostPortByPodIndex(2),
+								},
+							},
+						}), timeout, poll).Should(Not(HaveOccurred()))
 
-						By("getting the ConfigMap",
-							(&testutil.ExpectedResource{Name: "tmc-instance", Namespace: ns}).
-								Assert(k8sClient, cm, timeout, poll))
-
-						config := map[string]twemproxy.ServerPoolConfig{}
-						data, err := yaml.YAMLToJSON([]byte(cm.Data["nutcracker.yml"]))
-						Expect(err).ToNot(HaveOccurred())
-						err = json.Unmarshal(data, &config)
-						Expect(err).ToNot(HaveOccurred())
-						return config["test-pool"].Servers
-
-					}, timeout, poll).Should(Equal(
+					Eventually(assertTwemproxyConfigServerPool(&twemproxyconfig,
 						[]twemproxy.Server{
-							{Address: expectedRWSlave, Priority: 1, Name: "l-shard00"},
-							{Address: expectedRWSlave, Priority: 1, Name: "l-shard01"},
-							{Address: expectedRWSlave, Priority: 1, Name: "l-shard02"},
-							{Address: strings.TrimPrefix(shards[1].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard03"},
-							{Address: strings.TrimPrefix(shards[1].Status.ShardNodes.Slaves[1], "redis://"), Priority: 1, Name: "l-shard04"},
-						},
-					))
+							{Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(idx), Priority: 1, Name: "l-shard00"},
+							{Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(idx), Priority: 1, Name: "l-shard01"},
+							{Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(idx), Priority: 1, Name: "l-shard02"},
+							{Address: shards[1].Status.ShardNodes.GetHostPortByPodIndex(2), Priority: 1, Name: "l-shard03"},
+							{Address: shards[1].Status.ShardNodes.GetHostPortByPodIndex(2), Priority: 1, Name: "l-shard04"},
+						}), timeout, poll).Should(Not(HaveOccurred()))
 
 				})
 
@@ -504,3 +514,49 @@ var _ = Describe("twemproxyconfig e2e suite", func() {
 	})
 
 })
+
+func assertTwemproxyConfigStatus(tmc *saasv1alpha1.TwemproxyConfig, sentinel *saasv1alpha1.Sentinel,
+	want *saasv1alpha1.TwemproxyConfigStatus) func() error {
+
+	return func() error {
+		if err := k8sClient.Get(context.Background(), client.ObjectKeyFromObject(tmc), tmc); err != nil {
+			return err
+		}
+
+		if err := k8sClient.Get(context.Background(), client.ObjectKeyFromObject(sentinel), sentinel); err != nil {
+			return err
+		}
+
+		monitoredShards, _ := yaml.Marshal(sentinel.Status.MonitoredShards)
+		GinkgoWriter.Printf("[debug] cluster status:\n\n %s\n", monitoredShards)
+		selectedTargets, _ := yaml.Marshal(tmc.Status.SelectedTargets)
+		GinkgoWriter.Printf("[debug] selected targets:\n\n %s\n", selectedTargets)
+
+		if diff := cmp.Diff(*want, tmc.Status); diff != "" {
+			return fmt.Errorf("got unexpected status %s", diff)
+		}
+
+		return nil
+	}
+}
+
+func assertTwemproxyConfigServerPool(tmc *saasv1alpha1.TwemproxyConfig, want []twemproxy.Server) func() error {
+
+	return func() error {
+		cm := &corev1.ConfigMap{}
+		if err := k8sClient.Get(context.Background(), client.ObjectKeyFromObject(tmc), cm); err != nil {
+			return err
+		}
+
+		config := map[string]twemproxy.ServerPoolConfig{}
+		if err := yaml.Unmarshal([]byte(cm.Data["nutcracker.yml"]), &config); err != nil {
+			return err
+		}
+
+		if diff := cmp.Diff(want, config["test-pool"].Servers, cmpopts.IgnoreUnexported(twemproxy.Server{})); diff != "" {
+			return fmt.Errorf("got unexpected pool servers %s", diff)
+		}
+
+		return nil
+	}
+}

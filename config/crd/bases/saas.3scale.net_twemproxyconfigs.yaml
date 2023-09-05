@@ -15,7 +15,11 @@ spec:
     singular: twemproxyconfig
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - jsonPath: .status.targets
+      name: Selected Targets
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: TwemproxyConfig is the Schema for the twemproxyconfigs API
@@ -61,7 +65,8 @@ spec:
                   type: string
                 type: array
               serverPools:
-                description: ServerPools is the list of Twemproxy server pools
+                description: 'ServerPools is the list of Twemproxy server pools WARNING:
+                  only 1 pool is supported at this time'
                 items:
                   properties:
                     bindAddress:
@@ -126,6 +131,21 @@ spec:
             type: object
           status:
             description: TwemproxyConfigStatus defines the observed state of TwemproxyConfig
+            properties:
+              targets:
+                additionalProperties:
+                  description: Defines a server targeted by one of the TwemproxyConfig
+                    server pools
+                  properties:
+                    serverAddress:
+                      type: string
+                    serverAlias:
+                      type: string
+                  required:
+                  - serverAddress
+                  type: object
+                description: The list of serves currently targeted by this TwemproxyConfig
+                type: object
             type: object
         type: object
     served: true

@@ -30,3 +30,14 @@ func (me MultiError) Error() string {
 	b, _ := json.Marshal(list)
 	return string(b)
 }
+
+func (me MultiError) Unwrap() []error {
+	return []error(me)
+}
+
+func (me MultiError) ErrorOrNil() error {
+	if len(me) > 0 {
+		return me
+	}
+	return nil
+}

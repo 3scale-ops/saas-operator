@@ -77,15 +77,17 @@ spec:
                 description: ShardNodes describes the nodes in the redis shard
                 properties:
                   master:
+                    additionalProperties:
+                      type: string
                     description: Master is the node that acts as master role in the
                       redis shard
-                    type: string
+                    type: object
                   slaves:
+                    additionalProperties:
+                      type: string
                     description: Slaves are the nodes that act as master role in the
                       redis shard
-                    items:
-                      type: string
-                    type: array
+                    type: object
                 type: object
             type: object
         type: object

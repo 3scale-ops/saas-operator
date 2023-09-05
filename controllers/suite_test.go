@@ -28,6 +28,7 @@ import (
 	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
+	redis "github.com/3scale/saas-operator/pkg/redis/server"
 	"github.com/goombaio/namegenerator"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -113,6 +114,8 @@ var _ = BeforeSuite(func() {
 		Expect(err).ToNot(HaveOccurred())
 	}()
 
+	redisPool := redis.NewServerPool()
+
 	// Add controllers for testing
 	err = (&AutoSSLReconciler{
 		WorkloadReconciler: workloads.NewFromManager(mgr),
@@ -153,6 +156,7 @@ var _ = BeforeSuite(func() {
 	err = (&RedisShardReconciler{
 		Reconciler: basereconciler.NewFromManager(mgr),
 		Log:        ctrl.Log.WithName("controllers").WithName("RedisShard"),
+		Pool:       redisPool,
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
@@ -160,6 +164,7 @@ var _ = BeforeSuite(func() {
 		Reconciler:     basereconciler.NewFromManager(mgr),
 		SentinelEvents: threads.NewManager(),
 		Metrics:        threads.NewManager(),
+		Pool:           redisPool,
 		Log:            ctrl.Log.WithName("controllers").WithName("Sentinel"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())

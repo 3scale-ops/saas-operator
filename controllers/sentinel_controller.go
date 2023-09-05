@@ -18,27 +18,32 @@ package controllers
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"time"
 
 	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators/sentinel"
 	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
-	"github.com/3scale/saas-operator/pkg/redis"
 	"github.com/3scale/saas-operator/pkg/redis/events"
 	"github.com/3scale/saas-operator/pkg/redis/metrics"
+	redis "github.com/3scale/saas-operator/pkg/redis/server"
+	"github.com/3scale/saas-operator/pkg/redis/sharded"
 	"github.com/go-logr/logr"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
+	"golang.org/x/time/rate"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/util/workqueue"
 	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/ratelimiter"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
@@ -48,6 +53,7 @@ type SentinelReconciler struct {
 	Log            logr.Logger
 	SentinelEvents threads.Manager
 	Metrics        threads.Manager
+	Pool           *redis.ServerPool
 }
 
 // +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=sentinels,verbs=get;list;watch;create;update;patch;delete
@@ -90,38 +96,28 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return ctrl.Result{}, err
 	}
 
-	// Create the redis-sentinel server pool
-	sentinelPool, err := redis.NewSentinelPool(ctx, r.Client,
-		types.NamespacedName{Name: gen.GetComponent(), Namespace: gen.GetNamespace()}, int(*instance.Spec.Replicas))
-
-	// Close Redis clients
-	defer sentinelPool.Cleanup(logger)
-
+	clustermap, err := gen.ClusterTopology(ctx)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-
-	// Create the ShardedCluster objects that represents the redis servers to be monitored by sentinel
-	shardedCluster, err := redis.NewShardedCluster(ctx, instance.Spec.Config.MonitoredShards, logger)
-
-	// Close Redis clients
-	defer shardedCluster.Cleanup(logger)
-
+	shardedCluster, err := sharded.NewShardedCluster(ctx, clustermap, r.Pool)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
 	// Ensure all shards are being monitored
-	allMonitored, err := sentinelPool.IsMonitoringShards(ctx, shardedCluster.GetShardNames())
-	if err != nil {
-		return ctrl.Result{}, err
-	}
-	if !allMonitored {
-		if err := shardedCluster.Discover(ctx, logger); err != nil {
+	for _, sentinel := range shardedCluster.Sentinels {
+		allMonitored, err := sentinel.IsMonitoringShards(ctx, shardedCluster.GetShardNames())
+		if err != nil {
 			return ctrl.Result{}, err
 		}
-		if _, err := sentinelPool.Monitor(ctx, shardedCluster); err != nil {
-			return ctrl.Result{}, err
+		if !allMonitored {
+			if err := shardedCluster.Discover(ctx); err != nil {
+				return ctrl.Result{}, err
+			}
+			if _, err := sentinel.Monitor(ctx, shardedCluster); err != nil {
+				return ctrl.Result{}, err
+			}
 		}
 	}
 
@@ -129,16 +125,16 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	eventWatchers := make([]threads.RunnableThread, 0, len(gen.SentinelURIs()))
 	metricsGatherers := make([]threads.RunnableThread, 0, len(gen.SentinelURIs()))
 	for _, uri := range gen.SentinelURIs() {
-		eventWatchers = append(eventWatchers, &events.SentinelEventWatcher{
-			Instance:      instance,
-			SentinelURI:   uri,
-			ExportMetrics: true,
-			Topology:      &shardedCluster,
-		})
-		metricsGatherers = append(metricsGatherers, &metrics.SentinelMetricsGatherer{
-			RefreshInterval: *gen.Spec.Config.MetricsRefreshInterval,
-			SentinelURI:     uri,
-		})
+		watcher, err := events.NewSentinelEventWatcher(uri, instance, shardedCluster, true, r.Pool)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		gatherer, err := metrics.NewSentinelMetricsGatherer(uri, *gen.Spec.Config.MetricsRefreshInterval, r.Pool)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		eventWatchers = append(eventWatchers, watcher)
+		metricsGatherers = append(metricsGatherers, gatherer)
 	}
 	if err := r.SentinelEvents.ReconcileThreads(ctx, instance, eventWatchers, logger.WithName("event-watcher")); err != nil {
 		return ctrl.Result{}, err
@@ -148,36 +144,58 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	// Reconcile status of the Sentinel resource
-	if err := r.reconcileStatus(ctx, instance, &gen, sentinelPool, logger); err != nil {
+	if err := r.reconcileStatus(ctx, instance, shardedCluster, logger); err != nil {
 		return ctrl.Result{}, err
 	}
 
 	return ctrl.Result{RequeueAfter: 30 * time.Second}, nil
 }
 
-func (r *SentinelReconciler) reconcileStatus(ctx context.Context, instance *saasv1alpha1.Sentinel, gen *sentinel.Generator,
-	spool redis.SentinelPool, log logr.Logger) error {
+func (r *SentinelReconciler) reconcileStatus(ctx context.Context, instance *saasv1alpha1.Sentinel, cluster *sharded.Cluster,
+	log logr.Logger) error {
 
-	monitoredShards, err := spool.MonitoredShards(ctx, saasv1alpha1.SentinelDefaultQuorum, redis.SlaveReadOnlyDiscoveryOpt, redis.SaveConfigDiscoveryOpt)
-	if err != nil {
-		return err
+	// sentinels info to the status
+	sentinels := make([]string, len(cluster.Sentinels))
+	for idx, srv := range cluster.Sentinels {
+		sentinels[idx] = srv.ID()
 	}
 
-	replicas := int(*gen.Spec.Replicas)
-	addressList := make([]string, 0, replicas)
+	// redis shards info to the status
+	merr := cluster.SentinelDiscover(ctx, sharded.SlaveReadOnlyDiscoveryOpt, sharded.SaveConfigDiscoveryOpt)
+	// if the failure occurred calling sentinel discard the result and return error
+	// otherwise keep going on and use the information that was returned, even if there were some
+	// other errors
+	sentinelError := &sharded.DiscoveryError_Sentinel_Failure{}
+	if errors.As(merr, sentinelError) {
+		return merr
+	}
+	// We don't want the controller to keep failing while things reconfigure as
+	// this makes controller throttling to kick in. Instead, just log the errors
+	// and rely on reconciles triggered by sentinel events to correct the situation.
+	masterError := &sharded.DiscoveryError_Master_SingleServerFailure{}
+	slaveError := &sharded.DiscoveryError_Slave_SingleServerFailure{}
+	if errors.As(merr, masterError) || errors.As(merr, slaveError) {
+		log.Error(merr, "DiscoveryError")
+	}
 
-	for i := 0; i < replicas; i++ {
-		key := types.NamespacedName{Name: gen.PodServiceName(i), Namespace: instance.GetNamespace()}
-		svc := &corev1.Service{}
-		if err := r.Client.Get(ctx, key, svc); err != nil {
-			return err
+	shards := make(saasv1alpha1.MonitoredShards, len(cluster.Shards))
+	for idx, shard := range cluster.Shards {
+		shards[idx] = saasv1alpha1.MonitoredShard{
+			Name:    shard.Name,
+			Servers: make(map[string]saasv1alpha1.RedisServerDetails, len(shard.Servers)),
 		}
-		addressList = append(addressList, fmt.Sprintf("%s:%d", svc.Spec.ClusterIP, saasv1alpha1.SentinelPort))
+		for _, srv := range shard.Servers {
+			shards[idx].Servers[srv.GetAlias()] = saasv1alpha1.RedisServerDetails{
+				Role:    srv.Role,
+				Address: srv.ID(),
+				Config:  srv.Config,
+			}
+		}
 	}
 
 	status := saasv1alpha1.SentinelStatus{
-		Sentinels:       addressList,
-		MonitoredShards: monitoredShards,
+		Sentinels:       sentinels,
+		MonitoredShards: shards,
 	}
 
 	if !equality.Semantic.DeepEqual(status, instance.Status) {
@@ -185,6 +203,7 @@ func (r *SentinelReconciler) reconcileStatus(ctx context.Context, instance *saas
 		if err := r.Client.Status().Update(ctx, instance); err != nil {
 			return err
 		}
+		log.Info("status updated")
 	}
 
 	return nil
@@ -200,5 +219,19 @@ func (r *SentinelReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&grafanav1alpha1.GrafanaDashboard{}).
 		Owns(&corev1.ConfigMap{}).
 		Watches(&source.Channel{Source: r.SentinelEvents.GetChannel()}, &handler.EnqueueRequestForObject{}).
+		WithOptions(controller.Options{
+			RateLimiter: AggressiveRateLimiter(),
+		}).
 		Complete(r)
+}
+
+func AggressiveRateLimiter() ratelimiter.RateLimiter {
+	// return workqueue.DefaultControllerRateLimiter()
+	return workqueue.NewMaxOfRateLimiter(
+		// First retries are more spaced that default
+		// Max retry time is limited to 10 seconds
+		workqueue.NewItemExponentialFailureRateLimiter(5*time.Millisecond, 10*time.Second),
+		// 10 qps, 100 bucket size.  This is only for retry speed and its only the overall factor (not per item)
+		&workqueue.BucketRateLimiter{Limiter: rate.NewLimiter(rate.Limit(10), 100)},
+	)
 }

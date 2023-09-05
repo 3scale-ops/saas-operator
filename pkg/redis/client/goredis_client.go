@@ -23,10 +23,21 @@ func NewFromConnectionString(connectionString string) (*GoRedisClient, error) {
 		return nil, err
 	}
 
+	// don't keep idle connections open
+	opt.MinIdleConns = 0
+
 	c.redis = redis.NewClient(opt)
 	c.sentinel = redis.NewSentinelClient(opt)
 
 	return c, nil
+}
+
+func MustNewFromConnectionString(connectionString string) *GoRedisClient {
+	c, err := NewFromConnectionString(connectionString)
+	if err != nil {
+		panic(err)
+	}
+	return c
 }
 
 func NewFromOptions(opt *redis.Options) *GoRedisClient {
@@ -97,6 +108,16 @@ func (c *GoRedisClient) SentinelInfoCache(ctx context.Context) (interface{}, err
 	return val, err
 }
 
+func (c *GoRedisClient) SentinelPing(ctx context.Context) error {
+	_, err := c.sentinel.Ping(ctx).Result()
+	return err
+}
+
+func (c *GoRedisClient) SentinelDo(ctx context.Context, args ...interface{}) (interface{}, error) {
+	val, err := c.redis.Do(ctx, args...).Result()
+	return val, err
+}
+
 func (c *GoRedisClient) RedisRole(ctx context.Context) (interface{}, error) {
 
 	val, err := c.redis.Do(ctx, "role").Result()
@@ -125,4 +146,9 @@ func (c *GoRedisClient) RedisSlaveOf(ctx context.Context, host, port string) err
 func (c *GoRedisClient) RedisDebugSleep(ctx context.Context, duration time.Duration) error {
 	_, err := c.redis.Do(ctx, "debug", "sleep", fmt.Sprintf("%.1f", duration.Seconds())).Result()
 	return err
+}
+
+func (c *GoRedisClient) RedisDo(ctx context.Context, args ...interface{}) (interface{}, error) {
+	val, err := c.redis.Do(ctx, args...).Result()
+	return val, err
 }

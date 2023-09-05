@@ -17,6 +17,10 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"strconv"
+	"strings"
+
+	"github.com/3scale/saas-operator/pkg/util"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/pointer"
@@ -61,11 +65,54 @@ type RedisShardNodes struct {
 	// Master is the node that acts as master role in the redis shard
 	// +operator-sdk:csv:customresourcedefinitions:type=status
 	// +optional
-	Master *string `json:"master,omitempty"`
+	Master map[string]string `json:"master,omitempty"`
 	// Slaves are the nodes that act as master role in the redis shard
 	// +operator-sdk:csv:customresourcedefinitions:type=status
 	// +optional
-	Slaves []string `json:"slaves,omitempty"`
+	Slaves map[string]string `json:"slaves,omitempty"`
+}
+
+func (rsn *RedisShardNodes) MasterHostPort() string {
+	for _, hostport := range rsn.Master {
+		return hostport
+	}
+	return ""
+}
+
+func (rsn *RedisShardNodes) GetNodeByPodIndex(podIndex int) (string, string) {
+	nodes := util.MergeMaps(map[string]string{}, rsn.Master, rsn.Slaves)
+
+	for alias, hostport := range nodes {
+		i := alias[strings.LastIndex(alias, "-")+1:]
+		index, _ := strconv.Atoi(i)
+		if index == podIndex {
+			return alias, hostport
+		}
+	}
+
+	return "", ""
+}
+
+func (rsn *RedisShardNodes) GetHostPortByPodIndex(podIndex int) string {
+	_, hostport := rsn.GetNodeByPodIndex(podIndex)
+	return hostport
+}
+
+func (rsn *RedisShardNodes) GetAliasByPodIndex(podIndex int) string {
+	alias, _ := rsn.GetNodeByPodIndex(podIndex)
+	return alias
+}
+
+func (rsn *RedisShardNodes) GetIndexByHostPort(hostport string) int {
+	nodes := util.MergeMaps(map[string]string{}, rsn.Master, rsn.Slaves)
+	for alias, hp := range nodes {
+		if hostport == hp {
+			i := alias[strings.LastIndex(alias, "-")+1:]
+			index, _ := strconv.Atoi(i)
+			return index
+		}
+	}
+	return -1
 }
 
 // RedisShardStatus defines the observed state of RedisShard
