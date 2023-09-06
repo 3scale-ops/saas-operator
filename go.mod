@@ -10,7 +10,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.18.37
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.38.5
 	github.com/davecgh/go-spew v1.1.1
-	github.com/dustin/go-humanize v1.0.0
 	github.com/envoyproxy/go-control-plane v0.11.0
 	github.com/evanphx/json-patch v5.6.0+incompatible
 	github.com/external-secrets/external-secrets v0.8.1
