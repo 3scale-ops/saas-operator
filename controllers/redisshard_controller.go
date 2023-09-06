@@ -31,6 +31,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -60,6 +61,10 @@ func (r *RedisShardReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
 	err := r.GetInstance(ctx, key, instance, nil, nil)
 	if err != nil {
+		if apierrors.IsNotFound(err) {
+			// Return and don't requeue
+			return ctrl.Result{}, nil
+		}
 		return ctrl.Result{}, err
 	}
 
