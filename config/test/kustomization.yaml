@@ -10,7 +10,6 @@ resources:
   - external-apis/envoyconfigs.marin3r.3scale.net.yaml
   - external-apis/pipelines.tekton.dev.yaml
   - external-apis/tasks.tekton.dev.yaml
-  - webhooks/tekton.yaml
 patches:
   - target:
       group: apps
