@@ -35,8 +35,8 @@ contrib.go.opencensus.io/exporter/ocagent v0.7.1-0.20200907061046-05415f1de66d/g
 contrib.go.opencensus.io/exporter/prometheus v0.4.0 h1:0QfIkj9z/iVZgK31D9H9ohjjIDApI2GOPScCKwxedbs=
 contrib.go.opencensus.io/exporter/prometheus v0.4.0/go.mod h1:o7cosnyfuPVK0tB8q0QmaQNhGnptITnPQB+z1+qeFB0=
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
-github.com/3scale-ops/basereconciler v0.2.2-0.20230906121704-b33185a995ff h1:qIPl8xsrpeHYPxlyxxYuSMnmNo2yetElN0sAd59gGc8=
-github.com/3scale-ops/basereconciler v0.2.2-0.20230906121704-b33185a995ff/go.mod h1:P1N9tWurRFAxxx5FCWHH6XcVHLMiNKxXWkH5KtP6ywQ=
+github.com/3scale-ops/basereconciler v0.3.0 h1:gcN2fcSY+Sh2tG4xxvzFRqE/rimIivLOWiosxqP65sg=
+github.com/3scale-ops/basereconciler v0.3.0/go.mod h1:P1N9tWurRFAxxx5FCWHH6XcVHLMiNKxXWkH5KtP6ywQ=
 github.com/3scale-ops/marin3r v0.12.2 h1:sU4N7RZ5AQzfejrfP0KgpagmL/XD8a5NdSIv1qvaAnU=
 github.com/3scale-ops/marin3r v0.12.2/go.mod h1:BOU7EFv58PgPMgKgJFDd4ingfBhH6KC2AGJoD7i9SaU=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
