@@ -217,6 +217,10 @@ type BackupStatus struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	StartedAt *metav1.Time `json:"startedAt,omitempty"`
+	// when the backup was completed
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	FinishedAt *metav1.Time `json:"finishedAt,omitempty"`
 	// Descriptive message of the backup status
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Message string `json:"message"`
@@ -227,6 +231,10 @@ type BackupStatus struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	BackupFile *string `json:"backupFile"`
+	// Stored size of the backup in bytes
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	BackupSize *int64 `json:"backupSize"`
 }
 
 const (

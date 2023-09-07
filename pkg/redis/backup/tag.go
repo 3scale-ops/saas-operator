@@ -58,6 +58,8 @@ func (br *Runner) TagBackup(ctx context.Context) error {
 	if br.BackupFileS3Path() != *last.Key {
 		return fmt.Errorf("last backup %s has different key than expected (%s)", *last.Key, br.BackupFileS3Path())
 	}
+	// store backup size
+	br.status.BackupSize = last.Size
 
 	tags := []types.Tag{
 		{Key: aws.String("Layer"), Value: aws.String("bck-storage")},

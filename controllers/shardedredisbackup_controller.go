@@ -194,6 +194,8 @@ func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.R
 				b.State = saasv1alpha1.BackupCompletedState
 				b.Message = "backup complete"
 				b.BackupFile = &status.BackupFile
+				b.BackupSize = &status.BackupSize
+				b.FinishedAt = &metav1.Time{Time: status.FinishedAt}
 			}
 			statusChanged = true
 		}
