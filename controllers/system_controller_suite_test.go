@@ -992,5 +992,119 @@ var _ = Describe("System controller", func() {
 				}
 			})
 		})
+
+		When("updating a System resource tekton tasks", func() {
+
+			// Resource Versions
+			rvs := make(map[string]string)
+
+			BeforeEach(func() {
+				Eventually(func() error {
+					err := k8sClient.Get(
+						context.Background(),
+						types.NamespacedName{Name: "instance", Namespace: namespace},
+						system,
+					)
+					Expect(err).ToNot(HaveOccurred())
+
+					for _, tr := range []string{
+						"system-db-migrate",
+						"system-searchd-reindex",
+						"system-backend-sync",
+					} {
+						rvs[fmt.Sprintf("task/%s", tr)] = testutil.GetResourceVersion(
+							k8sClient, &pipelinev1beta1.Task{}, tr, namespace, timeout, poll)
+						rvs[fmt.Sprintf("pipeline/%s", tr)] = testutil.GetResourceVersion(
+							k8sClient, &pipelinev1beta1.Pipeline{}, tr, namespace, timeout, poll)
+					}
+
+					patch := client.MergeFrom(system.DeepCopy())
+					system.Spec.Tasks = []saasv1alpha1.SystemTektonTaskSpec{
+						{
+							Name:    pointer.String("system-db-migrate"),
+							Enabled: pointer.Bool(false),
+						},
+						{
+							Name: pointer.String("system-backend-sync"),
+							Config: &saasv1alpha1.SystemTektonTaskConfig{
+								Image: &saasv1alpha1.ImageSpec{
+									Name: pointer.String("newImage"),
+									Tag:  pointer.String("newTag"),
+								},
+								Command: []string{"cmd"},
+								Args:    []string{"arg1", "arg1"},
+								ExtraEnv: []corev1.EnvVar{
+									{Name: "test", Value: "test"},
+								},
+							},
+						},
+						{
+							Name:        pointer.String("test-task"),
+							Description: pointer.String("Test task"),
+							Config: &saasv1alpha1.SystemTektonTaskConfig{
+								Command: []string{"cmd"},
+								Args:    []string{"arg1", "arg1"},
+							},
+						},
+					}
+					return k8sClient.Patch(context.Background(), system, patch)
+				}, timeout, poll).ShouldNot(HaveOccurred())
+			})
+
+			It("updates the required tekton resources", func() {
+
+				task := &pipelinev1beta1.Task{}
+				pipeline := &pipelinev1beta1.Pipeline{}
+
+				By("keeping the system-searchd-reindex task",
+					(&testutil.ExpectedResource{
+						Name: "system-searchd-reindex", Namespace: namespace,
+					}).Assert(k8sClient, task, timeout, poll))
+
+				Expect(task.Spec.Params[0].Default.StringVal).To(Equal("quay.io/3scale/porta"))
+				Expect(task.Spec.Params[1].Default.StringVal).To(Equal("nightly"))
+
+				By("updating the system-backend-sync task",
+					(&testutil.ExpectedResource{
+						Name: "system-backend-sync", Namespace: namespace,
+						LastVersion: rvs["task/system-backend-sync"],
+					}).Assert(k8sClient, task, timeout, poll))
+
+				Expect(task.Spec.Params[0].Default.StringVal).To(Equal("newImage"))
+				Expect(task.Spec.Params[1].Default.StringVal).To(Equal("newTag"))
+				Expect(task.Spec.Steps[0].Command[0]).To(Equal("cmd"))
+				Expect(task.Spec.Steps[0].Args[0]).To(Equal("arg1"))
+
+				By("removing the system-backend-sync task",
+					(&testutil.ExpectedResource{
+						Name: "system-backend-sync", Namespace: namespace,
+						LastVersion: rvs["pipeline/system-backend-sync"],
+					}).Assert(k8sClient, pipeline, timeout, poll))
+
+				Expect(pipeline.Spec.Params[0].Default.StringVal).To(Equal("newImage"))
+				Expect(pipeline.Spec.Params[1].Default.StringVal).To(Equal("newTag"))
+
+				By("adding the new test-task",
+					(&testutil.ExpectedResource{
+						Name: "test-task", Namespace: namespace,
+					}).Assert(k8sClient, task, timeout, poll))
+
+				Expect(task.Spec.DisplayName).To(Equal("test-task"))
+				Expect(task.Spec.Description).To(Equal("Test task"))
+				Expect(task.Spec.Steps[0].Command[0]).To(Equal("cmd"))
+				Expect(task.Spec.Steps[0].Args[0]).To(Equal("arg1"))
+
+				By("removing the system-db-migrate task",
+					(&testutil.ExpectedResource{
+						Name: "system-db-migrate", Namespace: namespace, Missing: true,
+					}).Assert(k8sClient, task, timeout, poll))
+
+				By("removing the system-db-migrate pipeline",
+					(&testutil.ExpectedResource{
+						Name: "system-db-migrate", Namespace: namespace, Missing: true,
+					}).Assert(k8sClient, pipeline, timeout, poll))
+
+			})
+		})
 	})
 })
