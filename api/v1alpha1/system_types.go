@@ -1123,6 +1123,7 @@ func (spec *SystemTektonTaskSpec) Default(systemDefaultImage *ImageSpec) {
 		spec.Config = &SystemTektonTaskConfig{}
 	}
 
+	spec.Description = stringOrDefault(spec.Description, spec.Name)
 	spec.Enabled = boolOrDefault(spec.Enabled, pointer.Bool(true))
 	spec.Config.Default(systemDefaultImage)
 
