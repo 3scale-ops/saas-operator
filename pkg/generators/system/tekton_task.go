@@ -46,10 +46,26 @@ func (gen *SystemTektonGenerator) task() func() *pipelinev1beta1.Task {
 				},
 				StepTemplate: &pipelinev1beta1.StepTemplate{
 					Image: "$(params.container-image):$(params.container-tag)",
-					Env: append(
-						pod.BuildEnvironment(gen.Options),
-						gen.Spec.Config.ExtraEnv...,
-					),
+					Env: func(base, extra []corev1.EnvVar) []corev1.EnvVar {
+						if len(extra) == 0 {
+							return base
+						}
+						envVars := base
+						for _, extraEnvVar := range extra {
+							found := false
+							for ev, envVar := range envVars {
+								if extraEnvVar.Name == envVar.Name {
+									found = true
+									envVars[ev].Value = extraEnvVar.Value
+									envVars[ev].ValueFrom = extraEnvVar.ValueFrom
+								}
+							}
+							if !found {
+								envVars = append(envVars, extraEnvVar)
+							}
+						}
+						return envVars
+					}(pod.BuildEnvironment(gen.Options), gen.Spec.Config.ExtraEnv),
 				},
 				Steps: []pipelinev1beta1.Step{
 					{
