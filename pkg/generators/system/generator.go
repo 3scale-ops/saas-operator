@@ -287,7 +287,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) (Gen
 		generator.Tekton = append(generator.Tekton,
 			SystemTektonGenerator{
 				BaseOptionsV2: generators.BaseOptionsV2{
-					Component:    strings.Join([]string{component, *task.Name}, "-"),
+					Component:    *task.Name,
 					InstanceName: instance,
 					Namespace:    namespace,
 					Labels: map[string]string{

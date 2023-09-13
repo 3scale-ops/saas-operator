@@ -210,7 +210,7 @@ var (
 	}
 	systemDefaultSystemTektonTasks []SystemTektonTaskSpec = []SystemTektonTaskSpec{
 		{
-			Name:        pointer.String("backend-sync"),
+			Name:        pointer.String("system-backend-sync"),
 			Description: pointer.String("Runs the Backend Synchronization task"),
 			Config: &SystemTektonTaskConfig{
 				Command: []string{"container-entrypoint"},
@@ -223,7 +223,7 @@ var (
 			},
 		},
 		{
-			Name:        pointer.String("db-migrate"),
+			Name:        pointer.String("system-db-migrate"),
 			Description: pointer.String("Runs the Database Migration task"),
 			Config: &SystemTektonTaskConfig{
 				Command: []string{"container-entrypoint"},
@@ -236,7 +236,7 @@ var (
 			},
 		},
 		{
-			Name:        pointer.String("searchd-reindex"),
+			Name:        pointer.String("system-searchd-reindex"),
 			Description: pointer.String("Runs the Searchd Rendexation task"),
 			Config: &SystemTektonTaskConfig{
 				Command: []string{"container-entrypoint"},
