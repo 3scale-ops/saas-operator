@@ -278,7 +278,7 @@ kind-undeploy: ## Undeploy controller from the Kind K8s cluster
 	$(KUSTOMIZE) build config/test | kubectl delete -f -
 
 kind-deploy-backup-assets:
-	$(KUSTOMIZE) build config/test/redis-backups --load-restrictor LoadRestrictionsNone | kubectl apply -f -
+	$(KUSTOMIZE) build config/test/redis-backups --load-restrictor LoadRestrictionsNone --enable-helm | kubectl apply -f -
 
 ##@ Build Dependencies
 

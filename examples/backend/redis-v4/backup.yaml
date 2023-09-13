@@ -16,9 +16,10 @@ spec:
     user: root
     port: 2222
   s3Options:
-    bucket: 3scale-saas-operator-backups-test
+    bucket: my-bucket
     path: backups
     region: us-east-1
     credentialsSecretRef:
       name: aws-credentials
+    serviceEndpoint: http://minio.default.svc.cluster.local:9000
   pause: false

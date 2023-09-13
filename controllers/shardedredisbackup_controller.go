@@ -142,6 +142,7 @@ func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.R
 				AWSAccessKeyID:     string(awsCredentials.Data[saasv1alpha1.AWSAccessKeyID_SecretKey]),
 				AWSSecretAccessKey: string(awsCredentials.Data[saasv1alpha1.AWSSecretAccessKey_SecretKey]),
 				AWSRegion:          instance.Spec.S3Options.Region,
+				AWSS3Endpoint:      instance.Spec.S3Options.ServiceEndpoint,
 			})
 			scheduledBackup.ServerAlias = util.Pointer(target.GetAlias())
 			scheduledBackup.ServerID = util.Pointer(target.ID())

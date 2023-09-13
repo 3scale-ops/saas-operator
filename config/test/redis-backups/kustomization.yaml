@@ -2,6 +2,25 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: default
 
+helmCharts:
+  - name: minio
+    repo: https://charts.min.io
+    version: v5.0.13
+    releaseName: minio
+    namespace: default
+    valuesInline:
+      mode: standalone
+      persistence:
+        enabled: false
+      resources:
+        requests:
+          memory: 1Mi
+      buckets:
+        - name: my-bucket
+          purge: true
+          versioning: false
+      rootUser: admin
+      rootPassword: admin123
 
 generatorOptions:
   disableNameSuffixHash: true
@@ -14,3 +33,6 @@ secretGenerator:
 - name: aws-credentials
   envs:
   - ../../../examples/backend/assets/s3/credentials.env
+  # literals:
+  #   - AWS_ACCESS_KEY_ID=admin
+  #   - AWS_SECRET_ACCESS_KEY=admin123

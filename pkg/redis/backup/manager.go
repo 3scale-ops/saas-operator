@@ -28,6 +28,7 @@ type Runner struct {
 	AWSAccessKeyID     string
 	AWSSecretAccessKey string
 	AWSRegion          string
+	AWSS3Endpoint      *string
 	eventsCh           chan event.GenericEvent
 	cancel             context.CancelFunc
 	status             RunnerStatus

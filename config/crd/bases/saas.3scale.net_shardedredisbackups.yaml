@@ -73,6 +73,10 @@ spec:
                   region:
                     description: AWS region
                     type: string
+                  serviceEndpoint:
+                    description: Optionally use a custom s3 service endpoint. Useful
+                      for testing with Minio.
+                    type: string
                 required:
                 - bucket
                 - credentialsSecretRef

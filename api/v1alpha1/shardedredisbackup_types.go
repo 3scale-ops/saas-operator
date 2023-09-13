@@ -125,6 +125,10 @@ type S3Options struct {
 	// s3:ListObjects, s3:PutObjectTagging.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	CredentialsSecretRef corev1.LocalObjectReference `json:"credentialsSecretRef"`
+	// Optionally use a custom s3 service endpoint. Useful for testing with Minio.
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	ServiceEndpoint *string `json:"serviceEndpoint"`
 }
 
 // ShardedRedisBackupStatus defines the observed state of ShardedRedisBackup

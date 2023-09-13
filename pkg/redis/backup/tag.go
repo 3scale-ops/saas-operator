@@ -6,10 +6,10 @@ import (
 	"os"
 	"sort"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/aws/aws-sdk-go/aws"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
@@ -21,10 +21,32 @@ func (br *Runner) TagBackup(ctx context.Context) error {
 	os.Setenv(awsSecretKeyEnvvar, br.AWSSecretAccessKey)
 	os.Setenv(awsRegionEnvvar, br.AWSRegion)
 
-	cfg, err := config.LoadDefaultConfig(ctx)
-	if err != nil {
-		return err
+	var cfg aws.Config
+	var err error
+
+	if br.AWSS3Endpoint != nil {
+		resolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...any) (aws.Endpoint, error) {
+			return aws.Endpoint{
+				PartitionID:       "aws",
+				URL:               *br.AWSS3Endpoint,
+				SigningRegion:     br.AWSRegion,
+				HostnameImmutable: true,
+			}, nil
+		})
+
+		cfg, err = config.LoadDefaultConfig(ctx,
+			config.WithEndpointResolverWithOptions(resolver),
+		)
+		if err != nil {
+			return err
+		}
+	} else {
+		cfg, err = config.LoadDefaultConfig(ctx)
+		if err != nil {
+			return err
+		}
 	}
+
 	client := s3.NewFromConfig(cfg)
 
 	// get backups of current day

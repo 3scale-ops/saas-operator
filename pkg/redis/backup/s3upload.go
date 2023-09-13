@@ -6,6 +6,7 @@ import (
 	"net"
 	"path"
 	"strconv"
+	"strings"
 	"time"
 
 	"golang.org/x/crypto/ssh"
@@ -47,6 +48,13 @@ func (br *Runner) BackupFileS3Path() string {
 func (br *Runner) UploadBackup(ctx context.Context) error {
 	logger := log.FromContext(ctx, "function", "(br *Runner) UploadBackup()")
 
+	var awsBaseCommand string
+	if br.AWSS3Endpoint != nil {
+		awsBaseCommand = strings.Join([]string{"aws", "--endpoint-url", *br.AWSS3Endpoint}, " ")
+	} else {
+		awsBaseCommand = "aws"
+	}
+
 	var commands = []string{
 		// mv /data/dump.rdb /data/redis-backup-<shard>-<server>-<timestamp>.rdb
 		fmt.Sprintf("mv %s %s/%s",
@@ -57,10 +65,11 @@ func (br *Runner) UploadBackup(ctx context.Context) error {
 		fmt.Sprintf("gzip %s/%s", path.Dir(br.RedisDBFile), br.BackupFile()),
 		// TODO: use awscli instead
 		// AWS_ACCESS_KEY_ID=*** AWS_SECRET_ACCESS_KEY=*** s3cmd put /data/redis-backup-<shard>-<server>-<timestamp>.rdb s3://<bucket>/<path>/redis-backup-<shard>-<server>-<timestamp>.rdb
-		fmt.Sprintf("%s=%s %s=%s %s=%s aws s3 cp %s/%s s3://%s/%s/%s",
+		fmt.Sprintf("%s=%s %s=%s %s=%s %s s3 cp %s/%s s3://%s/%s/%s",
 			awsRegionEnvvar, br.AWSRegion,
 			awsAccessKeyEnvvar, br.AWSAccessKeyID,
 			awsSecretKeyEnvvar, br.AWSSecretAccessKey,
+			awsBaseCommand,
 			path.Dir(br.RedisDBFile), br.BackupFileCompressed(),
 			br.S3Bucket, br.S3Path, br.BackupFileCompressed(),
 		),
