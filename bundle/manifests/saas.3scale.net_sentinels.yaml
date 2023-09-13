@@ -44,6 +44,14 @@ spec:
               config:
                 description: Config configures the sentinel process
                 properties:
+                  clusterTopology:
+                    additionalProperties:
+                      additionalProperties:
+                        type: string
+                      type: object
+                    description: ClusterTopology indicates the redis servers that
+                      form part of each shard monitored by sentinel
+                    type: object
                   metricsRefreshInterval:
                     description: MetricsRefreshInterval determines the refresh interval
                       for gahtering metrics from sentinel
@@ -71,8 +79,6 @@ spec:
                       stored
                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                     x-kubernetes-int-or-string: true
-                required:
-                - monitoredShards
                 type: object
               grafanaDashboard:
                 description: Configures the Grafana Dashboard for the component
@@ -481,17 +487,14 @@ spec:
                   description: MonitoredShard contains information of one of the shards
                     monitored by the Sentinel resource
                   properties:
-                    master:
-                      description: Master is the address of the master redis server
-                        of this shard, in the format "127.0.0.1:6379" DEPRECATED -
-                        this field will be removed in an upcoming release
-                      type: string
                     name:
                       description: Name is the name of the redis shard
                       type: string
                     servers:
                       additionalProperties:
                         properties:
+                          address:
+                            type: string
                           config:
                             additionalProperties:
                               type: string
@@ -507,20 +510,6 @@ spec:
                         information of each of the RedisServer instances that belong
                         to the MonitoredShard
                       type: object
-                    slavesRO:
-                      description: SlavesRO is the list of addresses of the read-only
-                        slave servers in this shard, in the format "127.0.0.1:6379"
-                        DEPRECATED - this field will be removed in an upcoming release
-                      items:
-                        type: string
-                      type: array
-                    slavesRW:
-                      description: SlavesRW is the list of addresses of the read-write
-                        slave servers in this shard, in the format "127.0.0.1:6379"
-                        DEPRECATED - this field will be removed in an upcoming release
-                      items:
-                        type: string
-                      type: array
                   required:
                   - name
                   type: object

@@ -627,7 +627,7 @@ metadata:
     capabilities: Basic Install
     categories: Integration & Delivery
     containerImage: quay.io/3scale/saas-operator
-    createdAt: "2023-09-05T15:08:23Z"
+    createdAt: "2023-09-13T11:59:21Z"
     description: |-
       The 3scale SaaS Operator creates and maintains a SaaS-ready deployment
       of the Red Hat 3scale API Management on OpenShift.
@@ -635,7 +635,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/3scale/saas-operator
     support: Red Hat
-  name: saas-operator.v0.20.0-alpha.9
+  name: saas-operator.v0.20.0-alpha.10
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -2499,6 +2499,10 @@ spec:
       kind: Sentinel
       name: sentinels.saas.3scale.net
       specDescriptors:
+      - description: ClusterTopology indicates the redis servers that form part of
+          each shard monitored by sentinel
+        displayName: Cluster Topology
+        path: config.clusterTopology
       - description: MetricsRefreshInterval determines the refresh interval for gahtering
           metrics from sentinel
         displayName: Metrics Refresh Interval
@@ -3971,7 +3975,8 @@ spec:
           will try to autodiscover Sentinel within the namespace.
         displayName: Sentinel URIs
         path: sentinelURIs
-      - description: ServerPools is the list of Twemproxy server pools
+      - description: 'ServerPools is the list of Twemproxy server pools WARNING: only
+          1 pool is supported at this time'
         displayName: Server Pools
         path: serverPools
       - description: The address to bind to. Format is ip:port
@@ -4010,6 +4015,10 @@ spec:
       - description: The name of the locigal shard
         displayName: Shard Name
         path: serverPools[0].topology[0].shardName
+      statusDescriptors:
+      - description: The list of serves currently targeted by this TwemproxyConfig
+        displayName: Selected Targets
+        path: targets
       version: v1alpha1
     - description: Zync is the Schema for the zyncs API
       displayName: Zync
@@ -4435,7 +4444,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/3scale/saas-operator:v0.20.0-alpha.9
+                image: quay.io/3scale/saas-operator:v0.20.0-alpha.10
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -4973,4 +4982,4 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
-  version: 0.20.0-alpha.9
+  version: 0.20.0-alpha.10
