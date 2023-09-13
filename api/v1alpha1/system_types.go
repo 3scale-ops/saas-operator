@@ -231,7 +231,7 @@ var (
 					"bundle",
 					"exec",
 					"rails",
-					"backend:storage:enqueue_rewrite",
+					"db:migrate",
 				},
 			},
 		},
