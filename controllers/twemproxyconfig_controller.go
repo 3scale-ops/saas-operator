@@ -35,6 +35,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -69,11 +70,15 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	instance := &saasv1alpha1.TwemproxyConfig{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx, key, instance,
+	err := r.GetInstance(ctx, key, instance,
 		pointer.String(saasv1alpha1.Finalizer),
 		[]func(){r.SentinelEvents.CleanupThreads(instance)})
-	if result != nil || err != nil {
-		return *result, err
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			// Return and don't requeue
+			return ctrl.Result{}, nil
+		}
+		return ctrl.Result{}, err
 	}
 
 	// Apply defaults for reconcile but do not store them in the API

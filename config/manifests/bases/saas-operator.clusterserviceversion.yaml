@@ -2011,6 +2011,10 @@ spec:
       kind: Sentinel
       name: sentinels.saas.3scale.net
       specDescriptors:
+      - description: ClusterTopology indicates the redis servers that form part of
+          each shard monitored by sentinel
+        displayName: Cluster Topology
+        path: config.clusterTopology
       - description: MetricsRefreshInterval determines the refresh interval for gahtering
           metrics from sentinel
         displayName: Metrics Refresh Interval
@@ -3315,6 +3319,64 @@ spec:
       - description: Configures the TerminationGracePeriodSeconds
         displayName: Termination Grace Period Seconds
         path: sidekiqLow.terminationGracePeriodSeconds
+      - description: Configures the Tekton Tasks for the component
+        displayName: Tasks
+        path: tasks
+      - description: System Tekton Task specific configuration options for the component
+          element
+        displayName: Config
+        path: tasks[0].config
+      - description: List of args to be consumed by the task.
+        displayName: Args
+        path: tasks[0].config.args
+      - description: List of commands to be consumed by the task.
+        displayName: Command
+        path: tasks[0].config.command
+      - description: List of extra evironment variables to be consumed by the task.
+        displayName: Extra Env
+        path: tasks[0].config.extraEnv
+      - description: Image specification for the Console component. Defaults to system
+          image if not defined.
+        displayName: Image
+        path: tasks[0].config.image
+      - description: Docker repository of the image
+        displayName: Name
+        path: tasks[0].config.image.name
+      - description: Pull policy for the image
+        displayName: Pull Policy
+        path: tasks[0].config.image.pullPolicy
+      - description: Name of the Secret that holds quay.io credentials to access the
+          image repository
+        displayName: Pull Secret Name
+        path: tasks[0].config.image.pullSecretName
+      - description: Image tag
+        displayName: Tag
+        path: tasks[0].config.image.tag
+      - description: Description for the Tekton task and pipeline
+        displayName: Description
+        path: tasks[0].description
+      - description: Deploy task instance
+        displayName: Enabled
+        path: tasks[0].enabled
+      - description: Name for the Tekton task and pipeline
+        displayName: Name
+        path: tasks[0].name
+      - description: Pod Disruption Budget for the component
+        displayName: Resources
+        path: tasks[0].resources
+      - description: 'Limits describes the maximum amount of compute resources allowed.
+          More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Limits
+        path: tasks[0].resources.limits
+      - description: 'Requests describes the minimum amount of compute resources required.
+          If Requests is omitted for a container, it defaults to Limits if that is
+          explicitly specified, otherwise to an implementation-defined value. More
+          info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Requests
+        path: tasks[0].resources.requests
+      - description: Configures the TerminationGracePeriodSeconds
+        displayName: Termination Grace Period Seconds
+        path: tasks[0].terminationGracePeriodSeconds
       - description: Configures twemproxy
         displayName: Twemproxy
         path: twemproxy
@@ -3425,7 +3487,8 @@ spec:
           will try to autodiscover Sentinel within the namespace.
         displayName: Sentinel URIs
         path: sentinelURIs
-      - description: ServerPools is the list of Twemproxy server pools
+      - description: 'ServerPools is the list of Twemproxy server pools WARNING: only
+          1 pool is supported at this time'
         displayName: Server Pools
         path: serverPools
       - description: The address to bind to. Format is ip:port
@@ -3464,6 +3527,10 @@ spec:
       - description: The name of the locigal shard
         displayName: Shard Name
         path: serverPools[0].topology[0].shardName
+      statusDescriptors:
+      - description: The list of serves currently targeted by this TwemproxyConfig
+        displayName: Selected Targets
+        path: targets
       version: v1alpha1
     - description: Zync is the Schema for the zyncs API
       displayName: Zync

@@ -208,6 +208,63 @@ var (
 			corev1.ResourceMemory: resource.MustParse("2Gi"),
 		},
 	}
+	systemDefaultSystemTektonTasks []SystemTektonTaskSpec = []SystemTektonTaskSpec{
+		{
+			Name:        pointer.String("system-backend-sync"),
+			Description: pointer.String("Runs the Backend Synchronization task"),
+			Config: &SystemTektonTaskConfig{
+				Command: []string{"container-entrypoint"},
+				Args: []string{
+					"bundle",
+					"exec",
+					"rails",
+					"backend:storage:enqueue_rewrite",
+				},
+			},
+		},
+		{
+			Name:        pointer.String("system-db-migrate"),
+			Description: pointer.String("Runs the Database Migration task"),
+			Config: &SystemTektonTaskConfig{
+				Command: []string{"container-entrypoint"},
+				Args: []string{
+					"bundle",
+					"exec",
+					"rails",
+					"db:migrate",
+				},
+			},
+		},
+		{
+			Name:        pointer.String("system-searchd-reindex"),
+			Description: pointer.String("Runs the Searchd Rendexation task"),
+			Config: &SystemTektonTaskConfig{
+				Command: []string{"container-entrypoint"},
+				Args: []string{
+					"bundle",
+					"exec",
+					"rake",
+					"searchd:optimal_index",
+				},
+				ExtraEnv: []corev1.EnvVar{
+					{
+						Name: "THINKING_SPHINX_BATCH_SIZE", Value: "20",
+					},
+				},
+			},
+		},
+	}
+
+	systemDefaultSystemTektonTaskResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
+		Requests: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("200m"),
+			corev1.ResourceMemory: resource.MustParse("1Gi"),
+		},
+		Limits: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("400m"),
+			corev1.ResourceMemory: resource.MustParse("2Gi"),
+		},
+	}
 )
 
 // SystemSpec defines the desired state of System
@@ -243,6 +300,10 @@ type SystemSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Console *SystemRailsConsoleSpec `json:"console,omitempty"`
+	// Configures the Tekton Tasks for the component
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Tasks []SystemTektonTaskSpec `json:"tasks,omitempty"`
 	// Configures the Grafana Dashboard for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -291,6 +352,30 @@ func (spec *SystemSpec) Default() {
 
 	if spec.Twemproxy != nil {
 		spec.Twemproxy.Default()
+	}
+
+	for _, defaultTask := range systemDefaultSystemTektonTasks {
+		defaultTaskFound := false
+
+		// If a default task is defined, default missing information
+		for t, resourceTask := range spec.Tasks {
+			if *resourceTask.Name == *defaultTask.Name {
+				spec.Tasks[t].Description = stringOrDefault(resourceTask.Description, defaultTask.Description)
+				spec.Tasks[t].Enabled = boolOrDefault(resourceTask.Enabled, defaultTask.Enabled)
+				spec.Tasks[t].Config.Merge(*defaultTask.Config)
+				defaultTaskFound = true
+			}
+		}
+
+		// Add the default task if missing
+		if !defaultTaskFound {
+			spec.Tasks = append(spec.Tasks, defaultTask)
+		}
+
+	}
+
+	for i := range spec.Tasks {
+		spec.Tasks[i].Default(spec.Image)
 	}
 
 }
@@ -930,4 +1015,121 @@ func (sl *SystemList) CountItems() int {
 
 func init() {
 	SchemeBuilder.Register(&System{}, &SystemList{})
+}
+
+/*
+x
+*/
+
+// SystemTektonTaskSpec configures the Sidekiq component of System
+type SystemTektonTaskSpec struct {
+	// Deploy task instance
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Enabled *bool `json:"enabled,omitempty"`
+	// Name for the Tekton task and pipeline
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Name *string `json:"name,omitempty"`
+	// Description for the Tekton task and pipeline
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Description *string `json:"description,omitempty"`
+	// System Tekton Task specific configuration options for the component element
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Config *SystemTektonTaskConfig `json:"config,omitempty"`
+	// Pod Disruption Budget for the component
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Resources *ResourceRequirementsSpec `json:"resources,omitempty"`
+	// Describes node affinity scheduling rules for the pod.
+	// +optional
+	NodeAffinity *corev1.NodeAffinity `json:"nodeAffinity,omitempty" protobuf:"bytes,1,opt,name=nodeAffinity"`
+	// If specified, the pod's tolerations.
+	// +optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
+	// Configures the TerminationGracePeriodSeconds
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty"`
+}
+
+// SystemTektonTaskConfig configures app behavior for System SystemTektonTask
+type SystemTektonTaskConfig struct {
+	// Image specification for the Console component.
+	// Defaults to system image if not defined.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Image *ImageSpec `json:"image,omitempty"`
+	// List of commands to be consumed by the task.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Command []string `json:"command,omitempty"`
+	// List of args to be consumed by the task.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Args []string `json:"args,omitempty"`
+	// List of extra evironment variables to be consumed by the task.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ExtraEnv []corev1.EnvVar `json:"extraEnv,omitempty"`
+}
+
+// Default sets default values for any value not specifically set in the SystemTektonTaskConfig struct
+func (cfg *SystemTektonTaskConfig) Default(systemDefaultImage *ImageSpec) {
+	cfg.Image = InitializeImageSpec(cfg.Image, defaultImageSpec(*systemDefaultImage))
+	cfg.Command = stringSliceOrDefault(cfg.Command, []string{"echo"})
+	cfg.Args = stringSliceOrDefault(cfg.Args, []string{"Step command not set."})
+	if len(cfg.ExtraEnv) == 0 {
+		cfg.ExtraEnv = []corev1.EnvVar{}
+	}
+}
+
+// Merges default preloaded task values for any value not specifically set in the SystemTektonTaskConfig struct
+func (cfg *SystemTektonTaskConfig) Merge(def SystemTektonTaskConfig) {
+
+	if cfg == nil {
+		cfg = &SystemTektonTaskConfig{}
+	}
+
+	cfg.Command = stringSliceOrDefault(cfg.Command, def.Command)
+	cfg.Args = stringSliceOrDefault(cfg.Args, def.Args)
+
+	if len(cfg.ExtraEnv) == 0 {
+		cfg.ExtraEnv = def.ExtraEnv
+	}
+
+	// If a DefaultExtraEnvVar is missing from the resource definition
+	// is appended to the cfg.ExtraEnv slide.
+	for _, DefaultExtraEnvVar := range def.ExtraEnv {
+		found := false
+		for _, ExtraEnvVar := range cfg.ExtraEnv {
+			if DefaultExtraEnvVar.Name == ExtraEnvVar.Name {
+				found = true
+			}
+		}
+		if !found {
+			cfg.ExtraEnv = append(cfg.ExtraEnv, DefaultExtraEnvVar)
+		}
+	}
+
+}
+
+// Default implements defaulting for the system SystemTektonTask component
+func (spec *SystemTektonTaskSpec) Default(systemDefaultImage *ImageSpec) {
+
+	if spec.Config == nil {
+		spec.Config = &SystemTektonTaskConfig{}
+	}
+
+	spec.Description = stringOrDefault(spec.Description, spec.Name)
+	spec.Enabled = boolOrDefault(spec.Enabled, pointer.Bool(true))
+	spec.Config.Default(systemDefaultImage)
+
+	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, systemDefaultSystemTektonTaskResources)
+	spec.TerminationGracePeriodSeconds = int64OrDefault(
+		spec.TerminationGracePeriodSeconds, systemDefaultTerminationGracePeriodSeconds,
+	)
+
 }

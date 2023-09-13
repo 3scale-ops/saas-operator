@@ -26,10 +26,12 @@ import (
 	"github.com/go-logr/logr"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -54,6 +56,8 @@ type SystemReconciler struct {
 // +kubebuilder:rbac:groups="policy",namespace=placeholder,resources=poddisruptionbudgets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="integreatly.org",namespace=placeholder,resources=grafanadashboards,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="external-secrets.io",namespace=placeholder,resources=externalsecrets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="tekton.dev",namespace=placeholder,resources=tasks,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="tekton.dev",namespace=placeholder,resources=pipelines,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -63,9 +67,13 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 
 	instance := &saasv1alpha1.System{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx, key, instance, nil, nil)
-	if result != nil || err != nil {
-		return *result, err
+	err := r.GetInstance(ctx, key, instance, nil, nil)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			// Return and don't requeue
+			return ctrl.Result{}, err
+		}
+		return ctrl.Result{}, nil
 	}
 
 	// Apply defaults for reconcile but do not store them in the API
@@ -117,6 +125,9 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	// Console resources
 	resources = append(resources, gen.Console.StatefulSet())
 
+	// Tekton resources
+	resources = append(resources, gen.Pipelines()...)
+
 	err = r.ReconcileOwnedResources(ctx, instance, resources)
 	if err != nil {
 		logger.Error(err, "unable to update owned resources")
@@ -138,6 +149,8 @@ func (r *SystemReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&monitoringv1.PodMonitor{}).
 		Owns(&externalsecretsv1beta1.ExternalSecret{}).
 		Owns(&grafanav1alpha1.GrafanaDashboard{}).
+		Owns(&pipelinev1beta1.Pipeline{}).
+		Owns(&pipelinev1beta1.Task{}).
 		Watches(&source.Kind{Type: &corev1.Secret{TypeMeta: metav1.TypeMeta{Kind: "Secret"}}},
 			r.SecretEventHandler(&saasv1alpha1.SystemList{}, r.Log)).
 		Complete(r)

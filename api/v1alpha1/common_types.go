@@ -703,6 +703,13 @@ func stringOrDefault(value *string, defValue *string) *string {
 	return value
 }
 
+func stringSliceOrDefault(value []string, defValue []string) []string {
+	if len(value) == 0 {
+		return defValue
+	}
+	return value
+}
+
 func intOrDefault(value *int32, defValue *int32) *int32 {
 	if value == nil {
 		return defValue
