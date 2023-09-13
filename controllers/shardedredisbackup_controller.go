@@ -119,6 +119,8 @@ func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.R
 	// ----- Phase 2: run pending backups -----
 	// ----------------------------------------
 
+	// TODO: hanlde error when no available RO slaves
+
 	statusChanged := false
 	runners := make([]threads.RunnableThread, 0, len(cluster.Shards))
 	for _, shard := range cluster.Shards {
@@ -137,6 +139,7 @@ func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.R
 				SSHUser:            instance.Spec.SSHOptions.User,
 				SSHKey:             string(sshPrivateKey.Data[corev1.SSHAuthPrivateKey]),
 				SSHPort:            *instance.Spec.SSHOptions.Port,
+				SSHSudo:            *instance.Spec.SSHOptions.Sudo,
 				S3Bucket:           instance.Spec.S3Options.Bucket,
 				S3Path:             instance.Spec.S3Options.Path,
 				AWSAccessKeyID:     string(awsCredentials.Data[saasv1alpha1.AWSAccessKeyID_SecretKey]),

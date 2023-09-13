@@ -13,7 +13,8 @@ spec:
   sshOptions:
     privateKeySecretRef:
       name: redis-backup-ssh-private-key
-    user: root
+    user: docker
+    sudo: true
     port: 2222
   s3Options:
     bucket: my-bucket

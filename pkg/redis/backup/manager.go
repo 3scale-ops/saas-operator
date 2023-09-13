@@ -23,6 +23,7 @@ type Runner struct {
 	SSHUser            string
 	SSHKey             string
 	SSHPort            uint32
+	SSHSudo            bool
 	S3Bucket           string
 	S3Path             string
 	AWSAccessKeyID     string

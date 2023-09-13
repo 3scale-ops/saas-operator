@@ -76,6 +76,9 @@ func (br *Runner) UploadBackup(ctx context.Context) error {
 	}
 
 	for _, command := range commands {
+		if br.SSHSudo {
+			command = "sudo " + command
+		}
 		logger.V(1).Info(fmt.Sprintf("running command '%s' on %s:%d", command, br.Server.GetHost(), br.SSHPort))
 		output, err := remoteRun(ctx, br.SSHUser, br.Server.GetHost(), strconv.Itoa(int(br.SSHPort)), br.SSHKey, command)
 		if output != "" {

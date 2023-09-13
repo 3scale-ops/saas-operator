@@ -102,11 +102,18 @@ type SSHOptions struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Port *uint32 `json:"port,omitempty"`
+	// Use sudo to execute commands agains the remote host
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Sudo *bool `json:"sudo,omitempty"`
 }
 
 func (opts *SSHOptions) Default() {
 	if opts.Port == nil {
 		opts.Port = util.Pointer(backupDefaultSSHPort)
+	}
+	if opts.Sudo == nil {
+		opts.Sudo = util.Pointer(false)
 	}
 }
 

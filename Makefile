@@ -277,8 +277,14 @@ kind-undeploy: export KUBECONFIG = $(PWD)/kubeconfig
 kind-undeploy: ## Undeploy controller from the Kind K8s cluster
 	$(KUSTOMIZE) build config/test | kubectl delete -f -
 
-kind-deploy-backup-assets:
+kind-deploy-backup-assets: export KUBECONFIG = $(PWD)/kubeconfig
+kind-deploy-backup-assets: kind-load-redis-with-ssh
 	$(KUSTOMIZE) build config/test/redis-backups --load-restrictor LoadRestrictionsNone --enable-helm | kubectl apply -f -
+
+REDIS_WITH_SSH_IMG = redis-with-ssh:4.0.11-alpine
+kind-load-redis-with-ssh:
+	docker build -t $(REDIS_WITH_SSH_IMG) test/assets/redis-with-ssh
+	$(KIND) load docker-image $(REDIS_WITH_SSH_IMG)
 
 ##@ Build Dependencies
 

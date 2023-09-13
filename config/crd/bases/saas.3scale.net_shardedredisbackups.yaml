@@ -106,6 +106,9 @@ spec:
                         type: string
                     type: object
                     x-kubernetes-map-type: atomic
+                  sudo:
+                    description: Use sudo to execute commands agains the remote host
+                    type: boolean
                   user:
                     description: SSH user
                     type: string

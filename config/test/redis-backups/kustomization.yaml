@@ -29,10 +29,8 @@ secretGenerator:
 - name: redis-backup-ssh-private-key
   type: kubernetes.io/ssh-auth
   files:
-    - ssh-privatekey=../../../examples/backend/assets/redis-with-ssh/test-ssh-key
+    - ssh-privatekey=../../../test/assets/redis-with-ssh/test-ssh-key
 - name: aws-credentials
-  envs:
-  - ../../../examples/backend/assets/s3/credentials.env
-  # literals:
-  #   - AWS_ACCESS_KEY_ID=admin
-  #   - AWS_SECRET_ACCESS_KEY=admin123
+  literals:
+    - AWS_ACCESS_KEY_ID=admin
+    - AWS_SECRET_ACCESS_KEY=admin123
