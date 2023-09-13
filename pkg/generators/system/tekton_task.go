@@ -45,6 +45,7 @@ func (gen *SystemTektonGenerator) task() func() *pipelinev1beta1.Task {
 					},
 				},
 				StepTemplate: &pipelinev1beta1.StepTemplate{
+					Image: "$(params.container-image):$(params.container-tag)",
 					Env: append(
 						pod.BuildEnvironment(gen.Options),
 						gen.Spec.Config.ExtraEnv...,
@@ -55,7 +56,6 @@ func (gen *SystemTektonGenerator) task() func() *pipelinev1beta1.Task {
 						Name:      "task-command",
 						Command:   gen.Spec.Config.Command,
 						Args:      gen.Spec.Config.Args,
-						Image:     "$(params.container-image):$(params.container-tag)",
 						Resources: corev1.ResourceRequirements(*gen.Spec.Resources),
 						VolumeMounts: []corev1.VolumeMount{
 							{
