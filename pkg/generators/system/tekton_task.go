@@ -24,6 +24,7 @@ func (gen *SystemTektonGenerator) task() func() *pipelinev1beta1.Task {
 				Labels:    gen.GetLabels(),
 			},
 			Spec: pipelinev1beta1.TaskSpec{
+				DisplayName: gen.GetComponent(),
 				Description: *gen.Spec.Description,
 				Params: []pipelinev1beta1.ParamSpec{
 					{

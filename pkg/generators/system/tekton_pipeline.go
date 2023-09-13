@@ -20,6 +20,7 @@ func (gen *SystemTektonGenerator) pipeline() func() *pipelinev1beta1.Pipeline {
 				Labels:    gen.GetLabels(),
 			},
 			Spec: pipelinev1beta1.PipelineSpec{
+				DisplayName: gen.GetComponent(),
 				Description: *gen.Spec.Description,
 				Params: []pipelinev1beta1.ParamSpec{
 					{
