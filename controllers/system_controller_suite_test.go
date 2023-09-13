@@ -1019,13 +1019,18 @@ var _ = Describe("System controller", func() {
 					}
 
 					patch := client.MergeFrom(system.DeepCopy())
+
+					system.Spec.Config.Rails = &saasv1alpha1.SystemRailsSpec{
+						LogLevel: pointer.String("debug"),
+					}
+
 					system.Spec.Tasks = []saasv1alpha1.SystemTektonTaskSpec{
 						{
 							Name:    pointer.String("system-db-migrate"),
 							Enabled: pointer.Bool(false),
 						},
 						{
-							Name: pointer.String("system-backend-sync"),
+							Name: pointer.String("system-searchd-reindex"),
 							Config: &saasv1alpha1.SystemTektonTaskConfig{
 								Image: &saasv1alpha1.ImageSpec{
 									Name: pointer.String("newImage"),
@@ -1035,6 +1040,7 @@ var _ = Describe("System controller", func() {
 								Args:    []string{"arg1", "arg1"},
 								ExtraEnv: []corev1.EnvVar{
 									{Name: "test", Value: "test"},
+									{Name: "THINKING_SPHINX_BATCH_SIZE", Value: "50"},
 								},
 							},
 						},
@@ -1044,6 +1050,10 @@ var _ = Describe("System controller", func() {
 							Config: &saasv1alpha1.SystemTektonTaskConfig{
 								Command: []string{"cmd"},
 								Args:    []string{"arg1", "arg1"},
+								ExtraEnv: []corev1.EnvVar{
+									{Name: "test", Value: "test"},
+									{Name: "RAILS_LOG_LEVEL", Value: "debug"},
+								},
 							},
 						},
 					}
@@ -1056,29 +1066,43 @@ var _ = Describe("System controller", func() {
 				task := &pipelinev1beta1.Task{}
 				pipeline := &pipelinev1beta1.Pipeline{}
 
-				By("keeping the system-searchd-reindex task",
+				By("keeping the system-backend-sync task",
 					(&testutil.ExpectedResource{
-						Name: "system-searchd-reindex", Namespace: namespace,
+						Name: "system-backend-sync", Namespace: namespace,
 					}).Assert(k8sClient, task, timeout, poll))
 
 				Expect(task.Spec.Params[0].Default.StringVal).To(Equal("quay.io/3scale/porta"))
 				Expect(task.Spec.Params[1].Default.StringVal).To(Equal("nightly"))
 
-				By("updating the system-backend-sync task",
+				By("updating the system-searchd-reindex task",
 					(&testutil.ExpectedResource{
-						Name: "system-backend-sync", Namespace: namespace,
-						LastVersion: rvs["task/system-backend-sync"],
+						Name: "system-searchd-reindex", Namespace: namespace,
+						LastVersion: rvs["task/system-searchd-reindex"],
 					}).Assert(k8sClient, task, timeout, poll))
 
 				Expect(task.Spec.Params[0].Default.StringVal).To(Equal("newImage"))
 				Expect(task.Spec.Params[1].Default.StringVal).To(Equal("newTag"))
+
 				Expect(task.Spec.Steps[0].Command[0]).To(Equal("cmd"))
 				Expect(task.Spec.Steps[0].Args[0]).To(Equal("arg1"))
 
-				By("removing the system-backend-sync task",
+				for _, env := range task.Spec.StepTemplate.Env {
+					switch env.Name {
+					case "test":
+						Expect(env.Value).To(Equal("test"))
+					case "RAILS_LOG_TO_STDOUT":
+						Expect(env.Value).To(Equal("true"))
+					case "RAILS_LOG_LEVEL":
+						Expect(env.Value).To(Equal("debug"))
+					case "THINKING_SPHINX_BATCH_SIZE":
+						Expect(env.Value).To(Equal("50"))
+					}
+				}
+
+				By("updating the system-searchd-reindex pipeline",
 					(&testutil.ExpectedResource{
-						Name: "system-backend-sync", Namespace: namespace,
-						LastVersion: rvs["pipeline/system-backend-sync"],
+						Name: "system-searchd-reindex", Namespace: namespace,
+						LastVersion: rvs["pipeline/system-searchd-reindex"],
 					}).Assert(k8sClient, pipeline, timeout, poll))
 
 				Expect(pipeline.Spec.Params[0].Default.StringVal).To(Equal("newImage"))
@@ -1093,6 +1117,15 @@ var _ = Describe("System controller", func() {
 				Expect(task.Spec.Description).To(Equal("Test task"))
 				Expect(task.Spec.Steps[0].Command[0]).To(Equal("cmd"))
 				Expect(task.Spec.Steps[0].Args[0]).To(Equal("arg1"))
+
+				for _, env := range task.Spec.StepTemplate.Env {
+					switch env.Name {
+					case "test":
+						Expect(env.Value).To(Equal("test"))
+					case "RAILS_LOG_LEVEL":
+						Expect(env.Value).To(Equal("debug"))
+					}
+				}
 
 				By("removing the system-db-migrate task",
 					(&testutil.ExpectedResource{
