@@ -354,8 +354,24 @@ func (spec *SystemSpec) Default() {
 		spec.Twemproxy.Default()
 	}
 
-	if len(spec.Tasks) == 0 {
-		spec.Tasks = systemDefaultSystemTektonTasks
+	for _, defaultTask := range systemDefaultSystemTektonTasks {
+		defaultTaskFound := false
+
+		// If a default task is defined, default missing information
+		for t, resourceTask := range spec.Tasks {
+			if *resourceTask.Name == *defaultTask.Name {
+				spec.Tasks[t].Description = stringOrDefault(resourceTask.Description, defaultTask.Description)
+				spec.Tasks[t].Enabled = boolOrDefault(resourceTask.Enabled, defaultTask.Enabled)
+				spec.Tasks[t].Config.Merge(*defaultTask.Config)
+				defaultTaskFound = true
+			}
+		}
+
+		// Add the default task if missing
+		if !defaultTaskFound {
+			spec.Tasks = append(spec.Tasks, defaultTask)
+		}
+
 	}
 
 	for i := range spec.Tasks {
@@ -1073,7 +1089,12 @@ func (cfg *SystemTektonTaskConfig) Default(systemDefaultImage *ImageSpec) {
 // Merges default preloaded task values for any value not specifically set in the SystemTektonTaskConfig struct
 func (cfg *SystemTektonTaskConfig) Merge(def SystemTektonTaskConfig) {
 
+	if cfg == nil {
+		cfg = &SystemTektonTaskConfig{}
+	}
+
 	cfg.Command = stringSliceOrDefault(cfg.Command, def.Command)
+	cfg.Args = stringSliceOrDefault(cfg.Args, def.Args)
 
 	if len(cfg.ExtraEnv) == 0 {
 		cfg.ExtraEnv = def.ExtraEnv
@@ -1098,13 +1119,11 @@ func (cfg *SystemTektonTaskConfig) Merge(def SystemTektonTaskConfig) {
 // Default implements defaulting for the system SystemTektonTask component
 func (spec *SystemTektonTaskSpec) Default(systemDefaultImage *ImageSpec) {
 
-	for _, defaultTask := range systemDefaultSystemTektonTasks {
-		if spec.Name == defaultTask.Name {
-			spec.Description = stringOrDefault(spec.Description, defaultTask.Description)
-			spec.Enabled = boolOrDefault(spec.Enabled, pointer.Bool(true))
-			spec.Config.Merge(*defaultTask.Config)
-		}
+	if spec.Config == nil {
+		spec.Config = &SystemTektonTaskConfig{}
 	}
+
+	spec.Enabled = boolOrDefault(spec.Enabled, pointer.Bool(true))
 	spec.Config.Default(systemDefaultImage)
 
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, systemDefaultSystemTektonTaskResources)
