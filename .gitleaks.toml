@@ -1,5 +1,5 @@
 [allowlist]
 description = "global allow lists"
 paths = [
-    '''examples/backend/assets/redis-with-ssh/test-ssh-key''',
+    '''test/assets/redis-with-ssh/test-ssh-key''',
 ]
