@@ -145,6 +145,11 @@ func (fc *FakeClient) RedisLastSave(ctx context.Context) (int64, error) {
 	return rsp.InjectResponse().(int64), rsp.InjectError()
 }
 
+func (fc *FakeClient) RedisSet(ctx context.Context, key string, value interface{}) error {
+	rsp := fc.pop()
+	return rsp.InjectError()
+}
+
 func (fc *FakeClient) pop() (fakeRsp FakeResponse) {
 	fakeRsp, fc.Responses = fc.Responses[0], fc.Responses[1:]
 	return fakeRsp

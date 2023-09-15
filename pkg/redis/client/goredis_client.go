@@ -160,3 +160,8 @@ func (c *GoRedisClient) RedisBGSave(ctx context.Context) error {
 func (c *GoRedisClient) RedisLastSave(ctx context.Context) (int64, error) {
 	return c.redis.LastSave(ctx).Result()
 }
+
+func (c *GoRedisClient) RedisSet(ctx context.Context, key string, value interface{}) error {
+	_, err := c.redis.Set(ctx, key, value, 0).Result()
+	return err
+}

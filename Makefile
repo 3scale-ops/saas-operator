@@ -116,7 +116,7 @@ test-sequential: manifests generate fmt vet envtest assets ginkgo ## Run tests.
 	KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) $(GINKGO) -v -r $(TEST_PKG)  -coverprofile cover.out
 
 test-e2e: export KUBECONFIG = $(PWD)/kubeconfig
-test-e2e: manifests ginkgo kind-create kind-deploy ## Runs e2e tests
+test-e2e: manifests ginkgo kind-create kind-deploy kind-deploy-backup-assets ## Runs e2e tests
 	$(GINKGO) -p -r ./test/e2e
 	$(MAKE) kind-delete
 
