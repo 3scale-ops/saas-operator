@@ -69,15 +69,11 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	instance := &saasv1alpha1.TwemproxyConfig{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	err := r.GetInstance(ctx, key, instance,
+	result, err := r.GetInstance(ctx, key, instance,
 		pointer.String(saasv1alpha1.Finalizer),
 		[]func(){r.SentinelEvents.CleanupThreads(instance)})
-	if err != nil {
-		if apierrors.IsNotFound(err) {
-			// Return and don't requeue
-			return ctrl.Result{}, nil
-		}
-		return ctrl.Result{}, err
+	if result != nil || err != nil {
+		return *result, err
 	}
 
 	// Apply defaults for reconcile but do not store them in the API

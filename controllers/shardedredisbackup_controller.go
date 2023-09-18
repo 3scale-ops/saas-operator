@@ -22,7 +22,6 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/pointer"
@@ -76,13 +75,9 @@ func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.R
 
 	instance := &saasv1alpha1.ShardedRedisBackup{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	err := r.GetInstance(ctx, key, instance, pointer.String(saasv1alpha1.Finalizer), []func(){r.BackupRunner.CleanupThreads(instance)})
-	if err != nil {
-		if apierrors.IsNotFound(err) {
-			// Return and don't requeue
-			return ctrl.Result{}, err
-		}
-		return ctrl.Result{}, nil
+	result, err := r.GetInstance(ctx, key, instance, pointer.String(saasv1alpha1.Finalizer), []func(){r.BackupRunner.CleanupThreads(instance)})
+	if result != nil || err != nil {
+		return *result, err
 	}
 
 	instance.Default()

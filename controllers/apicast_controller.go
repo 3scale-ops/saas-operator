@@ -30,7 +30,6 @@ import (
 	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -61,13 +60,9 @@ func (r *ApicastReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	instance := &saasv1alpha1.Apicast{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	err := r.GetInstance(ctx, key, instance, nil, nil)
-	if err != nil {
-		if apierrors.IsNotFound(err) {
-			// Return and don't requeue
-			return ctrl.Result{}, nil
-		}
-		return ctrl.Result{}, err
+	result, err := r.GetInstance(ctx, key, instance, nil, nil)
+	if result != nil || err != nil {
+		return *result, err
 	}
 
 	// Apply defaults for reconcile but do not store them in the API
