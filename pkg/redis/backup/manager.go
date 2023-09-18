@@ -45,10 +45,12 @@ type RunnerStatus struct {
 	FinishedAt time.Time
 }
 
+// ID is the function that used to generate the ID of the backup runner
 func ID(shard, alias string, ts time.Time) string {
 	return fmt.Sprintf("%s-%s-%d", shard, alias, ts.UTC().UnixMilli())
 }
 
+// GetID returns the ID of this backup runner
 func (br *Runner) GetID() string {
 	return ID(br.ShardName, br.Server.GetAlias(), br.ScheduledFor)
 }
@@ -58,6 +60,7 @@ func (br *Runner) IsStarted() bool {
 	return br.status.Started
 }
 
+// CanBeDeleted reports the reconciler if this backup runner key can be deleted from the map of threads
 func (br *Runner) CanBeDeleted() bool {
 	// let the thread be deleted once the timeout has passed 2 times
 	// This gives enough time for the controller to update the status
@@ -65,6 +68,7 @@ func (br *Runner) CanBeDeleted() bool {
 	return time.Since(br.Timestamp) > br.Timeout*2
 }
 
+// SetChannel created the communication channel for this backup runner
 func (br *Runner) SetChannel(ch chan event.GenericEvent) {
 	br.eventsCh = ch
 }
@@ -144,6 +148,7 @@ func (br *Runner) Stop() {
 	br.cancel()
 }
 
+// Status returns the RunnerStatus struct for this backup runner
 func (br *Runner) Status() RunnerStatus {
 	return br.status
 }

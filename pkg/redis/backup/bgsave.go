@@ -18,7 +18,6 @@ func (br *Runner) BackgroundSave(ctx context.Context) error {
 
 	err = br.Server.RedisBGSave(ctx)
 	if err != nil {
-		// TODO: need to hanlde the case that a save is already running
 		logger.Error(errBGSave(err), "backup error")
 		return errBGSave(err)
 	}

@@ -183,6 +183,10 @@ type SentinelStatus struct {
 	MonitoredShards MonitoredShards `json:"monitoredShards,omitempty"`
 }
 
+// ShardedCluster returns a *sharded.Cluster struct from the information reported by the sentinel status instead
+// of directly contacting sentinel/redis to gather the state of the cluster. This avoids calls to sentinel/redis
+// but is less robust as it depends entirely on the Sentinel controller working properly and without delays.
+// As of now, this is used in the SharededRedisBackup controller but not in the TwemproxyConfig controller.
 func (ss *SentinelStatus) ShardedCluster(ctx context.Context, pool *redis.ServerPool) (*sharded.Cluster, error) {
 
 	// have a list of sentinels but must provide a map
@@ -193,7 +197,7 @@ func (ss *SentinelStatus) ShardedCluster(ctx context.Context, pool *redis.Server
 	}
 
 	shards := make([]*sharded.Shard, 0, len(ss.MonitoredShards))
-	// TODO: generate slice of shards from status
+	// generate slice of shards from status
 	for _, s := range ss.MonitoredShards {
 		servers := make([]*sharded.RedisServer, 0, len(s.Servers))
 		for _, rsd := range s.Servers {

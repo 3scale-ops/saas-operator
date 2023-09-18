@@ -128,10 +128,9 @@ func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.R
 			}
 
 			// add the backup runner thread
-			target := roSlaves[0]
 			runners = append(runners, &backup.Runner{
 				ShardName:          shard.Name,
-				Server:             target,
+				Server:             roSlaves[0],
 				ScheduledFor:       scheduledBackup.ScheduledFor.Time,
 				Timestamp:          now,
 				Timeout:            instance.Spec.Timeout.Duration,
@@ -149,8 +148,8 @@ func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.R
 				AWSRegion:          instance.Spec.S3Options.Region,
 				AWSS3Endpoint:      instance.Spec.S3Options.ServiceEndpoint,
 			})
-			scheduledBackup.ServerAlias = util.Pointer(target.GetAlias())
-			scheduledBackup.ServerID = util.Pointer(target.ID())
+			scheduledBackup.ServerAlias = util.Pointer(roSlaves[0].GetAlias())
+			scheduledBackup.ServerID = util.Pointer(roSlaves[0].ID())
 			scheduledBackup.StartedAt = &metav1.Time{Time: now}
 			scheduledBackup.Message = "backup is running"
 			scheduledBackup.State = saasv1alpha1.BackupRunningState
