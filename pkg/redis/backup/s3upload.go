@@ -79,7 +79,7 @@ func (br *Runner) UploadBackup(ctx context.Context) error {
 		if br.SSHSudo {
 			command = "sudo " + command
 		}
-		logger.V(1).Info(fmt.Sprintf("running command '%s' on %s:%d", command, br.Server.GetHost(), br.SSHPort))
+		logger.V(1).Info(br.hideSensitive(fmt.Sprintf("running command '%s' on %s:%d", command, br.Server.GetHost(), br.SSHPort)))
 		output, err := remoteRun(ctx, br.SSHUser, br.Server.GetHost(), strconv.Itoa(int(br.SSHPort)), br.SSHKey, command)
 		if output != "" {
 			logger.V(1).Info(fmt.Sprintf("remote ssh command output: %s", output))
@@ -121,4 +121,11 @@ func remoteRun(ctx context.Context, user, addr, port, privateKey, cmd string) (s
 
 	output, err := session.CombinedOutput(cmd)
 	return string(output), err
+}
+
+func (br *Runner) hideSensitive(msg string) string {
+	for _, ss := range []string{br.AWSSecretAccessKey, br.SSHKey} {
+		msg = strings.ReplaceAll(msg, ss, "*****")
+	}
+	return msg
 }
