@@ -16,9 +16,10 @@ type Runner struct {
 	Instance           client.Object
 	ShardName          string
 	Server             *sharded.RedisServer
+	ScheduledFor       time.Time
+	Timestamp          time.Time
 	Timeout            time.Duration
 	PollInterval       time.Duration
-	Timestamp          time.Time
 	RedisDBFile        string
 	SSHUser            string
 	SSHKey             string
@@ -49,7 +50,7 @@ func ID(shard, alias string, ts time.Time) string {
 }
 
 func (br *Runner) GetID() string {
-	return ID(br.ShardName, br.Server.GetAlias(), br.Timestamp)
+	return ID(br.ShardName, br.Server.GetAlias(), br.ScheduledFor)
 }
 
 // IsStarted returns whether the backup runner is started or not
@@ -58,7 +59,10 @@ func (br *Runner) IsStarted() bool {
 }
 
 func (br *Runner) CanBeDeleted() bool {
-	return time.Since(br.Timestamp) > 1*time.Hour
+	// let the thread be deleted once the timeout has passed 2 times
+	// This gives enough time for the controller to update the status
+	// with the info of the thread once it has completed
+	return time.Since(br.Timestamp) > br.Timeout*2
 }
 
 func (br *Runner) SetChannel(ch chan event.GenericEvent) {

@@ -114,19 +114,26 @@ func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.R
 	// ----- Phase 2: run pending backups -----
 	// ----------------------------------------
 
-	// TODO: hanlde error when no available RO slaves
-
 	statusChanged := false
+	requeue := false
 	runners := make([]threads.RunnableThread, 0, len(cluster.Shards))
 	for _, shard := range cluster.Shards {
 		scheduledBackup := instance.Status.FindLastBackup(shard.Name, saasv1alpha1.BackupPendingState)
-		if scheduledBackup != nil && scheduledBackup.ScheduledFor.Time.Before(time.Now()) {
+		if scheduledBackup != nil && scheduledBackup.ScheduledFor.Time.Before(now) {
+			// hanlde error when no available RO slaves
+			var roSlaves []*sharded.RedisServer
+			if roSlaves = shard.GetSlavesRO(); len(roSlaves) == 0 {
+				logger.Error(fmt.Errorf("no available RO slaves in shard"), fmt.Sprintf("skipped shard %s, will be retried", shard.Name))
+				requeue = true
+			}
+
 			// add the backup runner thread
-			target := shard.GetSlavesRO()[0]
+			target := roSlaves[0]
 			runners = append(runners, &backup.Runner{
 				ShardName:          shard.Name,
 				Server:             target,
-				Timestamp:          scheduledBackup.ScheduledFor.Time,
+				ScheduledFor:       scheduledBackup.ScheduledFor.Time,
+				Timestamp:          now,
 				Timeout:            instance.Spec.Timeout.Duration,
 				PollInterval:       instance.Spec.PollInterval.Duration,
 				RedisDBFile:        instance.Spec.DBFile,
@@ -144,8 +151,7 @@ func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.R
 			})
 			scheduledBackup.ServerAlias = util.Pointer(target.GetAlias())
 			scheduledBackup.ServerID = util.Pointer(target.ID())
-			now := metav1.Now()
-			scheduledBackup.StartedAt = util.Pointer(now)
+			scheduledBackup.StartedAt = &metav1.Time{Time: now}
 			scheduledBackup.Message = "backup is running"
 			scheduledBackup.State = saasv1alpha1.BackupRunningState
 			statusChanged = true
@@ -155,10 +161,13 @@ func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.R
 	if err := r.BackupRunner.ReconcileThreads(ctx, instance, runners, logger.WithName("backup-runner")); err != nil {
 		return ctrl.Result{}, err
 	}
-
 	if statusChanged {
 		err := r.Client.Status().Update(ctx, instance)
 		return ctrl.Result{}, err
+	}
+	// requeue if any of the shards had no available RO slaves
+	if requeue {
+		return ctrl.Result{RequeueAfter: 1 * time.Minute}, nil
 	}
 
 	// --------------------------------------------------------
