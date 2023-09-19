@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/util"
 	testutil "github.com/3scale/saas-operator/test/util"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
@@ -22,6 +25,8 @@ import (
 const (
 	awsCredentials = "aws-credentials"
 	sshPrivateKey  = "redis-backup-ssh-private-key"
+	bucketName     = "my-bucket"
+	backupsPath    = "backups"
 )
 
 var _ = Describe("shardedredisbackup e2e suite", func() {
@@ -166,8 +171,8 @@ var _ = Describe("shardedredisbackup e2e suite", func() {
 					Sudo: util.Pointer(true),
 				},
 				S3Options: saasv1alpha1.S3Options{
-					Bucket: "my-bucket",
-					Path:   "backups",
+					Bucket: bucketName,
+					Path:   backupsPath,
 					Region: "us-east-1",
 					CredentialsSecretRef: corev1.LocalObjectReference{
 						Name: "aws-credentials",
@@ -218,13 +223,14 @@ var _ = Describe("shardedredisbackup e2e suite", func() {
 		Expect(err).ToNot(HaveOccurred())
 	})
 
-	It("runs a backup that completes successfully", func() {
+	FIt("runs a backup that completes successfully", func() {
+		var backupResult saasv1alpha1.BackupStatus
 
 		Eventually(func() error {
 
 			err := k8sClient.Get(context.Background(), types.NamespacedName{Name: backup.GetName(), Namespace: ns}, &backup)
 			Expect(err).ToNot(HaveOccurred())
-			backupResult := backup.Status.Backups[len(backup.Status.Backups)-1]
+			backupResult = backup.Status.Backups[len(backup.Status.Backups)-1]
 
 			switch backupResult.State {
 			case saasv1alpha1.BackupPendingState:
@@ -234,7 +240,7 @@ var _ = Describe("shardedredisbackup e2e suite", func() {
 				GinkgoWriter.Printf("[debug %s] backup is running\n", time.Now())
 				return fmt.Errorf("")
 			case saasv1alpha1.BackupCompletedState:
-				GinkgoWriter.Println("[debug %s] backup completed successfully\n", time.Now())
+				GinkgoWriter.Printf("[debug %s] backup completed successfully\n", time.Now())
 				return nil
 			default:
 				GinkgoWriter.Printf("[debug %s] backup failed: '%s'\n", time.Now(), backupResult.Message)
@@ -243,5 +249,24 @@ var _ = Describe("shardedredisbackup e2e suite", func() {
 
 		}, timeout, poll).ShouldNot(HaveOccurred())
 
+		By("checking that the backup is actually where the status says it is and has the reported size")
+		ctx := context.Background()
+		list := &corev1.PodList{}
+		err := k8sClient.List(context.Background(), list,
+			client.InNamespace("default"),
+			client.MatchingLabels{"app": "minio"})
+		Expect(err).ToNot(HaveOccurred())
+		Expect(len(list.Items)).To(Equal(1))
+
+		s3client, stopCh, err := testutil.MinioClient(ctx, cfg, client.ObjectKeyFromObject(&list.Items[0]), "admin", "admin123")
+		Expect(err).ToNot(HaveOccurred())
+		defer close(stopCh)
+
+		result, err := s3client.HeadObject(ctx, &s3.HeadObjectInput{
+			Bucket: aws.String(bucketName),
+			Key:    aws.String(strings.TrimPrefix(*backupResult.BackupFile, fmt.Sprintf("s3://%s/", bucketName))),
+		})
+		Expect(err).ToNot(HaveOccurred())
+		Expect(result.ContentLength).To(Equal(*backupResult.BackupSize))
 	})
 })
