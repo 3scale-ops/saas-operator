@@ -18,6 +18,7 @@ package v1alpha1
 
 import (
 	"context"
+	"sort"
 	"time"
 
 	"github.com/3scale/saas-operator/pkg/redis/client"
@@ -207,6 +208,9 @@ func (ss *SentinelStatus) ShardedCluster(ctx context.Context, pool *redis.Server
 			}
 			servers = append(servers, sharded.NewRedisServerFromParams(srv, rsd.Role, rsd.Config))
 		}
+		sort.Slice(servers, func(i, j int) bool {
+			return servers[i].ID() < servers[j].ID()
+		})
 		shards = append(shards, sharded.NewShardFromServers(s.Name, pool, servers...))
 	}
 

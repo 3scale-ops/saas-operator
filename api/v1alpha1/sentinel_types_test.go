@@ -47,7 +47,7 @@ func TestSentinelStatus_ShardedCluster(t *testing.T) {
 		{
 			name: "Generates a sharded.Cluster resource from the sentinel status",
 			fields: fields{
-				Sentinels: []string{"redis://127.0.0.1:26379"},
+				Sentinels: []string{"127.0.0.1:26379"},
 				MonitoredShards: []MonitoredShard{
 					{Name: "shard01",
 						Servers: map[string]RedisServerDetails{
