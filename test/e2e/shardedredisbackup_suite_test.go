@@ -223,7 +223,7 @@ var _ = Describe("shardedredisbackup e2e suite", func() {
 		Expect(err).ToNot(HaveOccurred())
 	})
 
-	FIt("runs a backup that completes successfully", func() {
+	It("runs a backup that completes successfully", func() {
 		var backupResult saasv1alpha1.BackupStatus
 
 		Eventually(func() error {

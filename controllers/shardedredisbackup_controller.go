@@ -125,6 +125,7 @@ func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.R
 			if roSlaves = shard.GetSlavesRO(); len(roSlaves) == 0 {
 				logger.Error(fmt.Errorf("no available RO slaves in shard"), fmt.Sprintf("skipped shard %s, will be retried", shard.Name))
 				requeue = true
+				continue
 			}
 
 			// add the backup runner thread
