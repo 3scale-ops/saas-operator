@@ -37,7 +37,7 @@ func (br *Runner) BackgroundSave(ctx context.Context) error {
 			}
 			if lastsave > prevsave {
 				// BGSAVE completed
-				logger.Info("BGSave finished")
+				logger.V(1).Info("BGSave finished")
 				return nil
 			}
 		case <-ctx.Done():

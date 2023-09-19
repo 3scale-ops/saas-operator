@@ -129,7 +129,7 @@ func (br *Runner) Start(parentCtx context.Context, l logr.Logger) error {
 				return
 
 			case <-done:
-				logger.V(1).Info("backup completed")
+				logger.Info("backup completed successfully")
 				br.status.Finished = true
 				br.status.BackupFile = fmt.Sprintf("s3://%s/%s/%s", br.S3Bucket, br.S3Path, br.BackupFileCompressed())
 				br.status.FinishedAt = time.Now()
