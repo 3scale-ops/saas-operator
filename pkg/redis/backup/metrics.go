@@ -17,14 +17,20 @@ var (
 			Help:      `"size of the latest backup in bytes"`,
 		},
 		[]string{"shard"})
-	backupFailures = prometheus.NewCounterVec(
+	backupFailureCount = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name:      "failures",
+			Name:      "failure_count",
 			Namespace: "saas_redis_backup",
 			Help:      `"total number of backup failures"`,
 		},
 		[]string{"shard"})
-
+	backupSuccessCount = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name:      "success_count",
+			Namespace: "saas_redis_backup",
+			Help:      `"total number of backup successes"`,
+		},
+		[]string{"shard"})
 	backupDuration = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name:      "duration",
@@ -37,20 +43,25 @@ var (
 func init() {
 	// Register backup metrics with the global prometheus registry
 	metrics.Registry.MustRegister(
-		backupSize, backupFailures, backupDuration,
+		backupSize, backupFailureCount, backupDuration, backupSuccessCount,
 	)
 }
 
 func (r *Runner) publishMetrics() {
+	// ensure counters are initialized
+	if err := backupSuccessCount.With(prometheus.Labels{"shard": r.ShardName}).Write(&dto.Metric{}); err != nil {
+		backupFailureCount.With(prometheus.Labels{"shard": r.ShardName}).Add(0)
+	}
+	if err := backupFailureCount.With(prometheus.Labels{"shard": r.ShardName}).Write(&dto.Metric{}); err != nil {
+		backupFailureCount.With(prometheus.Labels{"shard": r.ShardName}).Add(0)
+	}
+	// update metrics
 	if r.status.Error != nil {
 		backupSize.With(prometheus.Labels{"shard": r.ShardName}).Set(float64(0))
-		backupFailures.With(prometheus.Labels{"shard": r.ShardName}).Inc()
+		backupFailureCount.With(prometheus.Labels{"shard": r.ShardName}).Inc()
 	} else {
 		backupSize.With(prometheus.Labels{"shard": r.ShardName}).Set(float64(r.status.BackupSize))
 		backupDuration.With(prometheus.Labels{"shard": r.ShardName}).Set(math.Round(r.status.FinishedAt.Sub(r.Timestamp).Seconds()))
-		// ensure the failure counter is initialized
-		if err := backupFailures.With(prometheus.Labels{"shard": r.ShardName}).Write(&dto.Metric{}); err != nil {
-			backupFailures.With(prometheus.Labels{"shard": r.ShardName}).Add(0)
-		}
+		backupSuccessCount.With(prometheus.Labels{"shard": r.ShardName}).Add(1)
 	}
 }
