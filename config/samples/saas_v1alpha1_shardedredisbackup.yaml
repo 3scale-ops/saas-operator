@@ -1,12 +1,22 @@
 apiVersion: saas.3scale.net/v1alpha1
 kind: ShardedRedisBackup
 metadata:
-  labels:
-    app.kubernetes.io/name: shardedredisbackup
-    app.kubernetes.io/instance: shardedredisbackup-sample
-    app.kubernetes.io/part-of: saas-operator
-    app.kubernetes.io/managed-by: kustomize
-    app.kubernetes.io/created-by: saas-operator
-  name: shardedredisbackup-sample
+  name: backup
+  namespace: default
 spec:
-  # TODO(user): Add fields here
+  timeout: 5m
+  schedule: "*/30 * * * *"
+  sentinelRef: sentinel
+  historyLimit: 10
+  pollInterval: 10s
+  dbFile: /data/dump.rdb
+  sshOptions:
+    privateKeySecretRef:
+      name: redis-ssh-private-key
+    user: root
+  s3Options:
+    bucket: my-bucket
+    path: backups
+    region: us-east-1
+    credentialsSecretRef:
+      name: aws-credentials
