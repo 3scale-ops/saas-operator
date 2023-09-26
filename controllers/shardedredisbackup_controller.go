@@ -102,12 +102,21 @@ func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.R
 	if sshPrivateKey.Type != corev1.SecretTypeSSHAuth {
 		return ctrl.Result{}, fmt.Errorf("secret %s must be of 'kubernetes.io/ssh-auth' type", sshPrivateKey.GetName())
 	}
+	if _, ok := sshPrivateKey.Data[corev1.SSHAuthPrivateKey]; !ok {
+		return ctrl.Result{}, fmt.Errorf("secret %s is missing %s key", sshPrivateKey.GetName(), corev1.SSHAuthPrivateKey)
+	}
 
 	// Get AWS credentials
 	awsCredentials := &corev1.Secret{ObjectMeta: metav1.ObjectMeta{
 		Name: instance.Spec.S3Options.CredentialsSecretRef.Name, Namespace: req.Namespace}}
 	if err := r.Client.Get(ctx, client.ObjectKeyFromObject(awsCredentials), awsCredentials); err != nil {
 		return ctrl.Result{}, err
+	}
+	if _, ok := awsCredentials.Data[util.AWSAccessKeyEnvvar]; !ok {
+		return ctrl.Result{}, fmt.Errorf("secret %s is missing %s key", awsCredentials.GetName(), util.AWSAccessKeyEnvvar)
+	}
+	if _, ok := awsCredentials.Data[util.AWSSecretKeyEnvvar]; !ok {
+		return ctrl.Result{}, fmt.Errorf("secret %s is missing %s key", awsCredentials.GetName(), util.AWSSecretKeyEnvvar)
 	}
 
 	// ----------------------------------------
