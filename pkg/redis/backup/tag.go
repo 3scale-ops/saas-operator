@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/3scale/saas-operator/pkg/util"
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -16,38 +15,12 @@ import (
 func (br *Runner) TagBackup(ctx context.Context) error {
 	logger := log.FromContext(ctx, "function", "(br *Runner) TagBackup()")
 
-	var cfg aws.Config
-	var err error
-
-	if br.AWSS3Endpoint != nil {
-		resolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...any) (aws.Endpoint, error) {
-			return aws.Endpoint{
-				PartitionID:       "aws",
-				URL:               *br.AWSS3Endpoint,
-				SigningRegion:     br.AWSRegion,
-				HostnameImmutable: true,
-			}, nil
-		})
-
-		cfg, err = config.LoadDefaultConfig(ctx,
-			config.WithRegion(br.AWSRegion),
-			config.WithEndpointResolverWithOptions(resolver),
-			config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(br.AWSAccessKeyID, br.AWSSecretAccessKey, "")),
-		)
-		if err != nil {
-			return err
-		}
-	} else {
-		cfg, err = config.LoadDefaultConfig(ctx,
-			config.WithRegion(br.AWSRegion),
-			config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(br.AWSAccessKeyID, br.AWSSecretAccessKey, "")),
-		)
-		if err != nil {
-			return err
-		}
+	awsconfig, err := util.AWSConfig(ctx, br.AWSAccessKeyID, br.AWSSecretAccessKey, br.AWSRegion, br.AWSS3Endpoint)
+	if err != nil {
+		return err
 	}
 
-	client := s3.NewFromConfig(cfg)
+	client := s3.NewFromConfig(*awsconfig)
 
 	// get backups of current day
 	dayResult, err := client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{

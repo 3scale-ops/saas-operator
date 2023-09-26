@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/3scale/saas-operator/pkg/util"
 	"golang.org/x/crypto/ssh"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
@@ -16,10 +17,6 @@ import (
 const (
 	backupFilePrefix    string = "redis-backup"
 	backupFileExtension string = "rdb"
-	sshKeyFile          string = "ssh-private-key"
-	awsAccessKeyEnvvar  string = "AWS_ACCESS_KEY_ID"
-	awsSecretKeyEnvvar  string = "AWS_SECRET_ACCESS_KEY"
-	awsRegionEnvvar     string = "AWS_REGION"
 )
 
 func (br *Runner) BackupFileBaseName() string {
@@ -65,10 +62,10 @@ func (br *Runner) UploadBackup(ctx context.Context) error {
 		fmt.Sprintf("gzip %s/%s", path.Dir(br.RedisDBFile), br.BackupFile()),
 		// TODO: use awscli instead
 		// AWS_ACCESS_KEY_ID=*** AWS_SECRET_ACCESS_KEY=*** s3cmd put /data/redis-backup-<shard>-<server>-<timestamp>.rdb s3://<bucket>/<path>/redis-backup-<shard>-<server>-<timestamp>.rdb
-		fmt.Sprintf("%s=%s %s=%s %s=%s %s s3 cp %s/%s s3://%s/%s/%s",
-			awsRegionEnvvar, br.AWSRegion,
-			awsAccessKeyEnvvar, br.AWSAccessKeyID,
-			awsSecretKeyEnvvar, br.AWSSecretAccessKey,
+		fmt.Sprintf("%s=%s %s=%s %s=%s %s s3 cp --only-show-errors %s/%s s3://%s/%s/%s",
+			util.AWSRegionEnvvar, br.AWSRegion,
+			util.AWSAccessKeyEnvvar, br.AWSAccessKeyID,
+			util.AWSSecretKeyEnvvar, br.AWSSecretAccessKey,
 			awsBaseCommand,
 			path.Dir(br.RedisDBFile), br.BackupFileCompressed(),
 			br.S3Bucket, br.S3Path, br.BackupFileCompressed(),
