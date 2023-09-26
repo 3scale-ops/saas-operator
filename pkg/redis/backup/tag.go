@@ -3,11 +3,11 @@ package backup
 import (
 	"context"
 	"fmt"
-	"os"
 	"sort"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -15,11 +15,6 @@ import (
 
 func (br *Runner) TagBackup(ctx context.Context) error {
 	logger := log.FromContext(ctx, "function", "(br *Runner) TagBackup()")
-
-	// set AWS credentials
-	os.Setenv(awsAccessKeyEnvvar, br.AWSAccessKeyID)
-	os.Setenv(awsSecretKeyEnvvar, br.AWSSecretAccessKey)
-	os.Setenv(awsRegionEnvvar, br.AWSRegion)
 
 	var cfg aws.Config
 	var err error
@@ -35,13 +30,18 @@ func (br *Runner) TagBackup(ctx context.Context) error {
 		})
 
 		cfg, err = config.LoadDefaultConfig(ctx,
+			config.WithRegion(br.AWSRegion),
 			config.WithEndpointResolverWithOptions(resolver),
+			config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(br.AWSAccessKeyID, br.AWSSecretAccessKey, "")),
 		)
 		if err != nil {
 			return err
 		}
 	} else {
-		cfg, err = config.LoadDefaultConfig(ctx)
+		cfg, err = config.LoadDefaultConfig(ctx,
+			config.WithRegion(br.AWSRegion),
+			config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(br.AWSAccessKeyID, br.AWSSecretAccessKey, "")),
+		)
 		if err != nil {
 			return err
 		}
