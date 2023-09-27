@@ -69,7 +69,7 @@ func (br *Runner) UploadBackup(ctx context.Context) error {
 			path.Dir(br.RedisDBFile), br.BackupFileCompressed(),
 			br.S3Bucket, br.S3Path, br.BackupFileCompressed(),
 		),
-		fmt.Sprintf("rm -f %s*", br.BackupFileBaseName()),
+		fmt.Sprintf("rm -f %s/%s*", path.Dir(br.RedisDBFile), br.BackupFileBaseName()),
 	}
 
 	for _, command := range commands {
@@ -109,6 +109,8 @@ func remoteRun(ctx context.Context, user, addr, port, privateKey, cmd string) (s
 	if err != nil {
 		return "", err
 	}
+	defer client.Close()
+
 	// Create a session. It is one session per command.
 	session, err := client.NewSession()
 	if err != nil {
