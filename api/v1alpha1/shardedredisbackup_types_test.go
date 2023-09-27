@@ -84,10 +84,11 @@ func TestShardedRedisBackupStatus_FindBackup(t *testing.T) {
 		state BackupState
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   *BackupStatus
+		name    string
+		fields  fields
+		args    args
+		want    *BackupStatus
+		wantPos int
 	}{
 		{
 			name: "Returns latest pending backup",
@@ -121,6 +122,7 @@ func TestShardedRedisBackupStatus_FindBackup(t *testing.T) {
 				ScheduledFor: metav1.Date(2023, time.August, 1, 0, 1, 0, 0, time.UTC),
 				State:        BackupPendingState,
 			},
+			wantPos: 0,
 		},
 		{
 			name: "Returns latest running backup",
@@ -154,6 +156,7 @@ func TestShardedRedisBackupStatus_FindBackup(t *testing.T) {
 				ScheduledFor: metav1.Date(2023, time.August, 1, 0, 0, 0, 0, time.UTC),
 				State:        BackupRunningState,
 			},
+			wantPos: 2,
 		},
 		{
 			name: "Returns a nil",
@@ -166,11 +169,85 @@ func TestShardedRedisBackupStatus_FindBackup(t *testing.T) {
 					},
 				},
 			},
-			args: args{shard: "shard02", state: BackupPendingState},
-			want: &BackupStatus{
-				Shard:        "shard02",
-				ScheduledFor: metav1.Date(2023, time.August, 1, 0, 1, 0, 0, time.UTC),
-				State:        BackupPendingState,
+			args:    args{shard: "shard02", state: BackupRunningState},
+			want:    nil,
+			wantPos: -1,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			status := &ShardedRedisBackupStatus{
+				Backups: tt.fields.Backups,
+			}
+			gotBackup, gotPos := status.FindLastBackup(tt.args.shard, tt.args.state)
+			if !reflect.DeepEqual(gotBackup, tt.want) {
+				t.Errorf("ShardedRedisBackupStatus.FindBackup() = %v, want %v", gotBackup, tt.want)
+			}
+			if gotPos != tt.wantPos {
+				t.Errorf("ShardedRedisBackupStatus.FindBackup() = %v, want %v", gotPos, tt.wantPos)
+			}
+		})
+	}
+}
+
+func TestShardedRedisBackupStatus_DeleteBackup(t *testing.T) {
+	type fields struct {
+		Backups BackupStatusList
+	}
+	type args struct {
+		pos int
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   BackupStatusList
+	}{
+		{
+			name: "Deletes the backup at the given position from the list",
+			fields: fields{
+				Backups: BackupStatusList{
+					{
+						Shard:        "shard02",
+						ScheduledFor: metav1.Date(2023, time.August, 1, 0, 1, 0, 0, time.UTC),
+						State:        BackupPendingState,
+					},
+					{
+						Shard:        "shard01",
+						ScheduledFor: metav1.Date(2023, time.August, 1, 0, 1, 0, 0, time.UTC),
+						State:        BackupPendingState,
+					},
+					{
+						Shard:        "shard02",
+						ScheduledFor: metav1.Date(2023, time.August, 1, 0, 0, 0, 0, time.UTC),
+						State:        BackupRunningState,
+					},
+					{
+						Shard:        "shard01",
+						ScheduledFor: metav1.Date(2023, time.August, 1, 0, 0, 0, 0, time.UTC),
+						State:        BackupRunningState,
+					},
+				},
+			},
+			args: args{
+				pos: 2,
+			},
+			want: BackupStatusList{
+				{
+					Shard:        "shard02",
+					ScheduledFor: metav1.Date(2023, time.August, 1, 0, 1, 0, 0, time.UTC),
+					State:        BackupPendingState,
+				},
+				{
+					Shard:        "shard01",
+					ScheduledFor: metav1.Date(2023, time.August, 1, 0, 1, 0, 0, time.UTC),
+					State:        BackupPendingState,
+				},
+				{
+					Shard:        "shard01",
+					ScheduledFor: metav1.Date(2023, time.August, 1, 0, 0, 0, 0, time.UTC),
+					State:        BackupRunningState,
+				},
 			},
 		},
 	}
@@ -179,8 +256,9 @@ func TestShardedRedisBackupStatus_FindBackup(t *testing.T) {
 			status := &ShardedRedisBackupStatus{
 				Backups: tt.fields.Backups,
 			}
-			if got := status.FindLastBackup(tt.args.shard, tt.args.state); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ShardedRedisBackupStatus.FindBackup() = %v, want %v", got, tt.want)
+			status.DeleteBackup(tt.args.pos)
+			if !reflect.DeepEqual(status.Backups, tt.want) {
+				t.Errorf("ShardedRedisBackupStatus.FindBackup() = %v, want %v", status.Backups, tt.want)
 			}
 		})
 	}

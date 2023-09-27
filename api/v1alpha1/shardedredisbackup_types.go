@@ -149,14 +149,18 @@ func (status *ShardedRedisBackupStatus) AddBackup(b BackupStatus) {
 	sort.Sort(sort.Reverse(status.Backups))
 }
 
-func (status *ShardedRedisBackupStatus) FindLastBackup(shardName string, state BackupState) *BackupStatus {
+func (status *ShardedRedisBackupStatus) DeleteBackup(pos int) {
+	status.Backups = append(status.Backups[:pos], status.Backups[pos+1:]...)
+}
+
+func (status *ShardedRedisBackupStatus) FindLastBackup(shardName string, state BackupState) (*BackupStatus, int) {
 	// backups expected to be ordered from newer to oldest
 	for i, b := range status.Backups {
 		if b.Shard == shardName && b.State == state {
-			return &status.Backups[i]
+			return &status.Backups[i], i
 		}
 	}
-	return nil
+	return nil, -1
 }
 
 func (status *ShardedRedisBackupStatus) GetRunningBackups() []*BackupStatus {

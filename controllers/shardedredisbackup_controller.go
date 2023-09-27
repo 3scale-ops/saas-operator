@@ -127,7 +127,7 @@ func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.R
 	requeue := false
 	runners := make([]threads.RunnableThread, 0, len(cluster.Shards))
 	for _, shard := range cluster.Shards {
-		scheduledBackup := instance.Status.FindLastBackup(shard.Name, saasv1alpha1.BackupPendingState)
+		scheduledBackup, _ := instance.Status.FindLastBackup(shard.Name, saasv1alpha1.BackupPendingState)
 		if scheduledBackup != nil && scheduledBackup.ScheduledFor.Time.Before(now) {
 			// hanlde error when no available RO slaves
 			var roSlaves []*sharded.RedisServer
@@ -256,14 +256,17 @@ func (r *ShardedRedisBackupReconciler) reconcileBackupList(ctx context.Context, 
 
 	for _, shard := range shards {
 		// don't schedule if a backup is already running
-		if runningbackup := instance.Status.FindLastBackup(shard, saasv1alpha1.BackupRunningState); runningbackup != nil {
+		if runningbackup, _ := instance.Status.FindLastBackup(shard, saasv1alpha1.BackupRunningState); runningbackup != nil {
 			continue
 		}
-		if lastbackup := instance.Status.FindLastBackup(shard, saasv1alpha1.BackupPendingState); lastbackup != nil {
+		if lastbackup, pos := instance.Status.FindLastBackup(shard, saasv1alpha1.BackupPendingState); lastbackup != nil {
 			// found a pending backup for this shard
 			if nextRun == lastbackup.ScheduledFor.Time {
 				// already scheduled, do nothing
 				continue
+			} else {
+				// already scheduled for a different time, replace with new schedule
+				instance.Status.DeleteBackup(pos)
 			}
 		}
 
