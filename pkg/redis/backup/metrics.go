@@ -62,6 +62,6 @@ func (r *Runner) publishMetrics() {
 	} else {
 		backupSize.With(prometheus.Labels{"shard": r.ShardName}).Set(float64(r.status.BackupSize))
 		backupDuration.With(prometheus.Labels{"shard": r.ShardName}).Set(math.Round(r.status.FinishedAt.Sub(r.Timestamp).Seconds()))
-		backupSuccessCount.With(prometheus.Labels{"shard": r.ShardName}).Add(1)
+		backupSuccessCount.With(prometheus.Labels{"shard": r.ShardName}).Inc()
 	}
 }

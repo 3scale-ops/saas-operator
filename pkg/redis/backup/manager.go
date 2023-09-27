@@ -119,6 +119,7 @@ func (br *Runner) Start(parentCtx context.Context, l logr.Logger) error {
 				br.status.Finished = true
 				br.status.Error = err
 				br.eventsCh <- event.GenericEvent{Object: br.Instance}
+				br.publishMetrics()
 				return
 
 			case err := <-errCh:
@@ -126,6 +127,7 @@ func (br *Runner) Start(parentCtx context.Context, l logr.Logger) error {
 				br.status.Finished = true
 				br.status.Error = err
 				br.eventsCh <- event.GenericEvent{Object: br.Instance}
+				br.publishMetrics()
 				return
 
 			case <-done:
