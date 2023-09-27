@@ -170,18 +170,6 @@ func TestShardedRedisBackupReconciler_reconcileBackupList(t *testing.T) {
 						Message:      "backup scheduled",
 						State:        saasv1alpha1.BackupPendingState,
 					},
-					{
-						Shard:        "shard02",
-						ScheduledFor: metav1.NewTime(util.MustParseRFC3339("2023-09-01T00:01:00Z")),
-						Message:      "backup scheduled",
-						State:        saasv1alpha1.BackupPendingState,
-					},
-					{
-						Shard:        "shard01",
-						ScheduledFor: metav1.NewTime(util.MustParseRFC3339("2023-09-01T00:01:00Z")),
-						Message:      "backup scheduled",
-						State:        saasv1alpha1.BackupPendingState,
-					},
 				},
 			},
 			wantErr: false,
