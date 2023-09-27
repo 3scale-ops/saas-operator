@@ -67,10 +67,6 @@ var _ = Describe("shardedredisbackup e2e suite", func() {
 					},
 				},
 			},
-			// {
-			// 	ObjectMeta: metav1.ObjectMeta{Name: "rs1", Namespace: ns},
-			// 	Spec:       saasv1alpha1.RedisShardSpec{MasterIndex: pointer.Int32(2), SlaveCount: pointer.Int32(2)},
-			// },
 		}
 
 		for i, shard := range shards {
@@ -106,11 +102,6 @@ var _ = Describe("shardedredisbackup e2e suite", func() {
 							"redis://" + shards[0].Status.ShardNodes.GetHostPortByPodIndex(1),
 							"redis://" + shards[0].Status.ShardNodes.GetHostPortByPodIndex(2),
 						},
-						// shards[1].GetName(): {
-						// 	"redis://" + shards[1].Status.ShardNodes.GetHostPortByPodIndex(0),
-						// 	"redis://" + shards[1].Status.ShardNodes.GetHostPortByPodIndex(1),
-						// 	"redis://" + shards[1].Status.ShardNodes.GetHostPortByPodIndex(2),
-						// },
 					},
 				},
 			},
