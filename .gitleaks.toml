@@ -1,0 +1,6 @@
+[allowlist]
+description = "global allow lists"
+paths = [
+    '''test/assets/redis-with-ssh/test-ssh-key''',
+    '''config/test/redis-backups/kustomization.yaml''',
+]

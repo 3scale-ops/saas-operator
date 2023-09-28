@@ -1,0 +1,181 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.11.0
+  creationTimestamp: null
+  name: shardedredisbackups.saas.3scale.net
+spec:
+  group: saas.3scale.net
+  names:
+    kind: ShardedRedisBackup
+    listKind: ShardedRedisBackupList
+    plural: shardedredisbackups
+    singular: shardedredisbackup
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: ShardedRedisBackup is the Schema for the shardedredisbackups
+          API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: ShardedRedisBackupSpec defines the desired state of ShardedRedisBackup
+            properties:
+              dbFile:
+                description: Name of the dbfile in the redis instances
+                type: string
+              historyLimit:
+                description: Max number of backup history to keep
+                format: int32
+                type: integer
+              pause:
+                description: If true, backup execution is stopped
+                type: boolean
+              pollInterval:
+                description: How frequently redis is polled for the BGSave status
+                type: string
+              s3Options:
+                description: S3 storage options
+                properties:
+                  bucket:
+                    description: S3 bucket name
+                    type: string
+                  credentialsSecretRef:
+                    description: 'Reference to a Secret tha contains credentials to
+                      access S3 API. The credentials must have the following permissions:
+                      s3:GetObject, s3:PutObject, and s3:ListBucket, s3:ListObjects,
+                      s3:PutObjectTagging.'
+                    properties:
+                      name:
+                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        type: string
+                    type: object
+                    x-kubernetes-map-type: atomic
+                  path:
+                    description: S3 path where backups should be uploaded
+                    type: string
+                  region:
+                    description: AWS region
+                    type: string
+                  serviceEndpoint:
+                    description: Optionally use a custom s3 service endpoint. Useful
+                      for testing with Minio.
+                    type: string
+                required:
+                - bucket
+                - credentialsSecretRef
+                - path
+                - region
+                type: object
+              schedule:
+                description: Cron-like schedule specification
+                type: string
+              sentinelRef:
+                description: Reference to a sentinel instance
+                type: string
+              sshOptions:
+                description: SSH connection options
+                properties:
+                  port:
+                    description: SSH port (default is 22)
+                    format: int32
+                    type: integer
+                  privateKeySecretRef:
+                    description: Reference to a Secret that contains the SSH private
+                      key
+                    properties:
+                      name:
+                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        type: string
+                    type: object
+                    x-kubernetes-map-type: atomic
+                  sudo:
+                    description: Use sudo to execute commands agains the remote host
+                    type: boolean
+                  user:
+                    description: SSH user
+                    type: string
+                required:
+                - privateKeySecretRef
+                - user
+                type: object
+              timeout:
+                description: Max allowed time for a backup to complete
+                type: string
+            required:
+            - dbFile
+            - s3Options
+            - schedule
+            - sentinelRef
+            - sshOptions
+            type: object
+          status:
+            description: ShardedRedisBackupStatus defines the observed state of ShardedRedisBackup
+            properties:
+              backups:
+                items:
+                  properties:
+                    backupFile:
+                      description: Final storage location of the backup
+                      type: string
+                    backupSize:
+                      description: Stored size of the backup in bytes
+                      format: int64
+                      type: integer
+                    finishedAt:
+                      description: when the backup was completed
+                      format: date-time
+                      type: string
+                    message:
+                      description: Descriptive message of the backup status
+                      type: string
+                    scheduledFor:
+                      description: Scheduled time for the backup to start
+                      format: date-time
+                      type: string
+                    serverAlias:
+                      description: Redis server alias
+                      type: string
+                    serverID:
+                      description: Server host:port
+                      type: string
+                    shard:
+                      description: Name of the shard
+                      type: string
+                    startedAt:
+                      description: Actual time the backup starts
+                      format: date-time
+                      type: string
+                    state:
+                      description: Backup status
+                      type: string
+                  required:
+                  - message
+                  - scheduledFor
+                  - shard
+                  - state
+                  type: object
+                type: array
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

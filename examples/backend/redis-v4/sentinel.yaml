@@ -9,10 +9,10 @@ spec:
       # DNS should not be used in production. DNS is
       # just convenient for testing purposes
       shard01:
-        shard01-0: redis://redis-shard-shard01-0.redis-shard-shard01:6379
-        shard01-1: redis://redis-shard-shard01-1.redis-shard-shard01:6379
-        shard01-2: redis://redis-shard-shard01-2.redis-shard-shard01:6379
+        redis-shard-shard01-0: redis://redis-shard-shard01-0.redis-shard-shard01:6379
+        redis-shard-shard01-1: redis://redis-shard-shard01-1.redis-shard-shard01:6379
+        redis-shard-shard01-2: redis://redis-shard-shard01-2.redis-shard-shard01:6379
       shard02:
-        shard02-0: redis://redis-shard-shard02-0.redis-shard-shard02:6379
-        shard02-1: redis://redis-shard-shard02-1.redis-shard-shard02:6379
-        shard02-2: redis://redis-shard-shard02-2.redis-shard-shard02:6379
+        redis-shard-shard02-0: redis://redis-shard-shard02-0.redis-shard-shard02:6379
+        redis-shard-shard02-1: redis://redis-shard-shard02-1.redis-shard-shard02:6379
+        redis-shard-shard02-2: redis://redis-shard-shard02-2.redis-shard-shard02:6379

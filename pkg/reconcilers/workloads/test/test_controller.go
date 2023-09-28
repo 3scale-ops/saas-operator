@@ -70,9 +70,9 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 
 	instance := &v1alpha1.Test{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	err := r.GetInstance(ctx, key, instance, nil, nil)
-	if err != nil {
-		return ctrl.Result{}, err
+	result, err := r.GetInstance(ctx, key, instance, nil, nil)
+	if result != nil || err != nil {
+		return *result, err
 	}
 
 	main := &TestWorkloadGenerator{

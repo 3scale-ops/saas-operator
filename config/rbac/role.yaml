@@ -354,6 +354,32 @@ rules:
 - apiGroups:
   - saas.3scale.net
   resources:
+  - shardedredisbackups
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - shardedredisbackups/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - saas.3scale.net
+  resources:
+  - shardedredisbackups/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - saas.3scale.net
+  resources:
   - systems
   verbs:
   - create

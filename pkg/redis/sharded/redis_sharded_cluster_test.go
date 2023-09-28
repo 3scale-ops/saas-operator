@@ -115,7 +115,7 @@ func TestNewShardedCluster(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewShardedCluster(tt.args.ctx, tt.args.serverList, tt.args.pool)
+			got, err := NewShardedClusterFromTopology(tt.args.ctx, tt.args.serverList, tt.args.pool)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewShardedCluster() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -163,7 +163,7 @@ func TestShardedCluster_GetShardNames(t *testing.T) {
 	}
 }
 
-func TestShardedCluster_GetShardByName(t *testing.T) {
+func TestShardedCluster_LookupShardByName(t *testing.T) {
 	type args struct {
 		name string
 	}
@@ -224,8 +224,8 @@ func TestShardedCluster_GetShardByName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if diff := deep.Equal(tt.sc.GetShardByName(tt.args.name), tt.want); len(diff) > 0 {
-				t.Errorf("ShardedCluster.GetShardByName() got diff: %v", diff)
+			if diff := deep.Equal(tt.sc.LookupShardByName(tt.args.name), tt.want); len(diff) > 0 {
+				t.Errorf("ShardedCluster.LookupShardByName() got diff: %v", diff)
 			}
 		})
 	}

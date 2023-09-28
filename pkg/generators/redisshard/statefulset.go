@@ -43,7 +43,7 @@ func (gen *Generator) statefulSet() func() *appsv1.StatefulSet {
 						RestartPolicy: corev1.RestartPolicyAlways,
 						Containers: []corev1.Container{
 							{
-								Command: []string{"redis-server", "/redis/redis.conf"},
+								Command: strings.Split(gen.Command, " "),
 								Image:   fmt.Sprintf("%s:%s", *gen.Image.Name, *gen.Image.Tag),
 								Name:    "redis-server",
 								Ports: pod.ContainerPorts(
@@ -69,12 +69,7 @@ func (gen *Generator) statefulSet() func() *appsv1.StatefulSet {
 								},
 							},
 						},
-						SecurityContext: &corev1.PodSecurityContext{
-							FSGroup:      pointer.Int64(1000),
-							RunAsGroup:   pointer.Int64(1000),
-							RunAsNonRoot: pointer.Bool(true),
-							RunAsUser:    pointer.Int64(1000),
-						},
+						SecurityContext:               &corev1.PodSecurityContext{},
 						TerminationGracePeriodSeconds: pointer.Int64(0),
 						Volumes: []corev1.Volume{
 							{

@@ -34,7 +34,6 @@ import (
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
-	"k8s.io/apimachinery/pkg/api/errors"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/pointer"
@@ -70,15 +69,11 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	instance := &saasv1alpha1.TwemproxyConfig{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	err := r.GetInstance(ctx, key, instance,
+	result, err := r.GetInstance(ctx, key, instance,
 		pointer.String(saasv1alpha1.Finalizer),
 		[]func(){r.SentinelEvents.CleanupThreads(instance)})
-	if err != nil {
-		if apierrors.IsNotFound(err) {
-			// Return and don't requeue
-			return ctrl.Result{}, nil
-		}
-		return ctrl.Result{}, err
+	if result != nil || err != nil {
+		return *result, err
 	}
 
 	// Apply defaults for reconcile but do not store them in the API
@@ -145,7 +140,7 @@ func (r *TwemproxyConfigReconciler) reconcileConfigMap(ctx context.Context, owne
 	current := &corev1.ConfigMap{}
 	err := r.Client.Get(ctx, util.ObjectKey(desired), current)
 	if err != nil {
-		if errors.IsNotFound(err) {
+		if apierrors.IsNotFound(err) {
 			// Create
 			if err := controllerutil.SetControllerReference(owner, desired, r.Scheme); err != nil {
 				return "", err

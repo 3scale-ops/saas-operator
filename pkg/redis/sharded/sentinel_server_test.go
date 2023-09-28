@@ -271,6 +271,7 @@ func TestSentinelServer_Monitor(t *testing.T) {
 	type args struct {
 		ctx    context.Context
 		shards *Cluster
+		quorum int
 	}
 	tests := []struct {
 		name    string
@@ -319,6 +320,7 @@ func TestSentinelServer_Monitor(t *testing.T) {
 			args: args{
 				ctx:    context.TODO(),
 				shards: testShardedCluster,
+				quorum: 2,
 			},
 			want:    []string{},
 			wantErr: false,
@@ -367,6 +369,7 @@ func TestSentinelServer_Monitor(t *testing.T) {
 			args: args{
 				ctx:    context.TODO(),
 				shards: testShardedCluster,
+				quorum: 2,
 			},
 			want:    []string{"shard01"},
 			wantErr: false,
@@ -423,6 +426,7 @@ func TestSentinelServer_Monitor(t *testing.T) {
 			args: args{
 				ctx:    context.TODO(),
 				shards: testShardedCluster,
+				quorum: 2,
 			},
 			want:    []string{"shard00", "shard01", "shard02"},
 			wantErr: false,
@@ -468,6 +472,7 @@ func TestSentinelServer_Monitor(t *testing.T) {
 			args: args{
 				ctx:    context.TODO(),
 				shards: testShardedCluster,
+				quorum: 2,
 			},
 			want:    []string{"shard00"},
 			wantErr: true,
@@ -495,6 +500,7 @@ func TestSentinelServer_Monitor(t *testing.T) {
 			args: args{
 				ctx:    context.TODO(),
 				shards: testShardedCluster,
+				quorum: 2,
 			},
 			want:    []string{},
 			wantErr: true,
@@ -516,6 +522,7 @@ func TestSentinelServer_Monitor(t *testing.T) {
 			args: args{
 				ctx:    context.TODO(),
 				shards: testShardedCluster,
+				quorum: 2,
 			},
 			want:    []string{},
 			wantErr: true,
@@ -542,6 +549,7 @@ func TestSentinelServer_Monitor(t *testing.T) {
 			args: args{
 				ctx:    context.TODO(),
 				shards: testShardedCluster,
+				quorum: 2,
 			},
 			want:    []string{"shard00"},
 			wantErr: true,
@@ -581,6 +589,7 @@ func TestSentinelServer_Monitor(t *testing.T) {
 						},
 					},
 				},
+				quorum: 2,
 			},
 			want:    []string{},
 			wantErr: true,
@@ -588,7 +597,7 @@ func TestSentinelServer_Monitor(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.ss.Monitor(tt.args.ctx, tt.args.shards)
+			got, err := tt.ss.Monitor(tt.args.ctx, tt.args.shards, tt.args.quorum)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SentinelServer.Monitor() error = %v, wantErr %v", err, tt.wantErr)
 				return

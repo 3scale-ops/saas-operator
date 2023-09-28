@@ -86,7 +86,7 @@ func NewGenerator(ctx context.Context, instance *saasv1alpha1.TwemproxyConfig, c
 		clustermap["sentinel"][alias] = u.String()
 	}
 
-	shardedCluster, err := sharded.NewShardedCluster(ctx, clustermap, pool)
+	shardedCluster, err := sharded.NewShardedClusterFromTopology(ctx, clustermap, pool)
 	if err != nil {
 		return Generator{}, err
 	}

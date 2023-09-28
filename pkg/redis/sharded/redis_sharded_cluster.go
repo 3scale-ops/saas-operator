@@ -18,9 +18,26 @@ type Cluster struct {
 	pool      *redis.ServerPool
 }
 
-// NewShardedCluster returns a new ShardedCluster given the shard structure passed as a map[string][]string
-func NewShardedCluster(ctx context.Context, serverList map[string]map[string]string, pool *redis.ServerPool) (*Cluster, error) {
-	logger := log.FromContext(ctx, "function", "NewShardedCluster")
+func NewShardedCluster(ctx context.Context, pool *redis.ServerPool, sentinels map[string]string, shards ...*Shard) (*Cluster, error) {
+	cluster := &Cluster{pool: pool}
+	cluster.Shards = make([]*Shard, 0, len(shards))
+
+	// populate sentinel servers
+	has, err := NewHighAvailableSentinel(sentinels, pool)
+	if err != nil {
+		return nil, err
+	}
+	cluster.Sentinels = has
+
+	// populate shards
+	cluster.Shards = append(cluster.Shards, shards...)
+
+	return cluster, nil
+}
+
+// NewShardedClusterFromTopology returns a new ShardedCluster given the shard structure passed as a map[string][]string
+func NewShardedClusterFromTopology(ctx context.Context, serverList map[string]map[string]string, pool *redis.ServerPool) (*Cluster, error) {
+	logger := log.FromContext(ctx, "function", "NewShardedClusterFromTopology")
 	cluster := Cluster{pool: pool}
 	cluster.Shards = make([]*Shard, 0, len(serverList))
 
@@ -36,7 +53,7 @@ func NewShardedCluster(ctx context.Context, serverList map[string]map[string]str
 			cluster.Sentinels = sentinels
 
 		default:
-			shard, err := NewShard(shardName, shardServers, pool)
+			shard, err := NewShardFromTopology(shardName, shardServers, pool)
 			if err != nil {
 				logger.Error(err, "unable to create sharded cluster")
 				return nil, err
@@ -66,10 +83,21 @@ func (cluster *Cluster) GetShardNames() []string {
 	return shards
 }
 
-func (cluster Cluster) GetShardByName(name string) *Shard {
+func (cluster Cluster) LookupShardByName(name string) *Shard {
 	for _, shard := range cluster.Shards {
 		if shard.Name == name {
 			return shard
+		}
+	}
+	return nil
+}
+
+func (cluster Cluster) LookupServerByID(hostport string) *RedisServer {
+	for _, shard := range cluster.Shards {
+		for _, srv := range shard.Servers {
+			if hostport == srv.ID() {
+				return srv
+			}
 		}
 	}
 	return nil
@@ -105,7 +133,7 @@ func (cluster *Cluster) SentinelDiscover(ctx context.Context, opts ...DiscoveryO
 	for _, master := range masters {
 
 		// Get the corresponding shard
-		shard := cluster.GetShardByName(master.Name)
+		shard := cluster.LookupShardByName(master.Name)
 
 		// Add the shard if not already present
 		if shard == nil {

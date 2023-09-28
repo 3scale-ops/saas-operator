@@ -126,6 +126,10 @@ func (smg *SentinelMetricsGatherer) IsStarted() bool {
 	return smg.started
 }
 
+func (smg *SentinelMetricsGatherer) CanBeDeleted() bool {
+	return true
+}
+
 // SetChannel is required for SentinelMetricsGatherer to implement the RunnableThread
 // interface, but it actually does nothing with the channel.
 func (fw *SentinelMetricsGatherer) SetChannel(ch chan event.GenericEvent) {}

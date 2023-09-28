@@ -39,6 +39,7 @@ var (
 type TwemproxyConfigSpec struct {
 	// SentinelURI is the redis URI of sentinel. If not set, the controller
 	// will try to autodiscover Sentinel within the namespace.
+	// TODO: remove, unused
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	SentinelURIs []string `json:"sentinelURIs,omitempty"`

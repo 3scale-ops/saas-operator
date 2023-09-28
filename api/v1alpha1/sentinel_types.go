@@ -17,9 +17,13 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
+	"sort"
 	"time"
 
 	"github.com/3scale/saas-operator/pkg/redis/client"
+	redis "github.com/3scale/saas-operator/pkg/redis/server"
+	"github.com/3scale/saas-operator/pkg/redis/sharded"
 	"github.com/3scale/saas-operator/pkg/util"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -178,6 +182,43 @@ type SentinelStatus struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=status
 	// +optional
 	MonitoredShards MonitoredShards `json:"monitoredShards,omitempty"`
+}
+
+// ShardedCluster returns a *sharded.Cluster struct from the information reported by the sentinel status instead
+// of directly contacting sentinel/redis to gather the state of the cluster. This avoids calls to sentinel/redis
+// but is less robust as it depends entirely on the Sentinel controller working properly and without delays.
+// As of now, this is used in the SharededRedisBackup controller but not in the TwemproxyConfig controller.
+func (ss *SentinelStatus) ShardedCluster(ctx context.Context, pool *redis.ServerPool) (*sharded.Cluster, error) {
+
+	// have a list of sentinels but must provide a map
+	// TODO: at some point change the SentinelStatus.Sentinels to also have a map and avoid this
+	msentinel := make(map[string]string, len(ss.Sentinels))
+	for _, s := range ss.Sentinels {
+		msentinel[s] = "redis://" + s
+	}
+
+	shards := make([]*sharded.Shard, 0, len(ss.MonitoredShards))
+	// generate slice of shards from status
+	for _, s := range ss.MonitoredShards {
+		servers := make([]*sharded.RedisServer, 0, len(s.Servers))
+		for _, rsd := range s.Servers {
+			srv, err := pool.GetServer("redis://"+rsd.Address, nil)
+			if err != nil {
+				return nil, err
+			}
+			servers = append(servers, sharded.NewRedisServerFromParams(srv, rsd.Role, rsd.Config))
+		}
+		sort.Slice(servers, func(i, j int) bool {
+			return servers[i].ID() < servers[j].ID()
+		})
+		shards = append(shards, sharded.NewShardFromServers(s.Name, pool, servers...))
+	}
+
+	cluster, err := sharded.NewShardedCluster(ctx, pool, msentinel, shards...)
+	if err != nil {
+		return nil, err
+	}
+	return cluster, nil
 }
 
 type MonitoredShards []MonitoredShard

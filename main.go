@@ -30,13 +30,6 @@ import (
 
 	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
 	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/controllers"
-	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
-	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
-	redis "github.com/3scale/saas-operator/pkg/redis/server"
-	"github.com/3scale/saas-operator/pkg/util"
-	"github.com/3scale/saas-operator/pkg/version"
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
@@ -47,6 +40,14 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
+
+	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	"github.com/3scale/saas-operator/controllers"
+	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
+	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
+	redis "github.com/3scale/saas-operator/pkg/redis/server"
+	"github.com/3scale/saas-operator/pkg/util"
+	"github.com/3scale/saas-operator/pkg/version"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -155,6 +156,16 @@ func main() {
 		Pool:           redisPool,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TwemproxyConfig")
+		os.Exit(1)
+	}
+
+	if err = (&controllers.ShardedRedisBackupReconciler{
+		Reconciler:   basereconciler.NewFromManager(mgr),
+		BackupRunner: threads.NewManager(),
+		Log:          ctrl.Log.WithName("controllers").WithName("ShardedRedisBackup"),
+		Pool:         redisPool,
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "ShardedRedisBackup")
 		os.Exit(1)
 	}
 

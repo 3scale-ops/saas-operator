@@ -164,17 +164,17 @@ var _ = Describe("sentinel e2e suite", func() {
 							shards[0].Status.ShardNodes.GetHostPortByPodIndex(0): {
 								Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(0),
 								Role:    redisclient.Master,
-								Config:  map[string]string{"save": "900 1 300 10"},
+								Config:  map[string]string{"save": ""},
 							},
 							shards[0].Status.ShardNodes.GetHostPortByPodIndex(1): {
 								Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(1),
 								Role:    redisclient.Slave,
-								Config:  map[string]string{"save": "900 1 300 10", "slave-read-only": "yes"},
+								Config:  map[string]string{"save": "", "slave-read-only": "yes"},
 							},
 							shards[0].Status.ShardNodes.GetHostPortByPodIndex(2): {
 								Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(2),
 								Role:    redisclient.Slave,
-								Config:  map[string]string{"save": "900 1 300 10", "slave-read-only": "yes"},
+								Config:  map[string]string{"save": "", "slave-read-only": "yes"},
 							},
 						},
 					},
@@ -184,17 +184,17 @@ var _ = Describe("sentinel e2e suite", func() {
 							shards[1].Status.ShardNodes.GetHostPortByPodIndex(0): {
 								Address: shards[1].Status.ShardNodes.GetHostPortByPodIndex(0),
 								Role:    redisclient.Slave,
-								Config:  map[string]string{"save": "900 1 300 10", "slave-read-only": "yes"},
+								Config:  map[string]string{"save": "", "slave-read-only": "yes"},
 							},
 							shards[1].Status.ShardNodes.GetHostPortByPodIndex(1): {
 								Address: shards[1].Status.ShardNodes.GetHostPortByPodIndex(1),
 								Role:    redisclient.Slave,
-								Config:  map[string]string{"save": "900 1 300 10", "slave-read-only": "yes"},
+								Config:  map[string]string{"save": "", "slave-read-only": "yes"},
 							},
 							shards[1].Status.ShardNodes.GetHostPortByPodIndex(2): {
 								Address: shards[1].Status.ShardNodes.GetHostPortByPodIndex(2),
 								Role:    redisclient.Master,
-								Config:  map[string]string{"save": "900 1 300 10"},
+								Config:  map[string]string{"save": ""},
 							},
 						},
 					},
@@ -289,17 +289,17 @@ var _ = Describe("sentinel e2e suite", func() {
 								shards[0].Status.ShardNodes.GetHostPortByPodIndex(0): {
 									Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(0),
 									Role:    redisclient.Slave,
-									Config:  map[string]string{"save": "900 1 300 10", "slave-read-only": "yes"},
+									Config:  map[string]string{"save": "", "slave-read-only": "yes"},
 								},
 								shards[0].Status.ShardNodes.GetHostPortByPodIndex(1): {
 									Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(1),
 									Role:    redisclient.Master,
-									Config:  map[string]string{"save": "900 1 300 10"},
+									Config:  map[string]string{"save": ""},
 								},
 								shards[0].Status.ShardNodes.GetHostPortByPodIndex(2): {
 									Address: shards[0].Status.ShardNodes.GetHostPortByPodIndex(2),
 									Role:    redisclient.Slave,
-									Config:  map[string]string{"save": "900 1 300 10", "slave-read-only": "yes"},
+									Config:  map[string]string{"save": "", "slave-read-only": "yes"},
 								},
 							},
 						},
@@ -309,17 +309,17 @@ var _ = Describe("sentinel e2e suite", func() {
 								shards[1].Status.ShardNodes.GetHostPortByPodIndex(0): {
 									Address: shards[1].Status.ShardNodes.GetHostPortByPodIndex(0),
 									Role:    redisclient.Slave,
-									Config:  map[string]string{"save": "900 1 300 10", "slave-read-only": "yes"},
+									Config:  map[string]string{"save": "", "slave-read-only": "yes"},
 								},
 								shards[1].Status.ShardNodes.GetHostPortByPodIndex(1): {
 									Address: shards[1].Status.ShardNodes.GetHostPortByPodIndex(1),
 									Role:    redisclient.Slave,
-									Config:  map[string]string{"save": "900 1 300 10", "slave-read-only": "yes"},
+									Config:  map[string]string{"save": "", "slave-read-only": "yes"},
 								},
 								shards[1].Status.ShardNodes.GetHostPortByPodIndex(2): {
 									Address: shards[1].Status.ShardNodes.GetHostPortByPodIndex(2),
 									Role:    redisclient.Master,
-									Config:  map[string]string{"save": "900 1 300 10"},
+									Config:  map[string]string{"save": ""},
 								},
 							},
 						},

@@ -31,7 +31,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -59,13 +58,9 @@ func (r *RedisShardReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	instance := &saasv1alpha1.RedisShard{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	err := r.GetInstance(ctx, key, instance, nil, nil)
-	if err != nil {
-		if apierrors.IsNotFound(err) {
-			// Return and don't requeue
-			return ctrl.Result{}, nil
-		}
-		return ctrl.Result{}, err
+	result, err := r.GetInstance(ctx, key, instance, nil, nil)
+	if result != nil || err != nil {
+		return *result, err
 	}
 
 	// Apply defaults for reconcile but do not store them in the API
@@ -128,7 +123,7 @@ func (r *RedisShardReconciler) setRedisRoles(ctx context.Context, key types.Name
 		}
 	}
 
-	shard, err := sharded.NewShard(key.Name, redisURLs, r.Pool)
+	shard, err := sharded.NewShardFromTopology(key.Name, redisURLs, r.Pool)
 	if err != nil {
 		return shard, &ctrl.Result{}, err
 	}

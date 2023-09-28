@@ -59,8 +59,9 @@ spec:
                   even if they are manually changed. This switch defaults to "true".
                 type: boolean
               sentinelURIs:
-                description: SentinelURI is the redis URI of sentinel. If not set,
+                description: 'SentinelURI is the redis URI of sentinel. If not set,
                   the controller will try to autodiscover Sentinel within the namespace.
+                  TODO: remove, unused'
                 items:
                   type: string
                 type: array

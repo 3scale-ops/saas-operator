@@ -3,7 +3,7 @@
 # To re-generate a bundle for another specific version without changing the standard setup, you can:
 # - use the VERSION as arg of the bundle target (e.g make bundle VERSION=0.0.2)
 # - use environment variables to overwrite this value (e.g export VERSION=0.0.2)
-VERSION ?= 0.20.0-alpha.10
+VERSION ?= 0.20.0-alpha.18
 
 # CHANNELS define the bundle channels used in the bundle.
 # Add a new line here if you would like to change its default config. (E.g CHANNELS = "candidate,fast,stable")
@@ -110,13 +110,13 @@ TEST_PKG = ./api/... ./controllers/... ./pkg/...
 KUBEBUILDER_ASSETS = "$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)"
 
 test: manifests generate fmt vet envtest assets ginkgo ## Run tests.
-	KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) $(GINKGO) -p -v -r $(TEST_PKG)  -coverprofile cover.out
+	KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) $(GINKGO) -p -r $(TEST_PKG)  -coverprofile cover.out
 
-test-sequential: manifests generate fmt vet envtest assets ginkgo ## Run tests.
+test-debug: manifests generate fmt vet envtest assets ginkgo ## Run tests.
 	KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) $(GINKGO) -v -r $(TEST_PKG)  -coverprofile cover.out
 
 test-e2e: export KUBECONFIG = $(PWD)/kubeconfig
-test-e2e: manifests ginkgo kind-create kind-deploy ## Runs e2e tests
+test-e2e: manifests ginkgo kind-create kind-deploy kind-deploy-backup-assets ## Runs e2e tests
 	$(GINKGO) -p -r ./test/e2e
 	$(MAKE) kind-delete
 
@@ -277,6 +277,15 @@ kind-undeploy: export KUBECONFIG = $(PWD)/kubeconfig
 kind-undeploy: ## Undeploy controller from the Kind K8s cluster
 	$(KUSTOMIZE) build config/test | kubectl delete -f -
 
+kind-deploy-backup-assets: export KUBECONFIG = $(PWD)/kubeconfig
+kind-deploy-backup-assets: kind-load-redis-with-ssh
+	$(KUSTOMIZE) build config/test/redis-backups --load-restrictor LoadRestrictionsNone --enable-helm | kubectl apply -f -
+
+REDIS_WITH_SSH_IMG = redis-with-ssh:4.0.11-alpine
+kind-load-redis-with-ssh:
+	docker build -t $(REDIS_WITH_SSH_IMG) test/assets/redis-with-ssh
+	$(KIND) load docker-image $(REDIS_WITH_SSH_IMG)
+
 ##@ Build Dependencies
 
 ## Location to install dependencies to
@@ -294,7 +303,7 @@ KIND ?= $(LOCALBIN)/kind
 GOBINDATA ?= $(LOCALBIN)/go-bindata
 
 ## Tool Versions
-KUSTOMIZE_VERSION ?= v3.8.7
+KUSTOMIZE_VERSION ?= v5.1.1
 CONTROLLER_TOOLS_VERSION ?= v0.11.0
 GINKGO_VERSION ?= v2.9.1
 CRD_REFDOCS_VERSION ?= v0.0.8

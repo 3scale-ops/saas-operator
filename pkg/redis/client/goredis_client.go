@@ -119,7 +119,6 @@ func (c *GoRedisClient) SentinelDo(ctx context.Context, args ...interface{}) (in
 }
 
 func (c *GoRedisClient) RedisRole(ctx context.Context) (interface{}, error) {
-
 	val, err := c.redis.Do(ctx, "role").Result()
 	return val, err
 }
@@ -151,4 +150,18 @@ func (c *GoRedisClient) RedisDebugSleep(ctx context.Context, duration time.Durat
 func (c *GoRedisClient) RedisDo(ctx context.Context, args ...interface{}) (interface{}, error) {
 	val, err := c.redis.Do(ctx, args...).Result()
 	return val, err
+}
+
+func (c *GoRedisClient) RedisBGSave(ctx context.Context) error {
+	_, err := c.redis.BgSave(ctx).Result()
+	return err
+}
+
+func (c *GoRedisClient) RedisLastSave(ctx context.Context) (int64, error) {
+	return c.redis.LastSave(ctx).Result()
+}
+
+func (c *GoRedisClient) RedisSet(ctx context.Context, key string, value interface{}) error {
+	_, err := c.redis.Set(ctx, key, value, 0).Result()
+	return err
 }

@@ -36,7 +36,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/utils/pointer"
@@ -74,17 +73,13 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	instance := &saasv1alpha1.Sentinel{}
 	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	err := r.GetInstance(ctx,
+	result, err := r.GetInstance(ctx,
 		key,
 		instance,
 		pointer.String(saasv1alpha1.Finalizer),
 		[]func(){r.SentinelEvents.CleanupThreads(instance), r.Metrics.CleanupThreads(instance)})
-	if err != nil {
-		if apierrors.IsNotFound(err) {
-			// Return and don't requeue
-			return ctrl.Result{}, nil
-		}
-		return ctrl.Result{}, err
+	if result != nil || err != nil {
+		return *result, err
 	}
 
 	// Apply defaults for reconcile but do not store them in the API
@@ -105,7 +100,7 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	shardedCluster, err := sharded.NewShardedCluster(ctx, clustermap, r.Pool)
+	shardedCluster, err := sharded.NewShardedClusterFromTopology(ctx, clustermap, r.Pool)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -120,7 +115,7 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			if err := shardedCluster.Discover(ctx); err != nil {
 				return ctrl.Result{}, err
 			}
-			if _, err := sentinel.Monitor(ctx, shardedCluster); err != nil {
+			if _, err := sentinel.Monitor(ctx, shardedCluster, saasv1alpha1.SentinelDefaultQuorum); err != nil {
 				return ctrl.Result{}, err
 			}
 		}

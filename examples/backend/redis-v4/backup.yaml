@@ -1,0 +1,26 @@
+apiVersion: saas.3scale.net/v1alpha1
+kind: ShardedRedisBackup
+metadata:
+  name: backup
+  namespace: default
+spec:
+  timeout: 5m
+  schedule: "* * * * *"
+  sentinelRef: sentinel
+  historyLimit: 2
+  pollInterval: 10s
+  dbFile: /data/dump.rdb
+  sshOptions:
+    privateKeySecretRef:
+      name: redis-backup-ssh-private-key
+    user: docker
+    sudo: true
+    port: 2222
+  s3Options:
+    bucket: my-bucket
+    path: backups
+    region: us-east-1
+    credentialsSecretRef:
+      name: aws-credentials
+    serviceEndpoint: http://minio.default.svc.cluster.local:9000
+  pause: false

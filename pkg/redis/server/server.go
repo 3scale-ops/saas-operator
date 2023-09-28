@@ -223,6 +223,18 @@ func (srv *Server) RedisDebugSleep(ctx context.Context, duration time.Duration) 
 	return srv.client.RedisDebugSleep(ctx, duration)
 }
 
+func (srv *Server) RedisBGSave(ctx context.Context) error {
+	return srv.client.RedisBGSave(ctx)
+}
+
+func (srv *Server) RedisLastSave(ctx context.Context) (int64, error) {
+	return srv.client.RedisLastSave(ctx)
+}
+
+func (srv *Server) RedisSet(ctx context.Context, key string, value interface{}) error {
+	return srv.client.RedisSet(ctx, key, value)
+}
+
 // This is a horrible function to parse the horrible structs that the go-redis
 // client returns for administrative commands. I swear it's not my fault ...
 func sliceCmdToStruct(in interface{}, out interface{}) error {
