@@ -40,14 +40,6 @@ var (
 		},
 		[]string{"sentinel", "shard", "redis_server", "role"},
 	)
-	numSlaves = prometheus.NewGaugeVec(
-		prometheus.GaugeOpts{
-			Name:      "num_slaves",
-			Namespace: "saas_redis_sentinel",
-			Help:      `"sentinel master <name> num-slaves"`,
-		},
-		[]string{"sentinel", "shard", "redis_server", "role"},
-	)
 	numOtherSentinels = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name:      "num_other_sentinels",
@@ -79,7 +71,7 @@ var (
 func init() {
 	// Register custom metrics with the global prometheus registry
 	metrics.Registry.MustRegister(
-		linkPendingCommands, lastOkPingReply, roleReportedTime, numSlaves,
+		linkPendingCommands, lastOkPingReply, roleReportedTime,
 		numOtherSentinels, masterLinkDownTime, slaveReplOffset,
 	)
 }
@@ -172,7 +164,6 @@ func (smg *SentinelMetricsGatherer) Stop() {
 	linkPendingCommands.Reset()
 	lastOkPingReply.Reset()
 	roleReportedTime.Reset()
-	numSlaves.Reset()
 	numOtherSentinels.Reset()
 	masterLinkDownTime.Reset()
 	slaveReplOffset.Reset()
@@ -198,10 +189,6 @@ func (smg *SentinelMetricsGatherer) gatherMetrics(ctx context.Context) error {
 		roleReportedTime.With(prometheus.Labels{"sentinel": smg.sentinelURI, "shard": master.Name,
 			"redis_server": fmt.Sprintf("%s:%d", master.IP, master.Port), "role": master.RoleReported,
 		}).Set(float64(master.RoleReportedTime))
-
-		numSlaves.With(prometheus.Labels{"sentinel": smg.sentinelURI, "shard": master.Name,
-			"redis_server": fmt.Sprintf("%s:%d", master.IP, master.Port), "role": master.RoleReported,
-		}).Set(float64(master.NumSlaves))
 
 		numOtherSentinels.With(prometheus.Labels{"sentinel": smg.sentinelURI, "shard": master.Name,
 			"redis_server": fmt.Sprintf("%s:%d", master.IP, master.Port), "role": master.RoleReported,
@@ -259,7 +246,6 @@ func cleanupMetrics(labels prometheus.Labels) {
 	linkPendingCommands.Delete(labels)
 	lastOkPingReply.Delete(labels)
 	roleReportedTime.Delete(labels)
-	numSlaves.Delete(labels)
 	numOtherSentinels.Delete(labels)
 	masterLinkDownTime.Delete(labels)
 	slaveReplOffset.Delete(labels)
