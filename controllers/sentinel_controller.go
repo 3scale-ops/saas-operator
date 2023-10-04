@@ -178,6 +178,11 @@ func (r *SentinelReconciler) reconcileStatus(ctx context.Context, instance *saas
 		log.Error(merr, "DiscoveryError")
 	}
 
+	// publish metrics based on the discovered cluster status
+	if err := metrics.FromShardedCluster(ctx, cluster, false, instance.GetName()); err != nil {
+		log.Error(err, "unable to publish redis cluster status metrics")
+	}
+
 	shards := make(saasv1alpha1.MonitoredShards, len(cluster.Shards))
 	for idx, shard := range cluster.Shards {
 		shards[idx] = saasv1alpha1.MonitoredShard{
