@@ -165,3 +165,8 @@ func (c *GoRedisClient) RedisSet(ctx context.Context, key string, value interfac
 	_, err := c.redis.Set(ctx, key, value, 0).Result()
 	return err
 }
+
+func (c *GoRedisClient) RedisInfo(ctx context.Context, section string) (string, error) {
+	val, err := c.redis.Info(ctx, section).Result()
+	return val, err
+}

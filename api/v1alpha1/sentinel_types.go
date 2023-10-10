@@ -250,6 +250,9 @@ type RedisServerDetails struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=status
 	// +optional
 	Config map[string]string `json:"config,omitempty"`
+	// +operator-sdk:csv:customresourcedefinitions:type=status
+	// +optional
+	Info map[string]string `json:"info,omitempty"`
 }
 
 // +kubebuilder:object:root=true

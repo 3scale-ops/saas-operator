@@ -13,6 +13,7 @@ type RedisServer struct {
 	*redis.Server
 	Role   client.Role
 	Config map[string]string
+	Info   map[string]string
 }
 
 func NewRedisServerFromPool(connectionString string, alias *string, pool *redis.ServerPool) (*RedisServer, error) {
