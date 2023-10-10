@@ -59,6 +59,9 @@ func (br *Runner) TagBackup(ctx context.Context) error {
 	tags := []types.Tag{
 		{Key: aws.String("Layer"), Value: aws.String("bck-storage")},
 		{Key: aws.String("App"), Value: aws.String("Backend")},
+		{Key: aws.String("Shard"), Value: aws.String(br.ShardName)},
+		{Key: aws.String("HostAddress"), Value: aws.String(br.Server.ID())},
+		{Key: aws.String("HostAlias"), Value: aws.String(br.Server.GetAlias())},
 	}
 
 	switch br.BackupFileS3Path() {
