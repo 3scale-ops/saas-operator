@@ -34,6 +34,7 @@ func (gen *SystemTektonGenerator) task() func() *pipelinev1beta1.Task {
 							StringVal: fmt.Sprint(*gen.Image.Name),
 							Type:      pipelinev1beta1.ParamTypeString,
 						},
+						Type: pipelinev1beta1.ParamTypeString,
 					},
 					{
 						Name:        "container-tag",
@@ -42,6 +43,7 @@ func (gen *SystemTektonGenerator) task() func() *pipelinev1beta1.Task {
 							StringVal: fmt.Sprint(*gen.Image.Tag),
 							Type:      pipelinev1beta1.ParamTypeString,
 						},
+						Type: pipelinev1beta1.ParamTypeString,
 					},
 				},
 				StepTemplate: &pipelinev1beta1.StepTemplate{
