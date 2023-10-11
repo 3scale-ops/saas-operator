@@ -161,7 +161,8 @@ func (r *SentinelReconciler) reconcileStatus(ctx context.Context, instance *saas
 	}
 
 	// redis shards info to the status
-	merr := cluster.SentinelDiscover(ctx, sharded.SlaveReadOnlyDiscoveryOpt, sharded.SaveConfigDiscoveryOpt)
+	merr := cluster.SentinelDiscover(ctx, sharded.SlaveReadOnlyDiscoveryOpt,
+		sharded.SaveConfigDiscoveryOpt, sharded.SlavePriorityDiscoveryOpt, sharded.ReplicationInfoDiscoveryOpt)
 	// if the failure occurred calling sentinel discard the result and return error
 	// otherwise keep going on and use the information that was returned, even if there were some
 	// other errors
@@ -194,6 +195,7 @@ func (r *SentinelReconciler) reconcileStatus(ctx context.Context, instance *saas
 				Role:    srv.Role,
 				Address: srv.ID(),
 				Config:  srv.Config,
+				Info:    srv.Info,
 			}
 		}
 	}

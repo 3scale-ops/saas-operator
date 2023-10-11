@@ -235,6 +235,14 @@ func (srv *Server) RedisSet(ctx context.Context, key string, value interface{}) 
 	return srv.client.RedisSet(ctx, key, value)
 }
 
+func (srv *Server) RedisInfo(ctx context.Context, section string) (map[string]string, error) {
+	val, err := srv.client.RedisInfo(ctx, section)
+	if err != nil {
+		return nil, err
+	}
+	return InfoStringToMap(val), nil
+}
+
 // This is a horrible function to parse the horrible structs that the go-redis
 // client returns for administrative commands. I swear it's not my fault ...
 func sliceCmdToStruct(in interface{}, out interface{}) error {

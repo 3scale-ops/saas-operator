@@ -16,6 +16,8 @@ const (
 	SlaveReadOnlyDiscoveryOpt DiscoveryOption = iota
 	SaveConfigDiscoveryOpt
 	OnlyMasterDiscoveryOpt
+	SlavePriorityDiscoveryOpt
+	ReplicationInfoDiscoveryOpt
 )
 
 func (set DiscoveryOptionSet) Has(opt DiscoveryOption) bool {
@@ -62,6 +64,39 @@ func (srv *RedisServer) Discover(ctx context.Context, opts ...DiscoveryOption) e
 			return err
 		}
 		srv.Config["slave-read-only"] = slaveReadOnly
+	}
+
+	if DiscoveryOptionSet(opts).Has(SlavePriorityDiscoveryOpt) {
+		slavePriority, err := srv.RedisConfigGet(ctx, "slave-priority")
+		if err != nil {
+			logger.Error(err, fmt.Sprintf("unable to get %s|%s|%s 'slave-priority' option", srv.GetAlias(), srv.Role, srv.ID()))
+			return err
+		}
+		srv.Config["slave-priority"] = slavePriority
+	}
+
+	if DiscoveryOptionSet(opts).Has(ReplicationInfoDiscoveryOpt) && role != client.Master {
+		repinfo, err := srv.RedisInfo(ctx, "replication")
+		if err != nil {
+			logger.Error(err, fmt.Sprintf("unable to get %s|%s|%s replication info", srv.GetAlias(), srv.Role, srv.ID()))
+			return err
+		}
+
+		var syncInProgress string
+		switch flag := repinfo["master_sync_in_progress"]; flag {
+		case "0":
+			syncInProgress = "no"
+		case "1":
+			syncInProgress = "yes"
+		default:
+			logger.Error(err, fmt.Sprintf("unexpected value '%s' for 'master_sync_in_progress' %s|%s|%s", flag, srv.GetAlias(), srv.Role, srv.ID()))
+			syncInProgress = ""
+		}
+
+		if srv.Info == nil {
+			srv.Info = map[string]string{}
+		}
+		srv.Info["replication"] = fmt.Sprintf("master-link: %s, sync-in-progress: %s", repinfo["master_link_status"], syncInProgress)
 	}
 
 	return nil

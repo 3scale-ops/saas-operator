@@ -150,6 +150,11 @@ func (fc *FakeClient) RedisSet(ctx context.Context, key string, value interface{
 	return rsp.InjectError()
 }
 
+func (fc *FakeClient) RedisInfo(ctx context.Context, section string) (string, error) {
+	rsp := fc.pop()
+	return rsp.InjectResponse().(string), rsp.InjectError()
+}
+
 func (fc *FakeClient) pop() (fakeRsp FakeResponse) {
 	fakeRsp, fc.Responses = fc.Responses[0], fc.Responses[1:]
 	return fakeRsp

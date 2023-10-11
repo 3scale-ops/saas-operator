@@ -29,6 +29,7 @@ type TestableInterface interface {
 	RedisBGSave(context.Context) error
 	RedisLastSave(context.Context) (int64, error)
 	RedisSet(context.Context, string, interface{}) error
+	RedisInfo(ctx context.Context, section string) (string, error)
 	Close() error
 }
 
