@@ -499,6 +499,10 @@ spec:
                             additionalProperties:
                               type: string
                             type: object
+                          info:
+                            additionalProperties:
+                              type: string
+                            type: object
                           role:
                             description: Role represents the role of a redis server
                               within a shard
