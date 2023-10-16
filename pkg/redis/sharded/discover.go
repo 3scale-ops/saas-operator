@@ -105,5 +105,6 @@ func (srv *RedisServer) Discover(ctx context.Context, opts ...DiscoveryOption) e
 // Discovery errors
 type DiscoveryError_Sentinel_Failure struct{ error }
 type DiscoveryError_Master_SingleServerFailure struct{ error }
+type DiscoveryError_Slave_FailoverInProgress struct{ error }
 type DiscoveryError_Slave_SingleServerFailure struct{ error }
 type DiscoveryError_UnknownRole_SingleServerFailure struct{ error }

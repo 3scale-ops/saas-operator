@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"net"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -107,6 +108,19 @@ func (srv *Server) SentinelMaster(ctx context.Context, shard string) (*client.Se
 		return nil, err
 	}
 	return result, nil
+}
+
+func (srv *Server) SentinelGetMasterAddrByName(ctx context.Context, shard string) (string, int, error) {
+
+	values, err := srv.client.SentinelGetMasterAddrByName(ctx, shard)
+	if err != nil {
+		return "", 0, err
+	}
+	port, err := strconv.Atoi(values[1])
+	if err != nil {
+		return "", 0, err
+	}
+	return values[0], port, nil
 }
 
 func (srv *Server) SentinelMasters(ctx context.Context) ([]client.SentinelMasterCmdResult, error) {

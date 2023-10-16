@@ -3,7 +3,9 @@ package sharded
 import (
 	"context"
 	"fmt"
+	"net"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/3scale/saas-operator/pkg/redis/client"
@@ -79,6 +81,22 @@ func (shard *Shard) Discover(ctx context.Context, sentinel *SentinelServer, opti
 			return append(merr, DiscoveryError_Sentinel_Failure{err})
 		}
 
+		// If a failover is currently in progress, only the GetMasterAddrByName command returns the
+		// updated address of the master. The other commands ('sentinel masters' and 'sentinel master <shard>)
+		// wait until all the replicas are also reconfigured to start announcing the new IP, which can cause delays
+		// to reconfigure the clients.
+		failoverInProgress := false
+		masterIP, masterPort, err := sentinel.SentinelGetMasterAddrByName(ctx, shard.Name)
+		if err != nil {
+			return append(merr, DiscoveryError_Sentinel_Failure{err})
+		}
+		if masterIP != sentinelMasterResult.IP || masterPort != sentinelMasterResult.Port {
+			failoverInProgress = true
+			logger.Info("failover in progress", "oldMaster", net.JoinHostPort(sentinelMasterResult.IP, strconv.Itoa(sentinelMasterResult.Port)), "newMaster", net.JoinHostPort(masterIP, strconv.Itoa(masterPort)))
+			sentinelMasterResult.IP = masterIP
+			sentinelMasterResult.Port = masterPort
+		}
+
 		// Get the corresponding server or add a new one if not found
 		srv, err := shard.GetServerByID(fmt.Sprintf("%s:%d", sentinelMasterResult.IP, sentinelMasterResult.Port))
 		if err != nil {
@@ -106,6 +124,11 @@ func (shard *Shard) Discover(ctx context.Context, sentinel *SentinelServer, opti
 
 		if DiscoveryOptionSet(options).Has(OnlyMasterDiscoveryOpt) {
 			return merr.ErrorOrNil()
+		}
+
+		// don't discover slaves if a failover is in progress
+		if failoverInProgress {
+			return append(merr, DiscoveryError_Slave_FailoverInProgress{fmt.Errorf("refusing to discover slaves while a failover is in progress")})
 		}
 
 		// discover slaves

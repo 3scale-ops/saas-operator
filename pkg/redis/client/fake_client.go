@@ -58,6 +58,11 @@ func (fc *FakeClient) SentinelMaster(ctx context.Context, shard string) (*Sentin
 	return rsp.InjectResponse().(*SentinelMasterCmdResult), rsp.InjectError()
 }
 
+func (fc *FakeClient) SentinelGetMasterAddrByName(ctx context.Context, shard string) ([]string, error) {
+	rsp := fc.pop()
+	return rsp.InjectResponse().([]string), rsp.InjectError()
+}
+
 func (fc *FakeClient) SentinelMasters(ctx context.Context) ([]interface{}, error) {
 	rsp := fc.pop()
 	return rsp.InjectResponse().([]interface{}), rsp.InjectError()
