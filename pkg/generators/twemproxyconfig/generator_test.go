@@ -93,9 +93,23 @@ func TestNewGenerator(t *testing.T) {
 							InjectError: func() error { return nil },
 						},
 						redis_client.FakeResponse{
+							// cmd: SentinelGetMasterAddrByName (shard0)
+							InjectResponse: func() interface{} {
+								return []string{"127.0.0.1", "1000"}
+							},
+							InjectError: func() error { return nil },
+						},
+						redis_client.FakeResponse{
 							// cmd: SentinelMaster (shard1)
 							InjectResponse: func() interface{} {
 								return &redis_client.SentinelMasterCmdResult{Name: "shard1", IP: "127.0.0.1", Port: 5000, Flags: "master"}
+							},
+							InjectError: func() error { return nil },
+						},
+						redis_client.FakeResponse{
+							// cmd: SentinelGetMasterAddrByName (shard1)
+							InjectResponse: func() interface{} {
+								return []string{"127.0.0.1", "5000"}
 							},
 							InjectError: func() error { return nil },
 						},
@@ -259,6 +273,13 @@ func TestNewGenerator(t *testing.T) {
 							InjectError: func() error { return nil },
 						},
 						redis_client.FakeResponse{
+							// cmd: SentinelGetMasterAddrByName (shard0)
+							InjectResponse: func() interface{} {
+								return []string{"127.0.0.1", "1000"}
+							},
+							InjectError: func() error { return nil },
+						},
+						redis_client.FakeResponse{
 							// cmd: SentinelSlaves (shard0)
 							InjectResponse: func() interface{} {
 								return []interface{}{
@@ -282,6 +303,13 @@ func TestNewGenerator(t *testing.T) {
 							// cmd: SentinelMaster (shard1)
 							InjectResponse: func() interface{} {
 								return &redis_client.SentinelMasterCmdResult{Name: "shard1", IP: "127.0.0.1", Port: 5000, Flags: "master"}
+							},
+							InjectError: func() error { return nil },
+						},
+						redis_client.FakeResponse{
+							// cmd: SentinelGetMasterAddrByName (shard1)
+							InjectResponse: func() interface{} {
+								return []string{"127.0.0.1", "5000"}
 							},
 							InjectError: func() error { return nil },
 						},
@@ -429,6 +457,13 @@ func TestNewGenerator(t *testing.T) {
 							InjectError: func() error { return nil },
 						},
 						redis_client.FakeResponse{
+							// cmd: SentinelGetMasterAddrByName (shard0)
+							InjectResponse: func() interface{} {
+								return []string{"127.0.0.1", "1000"}
+							},
+							InjectError: func() error { return nil },
+						},
+						redis_client.FakeResponse{
 							// cmd: SentinelSlaves (shard0)
 							InjectResponse: func() interface{} {
 								return []interface{}{
@@ -452,6 +487,13 @@ func TestNewGenerator(t *testing.T) {
 							// cmd: SentinelMaster (shard1)
 							InjectResponse: func() interface{} {
 								return &redis_client.SentinelMasterCmdResult{Name: "shard1", IP: "127.0.0.1", Port: 5000, Flags: "master"}
+							},
+							InjectError: func() error { return nil },
+						},
+						redis_client.FakeResponse{
+							// cmd: SentinelGetMasterAddrByName (shard1)
+							InjectResponse: func() interface{} {
+								return []string{"127.0.0.1", "5000"}
 							},
 							InjectError: func() error { return nil },
 						},
@@ -594,9 +636,23 @@ func TestNewGenerator(t *testing.T) {
 							InjectError: func() error { return nil },
 						},
 						redis_client.FakeResponse{
+							// cmd: SentinelGetMasterAddrByName (shard0)
+							InjectResponse: func() interface{} {
+								return []string{"127.0.0.1", "1000"}
+							},
+							InjectError: func() error { return nil },
+						},
+						redis_client.FakeResponse{
 							// cmd: SentinelMaster (shard1)
 							InjectResponse: func() interface{} {
 								return &redis_client.SentinelMasterCmdResult{Name: "shard1", IP: "127.0.0.1", Port: 5000, Flags: "master"}
+							},
+							InjectError: func() error { return nil },
+						},
+						redis_client.FakeResponse{
+							// cmd: SentinelGetMasterAddrByName (shard1)
+							InjectResponse: func() interface{} {
+								return []string{"127.0.0.1", "5000"}
 							},
 							InjectError: func() error { return nil },
 						},

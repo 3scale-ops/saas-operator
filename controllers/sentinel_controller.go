@@ -175,7 +175,8 @@ func (r *SentinelReconciler) reconcileStatus(ctx context.Context, instance *saas
 	// and rely on reconciles triggered by sentinel events to correct the situation.
 	masterError := &sharded.DiscoveryError_Master_SingleServerFailure{}
 	slaveError := &sharded.DiscoveryError_Slave_SingleServerFailure{}
-	if errors.As(merr, masterError) || errors.As(merr, slaveError) {
+	failoverInProgressError := &sharded.DiscoveryError_Slave_FailoverInProgress{}
+	if errors.As(merr, masterError) || errors.As(merr, slaveError) || errors.As(merr, failoverInProgressError) {
 		log.Error(merr, "DiscoveryError")
 	}
 

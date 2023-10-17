@@ -73,6 +73,12 @@ func (c *GoRedisClient) SentinelMaster(ctx context.Context, shard string) (*Sent
 	return result, err
 }
 
+func (c *GoRedisClient) SentinelGetMasterAddrByName(ctx context.Context, shard string) ([]string, error) {
+
+	values, err := c.sentinel.GetMasterAddrByName(ctx, shard).Result()
+	return values, err
+}
+
 func (c *GoRedisClient) SentinelMasters(ctx context.Context) ([]interface{}, error) {
 
 	values, err := c.sentinel.Masters(ctx).Result()

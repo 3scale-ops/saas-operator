@@ -13,6 +13,7 @@ import (
 type TestableInterface interface {
 	SentinelMaster(context.Context, string) (*SentinelMasterCmdResult, error)
 	SentinelMasters(context.Context) ([]interface{}, error)
+	SentinelGetMasterAddrByName(ctx context.Context, shard string) ([]string, error)
 	SentinelSlaves(context.Context, string) ([]interface{}, error)
 	SentinelMonitor(context.Context, string, string, string, int) error
 	SentinelSet(context.Context, string, string, string) error
