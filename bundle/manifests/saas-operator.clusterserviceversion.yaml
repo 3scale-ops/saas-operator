@@ -343,6 +343,36 @@ metadata:
         },
         {
           "apiVersion": "saas.3scale.net/v1alpha1",
+          "kind": "ShardedRedisBackup",
+          "metadata": {
+            "name": "backup",
+            "namespace": "default"
+          },
+          "spec": {
+            "dbFile": "/data/dump.rdb",
+            "historyLimit": 10,
+            "pollInterval": "10s",
+            "s3Options": {
+              "bucket": "my-bucket",
+              "credentialsSecretRef": {
+                "name": "aws-credentials"
+              },
+              "path": "backups",
+              "region": "us-east-1"
+            },
+            "schedule": "*/30 * * * *",
+            "sentinelRef": "sentinel",
+            "sshOptions": {
+              "privateKeySecretRef": {
+                "name": "redis-ssh-private-key"
+              },
+              "user": "root"
+            },
+            "timeout": "5m"
+          }
+        },
+        {
+          "apiVersion": "saas.3scale.net/v1alpha1",
           "kind": "System",
           "metadata": {
             "name": "example"
@@ -627,7 +657,7 @@ metadata:
     capabilities: Basic Install
     categories: Integration & Delivery
     containerImage: quay.io/3scale/saas-operator
-    createdAt: "2023-09-13T11:59:21Z"
+    createdAt: "2023-10-16T08:57:47Z"
     description: |-
       The 3scale SaaS Operator creates and maintains a SaaS-ready deployment
       of the Red Hat 3scale API Management on OpenShift.
@@ -635,7 +665,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/3scale/saas-operator
     support: Red Hat
-  name: saas-operator.v0.20.0-alpha.10
+  name: saas-operator.v0.20.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -2460,6 +2490,9 @@ spec:
       kind: RedisShard
       name: redisshards.saas.3scale.net
       specDescriptors:
+      - description: Command overrides the redis container command
+        displayName: Command
+        path: command
       - description: Image specification for the component
         displayName: Image
         path: image
@@ -2625,6 +2658,69 @@ spec:
       - description: Addresses of the sentinel instances currently running
         displayName: Sentinels
         path: sentinels
+      version: v1alpha1
+    - description: ShardedRedisBackup is the Schema for the shardedredisbackups API
+      displayName: Sharded Redis Backup
+      kind: ShardedRedisBackup
+      name: shardedredisbackups.saas.3scale.net
+      specDescriptors:
+      - description: Name of the dbfile in the redis instances
+        displayName: DBFile
+        path: dbFile
+      - description: Max number of backup history to keep
+        displayName: History Limit
+        path: historyLimit
+      - description: If true, backup execution is stopped
+        displayName: Pause
+        path: pause
+      - description: How frequently redis is polled for the BGSave status
+        displayName: Poll Interval
+        path: pollInterval
+      - description: S3 storage options
+        displayName: S3 Options
+        path: s3Options
+      - description: S3 bucket name
+        displayName: Bucket
+        path: s3Options.bucket
+      - description: 'Reference to a Secret tha contains credentials to access S3
+          API. The credentials must have the following permissions: s3:GetObject,
+          s3:PutObject, and s3:ListBucket, s3:ListObjects, s3:PutObjectTagging.'
+        displayName: Credentials Secret Ref
+        path: s3Options.credentialsSecretRef
+      - description: S3 path where backups should be uploaded
+        displayName: Path
+        path: s3Options.path
+      - description: AWS region
+        displayName: Region
+        path: s3Options.region
+      - description: Optionally use a custom s3 service endpoint. Useful for testing
+          with Minio.
+        displayName: Service Endpoint
+        path: s3Options.serviceEndpoint
+      - description: Cron-like schedule specification
+        displayName: Schedule
+        path: schedule
+      - description: Reference to a sentinel instance
+        displayName: Sentinel Ref
+        path: sentinelRef
+      - description: SSH connection options
+        displayName: SSHOptions
+        path: sshOptions
+      - description: SSH port (default is 22)
+        displayName: Port
+        path: sshOptions.port
+      - description: Reference to a Secret that contains the SSH private key
+        displayName: Private Key Secret Ref
+        path: sshOptions.privateKeySecretRef
+      - description: Use sudo to execute commands agains the remote host
+        displayName: Sudo
+        path: sshOptions.sudo
+      - description: SSH user
+        displayName: User
+        path: sshOptions.user
+      - description: Max allowed time for a backup to complete
+        displayName: Timeout
+        path: timeout
       version: v1alpha1
     - description: System is the Schema for the systems API
       displayName: System
@@ -3971,8 +4067,8 @@ spec:
       - description: Label value used by grafana-operator for dashboard discovery
         displayName: Selector Value
         path: grafanaDashboard.selectorValue
-      - description: SentinelURI is the redis URI of sentinel. If not set, the controller
-          will try to autodiscover Sentinel within the namespace.
+      - description: 'SentinelURI is the redis URI of sentinel. If not set, the controller
+          will try to autodiscover Sentinel within the namespace. TODO: remove, unused'
         displayName: Sentinel URIs
         path: sentinelURIs
       - description: 'ServerPools is the list of Twemproxy server pools WARNING: only
@@ -4444,7 +4540,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/3scale/saas-operator:v0.20.0-alpha.10
+                image: quay.io/3scale/saas-operator:v0.20.0
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -4856,6 +4952,32 @@ spec:
         - apiGroups:
           - saas.3scale.net
           resources:
+          - shardedredisbackups
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - saas.3scale.net
+          resources:
+          - shardedredisbackups/finalizers
+          verbs:
+          - update
+        - apiGroups:
+          - saas.3scale.net
+          resources:
+          - shardedredisbackups/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - saas.3scale.net
+          resources:
           - systems
           verbs:
           - create
@@ -4982,4 +5104,4 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
-  version: 0.20.0-alpha.10
+  version: 0.20.0

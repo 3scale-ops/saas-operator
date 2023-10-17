@@ -41,6 +41,9 @@ spec:
           spec:
             description: RedisShardSpec defines the desired state of RedisShard
             properties:
+              command:
+                description: Command overrides the redis container command
+                type: string
               image:
                 description: Image specification for the component
                 properties:
