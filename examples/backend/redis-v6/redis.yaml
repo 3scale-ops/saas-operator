@@ -3,17 +3,20 @@ kind: RedisShard
 metadata:
   name: shard01
 spec:
-   image:
-     tag: 6.2.13-alpine
+  command: /entrypoint.sh
+  image:
+    name: redis-with-ssh
+    tag: 6.2.13-alpine
 ---
 apiVersion: saas.3scale.net/v1alpha1
 kind: RedisShard
 metadata:
   name: shard02
 spec:
-   image:
-     tag: 6.2.13-alpine
-
+  command: /entrypoint.sh
+  image:
+    name: redis-with-ssh
+    tag: 6.2.13-alpine
 ---
 apiVersion: saas.3scale.net/v1alpha1
 kind: RedisShard
