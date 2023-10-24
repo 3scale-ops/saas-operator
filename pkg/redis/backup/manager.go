@@ -94,7 +94,7 @@ func (br *Runner) Start(parentCtx context.Context, l logr.Logger) error {
 			errCh <- err
 			return
 		}
-		if err := br.TagBackup(ctx); err != nil {
+		if err := br.CheckBackup(ctx); err != nil {
 			errCh <- err
 			return
 		}

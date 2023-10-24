@@ -5,7 +5,7 @@ FROM redis:6.2.13-alpine
 RUN apk update && apk upgrade
 RUN apk add --no-cache openssh gzip python3 py3-pip sudo
 RUN pip3 install --upgrade pip
-RUN pip3 install awscli
+RUN pip3 install boto3
 
 # configure SSH to run on port 2222
 RUN sed -i 's/#Port 22/Port 2222/' /etc/ssh/sshd_config

@@ -43,7 +43,7 @@ func (re *RemoteExecutor) Run() error {
 	defer client.Close()
 
 	for _, cmd := range re.Commands {
-		re.Logger.V(1).Info(fmt.Sprintf("running command/script '%s' on %s:%d", cmd, re.Host, re.Port))
+		re.Logger.V(1).Info(cmd.Info())
 		output, err := cmd.Run(client)
 		if output != "" {
 			re.Logger.V(1).Info(fmt.Sprintf("remote ssh command output: %s", output))
@@ -61,7 +61,7 @@ func (re *RemoteExecutor) Run() error {
 
 type Runnable interface {
 	Run(*ssh.Client) (string, error)
-	String() string
+	Info() string
 }
 
 type Command struct {
@@ -75,8 +75,8 @@ func NewCommand(value string) *Command {
 	return &Command{value: value}
 }
 
-func (c *Command) String() string {
-	return hideSensitive(c.value, c.sensitive...)
+func (c *Command) Info() string {
+	return fmt.Sprintf("run command: %s", hideSensitive(c.value, c.sensitive...))
 }
 
 func (c *Command) Run(client *ssh.Client) (string, error) {
@@ -111,8 +111,11 @@ func NewScript(interpreter string, script string, sensitive ...string) *Script {
 	}
 }
 
-func (s *Script) String() string {
-	return hideSensitive(fmt.Sprintf("%s '%s'", s.interpreter, s.value), s.sensitive...)
+func (s *Script) Info() string {
+	return fmt.Sprintf("run script with: '%s' \n'%s'",
+		hideSensitive(s.interpreter, s.sensitive...),
+		hideSensitive(string(s.value), s.sensitive...),
+	)
 }
 
 func (s *Script) Run(client *ssh.Client) (string, error) {
@@ -154,24 +157,6 @@ func (s *Script) Run(client *ssh.Client) (string, error) {
 	rsp := <-chRsp
 
 	return string(rsp.output), rsp.err
-
-	// write the script to stdin
-	// stdin, err := session.StdinPipe()
-	// if err != nil {
-	// 	return "", err
-	// }
-	// _, err = stdin.Write(s.value)
-	// if err != nil {
-	// 	return "", err
-	// }
-	// stdin.Close()
-
-	// output, err := session.CombinedOutput(s.interpreter)
-	// if err != nil {
-	// 	return string(output), err
-	// }
-
-	// return "", nil
 }
 
 func hideSensitive(msg string, hide ...string) string {
