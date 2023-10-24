@@ -3,14 +3,12 @@ package backup
 import (
 	"context"
 	"fmt"
-	"net"
 	"path"
-	"strconv"
 	"strings"
 	"time"
 
+	"github.com/3scale/saas-operator/pkg/ssh"
 	"github.com/3scale/saas-operator/pkg/util"
-	"golang.org/x/crypto/ssh"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
@@ -52,79 +50,55 @@ func (br *Runner) UploadBackup(ctx context.Context) error {
 		awsBaseCommand = "aws"
 	}
 
-	var commands = []string{
+	var commands = []ssh.Runnable{
 		// mv /data/dump.rdb /data/redis-backup-<shard>-<server>-<timestamp>.rdb
-		fmt.Sprintf("mv %s %s/%s",
+		ssh.NewCommand(fmt.Sprintf("mv %s %s/%s",
 			br.RedisDBFile,
 			path.Dir(br.RedisDBFile), br.BackupFile(),
-		),
+		)),
 		// gzip /data/redis-backup-<shard>-<server>-<timestamp>.rdb
-		fmt.Sprintf("gzip -1 %s/%s", path.Dir(br.RedisDBFile), br.BackupFile()),
+		// ssh.NewCommand(fmt.Sprintf("gzip -1 %s/%s", path.Dir(br.RedisDBFile), br.BackupFile())),
+		ssh.NewCommand(fmt.Sprintf("gzip -1 %s/%s", path.Dir(br.RedisDBFile), br.BackupFile())),
 		// AWS_ACCESS_KEY_ID=*** AWS_SECRET_ACCESS_KEY=*** s3cmd put /data/redis-backup-<shard>-<server>-<timestamp>.rdb s3://<bucket>/<path>/redis-backup-<shard>-<server>-<timestamp>.rdb
-		fmt.Sprintf("%s=%s %s=%s %s=%s %s s3 cp --only-show-errors %s/%s s3://%s/%s/%s",
-			util.AWSRegionEnvvar, br.AWSRegion,
-			util.AWSAccessKeyEnvvar, br.AWSAccessKeyID,
-			util.AWSSecretKeyEnvvar, br.AWSSecretAccessKey,
-			awsBaseCommand,
-			path.Dir(br.RedisDBFile), br.BackupFileCompressed(),
-			br.S3Bucket, br.S3Path, br.BackupFileCompressed(),
-		),
-		fmt.Sprintf("rm -f %s/%s*", path.Dir(br.RedisDBFile), br.BackupFileBaseName()),
+		ssh.NewScript(
+			fmt.Sprintf("%s=%s %s=%s %s=%s sh -s", util.AWSRegionEnvvar, br.AWSRegion, util.AWSAccessKeyEnvvar, br.AWSAccessKeyID, util.AWSSecretKeyEnvvar, br.AWSSecretAccessKey),
+			fmt.Sprintf("%s s3 cp --only-show-errors %s/%s s3://%s/%s/%s",
+				awsBaseCommand,
+				path.Dir(br.RedisDBFile), br.BackupFileCompressed(),
+				br.S3Bucket, br.S3Path, br.BackupFileCompressed(),
+			)),
+		ssh.NewCommand(fmt.Sprintf("rm -f %s/%s*", path.Dir(br.RedisDBFile), br.BackupFileBaseName())),
 	}
 
-	for _, command := range commands {
-		if br.SSHSudo {
-			command = "sudo " + command
-		}
-		logger.V(1).Info(br.hideSensitive(fmt.Sprintf("running command '%s' on %s:%d", command, br.Server.GetHost(), br.SSHPort)))
-		output, err := remoteRun(ctx, br.SSHUser, br.Server.GetHost(), strconv.Itoa(int(br.SSHPort)), br.SSHKey, command)
-		if output != "" {
-			logger.V(1).Info(fmt.Sprintf("remote ssh command output: %s", output))
-		}
-		if err != nil {
-			logger.V(1).Info(fmt.Sprintf("remote ssh command error: %s", err.Error()))
-			return fmt.Errorf("remote ssh command failed: %w (%s)", err, output)
-		}
+	remoteExec := ssh.RemoteExecutor{
+		Host:       br.Server.GetHost(),
+		User:       br.SSHUser,
+		Port:       br.SSHPort,
+		PrivateKey: br.SSHKey,
+		Logger:     logger,
+		CmdTimeout: 0,
+		Commands:   commands,
 	}
+
+	err := remoteExec.Run()
+	if err != nil {
+		return err
+	}
+
+	// for _, command := range commands {
+	// 	if br.SSHSudo {
+	// 		command = "sudo " + command
+	// 	}
+	// 	logger.V(1).Info(br.hideSensitive(fmt.Sprintf("running command '%s' on %s:%d", command, br.Server.GetHost(), br.SSHPort)))
+	// 	output, err := remoteRun(ctx, br.SSHUser, br.Server.GetHost(), strconv.Itoa(int(br.SSHPort)), br.SSHKey, command)
+	// 	if output != "" {
+	// 		logger.V(1).Info(fmt.Sprintf("remote ssh command output: %s", output))
+	// 	}
+	// 	if err != nil {
+	// 		logger.V(1).Info(fmt.Sprintf("remote ssh command error: %s", err.Error()))
+	// 		return fmt.Errorf("remote ssh command failed: %w (%s)", err, output)
+	// 	}
+	// }
 
 	return nil
-}
-
-// e.g. output, err := remoteRun(ctx, "root", "MY_IP", "MY_PORT", "PRIVATE_KEY", "ls")
-func remoteRun(ctx context.Context, user, addr, port, privateKey, cmd string) (string, error) {
-
-	key, err := ssh.ParsePrivateKey([]byte(privateKey))
-	if err != nil {
-		return "", err
-	}
-	// Authentication
-	config := &ssh.ClientConfig{
-		User:            user,
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-		Auth: []ssh.AuthMethod{
-			ssh.PublicKeys(key),
-		},
-	}
-	client, err := ssh.Dial("tcp", net.JoinHostPort(addr, port), config)
-	if err != nil {
-		return "", err
-	}
-	defer client.Close()
-
-	// Create a session. It is one session per command.
-	session, err := client.NewSession()
-	if err != nil {
-		return "", err
-	}
-	defer session.Close()
-
-	output, err := session.CombinedOutput(cmd)
-	return string(output), err
-}
-
-func (br *Runner) hideSensitive(msg string) string {
-	for _, ss := range []string{br.AWSSecretAccessKey, br.SSHKey} {
-		msg = strings.ReplaceAll(msg, ss, "*****")
-	}
-	return msg
 }
