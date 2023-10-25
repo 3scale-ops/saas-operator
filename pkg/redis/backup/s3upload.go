@@ -59,7 +59,7 @@ func (br *Runner) UploadBackup(ctx context.Context) error {
 			path.Dir(br.RedisDBFile), br.BackupFile(),
 		),
 		// gzip /data/redis-backup-<shard>-<server>-<timestamp>.rdb
-		fmt.Sprintf("gzip %s/%s", path.Dir(br.RedisDBFile), br.BackupFile()),
+		fmt.Sprintf("gzip -1 %s/%s", path.Dir(br.RedisDBFile), br.BackupFile()),
 		// AWS_ACCESS_KEY_ID=*** AWS_SECRET_ACCESS_KEY=*** s3cmd put /data/redis-backup-<shard>-<server>-<timestamp>.rdb s3://<bucket>/<path>/redis-backup-<shard>-<server>-<timestamp>.rdb
 		fmt.Sprintf("%s=%s %s=%s %s=%s %s s3 cp --only-show-errors %s/%s s3://%s/%s/%s",
 			util.AWSRegionEnvvar, br.AWSRegion,
