@@ -62,27 +62,6 @@ func (br *Runner) UploadBackup(ctx context.Context) error {
 		return err
 	}
 
-	var commands = []ssh.Runnable{
-		// mv /data/dump.rdb /data/redis-backup-<shard>-<server>-<timestamp>.rdb
-		ssh.NewCommand(fmt.Sprintf("mv %s %s/%s",
-			br.RedisDBFile,
-			path.Dir(br.RedisDBFile), br.BackupFile(),
-		)),
-		// gzip /data/redis-backup-<shard>-<server>-<timestamp>.rdb
-		// ssh.NewCommand(fmt.Sprintf("gzip -1 %s/%s", path.Dir(br.RedisDBFile), br.BackupFile())),
-		ssh.NewCommand(fmt.Sprintf("gzip -1 %s/%s", path.Dir(br.RedisDBFile), br.BackupFile())),
-		// AWS_ACCESS_KEY_ID=*** AWS_SECRET_ACCESS_KEY=*** s3cmd put /data/redis-backup-<shard>-<server>-<timestamp>.rdb s3://<bucket>/<path>/redis-backup-<shard>-<server>-<timestamp>.rdb
-		ssh.NewScript(
-			fmt.Sprintf("%s=%s %s=%s %s=%s python -",
-				util.AWSRegionEnvvar, br.AWSRegion,
-				util.AWSAccessKeyEnvvar, br.AWSAccessKeyID,
-				util.AWSSecretKeyEnvvar, br.AWSSecretAccessKey),
-			uploadScript,
-			br.AWSSecretAccessKey,
-		),
-		ssh.NewCommand(fmt.Sprintf("rm -f %s/%s*", path.Dir(br.RedisDBFile), br.BackupFileBaseName())),
-	}
-
 	remoteExec := ssh.RemoteExecutor{
 		Host:       br.Server.GetHost(),
 		User:       br.SSHUser,
@@ -90,7 +69,18 @@ func (br *Runner) UploadBackup(ctx context.Context) error {
 		PrivateKey: br.SSHKey,
 		Logger:     logger,
 		CmdTimeout: 0,
-		Commands:   commands,
+		Commands: []ssh.Runnable{
+			ssh.NewCommand(fmt.Sprintf("mv %s %s/%s", br.RedisDBFile, path.Dir(br.RedisDBFile), br.BackupFile())),
+			ssh.NewCommand(fmt.Sprintf("gzip -1 %s/%s", path.Dir(br.RedisDBFile), br.BackupFile())),
+			ssh.NewScript(fmt.Sprintf("%s=%s %s=%s %s=%s python -",
+				util.AWSRegionEnvvar, br.AWSRegion,
+				util.AWSAccessKeyEnvvar, br.AWSAccessKeyID,
+				util.AWSSecretKeyEnvvar, br.AWSSecretAccessKey),
+				uploadScript,
+				br.AWSSecretAccessKey,
+			),
+			ssh.NewCommand(fmt.Sprintf("rm -f %s/%s*", path.Dir(br.RedisDBFile), br.BackupFileBaseName())),
+		},
 	}
 
 	err = remoteExec.Run()

@@ -71,8 +71,8 @@ type Command struct {
 
 var _ Runnable = &Command{}
 
-func NewCommand(value string) *Command {
-	return &Command{value: value}
+func NewCommand(value string, sensitive ...string) *Command {
+	return &Command{value: value, sensitive: sensitive}
 }
 
 func (c *Command) Info() string {
