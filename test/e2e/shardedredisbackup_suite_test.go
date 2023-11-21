@@ -63,7 +63,7 @@ var _ = Describe("shardedredisbackup e2e suite", func() {
 					Command:     util.Pointer("/entrypoint.sh"),
 					Image: &saasv1alpha1.ImageSpec{
 						Name: util.Pointer("redis-with-ssh"),
-						Tag:  util.Pointer("4.0.11-alpine"),
+						Tag:  util.Pointer("6.2.13-alpine"),
 					},
 				},
 			},
