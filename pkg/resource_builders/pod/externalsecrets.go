@@ -7,13 +7,14 @@ import (
 
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // GenerateExternalSecretFn generates a ExternalSecret
 func GenerateExternalSecretFn(name, namespace, secretStoreName, secretStoreKind string, refreshInterval metav1.Duration, labels map[string]string,
-	opts interface{}) func() *externalsecretsv1beta1.ExternalSecret {
+	opts interface{}) func(client.Object) (*externalsecretsv1beta1.ExternalSecret, error) {
 
-	return func() *externalsecretsv1beta1.ExternalSecret {
+	return func(client.Object) (*externalsecretsv1beta1.ExternalSecret, error) {
 		return &externalsecretsv1beta1.ExternalSecret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
@@ -33,7 +34,7 @@ func GenerateExternalSecretFn(name, namespace, secretStoreName, secretStoreKind 
 				RefreshInterval: &refreshInterval,
 				Data:            keysSlice(name, opts),
 			},
-		}
+		}, nil
 	}
 }
 

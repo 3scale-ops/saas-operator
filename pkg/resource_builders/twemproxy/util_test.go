@@ -115,8 +115,6 @@ func Test_AddTwemproxySidecar(t *testing.T) {
 								SuccessThreshold:    *pointer.Int32(1),
 								FailureThreshold:    *pointer.Int32(3),
 							},
-							TerminationMessagePath:   corev1.TerminationMessagePathDefault,
-							TerminationMessagePolicy: corev1.TerminationMessageReadFile,
 							Lifecycle: &corev1.Lifecycle{
 								PreStop: &corev1.LifecycleHandler{
 									Exec: &corev1.ExecAction{

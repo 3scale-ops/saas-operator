@@ -7,8 +7,7 @@ import (
 	"net/url"
 	"strings"
 
-	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
-	basereconciler_resources "github.com/3scale-ops/basereconciler/resources"
+	"github.com/3scale-ops/basereconciler/resource"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators"
 	"github.com/3scale/saas-operator/pkg/redis/server"
@@ -16,7 +15,9 @@ import (
 	"github.com/3scale/saas-operator/pkg/resource_builders/grafanadashboard"
 	"github.com/3scale/saas-operator/pkg/resource_builders/twemproxy"
 	"github.com/go-logr/logr"
+	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	"github.com/prometheus/client_golang/prometheus"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
@@ -215,19 +216,13 @@ func (gen *Generator) getMonitoredReadWriteSlavesWithFallbackToMasters(ctx conte
 }
 
 // Returns the twemproxy config ConfigMap
-func (gen *Generator) ConfigMap() basereconciler.Resource {
-	return basereconciler_resources.ConfigMapTemplate{
-		Template:  gen.configMap(true),
-		IsEnabled: true,
-	}
+func (gen *Generator) ConfigMap() *resource.Template[*corev1.ConfigMap] {
+	return resource.NewTemplateFromObjectFunction(func() *corev1.ConfigMap { return gen.configMap(true) })
 }
 
-func (gen *Generator) GrafanaDashboard() basereconciler_resources.GrafanaDashboardTemplate {
-	return basereconciler_resources.GrafanaDashboardTemplate{
-		Template: grafanadashboard.New(types.NamespacedName{
-			Name:      fmt.Sprintf("%s-%s", gen.InstanceName, gen.Component),
-			Namespace: gen.Namespace,
-		}, gen.GetLabels(), *gen.Spec.GrafanaDashboard, "dashboards/twemproxy.json.gtpl"),
-		IsEnabled: !gen.Spec.GrafanaDashboard.IsDeactivated(),
-	}
+func (gen *Generator) GrafanaDashboard() *resource.Template[*grafanav1alpha1.GrafanaDashboard] {
+	return resource.NewTemplate(
+		grafanadashboard.New(types.NamespacedName{Name: fmt.Sprintf("%s-%s", gen.InstanceName, gen.Component), Namespace: gen.Namespace},
+			gen.GetLabels(), *gen.Spec.GrafanaDashboard, "dashboards/twemproxy.json.gtpl")).
+		WithEnabled(!gen.Spec.GrafanaDashboard.IsDeactivated())
 }

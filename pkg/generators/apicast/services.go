@@ -9,52 +9,41 @@ import (
 
 // GatewayService returns a function that will return the
 // gateway Service resource when called
-func (gen *EnvGenerator) gatewayService() func() *corev1.Service {
-
-	return func() *corev1.Service {
-
-		return &corev1.Service{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:        gen.GetComponent(),
-				Annotations: service.ELBServiceAnnotations(*gen.Spec.LoadBalancer, gen.Spec.Endpoint.DNS),
-			},
-			Spec: corev1.ServiceSpec{
-				Type:                  corev1.ServiceTypeLoadBalancer,
-				ExternalTrafficPolicy: corev1.ServiceExternalTrafficPolicyTypeCluster,
-				SessionAffinity:       corev1.ServiceAffinityNone,
-				Ports: func() []corev1.ServicePort {
-					if gen.Spec.Marin3r.IsDeactivated() {
-						return service.Ports(
-							service.TCPPort("http", 80, intstr.FromString("gateway")),
-						)
-					}
+func (gen *EnvGenerator) gatewayService() *corev1.Service {
+	return &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        gen.GetComponent(),
+			Annotations: service.ELBServiceAnnotations(*gen.Spec.LoadBalancer, gen.Spec.Endpoint.DNS),
+		},
+		Spec: corev1.ServiceSpec{
+			Type: corev1.ServiceTypeLoadBalancer,
+			Ports: func() []corev1.ServicePort {
+				if gen.Spec.Marin3r.IsDeactivated() {
 					return service.Ports(
-						service.TCPPort("gateway-http", 80, intstr.FromString("gateway-http")),
-						service.TCPPort("gateway-https", 443, intstr.FromString("gateway-https")),
+						service.TCPPort("http", 80, intstr.FromString("gateway")),
 					)
-				}(),
-			},
-		}
+				}
+				return service.Ports(
+					service.TCPPort("gateway-http", 80, intstr.FromString("gateway-http")),
+					service.TCPPort("gateway-https", 443, intstr.FromString("gateway-https")),
+				)
+			}(),
+		},
 	}
 }
 
 // MgmtService returns a function that will return the
 // management Service resource when called
-func (gen *EnvGenerator) mgmtService() func() *corev1.Service {
-
-	return func() *corev1.Service {
-
-		return &corev1.Service{
-			ObjectMeta: metav1.ObjectMeta{
-				Name: gen.GetComponent() + "-management",
-			},
-			Spec: corev1.ServiceSpec{
-				Type:            corev1.ServiceTypeClusterIP,
-				SessionAffinity: corev1.ServiceAffinityNone,
-				Ports: service.Ports(
-					service.TCPPort("management", 8090, intstr.FromString("management")),
-				),
-			},
-		}
+func (gen *EnvGenerator) mgmtService() *corev1.Service {
+	return &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: gen.GetComponent() + "-management",
+		},
+		Spec: corev1.ServiceSpec{
+			Type: corev1.ServiceTypeClusterIP,
+			Ports: service.Ports(
+				service.TCPPort("management", 8090, intstr.FromString("management")),
+			),
+		},
 	}
 }

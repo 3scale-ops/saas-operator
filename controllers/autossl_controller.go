@@ -19,7 +19,7 @@ package controllers
 import (
 	"context"
 
-	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
+	"github.com/3scale-ops/basereconciler/resource"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators/autossl"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
@@ -30,7 +30,6 @@ import (
 	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
@@ -58,10 +57,9 @@ func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	ctx = log.IntoContext(ctx, logger)
 
 	instance := &saasv1alpha1.AutoSSL{}
-	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx, key, instance, nil, nil)
-	if result != nil || err != nil {
-		return *result, err
+	result := r.ManageResourceLifecycle(ctx, req, instance)
+	if result.ShouldReturn() {
+		return result.Values()
 	}
 
 	// Apply defaults for reconcile but do not store them in the API
@@ -77,7 +75,7 @@ func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	// Shared resources
-	resources := []basereconciler.Resource{
+	resources := []resource.TemplateInterface{
 		gen.GrafanaDashboard(),
 	}
 
@@ -88,10 +86,9 @@ func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 	resources = append(resources, workload...)
 
-	err = r.ReconcileOwnedResources(ctx, instance, resources)
-	if err != nil {
-		logger.Error(err, "unable to update owned resources")
-		return ctrl.Result{}, err
+	result = r.ReconcileOwnedResources(ctx, instance, resources)
+	if result.ShouldReturn() {
+		return result.Values()
 	}
 
 	return ctrl.Result{}, nil

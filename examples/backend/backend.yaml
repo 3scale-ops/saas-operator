@@ -2,7 +2,7 @@
 apiVersion: saas.3scale.net/v1alpha1
 kind: Backend
 metadata:
-  name: backned
+  name: backend
 spec:
   image:
     tag: v3.4.3

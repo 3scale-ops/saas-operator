@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 
+	"github.com/3scale-ops/basereconciler/resource"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators/system"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
@@ -32,7 +33,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
@@ -65,10 +65,9 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	ctx = log.IntoContext(ctx, logger)
 
 	instance := &saasv1alpha1.System{}
-	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx, key, instance, nil, nil)
-	if result != nil || err != nil {
-		return *result, err
+	result := r.ManageResourceLifecycle(ctx, req, instance)
+	if result.ShouldReturn() {
+		return result.Values()
 	}
 
 	// Apply defaults for reconcile but do not store them in the API
@@ -84,7 +83,8 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 
 	// Shared resources
-	resources := append(gen.ExternalSecrets(), gen.GrafanaDashboard())
+	resources := []resource.TemplateInterface{gen.GrafanaDashboard()}
+	resources = append(resources, gen.ExternalSecrets()...)
 
 	// System APP
 	app_resources, err := r.NewDeploymentWorkload(&gen.App, gen.CanaryApp)
@@ -123,10 +123,9 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	// Tekton resources
 	resources = append(resources, gen.Pipelines()...)
 
-	err = r.ReconcileOwnedResources(ctx, instance, resources)
-	if err != nil {
-		logger.Error(err, "unable to update owned resources")
-		return ctrl.Result{}, err
+	result = r.ReconcileOwnedResources(ctx, instance, resources)
+	if result.ShouldReturn() {
+		return result.Values()
 	}
 
 	return ctrl.Result{}, nil
@@ -147,6 +146,6 @@ func (r *SystemReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&pipelinev1beta1.Pipeline{}).
 		Owns(&pipelinev1beta1.Task{}).
 		Watches(&source.Kind{Type: &corev1.Secret{TypeMeta: metav1.TypeMeta{Kind: "Secret"}}},
-			r.SecretEventHandler(&saasv1alpha1.SystemList{}, r.Log)).
+			r.FilteredEventHandler(&saasv1alpha1.SystemList{}, nil, r.Log)).
 		Complete(r)
 }

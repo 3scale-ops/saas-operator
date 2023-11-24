@@ -218,65 +218,6 @@ metadata:
               "tag": "latest"
             },
             "marin3r": {
-              "dynamicConfigs": {
-                "echo_api_cluster": {
-                  "cluster": {
-                    "host": "127.0.0.1",
-                    "port": 9292
-                  }
-                },
-                "echo_api_route": {
-                  "rawConfig": {
-                    "type": "routeConfiguration",
-                    "value": {
-                      "name": "echo_api_route",
-                      "virtual_hosts": [
-                        {
-                          "domains": [
-                            "*"
-                          ],
-                          "name": "echo_api",
-                          "routes": [
-                            {
-                              "match": {
-                                "prefix": "/"
-                              },
-                              "route": {
-                                "cluster": "echo_api"
-                              }
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  }
-                },
-                "http": {
-                  "listenerHttp": {
-                    "port": 38080,
-                    "routeConfigName": "echo_api"
-                  }
-                },
-                "https": {
-                  "listenerHttp": {
-                    "certificateSecretName": "certificate",
-                    "port": 38443,
-                    "rateLimitOptions": {
-                      "domain": "echo_api",
-                      "rateLimitCluster": "test",
-                      "timeout": "10ms"
-                    },
-                    "routeConfigName": "echo_api"
-                  }
-                },
-                "runtime": {
-                  "runtime": {
-                    "listenerNames": [
-                      "http"
-                    ]
-                  }
-                }
-              },
               "ports": [
                 {
                   "name": "echo-api-http",
@@ -657,7 +598,7 @@ metadata:
     capabilities: Basic Install
     categories: Integration & Delivery
     containerImage: quay.io/3scale/saas-operator
-    createdAt: "2023-12-22T12:16:09Z"
+    createdAt: "2024-01-08T11:06:55Z"
     description: |-
       The 3scale SaaS Operator creates and maintains a SaaS-ready deployment
       of the Red Hat 3scale API Management on OpenShift.

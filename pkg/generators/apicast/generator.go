@@ -3,8 +3,8 @@ package apicast
 import (
 	"fmt"
 
-	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
-	basereconciler_resources "github.com/3scale-ops/basereconciler/resources"
+	mutators "github.com/3scale-ops/basereconciler/mutators"
+	"github.com/3scale-ops/basereconciler/resource"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators"
 	"github.com/3scale/saas-operator/pkg/generators/apicast/config"
@@ -12,7 +12,10 @@ import (
 	descriptor "github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 	"github.com/3scale/saas-operator/pkg/resource_builders/grafanadashboard"
 	"github.com/3scale/saas-operator/pkg/resource_builders/podmonitor"
+	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
 
@@ -134,20 +137,18 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.ApicastSpec) (Ge
 }
 
 // Resources returns a list of basereconciler_v2.Resource
-func (gen *Generator) Resources() []basereconciler.Resource {
-	return []basereconciler.Resource{
-		basereconciler_resources.GrafanaDashboardTemplate{
-			Template: grafanadashboard.New(
+func (gen *Generator) Resources() []resource.TemplateInterface {
+	return []resource.TemplateInterface{
+		resource.NewTemplate[*grafanav1alpha1.GrafanaDashboard](
+			grafanadashboard.New(
 				types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace},
-				gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/apicast.json.gtpl"),
-			IsEnabled: !gen.GrafanaDashboardSpec.IsDeactivated(),
-		},
-		basereconciler_resources.GrafanaDashboardTemplate{
-			Template: grafanadashboard.New(
+				gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/apicast.json.gtpl")).
+			WithEnabled(!gen.GrafanaDashboardSpec.IsDeactivated()),
+		resource.NewTemplate[*grafanav1alpha1.GrafanaDashboard](
+			grafanadashboard.New(
 				types.NamespacedName{Name: gen.Component + "-services", Namespace: gen.Namespace},
-				gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/apicast-services.json.gtpl"),
-			IsEnabled: !gen.GrafanaDashboardSpec.IsDeactivated(),
-		},
+				gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/apicast-services.json.gtpl")).
+			WithEnabled(!gen.GrafanaDashboardSpec.IsDeactivated()),
 	}
 }
 
@@ -172,13 +173,9 @@ var _ workloads.WithEnvoySidecar = &EnvGenerator{}
 func (gen *EnvGenerator) Labels() map[string]string {
 	return gen.GetLabels()
 }
-func (gen *EnvGenerator) Deployment() basereconciler_resources.DeploymentTemplate {
-	return basereconciler_resources.DeploymentTemplate{
-		Template:        gen.deployment(),
-		RolloutTriggers: nil,
-		EnforceReplicas: gen.Spec.HPA.IsDeactivated(),
-		IsEnabled:       true,
-	}
+func (gen *EnvGenerator) Deployment() *resource.Template[*appsv1.Deployment] {
+	return resource.NewTemplateFromObjectFunction(gen.deployment).
+		WithMutation(mutators.SetDeploymentReplicas(gen.Spec.HPA.IsDeactivated()))
 }
 
 func (gen *EnvGenerator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {
@@ -193,10 +190,10 @@ func (gen *EnvGenerator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint 
 		podmonitor.PodMetricsEndpoint("/stats/prometheus", "envoy-metrics", 60),
 	}
 }
-func (gen *EnvGenerator) Services() []basereconciler_resources.ServiceTemplate {
-	return []basereconciler_resources.ServiceTemplate{
-		{Template: gen.gatewayService(), IsEnabled: true},
-		{Template: gen.mgmtService(), IsEnabled: true},
+func (gen *EnvGenerator) Services() []*resource.Template[*corev1.Service] {
+	return []*resource.Template[*corev1.Service]{
+		resource.NewTemplateFromObjectFunction(gen.gatewayService).WithMutation(mutators.SetServiceLiveValues()),
+		resource.NewTemplateFromObjectFunction(gen.mgmtService).WithMutation(mutators.SetServiceLiveValues()),
 	}
 }
 func (gen *EnvGenerator) SendTraffic() bool { return gen.Traffic }

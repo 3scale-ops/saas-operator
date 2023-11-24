@@ -23,8 +23,6 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -32,7 +30,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
+	"github.com/3scale-ops/basereconciler/reconciler"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
 	"github.com/3scale/saas-operator/pkg/redis/backup"
@@ -45,7 +43,7 @@ import (
 
 // ShardedRedisBackupReconciler reconciles a ShardedRedisBackup object
 type ShardedRedisBackupReconciler struct {
-	basereconciler.Reconciler
+	*reconciler.Reconciler
 	Log          logr.Logger
 	BackupRunner threads.Manager
 	Pool         *redis.ServerPool
@@ -74,10 +72,12 @@ func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.R
 	// ----------------------------------
 
 	instance := &saasv1alpha1.ShardedRedisBackup{}
-	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx, key, instance, pointer.String(saasv1alpha1.Finalizer), []func(){r.BackupRunner.CleanupThreads(instance)})
-	if result != nil || err != nil {
-		return *result, err
+	result := r.ManageResourceLifecycle(ctx, req, instance,
+		reconciler.WithFinalizer(saasv1alpha1.Finalizer),
+		reconciler.WithFinalizationFunc(r.BackupRunner.CleanupThreads(instance)),
+	)
+	if result.ShouldReturn() {
+		return result.Values()
 	}
 
 	instance.Default()

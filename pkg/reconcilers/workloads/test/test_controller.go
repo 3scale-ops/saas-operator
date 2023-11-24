@@ -19,8 +19,9 @@ limitations under the License.
 import (
 	"context"
 
-	"github.com/3scale-ops/basereconciler/reconciler"
-	"github.com/3scale-ops/basereconciler/resources"
+	"github.com/3scale-ops/basereconciler/config"
+	"github.com/3scale-ops/basereconciler/mutators"
+	"github.com/3scale-ops/basereconciler/resource"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads/test/api/v1alpha1"
@@ -37,22 +38,15 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 func init() {
-	reconciler.Config.AnnotationsDomain = saasv1alpha1.AnnotationsDomain
-	reconciler.Config.ResourcePruner = true
-	reconciler.Config.ManagedTypes = reconciler.NewManagedTypes().
-		Register(&corev1.ServiceList{}).
-		Register(&corev1.ConfigMapList{}).
-		Register(&appsv1.DeploymentList{}).
-		Register(&appsv1.StatefulSetList{}).
-		Register(&externalsecretsv1beta1.ExternalSecretList{}).
-		Register(&autoscalingv2.HorizontalPodAutoscalerList{}).
-		Register(&policyv1.PodDisruptionBudgetList{}).
-		Register(&monitoringv1.PodMonitorList{})
+	config.SetAnnotationsDomain(saasv1alpha1.AnnotationsDomain)
+	config.EnableResourcePruner()
+
 }
 
 // WorkloadReconciler reconciles a Test object
@@ -69,10 +63,9 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	ctx = log.IntoContext(ctx, logger)
 
 	instance := &v1alpha1.Test{}
-	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx, key, instance, nil, nil)
-	if result != nil || err != nil {
-		return *result, err
+	result := r.ManageResourceLifecycle(ctx, req, instance)
+	if result.ShouldReturn() {
+		return result.Values()
 	}
 
 	main := &TestWorkloadGenerator{
@@ -99,10 +92,9 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	}
 
 	// Reconcile all resources
-	err = r.ReconcileOwnedResources(ctx, instance, deployments)
-	if err != nil {
-		logger.Error(err, "unable to reconcile owned resources")
-		return ctrl.Result{}, err
+	result = r.ReconcileOwnedResources(ctx, instance, deployments)
+	if result.ShouldReturn() {
+		return result.Values()
 	}
 
 	return ctrl.Result{}, nil
@@ -118,7 +110,7 @@ func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&autoscalingv2.HorizontalPodAutoscaler{}).
 		Owns(&externalsecretsv1beta1.ExternalSecret{}).
 		Watches(&source.Kind{Type: &corev1.Secret{TypeMeta: metav1.TypeMeta{Kind: "Secret"}}},
-			r.SecretEventHandler(&v1alpha1.TestList{}, r.Log)).
+			r.FilteredEventHandler(&v1alpha1.TestList{}, nil, r.Log)).
 		Complete(r)
 }
 
@@ -134,25 +126,24 @@ type TestWorkloadGenerator struct {
 	TTrafficSelector map[string]string
 }
 
-func (gen *TestWorkloadGenerator) Services() []resources.ServiceTemplate {
-	return []resources.ServiceTemplate{{
-		Template: func() *corev1.Service {
-			return &corev1.Service{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "service",
-					Namespace: gen.TNamespace,
-				},
-				Spec: corev1.ServiceSpec{
-					Type:                  corev1.ServiceTypeLoadBalancer,
-					ExternalTrafficPolicy: corev1.ServiceExternalTrafficPolicyTypeCluster,
-					SessionAffinity:       corev1.ServiceAffinityNone,
-					Ports: []corev1.ServicePort{{
-						Name: "port", Port: 80, TargetPort: intstr.FromInt(80), Protocol: corev1.ProtocolTCP}},
-				},
-			}
-		},
-		IsEnabled: true,
-	},
+func (gen *TestWorkloadGenerator) Services() []*resource.Template[*corev1.Service] {
+	return []*resource.Template[*corev1.Service]{
+		resource.NewTemplate(
+			func(client.Object) (*corev1.Service, error) {
+				return &corev1.Service{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "service",
+					},
+					Spec: corev1.ServiceSpec{
+						Type:                  corev1.ServiceTypeLoadBalancer,
+						ExternalTrafficPolicy: corev1.ServiceExternalTrafficPolicyTypeCluster,
+						SessionAffinity:       corev1.ServiceAffinityNone,
+						Ports: []corev1.ServicePort{{
+							Name: "port", Port: 80, TargetPort: intstr.FromInt(80), Protocol: corev1.ProtocolTCP}},
+					},
+				}, nil
+			},
+		),
 	}
 }
 
@@ -160,9 +151,9 @@ func (gen *TestWorkloadGenerator) TrafficSelector() map[string]string {
 	return gen.TTrafficSelector
 }
 
-func (gen *TestWorkloadGenerator) Deployment() resources.DeploymentTemplate {
-	return resources.DeploymentTemplate{
-		Template: func() *appsv1.Deployment {
+func (gen *TestWorkloadGenerator) Deployment() *resource.Template[*appsv1.Deployment] {
+	return resource.NewTemplate[*appsv1.Deployment](
+		func(client.Object) (*appsv1.Deployment, error) {
 			return &appsv1.Deployment{
 				Spec: appsv1.DeploymentSpec{
 					Replicas: pointer.Int32(1),
@@ -181,15 +172,10 @@ func (gen *TestWorkloadGenerator) Deployment() resources.DeploymentTemplate {
 						},
 					},
 				},
-			}
-		},
-		RolloutTriggers: []resources.RolloutTrigger{{
-			Name:       "secret",
-			SecretName: pointer.String("secret"),
-		}},
-		IsEnabled:       true,
-		EnforceReplicas: true,
-	}
+			}, nil
+		}).
+		WithMutation(mutators.RolloutTrigger{Name: "secret", SecretName: pointer.String("secret")}.Add()).
+		WithMutation(mutators.SetDeploymentReplicas(true))
 }
 
 func (gen *TestWorkloadGenerator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint { return nil }

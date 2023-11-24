@@ -28,7 +28,7 @@ import (
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
-	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
+	"github.com/3scale-ops/basereconciler/reconciler"
 	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
@@ -132,7 +132,7 @@ func main() {
 
 	redisPool := redis.NewServerPool()
 	if err = (&controllers.SentinelReconciler{
-		Reconciler:     basereconciler.NewFromManager(mgr),
+		Reconciler:     reconciler.NewFromManager(mgr),
 		SentinelEvents: threads.NewManager(),
 		Metrics:        threads.NewManager(),
 		Log:            ctrl.Log.WithName("controllers").WithName("Sentinel"),
@@ -142,7 +142,7 @@ func main() {
 		os.Exit(1)
 	}
 	if err = (&controllers.RedisShardReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr),
+		Reconciler: reconciler.NewFromManager(mgr),
 		Log:        ctrl.Log.WithName("controllers").WithName("RedisShard"),
 		Pool:       redisPool,
 	}).SetupWithManager(mgr); err != nil {
@@ -150,7 +150,7 @@ func main() {
 		os.Exit(1)
 	}
 	if err = (&controllers.TwemproxyConfigReconciler{
-		Reconciler:     basereconciler.NewFromManager(mgr),
+		Reconciler:     reconciler.NewFromManager(mgr),
 		SentinelEvents: threads.NewManager(),
 		Log:            ctrl.Log.WithName("controllers").WithName("TwemproxyConfig"),
 		Pool:           redisPool,
@@ -160,7 +160,7 @@ func main() {
 	}
 
 	if err = (&controllers.ShardedRedisBackupReconciler{
-		Reconciler:   basereconciler.NewFromManager(mgr),
+		Reconciler:   reconciler.NewFromManager(mgr),
 		BackupRunner: threads.NewManager(),
 		Log:          ctrl.Log.WithName("controllers").WithName("ShardedRedisBackup"),
 		Pool:         redisPool,

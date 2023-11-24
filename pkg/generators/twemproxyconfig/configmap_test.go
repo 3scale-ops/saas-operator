@@ -143,7 +143,7 @@ func TestGenerator_configMap(t *testing.T) {
 				masterTargets:  tt.fields.masterTargets,
 				slaverwTargets: tt.fields.slaverwTargets,
 			}
-			got := gen.configMap(tt.args.toYAML)()
+			got := gen.configMap(tt.args.toYAML)
 			if diff := deep.Equal(got, tt.want); len(diff) > 0 {
 				t.Errorf("Generator.configMap() = diff %v", diff)
 			}

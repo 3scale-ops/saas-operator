@@ -32,7 +32,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
@@ -64,10 +63,9 @@ func (r *BackendReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	ctx = log.IntoContext(ctx, logger)
 
 	instance := &saasv1alpha1.Backend{}
-	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx, key, instance, nil, nil)
-	if result != nil || err != nil {
-		return *result, err
+	result := r.ManageResourceLifecycle(ctx, req, instance)
+	if result.ShouldReturn() {
+		return result.Values()
 	}
 
 	// Apply defaults for reconcile but do not store them in the API
@@ -103,10 +101,9 @@ func (r *BackendReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	resources = append(resources, cron_resources...)
 
 	// Reconcile all resources
-	err = r.ReconcileOwnedResources(ctx, instance, resources)
-	if err != nil {
-		logger.Error(err, "unable to reconcile owned resources")
-		return ctrl.Result{}, err
+	result = r.ReconcileOwnedResources(ctx, instance, resources)
+	if result.ShouldReturn() {
+		return result.Values()
 	}
 
 	return ctrl.Result{}, nil
@@ -125,6 +122,6 @@ func (r *BackendReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&grafanav1alpha1.GrafanaDashboard{}).
 		Owns(&marin3rv1alpha1.EnvoyConfig{}).
 		Watches(&source.Kind{Type: &corev1.Secret{TypeMeta: metav1.TypeMeta{Kind: "Secret"}}},
-			r.SecretEventHandler(&saasv1alpha1.BackendList{}, r.Log)).
+			r.FilteredEventHandler(&saasv1alpha1.BackendList{}, nil, r.Log)).
 		Complete(r)
 }

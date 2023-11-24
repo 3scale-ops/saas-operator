@@ -8,36 +8,33 @@ import (
 
 // RedisConfigConfigMap returns a function that will return a ConfigMap
 // resource when called
-func (gen *Generator) redisConfigConfigMap() func() *corev1.ConfigMap {
-	return func() *corev1.ConfigMap {
-		return &corev1.ConfigMap{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "redis-config-" + gen.GetInstanceName(),
-				Namespace: gen.GetNamespace(),
-				Labels:    gen.GetLabels(),
-			},
-			Data: map[string]string{
-				"redis.conf": heredoc.Doc(`
+func (gen *Generator) redisConfigConfigMap() *corev1.ConfigMap {
+	return &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "redis-config-" + gen.GetInstanceName(),
+			Namespace: gen.GetNamespace(),
+			Labels:    gen.GetLabels(),
+		},
+		Data: map[string]string{
+			"redis.conf": heredoc.Doc(`
 					slaveof 127.0.0.1 6379
 					tcp-keepalive 60
 				`),
-			},
-		}
+		},
 	}
 }
 
 // RedisReadinessScriptConfigMap returns a function that will return a ConfigMap
 // resource when called
-func (gen *Generator) redisReadinessScriptConfigMap() func() *corev1.ConfigMap {
-	return func() *corev1.ConfigMap {
-		return &corev1.ConfigMap{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "redis-readiness-script-" + gen.GetInstanceName(),
-				Namespace: gen.GetNamespace(),
-				Labels:    gen.GetLabels(),
-			},
-			Data: map[string]string{
-				"ready.sh": heredoc.Doc(`
+func (gen *Generator) redisReadinessScriptConfigMap() *corev1.ConfigMap {
+	return &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "redis-readiness-script-" + gen.GetInstanceName(),
+			Namespace: gen.GetNamespace(),
+			Labels:    gen.GetLabels(),
+		},
+		Data: map[string]string{
+			"ready.sh": heredoc.Doc(`
 
 					check_master(){
 							exit 0
@@ -66,7 +63,6 @@ func (gen *Generator) redisReadinessScriptConfigMap() func() *corev1.ConfigMap {
 									exit 1
 					esac
 				`),
-			},
-		}
+		},
 	}
 }

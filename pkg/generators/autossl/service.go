@@ -8,24 +8,18 @@ import (
 )
 
 // service returns a function that will return the corev1.Service for autossl
-func (gen *Generator) service() func() *corev1.Service {
-
-	return func() *corev1.Service {
-
-		return &corev1.Service{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:        gen.GetComponent(),
-				Annotations: service.ELBServiceAnnotations(*gen.Spec.LoadBalancer, gen.Spec.Endpoint.DNS),
-			},
-			Spec: corev1.ServiceSpec{
-				Type:                  corev1.ServiceTypeLoadBalancer,
-				ExternalTrafficPolicy: corev1.ServiceExternalTrafficPolicyTypeCluster,
-				SessionAffinity:       corev1.ServiceAffinityNone,
-				Ports: service.Ports(
-					service.TCPPort("http", 80, intstr.FromString("http")),
-					service.TCPPort("https", 443, intstr.FromString("https")),
-				),
-			},
-		}
+func (gen *Generator) service() *corev1.Service {
+	return &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        gen.GetComponent(),
+			Annotations: service.ELBServiceAnnotations(*gen.Spec.LoadBalancer, gen.Spec.Endpoint.DNS),
+		},
+		Spec: corev1.ServiceSpec{
+			Type: corev1.ServiceTypeLoadBalancer,
+			Ports: service.Ports(
+				service.TCPPort("http", 80, intstr.FromString("http")),
+				service.TCPPort("https", 443, intstr.FromString("https")),
+			),
+		},
 	}
 }

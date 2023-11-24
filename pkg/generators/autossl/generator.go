@@ -4,14 +4,18 @@ import (
 	"fmt"
 	"strings"
 
-	basereconciler_resources "github.com/3scale-ops/basereconciler/resources"
+	"github.com/3scale-ops/basereconciler/mutators"
+	"github.com/3scale-ops/basereconciler/resource"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators"
 	"github.com/3scale/saas-operator/pkg/generators/autossl/config"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	"github.com/3scale/saas-operator/pkg/resource_builders/grafanadashboard"
 	"github.com/3scale/saas-operator/pkg/resource_builders/podmonitor"
+	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -79,9 +83,10 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.AutoSSLSpec) (Ge
 	return generator, nil
 }
 
-func (gen *Generator) Services() []basereconciler_resources.ServiceTemplate {
-	return []basereconciler_resources.ServiceTemplate{
-		{Template: gen.service(), IsEnabled: true},
+func (gen *Generator) Services() []*resource.Template[*corev1.Service] {
+	return []*resource.Template[*corev1.Service]{
+		resource.NewTemplateFromObjectFunction(gen.service).
+			WithMutation(mutators.SetServiceLiveValues()),
 	}
 }
 func (gen *Generator) SendTraffic() bool { return gen.Traffic }
@@ -94,12 +99,9 @@ func (gen *Generator) TrafficSelector() map[string]string {
 // Validate that Generator implements workloads.DeploymentWorkload interface
 var _ workloads.DeploymentWorkload = &Generator{}
 
-func (gen *Generator) Deployment() basereconciler_resources.DeploymentTemplate {
-	return basereconciler_resources.DeploymentTemplate{
-		Template:        gen.deployment(),
-		EnforceReplicas: gen.Spec.HPA.IsDeactivated(),
-		IsEnabled:       true,
-	}
+func (gen *Generator) Deployment() *resource.Template[*appsv1.Deployment] {
+	return resource.NewTemplateFromObjectFunction(gen.deployment).
+		WithMutation(mutators.SetDeploymentReplicas(gen.Spec.HPA.IsDeactivated()))
 }
 
 func (gen *Generator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {
@@ -117,9 +119,8 @@ func (gen *Generator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint {
 }
 
 // GrafanaDashboard returns a basereconciler_resources.GrafanaDashboardTemplate
-func (gen *Generator) GrafanaDashboard() basereconciler_resources.GrafanaDashboardTemplate {
-	return basereconciler_resources.GrafanaDashboardTemplate{
-		Template:  grafanadashboard.New(gen.GetKey(), gen.GetLabels(), *gen.Spec.GrafanaDashboard, "dashboards/autossl.json.gtpl"),
-		IsEnabled: !gen.Spec.GrafanaDashboard.IsDeactivated(),
-	}
+func (gen *Generator) GrafanaDashboard() *resource.Template[*grafanav1alpha1.GrafanaDashboard] {
+	return resource.NewTemplate[*grafanav1alpha1.GrafanaDashboard](
+		grafanadashboard.New(gen.GetKey(), gen.GetLabels(), *gen.Spec.GrafanaDashboard, "dashboards/autossl.json.gtpl")).
+		WithEnabled(!gen.Spec.GrafanaDashboard.IsDeactivated())
 }

@@ -21,7 +21,7 @@ import (
 	"testing"
 	"time"
 
-	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
+	"github.com/3scale-ops/basereconciler/reconciler"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/util"
 	"github.com/go-logr/logr"
@@ -30,10 +30,6 @@ import (
 )
 
 func TestShardedRedisBackupReconciler_reconcileBackupList(t *testing.T) {
-	type fields struct {
-		Reconciler basereconciler.Reconciler
-		Log        logr.Logger
-	}
 	type args struct {
 		instance *saasv1alpha1.ShardedRedisBackup
 		nextRun  time.Time
@@ -41,7 +37,6 @@ func TestShardedRedisBackupReconciler_reconcileBackupList(t *testing.T) {
 	}
 	tests := []struct {
 		name        string
-		fields      fields
 		args        args
 		wantChanged bool
 		wantStatus  saasv1alpha1.ShardedRedisBackupStatus
@@ -49,10 +44,6 @@ func TestShardedRedisBackupReconciler_reconcileBackupList(t *testing.T) {
 	}{
 		{
 			name: "List is empty, adds a backup",
-			fields: fields{
-				Reconciler: basereconciler.Reconciler{},
-				Log:        logr.Discard(),
-			},
 			args: args{
 				nextRun: util.MustParseRFC3339("2023-09-01T00:01:00Z"),
 				instance: &saasv1alpha1.ShardedRedisBackup{
@@ -82,10 +73,6 @@ func TestShardedRedisBackupReconciler_reconcileBackupList(t *testing.T) {
 		},
 		{
 			name: "No changes",
-			fields: fields{
-				Reconciler: basereconciler.Reconciler{},
-				Log:        logr.Discard(),
-			},
 			args: args{
 				nextRun: util.MustParseRFC3339("2023-09-01T00:01:00Z"),
 				instance: &saasv1alpha1.ShardedRedisBackup{
@@ -129,10 +116,6 @@ func TestShardedRedisBackupReconciler_reconcileBackupList(t *testing.T) {
 		},
 		{
 			name: "Adds new backups",
-			fields: fields{
-				Reconciler: basereconciler.Reconciler{},
-				Log:        logr.Discard(),
-			},
 			args: args{
 				nextRun: util.MustParseRFC3339("2023-09-01T00:02:00Z"),
 				instance: &saasv1alpha1.ShardedRedisBackup{
@@ -178,8 +161,8 @@ func TestShardedRedisBackupReconciler_reconcileBackupList(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := &ShardedRedisBackupReconciler{
-				Reconciler: tt.fields.Reconciler,
-				Log:        tt.fields.Log,
+				Reconciler: &reconciler.Reconciler{},
+				Log:        logr.Discard(),
 			}
 			got, err := r.reconcileBackupList(context.TODO(), tt.args.instance, tt.args.nextRun, tt.args.shards)
 			if (err != nil) != tt.wantErr {

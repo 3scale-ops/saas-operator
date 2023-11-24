@@ -21,7 +21,7 @@ import (
 	"errors"
 	"time"
 
-	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
+	"github.com/3scale-ops/basereconciler/reconciler"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators/sentinel"
 	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
@@ -36,9 +36,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/workqueue"
-	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -49,7 +47,7 @@ import (
 
 // SentinelReconciler reconciles a Sentinel object
 type SentinelReconciler struct {
-	basereconciler.Reconciler
+	*reconciler.Reconciler
 	Log            logr.Logger
 	SentinelEvents threads.Manager
 	Metrics        threads.Manager
@@ -72,14 +70,13 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	ctx = log.IntoContext(ctx, logger)
 
 	instance := &saasv1alpha1.Sentinel{}
-	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx,
-		key,
-		instance,
-		pointer.String(saasv1alpha1.Finalizer),
-		[]func(){r.SentinelEvents.CleanupThreads(instance), r.Metrics.CleanupThreads(instance)})
-	if result != nil || err != nil {
-		return *result, err
+	result := r.ManageResourceLifecycle(ctx, req, instance,
+		reconciler.WithFinalizer(saasv1alpha1.Finalizer),
+		reconciler.WithFinalizationFunc(r.SentinelEvents.CleanupThreads(instance)),
+		reconciler.WithFinalizationFunc(r.Metrics.CleanupThreads(instance)),
+	)
+	if result.ShouldReturn() {
+		return result.Values()
 	}
 
 	// Apply defaults for reconcile but do not store them in the API
@@ -91,9 +88,9 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		instance.Spec,
 	)
 
-	if err := r.ReconcileOwnedResources(ctx, instance, gen.Resources()); err != nil {
-		logger.Error(err, "unable to update owned resources")
-		return ctrl.Result{}, err
+	result = r.ReconcileOwnedResources(ctx, instance, gen.Resources())
+	if result.ShouldReturn() {
+		return result.Values()
 	}
 
 	clustermap, err := gen.ClusterTopology(ctx)

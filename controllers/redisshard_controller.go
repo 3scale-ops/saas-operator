@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"time"
 
-	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
+	"github.com/3scale-ops/basereconciler/reconciler"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators/redisshard"
 	"github.com/3scale/saas-operator/pkg/redis/client"
@@ -38,7 +38,7 @@ import (
 
 // RedisShardReconciler reconciles a RedisShard object
 type RedisShardReconciler struct {
-	basereconciler.Reconciler
+	*reconciler.Reconciler
 	Log  logr.Logger
 	Pool *redis.ServerPool
 }
@@ -57,10 +57,9 @@ func (r *RedisShardReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	ctx = log.IntoContext(ctx, logger)
 
 	instance := &saasv1alpha1.RedisShard{}
-	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx, key, instance, nil, nil)
-	if result != nil || err != nil {
-		return *result, err
+	result := r.ManageResourceLifecycle(ctx, req, instance)
+	if result.ShouldReturn() {
+		return result.Values()
 	}
 
 	// Apply defaults for reconcile but do not store them in the API
@@ -72,19 +71,18 @@ func (r *RedisShardReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		instance.Spec,
 	)
 
-	if err := r.ReconcileOwnedResources(ctx, instance, gen.Resources()); err != nil {
-		logger.Error(err, "unable to update owned resources")
-		return ctrl.Result{}, err
+	result = r.ReconcileOwnedResources(ctx, instance, gen.Resources())
+	if result.ShouldReturn() {
+		return result.Values()
 	}
 
-	shard, result, err := r.setRedisRoles(ctx, types.NamespacedName{Name: req.Name, Namespace: req.Namespace},
+	shard, result := r.setRedisRoles(ctx, types.NamespacedName{Name: req.Name, Namespace: req.Namespace},
 		*instance.Spec.MasterIndex, *instance.Spec.SlaveCount+1, gen.ServiceName(), logger)
-
-	if result != nil || err != nil {
-		return *result, err
+	if result.ShouldReturn() {
+		return result.Values()
 	}
 
-	if err = r.updateStatus(ctx, shard, instance, logger); err != nil {
+	if err := r.updateStatus(ctx, shard, instance, logger); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -101,7 +99,8 @@ func (r *RedisShardReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *RedisShardReconciler) setRedisRoles(ctx context.Context, key types.NamespacedName, masterIndex, replicas int32, serviceName string, log logr.Logger) (*sharded.Shard, *ctrl.Result, error) {
+func (r *RedisShardReconciler) setRedisRoles(ctx context.Context, key types.NamespacedName,
+	masterIndex, replicas int32, serviceName string, log logr.Logger) (*sharded.Shard, reconciler.Result) {
 
 	var masterHostPort string
 	redisURLs := make(map[string]string, replicas)
@@ -110,11 +109,12 @@ func (r *RedisShardReconciler) setRedisRoles(ctx context.Context, key types.Name
 		key := types.NamespacedName{Name: fmt.Sprintf("%s-%d", serviceName, i), Namespace: key.Namespace}
 		err := r.Client.Get(ctx, key, pod)
 		if err != nil {
-			return &sharded.Shard{Name: key.Name}, &ctrl.Result{}, err
+			return &sharded.Shard{Name: key.Name}, reconciler.Result{Error: err}
 		}
 		if pod.Status.PodIP == "" {
 			log.Info("waiting for pod IP to be allocated")
-			return &sharded.Shard{Name: key.Name}, &ctrl.Result{RequeueAfter: 5 * time.Second}, nil
+			// return &sharded.Shard{Name: key.Name}, &ctrl.Result{RequeueAfter: 5 * time.Second}, nil
+			return &sharded.Shard{Name: key.Name}, reconciler.Result{Action: reconciler.ReturnAndRequeueAction, RequeueAfter: 5 * time.Second}
 		}
 
 		redisURLs[fmt.Sprintf("%s-%d", serviceName, i)] = fmt.Sprintf("redis://%s:%d", pod.Status.PodIP, 6379)
@@ -125,16 +125,16 @@ func (r *RedisShardReconciler) setRedisRoles(ctx context.Context, key types.Name
 
 	shard, err := sharded.NewShardFromTopology(key.Name, redisURLs, r.Pool)
 	if err != nil {
-		return shard, &ctrl.Result{}, err
+		return shard, reconciler.Result{Error: err}
 	}
 
 	_, err = shard.Init(ctx, masterHostPort)
 	if err != nil {
 		log.Info("waiting for redis shard init")
-		return shard, &ctrl.Result{Requeue: true, RequeueAfter: 10 * time.Second}, nil
+		return shard, reconciler.Result{Action: reconciler.ReturnAndRequeueAction, RequeueAfter: 10 * time.Second}
 	}
 
-	return shard, nil, nil
+	return shard, reconciler.Result{}
 }
 
 func (r *RedisShardReconciler) updateStatus(ctx context.Context, shard *sharded.Shard, instance *saasv1alpha1.RedisShard, log logr.Logger) error {

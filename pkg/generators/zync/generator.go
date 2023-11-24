@@ -4,18 +4,21 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/3scale-ops/basereconciler/mutators"
+	"github.com/3scale-ops/basereconciler/resource"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators"
-
-	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
-	basereconciler_resources "github.com/3scale-ops/basereconciler/resources"
 	"github.com/3scale/saas-operator/pkg/generators/zync/config"
 	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
 	"github.com/3scale/saas-operator/pkg/resource_builders/grafanadashboard"
 	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
 	"github.com/3scale/saas-operator/pkg/resource_builders/podmonitor"
+	"github.com/3scale/saas-operator/pkg/util"
+	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
+	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
-
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/utils/pointer"
 )
 
@@ -100,18 +103,18 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.ZyncSpec) Genera
 }
 
 // Resources returns functions to generate all Zync's shared resources
-func (gen *Generator) Resources() []basereconciler.Resource {
-	return []basereconciler.Resource{
+func (gen *Generator) Resources() []resource.TemplateInterface {
+	return []resource.TemplateInterface{
 		// GrafanaDashboard
-		basereconciler_resources.GrafanaDashboardTemplate{
-			Template:  grafanadashboard.New(gen.GetKey(), gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/zync.json.gtpl"),
-			IsEnabled: !gen.GrafanaDashboardSpec.IsDeactivated(),
-		},
+		resource.NewTemplate[*grafanav1alpha1.GrafanaDashboard](
+			grafanadashboard.New(gen.GetKey(), gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/zync.json.gtpl")).
+			WithEnabled(!gen.GrafanaDashboardSpec.IsDeactivated()),
 		// ExternalSecret
-		basereconciler_resources.ExternalSecretTemplate{
-			Template:  pod.GenerateExternalSecretFn("zync", gen.GetNamespace(), *gen.Config.ExternalSecret.SecretStoreRef.Name, *gen.Config.ExternalSecret.SecretStoreRef.Kind, *gen.Config.ExternalSecret.RefreshInterval, gen.GetLabels(), gen.API.Options),
-			IsEnabled: true,
-		},
+		resource.NewTemplate[*externalsecretsv1beta1.ExternalSecret](
+			pod.GenerateExternalSecretFn("zync", gen.GetNamespace(),
+				*gen.Config.ExternalSecret.SecretStoreRef.Name, *gen.Config.ExternalSecret.SecretStoreRef.Kind,
+				*gen.Config.ExternalSecret.RefreshInterval, gen.GetLabels(), gen.API.Options),
+		),
 	}
 }
 
@@ -134,17 +137,10 @@ var _ workloads.WithTraffic = &APIGenerator{}
 func (gen *APIGenerator) Labels() map[string]string {
 	return gen.GetLabels()
 }
-func (gen *APIGenerator) Deployment() basereconciler_resources.DeploymentTemplate {
-	return basereconciler_resources.DeploymentTemplate{
-		Template: gen.deployment(),
-		RolloutTriggers: func() []basereconciler_resources.RolloutTrigger {
-			return []basereconciler_resources.RolloutTrigger{
-				{Name: "zync", SecretName: pointer.String("zync")},
-			}
-		}(),
-		EnforceReplicas: gen.APISpec.HPA.IsDeactivated(),
-		IsEnabled:       true,
-	}
+func (gen *APIGenerator) Deployment() *resource.Template[*appsv1.Deployment] {
+	return resource.NewTemplateFromObjectFunction(gen.deployment).
+		WithMutation(mutators.SetDeploymentReplicas(gen.APISpec.HPA.IsDeactivated())).
+		WithMutation(mutators.RolloutTrigger{Name: "zync", SecretName: util.Pointer("zync")}.Add())
 }
 
 func (gen *APIGenerator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {
@@ -158,9 +154,9 @@ func (gen *APIGenerator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint 
 		podmonitor.PodMetricsEndpoint("/metrics", "metrics", 30),
 	}
 }
-func (gen *APIGenerator) Services() []basereconciler_resources.ServiceTemplate {
-	return []basereconciler_resources.ServiceTemplate{
-		{Template: gen.service(), IsEnabled: true},
+func (gen *APIGenerator) Services() []*resource.Template[*corev1.Service] {
+	return []*resource.Template[*corev1.Service]{
+		resource.NewTemplateFromObjectFunction(gen.service).WithMutation(mutators.SetServiceLiveValues()),
 	}
 }
 func (gen *APIGenerator) SendTraffic() bool { return gen.Traffic }
@@ -182,17 +178,10 @@ type QueGenerator struct {
 // Validate that QueGenerator implements workloads.DeploymentWorkload interface
 var _ workloads.DeploymentWorkload = &QueGenerator{}
 
-func (gen *QueGenerator) Deployment() basereconciler_resources.DeploymentTemplate {
-	return basereconciler_resources.DeploymentTemplate{
-		Template: gen.deployment(),
-		RolloutTriggers: func() []basereconciler_resources.RolloutTrigger {
-			return []basereconciler_resources.RolloutTrigger{
-				{Name: "zync", SecretName: pointer.String("zync")},
-			}
-		}(),
-		EnforceReplicas: gen.QueSpec.HPA.IsDeactivated(),
-		IsEnabled:       true,
-	}
+func (gen *QueGenerator) Deployment() *resource.Template[*appsv1.Deployment] {
+	return resource.NewTemplateFromObjectFunction(gen.deployment).
+		WithMutation(mutators.SetDeploymentReplicas(gen.QueSpec.HPA.IsDeactivated())).
+		WithMutation(mutators.RolloutTrigger{Name: "zync", SecretName: pointer.String("zync")}.Add())
 }
 func (gen *QueGenerator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {
 	return gen.QueSpec.HPA
@@ -215,14 +204,9 @@ type ConsoleGenerator struct {
 	Enabled bool
 }
 
-func (gen *ConsoleGenerator) StatefulSet() basereconciler_resources.StatefulSetTemplate {
-	return basereconciler_resources.StatefulSetTemplate{
-		Template: gen.statefulset(),
-		RolloutTriggers: func() []basereconciler_resources.RolloutTrigger {
-			return []basereconciler_resources.RolloutTrigger{
-				{Name: "zync", SecretName: pointer.String("zync")},
-			}
-		}(),
-		IsEnabled: gen.Enabled,
-	}
+func (gen *ConsoleGenerator) StatefulSet() *resource.Template[*appsv1.StatefulSet] {
+	return resource.NewTemplateFromObjectFunction(gen.statefulset).
+		WithEnabled(gen.Enabled).
+		WithMutation(mutators.SetDeploymentReplicas(true)).
+		WithMutation(mutators.RolloutTrigger{Name: "zync", SecretName: pointer.String("zync")}.Add())
 }

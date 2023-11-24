@@ -28,12 +28,10 @@ func TwemproxyContainer(twemproxySpec *saasv1alpha1.TwemproxySpec) corev1.Contai
 			pod.ContainerPortTCP(twemproxy, 22121),
 			pod.ContainerPortTCP("twem-metrics", int32(*twemproxySpec.Options.MetricsPort)),
 		),
-		Resources:                corev1.ResourceRequirements(*twemproxySpec.Resources),
-		ImagePullPolicy:          *twemproxySpec.Image.PullPolicy,
-		LivenessProbe:            pod.ExecProbe(healthCommand, *twemproxySpec.LivenessProbe),
-		ReadinessProbe:           pod.ExecProbe(healthCommand, *twemproxySpec.ReadinessProbe),
-		TerminationMessagePath:   corev1.TerminationMessagePathDefault,
-		TerminationMessagePolicy: corev1.TerminationMessageReadFile,
+		Resources:       corev1.ResourceRequirements(*twemproxySpec.Resources),
+		ImagePullPolicy: *twemproxySpec.Image.PullPolicy,
+		LivenessProbe:   pod.ExecProbe(healthCommand, *twemproxySpec.LivenessProbe),
+		ReadinessProbe:  pod.ExecProbe(healthCommand, *twemproxySpec.ReadinessProbe),
 		Lifecycle: &corev1.Lifecycle{
 			PreStop: &corev1.LifecycleHandler{
 				Exec: &corev1.ExecAction{

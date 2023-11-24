@@ -103,13 +103,14 @@ func (mgr *Manager) ReconcileThreads(ctx context.Context, owner client.Object, t
 // CleanupThreads returns a function that cleans matching threads when invoked.
 // This is intended for use as a cleanup function in the finalize phase of a controller's
 // reconcile loop.
-func (mgr *Manager) CleanupThreads(owner client.Object) func() {
-	return func() {
+func (mgr *Manager) CleanupThreads(owner client.Object) func(context.Context, client.Client) error {
+	return func(context.Context, client.Client) error {
 		for key := range mgr.threads {
 			if strings.Contains(key, prefix(owner)) {
 				mgr.stopThread(key)
 			}
 		}
+		return nil
 	}
 }
 

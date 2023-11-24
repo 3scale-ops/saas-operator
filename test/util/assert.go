@@ -160,7 +160,7 @@ func (er *ExpectedResource) Assert(c client.Client, o client.Object, timeout, po
 	}
 
 	return func() {
-		By(fmt.Sprintf("%s object does exists", er.Name))
+		By(fmt.Sprintf("%s object does exist", er.Name))
 		Eventually(func() error {
 			return c.Get(context.Background(),
 				types.NamespacedName{Name: er.Name, Namespace: er.Namespace}, o,

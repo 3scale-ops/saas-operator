@@ -42,7 +42,7 @@ func NLBServiceAnnotations(cfg saasv1alpha1.NLBLoadBalancerSpec, hostnames []str
 		annotations["aws-nlb-helper.3scale.net/enable-targetgroups-proxy-protocol"] = "true"
 	}
 
-	if cfg.EIPAllocations != nil {
+	if len(cfg.EIPAllocations) != 0 {
 		annotations["service.beta.kubernetes.io/aws-load-balancer-eip-allocations"] = strings.Join(cfg.EIPAllocations, ",")
 	}
 	return annotations

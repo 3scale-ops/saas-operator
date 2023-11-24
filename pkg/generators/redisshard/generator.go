@@ -3,10 +3,11 @@ package redisshard
 import (
 	"fmt"
 
-	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
-	basereconciler_resources "github.com/3scale-ops/basereconciler/resources"
+	"github.com/3scale-ops/basereconciler/resource"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -53,24 +54,11 @@ func (gen *Generator) ServiceName() string {
 }
 
 // Returns all the resource templates that this generator manages
-func (gen *Generator) Resources() []basereconciler.Resource {
-	return []basereconciler.Resource{
-		basereconciler_resources.StatefulSetTemplate{
-			Template:        gen.statefulSet(),
-			IsEnabled:       true,
-			RolloutTriggers: nil,
-		},
-		basereconciler_resources.ServiceTemplate{
-			Template:  gen.service(),
-			IsEnabled: true,
-		},
-		basereconciler_resources.ConfigMapTemplate{
-			Template:  gen.redisConfigConfigMap(),
-			IsEnabled: true,
-		},
-		basereconciler_resources.ConfigMapTemplate{
-			Template:  gen.redisReadinessScriptConfigMap(),
-			IsEnabled: true,
-		},
+func (gen *Generator) Resources() []resource.TemplateInterface {
+	return []resource.TemplateInterface{
+		resource.NewTemplateFromObjectFunction[*appsv1.StatefulSet](gen.statefulSet),
+		resource.NewTemplateFromObjectFunction[*corev1.Service](gen.service),
+		resource.NewTemplateFromObjectFunction[*corev1.ConfigMap](gen.redisConfigConfigMap),
+		resource.NewTemplateFromObjectFunction[*corev1.ConfigMap](gen.redisReadinessScriptConfigMap),
 	}
 }

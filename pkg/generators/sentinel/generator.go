@@ -7,14 +7,18 @@ import (
 	"net/url"
 	"strings"
 
-	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
-	basereconciler_resources "github.com/3scale-ops/basereconciler/resources"
+	"github.com/3scale-ops/basereconciler/mutators"
+	"github.com/3scale-ops/basereconciler/resource"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators"
 	"github.com/3scale/saas-operator/pkg/generators/sentinel/config"
 	"github.com/3scale/saas-operator/pkg/resource_builders/grafanadashboard"
 	"github.com/3scale/saas-operator/pkg/resource_builders/pdb"
 	"github.com/3scale/saas-operator/pkg/util"
+	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	policyv1 "k8s.io/api/policy/v1"
 )
 
 const (
@@ -46,34 +50,23 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SentinelSpec) Ge
 }
 
 // Returns all the resource templates that this generator manages
-func (gen *Generator) Resources() []basereconciler.Resource {
-	resources := []basereconciler.Resource{
-		basereconciler_resources.StatefulSetTemplate{
-			Template:        gen.statefulSet(),
-			RolloutTriggers: []basereconciler_resources.RolloutTrigger{},
-			IsEnabled:       true,
-		},
-		basereconciler_resources.ServiceTemplate{
-			Template:  gen.statefulSetService(),
-			IsEnabled: true,
-		},
-		basereconciler_resources.PodDisruptionBudgetTemplate{
-			Template:  pdb.New(gen.GetKey(), gen.GetLabels(), gen.GetSelector(), *gen.Spec.PDB),
-			IsEnabled: !gen.Spec.PDB.IsDeactivated(),
-		},
-		basereconciler_resources.ConfigMapTemplate{
-			Template:  gen.configMap(),
-			IsEnabled: true,
-		},
-		basereconciler_resources.GrafanaDashboardTemplate{
-			Template:  grafanadashboard.New(gen.GetKey(), gen.GetLabels(), *gen.Spec.GrafanaDashboard, "dashboards/redis-sentinel.json.gtpl"),
-			IsEnabled: !gen.Spec.GrafanaDashboard.IsDeactivated(),
-		},
+func (gen *Generator) Resources() []resource.TemplateInterface {
+	resources := []resource.TemplateInterface{
+		resource.NewTemplateFromObjectFunction[*appsv1.StatefulSet](gen.statefulSet),
+		resource.NewTemplateFromObjectFunction[*corev1.Service](gen.statefulSetService).WithMutation(mutators.SetServiceLiveValues()),
+		resource.NewTemplate[*policyv1.PodDisruptionBudget](pdb.New(gen.GetKey(), gen.GetLabels(), gen.GetSelector(), *gen.Spec.PDB)),
+		resource.NewTemplateFromObjectFunction[*corev1.ConfigMap](gen.configMap),
+		resource.NewTemplate[*grafanav1alpha1.GrafanaDashboard](grafanadashboard.New(gen.GetKey(), gen.GetLabels(), *gen.Spec.GrafanaDashboard, "dashboards/redis-sentinel.json.gtpl")).
+			WithEnabled(!gen.Spec.GrafanaDashboard.IsDeactivated()),
 	}
 
 	for idx := 0; idx < int(*gen.Spec.Replicas); idx++ {
+		i := idx
 		resources = append(resources,
-			basereconciler_resources.ServiceTemplate{Template: gen.podServices(idx), IsEnabled: true})
+			resource.NewTemplateFromObjectFunction(
+				func() *corev1.Service { return gen.podServices(i) }).
+				WithMutation(mutators.SetServiceLiveValues()),
+		)
 	}
 
 	return resources

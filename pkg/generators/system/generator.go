@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
-	basereconciler_resources "github.com/3scale-ops/basereconciler/resources"
+	"github.com/3scale-ops/basereconciler/mutators"
+	"github.com/3scale-ops/basereconciler/resource"
 	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
 	"github.com/3scale/saas-operator/pkg/generators"
 	"github.com/3scale/saas-operator/pkg/generators/system/config"
@@ -13,9 +13,13 @@ import (
 	"github.com/3scale/saas-operator/pkg/resource_builders/grafanadashboard"
 	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
 	"github.com/3scale/saas-operator/pkg/resource_builders/podmonitor"
+	"github.com/3scale/saas-operator/pkg/util"
+	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/utils/pointer"
+	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	res "k8s.io/apimachinery/pkg/api/resource"
 )
 
 const (
@@ -309,13 +313,10 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) (Gen
 }
 
 // GrafanaDashboard returns a basereconciler.GeneratorFunction
-func (gen *Generator) GrafanaDashboard() basereconciler_resources.GrafanaDashboardTemplate {
-	return basereconciler_resources.GrafanaDashboardTemplate{
-		Template: grafanadashboard.New(
-			gen.GetKey(), gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/system.json.gtpl",
-		),
-		IsEnabled: !gen.GrafanaDashboardSpec.IsDeactivated(),
-	}
+func (gen *Generator) GrafanaDashboard() *resource.Template[*grafanav1alpha1.GrafanaDashboard] {
+	return resource.NewTemplate[*grafanav1alpha1.GrafanaDashboard](
+		grafanadashboard.New(gen.GetKey(), gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/system.json.gtpl")).
+		WithEnabled(!gen.GrafanaDashboardSpec.IsDeactivated())
 }
 
 func getSystemSecrets() []string {
@@ -333,39 +334,33 @@ func getSystemSecrets() []string {
 }
 
 // Resources returns functions to generate all System's external secrets resources
-func (gen *Generator) ExternalSecrets() []basereconciler.Resource {
+func (gen *Generator) ExternalSecrets() []resource.TemplateInterface {
 
-	resources := []basereconciler.Resource{}
+	resources := []resource.TemplateInterface{}
 	for _, es := range getSystemSecrets() {
 		resources = append(
 			resources,
-			basereconciler_resources.ExternalSecretTemplate{
-				Template: pod.GenerateExternalSecretFn(
-					es, gen.GetNamespace(), *gen.Config.ExternalSecret.SecretStoreRef.Name, *gen.Config.ExternalSecret.SecretStoreRef.Kind, *gen.Config.ExternalSecret.RefreshInterval, gen.GetLabels(), gen.Options,
-				), IsEnabled: true,
-			},
+			resource.NewTemplate(
+				pod.GenerateExternalSecretFn(es, gen.GetNamespace(),
+					*gen.Config.ExternalSecret.SecretStoreRef.Name, *gen.Config.ExternalSecret.SecretStoreRef.Kind,
+					*gen.Config.ExternalSecret.RefreshInterval, gen.GetLabels(), gen.Options,
+				),
+			),
 		)
 	}
 
 	return resources
 }
 
-func getSystemSecretsRolloutTriggers(additionalSecrets ...string) []basereconciler_resources.RolloutTrigger {
-
-	triggers := []basereconciler_resources.RolloutTrigger{}
-
+func getSystemSecretsRolloutTriggers(additionalSecrets ...string) []resource.TemplateMutationFunction {
+	triggers := []resource.TemplateMutationFunction{}
 	secrets := append(getSystemSecrets(), additionalSecrets...)
-
 	for _, secret := range secrets {
 		triggers = append(
 			triggers,
-			basereconciler_resources.RolloutTrigger{
-				Name:       secret,
-				SecretName: pointer.String(secret),
-			},
+			mutators.RolloutTrigger{Name: secret, SecretName: util.Pointer(secret)}.Add(),
 		)
 	}
-
 	return triggers
 }
 
@@ -386,9 +381,10 @@ var _ workloads.DeploymentWorkload = &AppGenerator{}
 // Validate that AppGenerator implements workloads.WithTraffic interface
 var _ workloads.WithTraffic = &AppGenerator{}
 
-func (gen *AppGenerator) Services() []basereconciler_resources.ServiceTemplate {
-	return []basereconciler_resources.ServiceTemplate{
-		{Template: gen.service(), IsEnabled: true},
+func (gen *AppGenerator) Services() []*resource.Template[*corev1.Service] {
+	return []*resource.Template[*corev1.Service]{
+		resource.NewTemplateFromObjectFunction(gen.service).
+			WithMutation(mutators.SetServiceLiveValues()),
 	}
 }
 func (gen *AppGenerator) SendTraffic() bool { return gen.Traffic }
@@ -398,13 +394,10 @@ func (gen *AppGenerator) TrafficSelector() map[string]string {
 	}
 }
 
-func (gen *AppGenerator) Deployment() basereconciler_resources.DeploymentTemplate {
-	return basereconciler_resources.DeploymentTemplate{
-		Template:        gen.deployment(),
-		RolloutTriggers: getSystemSecretsRolloutTriggers(gen.ConfigFilesSecret),
-		EnforceReplicas: gen.Spec.HPA.IsDeactivated(),
-		IsEnabled:       true,
-	}
+func (gen *AppGenerator) Deployment() *resource.Template[*appsv1.Deployment] {
+	return resource.NewTemplateFromObjectFunction(gen.deployment).
+		WithMutations(getSystemSecretsRolloutTriggers(gen.ConfigFilesSecret)).
+		WithMutation(mutators.SetDeploymentReplicas(gen.Spec.HPA.IsDeactivated()))
 }
 
 func (gen *AppGenerator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {
@@ -438,13 +431,10 @@ type SidekiqGenerator struct {
 	TwemproxySpec     *saasv1alpha1.TwemproxySpec
 }
 
-func (gen *SidekiqGenerator) Deployment() basereconciler_resources.DeploymentTemplate {
-	return basereconciler_resources.DeploymentTemplate{
-		Template:        gen.deployment(),
-		RolloutTriggers: getSystemSecretsRolloutTriggers(gen.ConfigFilesSecret),
-		EnforceReplicas: gen.Spec.HPA.IsDeactivated(),
-		IsEnabled:       true,
-	}
+func (gen *SidekiqGenerator) Deployment() *resource.Template[*appsv1.Deployment] {
+	return resource.NewTemplateFromObjectFunction(gen.deployment).
+		WithMutations(getSystemSecretsRolloutTriggers(gen.ConfigFilesSecret)).
+		WithMutation(mutators.SetDeploymentReplicas(gen.Spec.HPA.IsDeactivated()))
 }
 
 func (gen *SidekiqGenerator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {
@@ -472,28 +462,15 @@ type SearchdGenerator struct {
 	Image                saasv1alpha1.ImageSpec
 	DatabasePort         int32
 	DatabasePath         string
-	DatabaseStorageSize  resource.Quantity
+	DatabaseStorageSize  res.Quantity
 	DatabaseStorageClass *string
 	Enabled              bool
 }
 
-func (gen *SearchdGenerator) StatefulSetWithTraffic() []basereconciler.Resource {
-	return []basereconciler.Resource{
-		gen.StatefulSet(), gen.Service(),
-	}
-}
-
-func (gen *SearchdGenerator) StatefulSet() basereconciler_resources.StatefulSetTemplate {
-	return basereconciler_resources.StatefulSetTemplate{
-		Template:  gen.statefulset(),
-		IsEnabled: gen.Enabled,
-	}
-}
-
-func (gen *SearchdGenerator) Service() basereconciler_resources.ServiceTemplate {
-	return basereconciler_resources.ServiceTemplate{
-		Template:  gen.service(),
-		IsEnabled: gen.Enabled,
+func (gen *SearchdGenerator) StatefulSetWithTraffic() []resource.TemplateInterface {
+	return []resource.TemplateInterface{
+		resource.NewTemplateFromObjectFunction[*appsv1.StatefulSet](gen.statefulset).WithEnabled(gen.Enabled),
+		resource.NewTemplateFromObjectFunction[*corev1.Service](gen.service).WithEnabled(gen.Enabled).WithMutation(mutators.SetServiceLiveValues()),
 	}
 }
 
@@ -508,12 +485,10 @@ type ConsoleGenerator struct {
 	TwemproxySpec     *saasv1alpha1.TwemproxySpec
 }
 
-func (gen *ConsoleGenerator) StatefulSet() basereconciler_resources.StatefulSetTemplate {
-	return basereconciler_resources.StatefulSetTemplate{
-		Template:        gen.statefulset(),
-		RolloutTriggers: getSystemSecretsRolloutTriggers(gen.ConfigFilesSecret),
-		IsEnabled:       gen.Enabled,
-	}
+func (gen *ConsoleGenerator) StatefulSet() *resource.Template[*appsv1.StatefulSet] {
+	return resource.NewTemplateFromObjectFunction(gen.statefulset).
+		WithEnabled(gen.Enabled).
+		WithMutations(getSystemSecretsRolloutTriggers(gen.ConfigFilesSecret))
 }
 
 // SystemTektonGenerator has methods to generate resources for system tekton tasks
@@ -528,22 +503,15 @@ type SystemTektonGenerator struct {
 }
 
 // Resources returns functions to generate all System's tekton pipeline resources
-func (gen *Generator) Pipelines() []basereconciler.Resource {
+func (gen *Generator) Pipelines() []resource.TemplateInterface {
 
-	resources := []basereconciler.Resource{}
-
+	resources := []resource.TemplateInterface{}
 	// Tekton resources
 	for _, tr := range gen.Tekton {
-		tektonResource := tr
+		copy := tr
 		resources = append(resources,
-			&basereconciler_resources.TaskTemplate{
-				Template:  tektonResource.task(),
-				IsEnabled: tektonResource.Enabled,
-			},
-			&basereconciler_resources.PipelineTemplate{
-				Template:  tektonResource.pipeline(),
-				IsEnabled: tektonResource.Enabled,
-			},
+			resource.NewTemplateFromObjectFunction[*pipelinev1beta1.Task](copy.task).WithEnabled(copy.Enabled),
+			resource.NewTemplateFromObjectFunction[*pipelinev1beta1.Pipeline](copy.pipeline).WithEnabled(copy.Enabled),
 		)
 	}
 

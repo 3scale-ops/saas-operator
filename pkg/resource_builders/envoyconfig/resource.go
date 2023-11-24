@@ -17,12 +17,13 @@ import (
 	envoy_service_runtime_v3 "github.com/envoyproxy/go-control-plane/envoy/service/runtime/v3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 )
 
-func New(key types.NamespacedName, nodeID string, factory factory.EnvoyDynamicConfigFactory, resources ...descriptor.EnvoyDynamicConfigDescriptor) func() (*marin3rv1alpha1.EnvoyConfig, error) {
+func New(key types.NamespacedName, nodeID string, factory factory.EnvoyDynamicConfigFactory, resources ...descriptor.EnvoyDynamicConfigDescriptor) func(client.Object) (*marin3rv1alpha1.EnvoyConfig, error) {
 
-	return func() (*marin3rv1alpha1.EnvoyConfig, error) {
+	return func(client.Object) (*marin3rv1alpha1.EnvoyConfig, error) {
 		protos := []envoy.Resource{}
 
 		for _, res := range resources {

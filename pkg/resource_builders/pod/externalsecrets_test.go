@@ -142,7 +142,7 @@ func TestGenerateExternalSecretFn(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := GenerateExternalSecretFn(tt.args.name, tt.args.namespace, tt.args.secretStoreName, tt.args.secretStoreKind, tt.args.refreshInterval, tt.args.labels, tt.args.opts)()
+			got, _ := GenerateExternalSecretFn(tt.args.name, tt.args.namespace, tt.args.secretStoreName, tt.args.secretStoreKind, tt.args.refreshInterval, tt.args.labels, tt.args.opts)(nil)
 			if diff := deep.Equal(got, tt.want); len(diff) > 0 {
 				t.Errorf("GenerateExternalSecretFn() = diff %v", diff)
 			}
