@@ -1,7 +1,7 @@
 package generators
 
 import (
-	"github.com/3scale/saas-operator/pkg/util"
+	"github.com/3scale-ops/basereconciler/util"
 	"k8s.io/apimachinery/pkg/types"
 )
 

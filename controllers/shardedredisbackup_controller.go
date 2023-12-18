@@ -21,6 +21,16 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/3scale-ops/basereconciler/reconciler"
+	"github.com/3scale-ops/basereconciler/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/reconcilers/threads"
+	"github.com/3scale-ops/saas-operator/pkg/redis/backup"
+	redis "github.com/3scale-ops/saas-operator/pkg/redis/server"
+	"github.com/3scale-ops/saas-operator/pkg/redis/sharded"
+	operatorutils "github.com/3scale-ops/saas-operator/pkg/util"
+	"github.com/go-logr/logr"
+	"github.com/robfig/cron/v3"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -29,16 +39,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-
-	"github.com/3scale-ops/basereconciler/reconciler"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
-	"github.com/3scale/saas-operator/pkg/redis/backup"
-	redis "github.com/3scale/saas-operator/pkg/redis/server"
-	"github.com/3scale/saas-operator/pkg/redis/sharded"
-	"github.com/3scale/saas-operator/pkg/util"
-	"github.com/go-logr/logr"
-	"github.com/robfig/cron/v3"
 )
 
 // ShardedRedisBackupReconciler reconciles a ShardedRedisBackup object
@@ -73,14 +73,13 @@ func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.R
 
 	instance := &saasv1alpha1.ShardedRedisBackup{}
 	result := r.ManageResourceLifecycle(ctx, req, instance,
+		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)),
 		reconciler.WithFinalizer(saasv1alpha1.Finalizer),
 		reconciler.WithFinalizationFunc(r.BackupRunner.CleanupThreads(instance)),
 	)
 	if result.ShouldReturn() {
 		return result.Values()
 	}
-
-	instance.Default()
 
 	// Get Sentinel status
 	sentinel := &saasv1alpha1.Sentinel{ObjectMeta: metav1.ObjectMeta{Name: instance.Spec.SentinelRef, Namespace: req.Namespace}}
@@ -112,11 +111,11 @@ func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.R
 	if err := r.Client.Get(ctx, client.ObjectKeyFromObject(awsCredentials), awsCredentials); err != nil {
 		return ctrl.Result{}, err
 	}
-	if _, ok := awsCredentials.Data[util.AWSAccessKeyEnvvar]; !ok {
-		return ctrl.Result{}, fmt.Errorf("secret %s is missing %s key", awsCredentials.GetName(), util.AWSAccessKeyEnvvar)
+	if _, ok := awsCredentials.Data[operatorutils.AWSAccessKeyEnvvar]; !ok {
+		return ctrl.Result{}, fmt.Errorf("secret %s is missing %s key", awsCredentials.GetName(), operatorutils.AWSAccessKeyEnvvar)
 	}
-	if _, ok := awsCredentials.Data[util.AWSSecretKeyEnvvar]; !ok {
-		return ctrl.Result{}, fmt.Errorf("secret %s is missing %s key", awsCredentials.GetName(), util.AWSSecretKeyEnvvar)
+	if _, ok := awsCredentials.Data[operatorutils.AWSSecretKeyEnvvar]; !ok {
+		return ctrl.Result{}, fmt.Errorf("secret %s is missing %s key", awsCredentials.GetName(), operatorutils.AWSSecretKeyEnvvar)
 	}
 
 	// ----------------------------------------

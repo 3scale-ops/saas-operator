@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/3scale-ops/marin3r/pkg/envoy"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	envoy_config_accesslog_v3 "github.com/envoyproxy/go-control-plane/envoy/config/accesslog/v3"
 	envoy_config_core_v3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	envoy_config_listener_v3 "github.com/envoyproxy/go-control-plane/envoy/config/listener/v3"

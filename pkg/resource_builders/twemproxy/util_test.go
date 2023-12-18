@@ -6,13 +6,13 @@ import (
 	"testing"
 	"time"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
+	"github.com/3scale-ops/basereconciler/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 	"github.com/go-test/deep"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/pointer"
 )
 
 func Test_AddTwemproxySidecar(t *testing.T) {
@@ -42,30 +42,30 @@ func Test_AddTwemproxySidecar(t *testing.T) {
 				},
 				spec: &saasv1alpha1.TwemproxySpec{
 					Image: &saasv1alpha1.ImageSpec{
-						Name:       pointer.String("twemproxy"),
-						Tag:        pointer.String("latest"),
-						PullPolicy: (*corev1.PullPolicy)(pointer.String(string(corev1.PullIfNotPresent))),
+						Name:       util.Pointer("twemproxy"),
+						Tag:        util.Pointer("latest"),
+						PullPolicy: (*corev1.PullPolicy)(util.Pointer(string(corev1.PullIfNotPresent))),
 					},
 					Resources: &saasv1alpha1.ResourceRequirementsSpec{},
 					LivenessProbe: &saasv1alpha1.ProbeSpec{
-						InitialDelaySeconds: pointer.Int32(1),
-						TimeoutSeconds:      pointer.Int32(3),
-						PeriodSeconds:       pointer.Int32(5),
-						SuccessThreshold:    pointer.Int32(1),
-						FailureThreshold:    pointer.Int32(3),
+						InitialDelaySeconds: util.Pointer[int32](1),
+						TimeoutSeconds:      util.Pointer[int32](3),
+						PeriodSeconds:       util.Pointer[int32](5),
+						SuccessThreshold:    util.Pointer[int32](1),
+						FailureThreshold:    util.Pointer[int32](3),
 					},
 					ReadinessProbe: &saasv1alpha1.ProbeSpec{
-						InitialDelaySeconds: pointer.Int32(1),
-						TimeoutSeconds:      pointer.Int32(3),
-						PeriodSeconds:       pointer.Int32(5),
-						SuccessThreshold:    pointer.Int32(1),
-						FailureThreshold:    pointer.Int32(3),
+						InitialDelaySeconds: util.Pointer[int32](1),
+						TimeoutSeconds:      util.Pointer[int32](3),
+						PeriodSeconds:       util.Pointer[int32](5),
+						SuccessThreshold:    util.Pointer[int32](1),
+						FailureThreshold:    util.Pointer[int32](3),
 					},
 					TwemproxyConfigRef: "twem-config",
 					Options: &saasv1alpha1.TwemproxyOptions{
-						LogLevel:      pointer.Int32(6),
+						LogLevel:      util.Pointer[int32](6),
 						StatsInterval: &metav1.Duration{Duration: 20 * time.Second},
-						MetricsPort:   pointer.Int32(5555),
+						MetricsPort:   util.Pointer[int32](5555),
 					},
 				},
 			},
@@ -99,21 +99,21 @@ func Test_AddTwemproxySidecar(t *testing.T) {
 								ProbeHandler: corev1.ProbeHandler{Exec: &corev1.ExecAction{
 									Command: strings.Split(healthCommand, " "),
 								}},
-								InitialDelaySeconds: *pointer.Int32(1),
-								TimeoutSeconds:      *pointer.Int32(3),
-								PeriodSeconds:       *pointer.Int32(5),
-								SuccessThreshold:    *pointer.Int32(1),
-								FailureThreshold:    *pointer.Int32(3),
+								InitialDelaySeconds: *util.Pointer[int32](1),
+								TimeoutSeconds:      *util.Pointer[int32](3),
+								PeriodSeconds:       *util.Pointer[int32](5),
+								SuccessThreshold:    *util.Pointer[int32](1),
+								FailureThreshold:    *util.Pointer[int32](3),
 							},
 							ReadinessProbe: &corev1.Probe{
 								ProbeHandler: corev1.ProbeHandler{Exec: &corev1.ExecAction{
 									Command: strings.Split(healthCommand, " "),
 								}},
-								InitialDelaySeconds: *pointer.Int32(1),
-								TimeoutSeconds:      *pointer.Int32(3),
-								PeriodSeconds:       *pointer.Int32(5),
-								SuccessThreshold:    *pointer.Int32(1),
-								FailureThreshold:    *pointer.Int32(3),
+								InitialDelaySeconds: *util.Pointer[int32](1),
+								TimeoutSeconds:      *util.Pointer[int32](3),
+								PeriodSeconds:       *util.Pointer[int32](5),
+								SuccessThreshold:    *util.Pointer[int32](1),
+								FailureThreshold:    *util.Pointer[int32](3),
 							},
 							Lifecycle: &corev1.Lifecycle{
 								PreStop: &corev1.LifecycleHandler{
@@ -136,7 +136,7 @@ func Test_AddTwemproxySidecar(t *testing.T) {
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
 									LocalObjectReference: corev1.LocalObjectReference{Name: "twem-config"},
-									DefaultMode:          pointer.Int32(420),
+									DefaultMode:          util.Pointer[int32](420),
 								},
 							},
 						},

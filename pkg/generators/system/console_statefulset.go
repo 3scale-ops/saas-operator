@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
-	"github.com/3scale/saas-operator/pkg/resource_builders/twemproxy"
-	"github.com/3scale/saas-operator/pkg/util"
+	"github.com/3scale-ops/basereconciler/util"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/twemproxy"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/pointer"
 )
 
 // StatefulSet returns a basereconciler.GeneratorFunction function that will return
@@ -23,7 +22,7 @@ func (gen *ConsoleGenerator) statefulset() *appsv1.StatefulSet {
 			Labels:    gen.GetLabels(),
 		},
 		Spec: appsv1.StatefulSetSpec{
-			Replicas: pointer.Int32(1),
+			Replicas: util.Pointer[int32](1),
 			Selector: &metav1.LabelSelector{MatchLabels: gen.GetSelector()},
 			UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
 				Type: appsv1.RollingUpdateStatefulSetStrategyType,
@@ -55,7 +54,7 @@ func (gen *ConsoleGenerator) statefulset() *appsv1.StatefulSet {
 						},
 					},
 					Tolerations:                   gen.Spec.Tolerations,
-					TerminationGracePeriodSeconds: pointer.Int64(30),
+					TerminationGracePeriodSeconds: util.Pointer[int64](30),
 				},
 			},
 		},
@@ -66,7 +65,7 @@ func (gen *ConsoleGenerator) statefulset() *appsv1.StatefulSet {
 			Name: "system-config",
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
-					DefaultMode: pointer.Int32(420),
+					DefaultMode: util.Pointer[int32](420),
 					SecretName:  gen.ConfigFilesSecret,
 				},
 			},

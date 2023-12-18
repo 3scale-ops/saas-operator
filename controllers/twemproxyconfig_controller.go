@@ -25,12 +25,13 @@ import (
 
 	"github.com/3scale-ops/basereconciler/reconciler"
 	"github.com/3scale-ops/basereconciler/resource"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/generators/twemproxyconfig"
-	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
-	"github.com/3scale/saas-operator/pkg/redis/events"
-	redis "github.com/3scale/saas-operator/pkg/redis/server"
-	"github.com/3scale/saas-operator/pkg/util"
+	"github.com/3scale-ops/basereconciler/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/generators/twemproxyconfig"
+	"github.com/3scale-ops/saas-operator/pkg/reconcilers/threads"
+	"github.com/3scale-ops/saas-operator/pkg/redis/events"
+	redis "github.com/3scale-ops/saas-operator/pkg/redis/server"
+	operatorutils "github.com/3scale-ops/saas-operator/pkg/util"
 	"github.com/go-logr/logr"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
@@ -68,15 +69,13 @@ func (r *TwemproxyConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	instance := &saasv1alpha1.TwemproxyConfig{}
 	result := r.ManageResourceLifecycle(ctx, req, instance,
+		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)),
 		reconciler.WithFinalizer(saasv1alpha1.Finalizer),
 		reconciler.WithFinalizationFunc(r.SentinelEvents.CleanupThreads(instance)),
 	)
 	if result.ShouldReturn() {
 		return result.Values()
 	}
-
-	// Apply defaults for reconcile but do not store them in the API
-	instance.Default()
 
 	// Generate the ConfigMap
 	gen, err := twemproxyconfig.NewGenerator(
@@ -134,7 +133,7 @@ func (r *TwemproxyConfigReconciler) reconcileConfigMap(ctx context.Context, owne
 	logger := log.WithValues("kind", "ConfigMap", "resource", desired.GetName())
 
 	current := &corev1.ConfigMap{}
-	err := r.Client.Get(ctx, util.ObjectKey(desired), current)
+	err := r.Client.Get(ctx, client.ObjectKeyFromObject(desired), current)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			// Create
@@ -177,7 +176,7 @@ func (r *TwemproxyConfigReconciler) reconcileSyncAnnotations(ctx context.Context
 		return err
 	}
 
-	failures := util.MultiError{}
+	failures := operatorutils.MultiError{}
 	errCh := make(chan error)
 	innerCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	var wg sync.WaitGroup
@@ -227,7 +226,7 @@ func (r *TwemproxyConfigReconciler) syncPod(ctx context.Context, pod corev1.Pod,
 		if err := r.Client.Patch(ctx, &pod, patch); err != nil {
 			errCh <- err
 		}
-		log.V(1).Info(fmt.Sprintf("configmap re-sync forced in target pod %s", util.ObjectKey(&pod)))
+		log.V(1).Info(fmt.Sprintf("configmap re-sync forced in target pod %s", client.ObjectKeyFromObject(&pod)))
 	}
 }
 

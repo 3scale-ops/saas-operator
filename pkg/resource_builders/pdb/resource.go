@@ -1,7 +1,7 @@
 package pdb
 
 import (
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"

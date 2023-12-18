@@ -19,9 +19,8 @@ package v1alpha1
 import (
 	"fmt"
 
-	"github.com/3scale/saas-operator/pkg/util"
+	"github.com/3scale-ops/basereconciler/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -30,8 +29,8 @@ var (
 	TwemproxySyncAnnotationKey string = fmt.Sprintf("%s/twemproxyconfig.configmap-hash", GroupVersion.Group)
 
 	twemproxyDefaultGrafanaDashboard defaultGrafanaDashboardSpec = defaultGrafanaDashboardSpec{
-		SelectorKey:   pointer.String("monitoring-key"),
-		SelectorValue: pointer.String("middleware"),
+		SelectorKey:   util.Pointer("monitoring-key"),
+		SelectorValue: util.Pointer("middleware"),
 	}
 )
 
@@ -65,7 +64,7 @@ func (spec *TwemproxyConfigSpec) Default() {
 		spec.ServerPools[idx].Default()
 	}
 	if spec.ReconcileServerPools == nil {
-		spec.ReconcileServerPools = pointer.Bool(true)
+		spec.ReconcileServerPools = util.Pointer(true)
 	}
 	spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(spec.GrafanaDashboard, twemproxyDefaultGrafanaDashboard)
 }

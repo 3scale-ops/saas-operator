@@ -19,12 +19,11 @@ package v1alpha1
 import (
 	"time"
 
-	"github.com/3scale/saas-operator/pkg/util"
+	"github.com/3scale-ops/basereconciler/util"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -50,21 +49,21 @@ var (
 	systemDefaultConfigFilesSecret             string           = "system-config"
 	systemDefaultBugsnagSpec                   BugsnagSpec      = BugsnagSpec{}
 	systemDefaultImage                         defaultImageSpec = defaultImageSpec{
-		Name:       pointer.String("quay.io/3scale/porta"),
-		Tag:        pointer.String("nightly"),
-		PullPolicy: (*corev1.PullPolicy)(pointer.String(string(corev1.PullIfNotPresent))),
+		Name:       util.Pointer("quay.io/3scale/porta"),
+		Tag:        util.Pointer("nightly"),
+		PullPolicy: (*corev1.PullPolicy)(util.Pointer(string(corev1.PullIfNotPresent))),
 	}
 	systemDefaultGrafanaDashboard defaultGrafanaDashboardSpec = defaultGrafanaDashboardSpec{
-		SelectorKey:   pointer.String("monitoring-key"),
-		SelectorValue: pointer.String("middleware"),
+		SelectorKey:   util.Pointer("monitoring-key"),
+		SelectorValue: util.Pointer("middleware"),
 	}
-	systemDefaultTerminationGracePeriodSeconds *int64           = pointer.Int64(60)
+	systemDefaultTerminationGracePeriodSeconds *int64           = util.Pointer[int64](60)
 	systemDefaultSearchServer                  SearchServerSpec = SearchServerSpec{
 		AddressSpec: AddressSpec{
-			Host: pointer.String("system-searchd"),
-			Port: pointer.Int32(9306),
+			Host: util.Pointer("system-searchd"),
+			Port: util.Pointer[int32](9306),
 		},
-		BatchSize: pointer.Int32(100),
+		BatchSize: util.Pointer[int32](100),
 	}
 
 	// App
@@ -80,31 +79,31 @@ var (
 		},
 	}
 	systemDefaultAppDeploymentStrategy defaultDeploymentRollingStrategySpec = defaultDeploymentRollingStrategySpec{
-		MaxUnavailable: util.IntStrPtr(intstr.FromInt(0)),
-		MaxSurge:       util.IntStrPtr(intstr.FromString("10%")),
+		MaxUnavailable: util.Pointer(intstr.FromInt(0)),
+		MaxSurge:       util.Pointer(intstr.FromString("10%")),
 	}
 	systemDefaultAppHPA defaultHorizontalPodAutoscalerSpec = defaultHorizontalPodAutoscalerSpec{
-		MinReplicas:         pointer.Int32(2),
-		MaxReplicas:         pointer.Int32(4),
-		ResourceUtilization: pointer.Int32(90),
-		ResourceName:        pointer.String("cpu"),
+		MinReplicas:         util.Pointer[int32](2),
+		MaxReplicas:         util.Pointer[int32](4),
+		ResourceUtilization: util.Pointer[int32](90),
+		ResourceName:        util.Pointer("cpu"),
 	}
 	systemDefaultAppLivenessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32(30),
-		TimeoutSeconds:      pointer.Int32(1),
-		PeriodSeconds:       pointer.Int32(10),
-		SuccessThreshold:    pointer.Int32(1),
-		FailureThreshold:    pointer.Int32(3),
+		InitialDelaySeconds: util.Pointer[int32](30),
+		TimeoutSeconds:      util.Pointer[int32](1),
+		PeriodSeconds:       util.Pointer[int32](10),
+		SuccessThreshold:    util.Pointer[int32](1),
+		FailureThreshold:    util.Pointer[int32](3),
 	}
 	systemDefaultAppReadinessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32(30),
-		TimeoutSeconds:      pointer.Int32(5),
-		PeriodSeconds:       pointer.Int32(10),
-		SuccessThreshold:    pointer.Int32(1),
-		FailureThreshold:    pointer.Int32(3),
+		InitialDelaySeconds: util.Pointer[int32](30),
+		TimeoutSeconds:      util.Pointer[int32](5),
+		PeriodSeconds:       util.Pointer[int32](10),
+		SuccessThreshold:    util.Pointer[int32](1),
+		FailureThreshold:    util.Pointer[int32](3),
 	}
 	systemDefaultAppPDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
-		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
+		MaxUnavailable: util.Pointer(intstr.FromInt(1)),
 	}
 
 	// Sidekiq
@@ -120,31 +119,31 @@ var (
 		},
 	}
 	systemDefaultSidekiqDeploymentStrategy defaultDeploymentRollingStrategySpec = defaultDeploymentRollingStrategySpec{
-		MaxUnavailable: util.IntStrPtr(intstr.FromInt(0)),
-		MaxSurge:       util.IntStrPtr(intstr.FromInt(1)),
+		MaxUnavailable: util.Pointer(intstr.FromInt(0)),
+		MaxSurge:       util.Pointer(intstr.FromInt(1)),
 	}
 	systemDefaultSidekiqHPA defaultHorizontalPodAutoscalerSpec = defaultHorizontalPodAutoscalerSpec{
-		MinReplicas:         pointer.Int32(2),
-		MaxReplicas:         pointer.Int32(4),
-		ResourceUtilization: pointer.Int32(90),
-		ResourceName:        pointer.String("cpu"),
+		MinReplicas:         util.Pointer[int32](2),
+		MaxReplicas:         util.Pointer[int32](4),
+		ResourceUtilization: util.Pointer[int32](90),
+		ResourceName:        util.Pointer("cpu"),
 	}
 	systemDefaultSidekiqLivenessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32(10),
-		TimeoutSeconds:      pointer.Int32(3),
-		PeriodSeconds:       pointer.Int32(15),
-		SuccessThreshold:    pointer.Int32(1),
-		FailureThreshold:    pointer.Int32(5),
+		InitialDelaySeconds: util.Pointer[int32](10),
+		TimeoutSeconds:      util.Pointer[int32](3),
+		PeriodSeconds:       util.Pointer[int32](15),
+		SuccessThreshold:    util.Pointer[int32](1),
+		FailureThreshold:    util.Pointer[int32](5),
 	}
 	systemDefaultSidekiqReadinessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32(10),
-		TimeoutSeconds:      pointer.Int32(5),
-		PeriodSeconds:       pointer.Int32(30),
-		SuccessThreshold:    pointer.Int32(1),
-		FailureThreshold:    pointer.Int32(5),
+		InitialDelaySeconds: util.Pointer[int32](10),
+		TimeoutSeconds:      util.Pointer[int32](5),
+		PeriodSeconds:       util.Pointer[int32](30),
+		SuccessThreshold:    util.Pointer[int32](1),
+		FailureThreshold:    util.Pointer[int32](5),
 	}
 	systemDefaultSidekiqPDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
-		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
+		MaxUnavailable: util.Pointer(intstr.FromInt(1)),
 	}
 
 	systemDefaultSidekiqConfigDefault defaultSidekiqConfig = defaultSidekiqConfig{
@@ -152,25 +151,25 @@ var (
 			"critical", "backend_sync", "events", "zync,40",
 			"priority,25", "default,15", "web_hooks,10", "deletion,5",
 		},
-		MaxThreads: pointer.Int32(15),
+		MaxThreads: util.Pointer[int32](15),
 	}
 	systemDefaultSidekiqConfigBilling defaultSidekiqConfig = defaultSidekiqConfig{
 		Queues:     []string{"billing"},
-		MaxThreads: pointer.Int32(15),
+		MaxThreads: util.Pointer[int32](15),
 	}
 	systemDefaultSidekiqConfigLow defaultSidekiqConfig = defaultSidekiqConfig{
 		Queues: []string{
 			"mailers", "low", "bulk_indexing",
 		},
-		MaxThreads: pointer.Int32(15),
+		MaxThreads: util.Pointer[int32](15),
 	}
 
 	// Searchd
 	systemDefaultSearchdEnabled bool             = true
 	systemDefaultSearchdImage   defaultImageSpec = defaultImageSpec{
-		Name:       pointer.String("quay.io/3scale/searchd"),
-		Tag:        pointer.String("latest"),
-		PullPolicy: (*corev1.PullPolicy)(pointer.String(string(corev1.PullIfNotPresent))),
+		Name:       util.Pointer("quay.io/3scale/searchd"),
+		Tag:        util.Pointer("latest"),
+		PullPolicy: (*corev1.PullPolicy)(util.Pointer(string(corev1.PullIfNotPresent))),
 	}
 	systemDefaultSearchdServiceName         string                          = "system-searchd"
 	systemDefaultSearchdPort                int32                           = 9306
@@ -187,18 +186,18 @@ var (
 		},
 	}
 	systemDefaultSearchdLivenessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32(60),
-		TimeoutSeconds:      pointer.Int32(3),
-		PeriodSeconds:       pointer.Int32(15),
-		SuccessThreshold:    pointer.Int32(1),
-		FailureThreshold:    pointer.Int32(5),
+		InitialDelaySeconds: util.Pointer[int32](60),
+		TimeoutSeconds:      util.Pointer[int32](3),
+		PeriodSeconds:       util.Pointer[int32](15),
+		SuccessThreshold:    util.Pointer[int32](1),
+		FailureThreshold:    util.Pointer[int32](5),
 	}
 	systemDefaultSearchdReadinessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32(60),
-		TimeoutSeconds:      pointer.Int32(5),
-		PeriodSeconds:       pointer.Int32(30),
-		SuccessThreshold:    pointer.Int32(1),
-		FailureThreshold:    pointer.Int32(5),
+		InitialDelaySeconds: util.Pointer[int32](60),
+		TimeoutSeconds:      util.Pointer[int32](5),
+		PeriodSeconds:       util.Pointer[int32](30),
+		SuccessThreshold:    util.Pointer[int32](1),
+		FailureThreshold:    util.Pointer[int32](5),
 	}
 	systemDefaultRailsConsoleResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
 		Requests: corev1.ResourceList{
@@ -212,8 +211,8 @@ var (
 	}
 	systemDefaultSystemTektonTasks []SystemTektonTaskSpec = []SystemTektonTaskSpec{
 		{
-			Name:        pointer.String("system-backend-sync"),
-			Description: pointer.String("Runs the Backend Synchronization task"),
+			Name:        util.Pointer("system-backend-sync"),
+			Description: util.Pointer("Runs the Backend Synchronization task"),
 			Config: &SystemTektonTaskConfig{
 				Command: []string{"container-entrypoint"},
 				Args: []string{
@@ -225,8 +224,8 @@ var (
 			},
 		},
 		{
-			Name:        pointer.String("system-db-migrate"),
-			Description: pointer.String("Runs the Database Migration task"),
+			Name:        util.Pointer("system-db-migrate"),
+			Description: util.Pointer("Runs the Database Migration task"),
 			Config: &SystemTektonTaskConfig{
 				Command: []string{"container-entrypoint"},
 				Args: []string{
@@ -238,8 +237,8 @@ var (
 			},
 		},
 		{
-			Name:        pointer.String("system-searchd-reindex"),
-			Description: pointer.String("Runs the Searchd Rendexation task"),
+			Name:        util.Pointer("system-searchd-reindex"),
+			Description: util.Pointer("Runs the Searchd Rendexation task"),
 			Config: &SystemTektonTaskConfig{
 				Command: []string{"container-entrypoint"},
 				Args: []string{
@@ -494,17 +493,17 @@ func (sc *SystemConfig) Default() {
 	}
 	sc.Rails.Default()
 
-	sc.ConfigFilesSecret = stringOrDefault(sc.ConfigFilesSecret, pointer.String(systemDefaultConfigFilesSecret))
+	sc.ConfigFilesSecret = stringOrDefault(sc.ConfigFilesSecret, util.Pointer(systemDefaultConfigFilesSecret))
 
 	if sc.Bugsnag == nil {
 		sc.Bugsnag = &systemDefaultBugsnagSpec
 	}
 
-	sc.SandboxProxyOpensslVerifyMode = stringOrDefault(sc.SandboxProxyOpensslVerifyMode, pointer.String(systemDefaultSandboxProxyOpensslVerifyMode))
-	sc.ForceSSL = boolOrDefault(sc.ForceSSL, pointer.Bool(systemDefaultForceSSL))
-	sc.SSLCertsDir = stringOrDefault(sc.SSLCertsDir, pointer.String(systemDefaultSSLCertsDir))
-	sc.ThreescaleProviderPlan = stringOrDefault(sc.ThreescaleProviderPlan, pointer.String(systemDefaultThreescaleProviderPlan))
-	sc.ThreescaleSuperdomain = stringOrDefault(sc.ThreescaleSuperdomain, pointer.String(systemDefaultThreescaleSuperdomain))
+	sc.SandboxProxyOpensslVerifyMode = stringOrDefault(sc.SandboxProxyOpensslVerifyMode, util.Pointer(systemDefaultSandboxProxyOpensslVerifyMode))
+	sc.ForceSSL = boolOrDefault(sc.ForceSSL, util.Pointer(systemDefaultForceSSL))
+	sc.SSLCertsDir = stringOrDefault(sc.SSLCertsDir, util.Pointer(systemDefaultSSLCertsDir))
+	sc.ThreescaleProviderPlan = stringOrDefault(sc.ThreescaleProviderPlan, util.Pointer(systemDefaultThreescaleProviderPlan))
+	sc.ThreescaleSuperdomain = stringOrDefault(sc.ThreescaleSuperdomain, util.Pointer(systemDefaultThreescaleSuperdomain))
 	sc.ExternalSecret.SecretStoreRef = InitializeExternalSecretSecretStoreReferenceSpec(sc.ExternalSecret.SecretStoreRef, defaultExternalSecretSecretStoreReference)
 	sc.ExternalSecret.RefreshInterval = durationOrDefault(sc.ExternalSecret.RefreshInterval, &defaultExternalSecretRefreshInterval)
 
@@ -692,9 +691,9 @@ type SystemRailsSpec struct {
 
 // Default applies defaults for SystemRailsSpec
 func (srs *SystemRailsSpec) Default() {
-	srs.Console = boolOrDefault(srs.Console, pointer.Bool(systemDefaultRailsConsole))
-	srs.Environment = stringOrDefault(srs.Environment, pointer.String(systemDefaultRailsEnvironment))
-	srs.LogLevel = stringOrDefault(srs.LogLevel, pointer.String(systemDefaultRailsLogLevel))
+	srs.Console = boolOrDefault(srs.Console, util.Pointer(systemDefaultRailsConsole))
+	srs.Environment = stringOrDefault(srs.Environment, util.Pointer(systemDefaultRailsEnvironment))
+	srs.LogLevel = stringOrDefault(srs.LogLevel, util.Pointer(systemDefaultRailsLogLevel))
 }
 
 // SystemAppSpec configures the App component of System
@@ -832,7 +831,7 @@ func (cfg *SidekiqConfig) Default(def defaultSidekiqConfig) {
 	if cfg.Queues == nil {
 		cfg.Queues = def.Queues
 	}
-	cfg.MaxThreads = intOrDefault(cfg.MaxThreads, pointer.Int32(*def.MaxThreads))
+	cfg.MaxThreads = intOrDefault(cfg.MaxThreads, util.Pointer[int32](*def.MaxThreads))
 }
 
 // Default implements defaulting for the system Sidekiq component
@@ -902,7 +901,7 @@ type SystemSearchdSpec struct {
 
 // Default implements defaulting for the system searchd component
 func (spec *SystemSearchdSpec) Default() {
-	spec.Enabled = boolOrDefault(spec.Enabled, pointer.Bool(systemDefaultSearchdEnabled))
+	spec.Enabled = boolOrDefault(spec.Enabled, util.Pointer(systemDefaultSearchdEnabled))
 	spec.Image = InitializeImageSpec(spec.Image, defaultImageSpec(systemDefaultSearchdImage))
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, systemDefaultSearchdResources)
 	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, systemDefaultSearchdLivenessProbe)
@@ -942,9 +941,9 @@ type SearchdConfig struct {
 
 // Default implements defaulting for SearchdConfig
 func (sc *SearchdConfig) Default() {
-	sc.ServiceName = stringOrDefault(sc.ServiceName, pointer.String(systemDefaultSearchdServiceName))
-	sc.Port = intOrDefault(sc.Port, pointer.Int32(systemDefaultSearchdPort))
-	sc.DatabasePath = stringOrDefault(sc.DatabasePath, pointer.String(systemDefaultSearchdDBPath))
+	sc.ServiceName = stringOrDefault(sc.ServiceName, util.Pointer(systemDefaultSearchdServiceName))
+	sc.Port = intOrDefault(sc.Port, util.Pointer[int32](systemDefaultSearchdPort))
+	sc.DatabasePath = stringOrDefault(sc.DatabasePath, util.Pointer(systemDefaultSearchdDBPath))
 	if sc.DatabaseStorageSize == nil {
 		size := resource.MustParse(systemDefaultSearchdDatabaseStorageSize)
 		sc.DatabaseStorageSize = &size
@@ -1131,7 +1130,7 @@ func (spec *SystemTektonTaskSpec) Default(systemDefaultImage *ImageSpec) {
 	}
 
 	spec.Description = stringOrDefault(spec.Description, spec.Name)
-	spec.Enabled = boolOrDefault(spec.Enabled, pointer.Bool(true))
+	spec.Enabled = boolOrDefault(spec.Enabled, util.Pointer(true))
 	spec.Config.Default(systemDefaultImage)
 
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, systemDefaultSystemTektonTaskResources)

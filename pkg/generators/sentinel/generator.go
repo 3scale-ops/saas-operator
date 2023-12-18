@@ -9,12 +9,12 @@ import (
 
 	"github.com/3scale-ops/basereconciler/mutators"
 	"github.com/3scale-ops/basereconciler/resource"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/generators"
-	"github.com/3scale/saas-operator/pkg/generators/sentinel/config"
-	"github.com/3scale/saas-operator/pkg/resource_builders/grafanadashboard"
-	"github.com/3scale/saas-operator/pkg/resource_builders/pdb"
-	"github.com/3scale/saas-operator/pkg/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/generators"
+	"github.com/3scale-ops/saas-operator/pkg/generators/sentinel/config"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/grafanadashboard"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pdb"
+	operatorutils "github.com/3scale-ops/saas-operator/pkg/util"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -87,7 +87,7 @@ func (gen *Generator) ClusterTopology(ctx context.Context) (map[string]map[strin
 				if err != nil {
 					return nil, err
 				}
-				ip, err := util.LookupIPv4(ctx, u.Hostname())
+				ip, err := operatorutils.LookupIPv4(ctx, u.Hostname())
 				if err != nil {
 					return nil, err
 				}
@@ -112,7 +112,7 @@ func (gen *Generator) ClusterTopology(ctx context.Context) (map[string]map[strin
 					return nil, err
 				}
 				alias := u.Host
-				ip, err := util.LookupIPv4(ctx, u.Hostname())
+				ip, err := operatorutils.LookupIPv4(ctx, u.Hostname())
 				if err != nil {
 					return nil, err
 				}

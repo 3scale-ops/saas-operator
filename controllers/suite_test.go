@@ -26,9 +26,9 @@ import (
 
 	"github.com/3scale-ops/basereconciler/reconciler"
 	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
-	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
-	redis "github.com/3scale/saas-operator/pkg/redis/server"
+	"github.com/3scale-ops/saas-operator/pkg/reconcilers/threads"
+	"github.com/3scale-ops/saas-operator/pkg/reconcilers/workloads"
+	redis "github.com/3scale-ops/saas-operator/pkg/redis/server"
 	"github.com/goombaio/namegenerator"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -41,7 +41,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"

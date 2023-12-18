@@ -4,8 +4,9 @@ import (
 	"context"
 	"time"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	testutil "github.com/3scale/saas-operator/test/util"
+	"github.com/3scale-ops/basereconciler/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	testutil "github.com/3scale-ops/saas-operator/test/util"
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	. "github.com/onsi/ginkgo/v2"
@@ -14,7 +15,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -159,14 +159,14 @@ var _ = Describe("CORSProxy controller", func() {
 
 					patch := client.MergeFrom(corsproxy.DeepCopy())
 					corsproxy.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{
-						MinReplicas: pointer.Int32(3),
+						MinReplicas: util.Pointer[int32](3),
 					}
 					corsproxy.Spec.LivenessProbe = &saasv1alpha1.ProbeSpec{}
 					corsproxy.Spec.ReadinessProbe = &saasv1alpha1.ProbeSpec{}
 					corsproxy.Spec.Config.ExternalSecret.RefreshInterval = &metav1.Duration{Duration: 1 * time.Second}
 					corsproxy.Spec.Config.ExternalSecret.SecretStoreRef = &saasv1alpha1.ExternalSecretSecretStoreReferenceSpec{
-						Name: pointer.String("other-store"),
-						Kind: pointer.String("SecretStore"),
+						Name: util.Pointer("other-store"),
+						Kind: util.Pointer("SecretStore"),
 					}
 					corsproxy.Spec.Config.SystemDatabaseDSN.FromVault.Path = "secret/data/updated-path"
 					corsproxy.Spec.GrafanaDashboard = &saasv1alpha1.GrafanaDashboardSpec{}
@@ -246,7 +246,7 @@ var _ = Describe("CORSProxy controller", func() {
 						k8sClient, &appsv1.Deployment{}, "cors-proxy", namespace, timeout, poll)
 
 					patch := client.MergeFrom(corsproxy.DeepCopy())
-					corsproxy.Spec.Replicas = pointer.Int32(0)
+					corsproxy.Spec.Replicas = util.Pointer[int32](0)
 					corsproxy.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
 					corsproxy.Spec.PDB = &saasv1alpha1.PodDisruptionBudgetSpec{}
 

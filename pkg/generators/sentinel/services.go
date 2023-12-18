@@ -3,7 +3,7 @@ package sentinel
 import (
 	"fmt"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"

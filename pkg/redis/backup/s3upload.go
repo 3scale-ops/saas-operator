@@ -10,8 +10,8 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/3scale/saas-operator/pkg/ssh"
-	"github.com/3scale/saas-operator/pkg/util"
+	"github.com/3scale-ops/saas-operator/pkg/ssh"
+	operatorutils "github.com/3scale-ops/saas-operator/pkg/util"
 	"github.com/MakeNowJust/heredoc"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -73,9 +73,9 @@ func (br *Runner) UploadBackup(ctx context.Context) error {
 			ssh.NewCommand(fmt.Sprintf("mv %s %s/%s", br.RedisDBFile, path.Dir(br.RedisDBFile), br.BackupFile())),
 			ssh.NewCommand(fmt.Sprintf("gzip -1 %s/%s", path.Dir(br.RedisDBFile), br.BackupFile())),
 			ssh.NewScript(fmt.Sprintf("%s=%s %s=%s %s=%s python -",
-				util.AWSRegionEnvvar, br.AWSRegion,
-				util.AWSAccessKeyEnvvar, br.AWSAccessKeyID,
-				util.AWSSecretKeyEnvvar, br.AWSSecretAccessKey),
+				operatorutils.AWSRegionEnvvar, br.AWSRegion,
+				operatorutils.AWSAccessKeyEnvvar, br.AWSAccessKeyID,
+				operatorutils.AWSSecretKeyEnvvar, br.AWSSecretAccessKey),
 				uploadScript,
 				br.AWSSecretAccessKey,
 			),
@@ -95,7 +95,7 @@ func (br *Runner) resolveTags(ctx context.Context) (string, error) {
 	logger := log.FromContext(ctx, "function", "(br *Runner) ResolveTags()")
 	var retention Retention
 
-	awsconfig, err := util.AWSConfig(ctx, br.AWSAccessKeyID, br.AWSSecretAccessKey, br.AWSRegion, br.AWSS3Endpoint)
+	awsconfig, err := operatorutils.AWSConfig(ctx, br.AWSAccessKeyID, br.AWSSecretAccessKey, br.AWSRegion, br.AWSS3Endpoint)
 	if err != nil {
 		return "{}", err
 	}

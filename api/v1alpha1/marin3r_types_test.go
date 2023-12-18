@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	envoyconfig "github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
+	envoyconfig "github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )

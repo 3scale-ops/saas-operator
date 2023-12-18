@@ -4,12 +4,12 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/3scale-ops/basereconciler/util"
 	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
 	"github.com/3scale-ops/marin3r/pkg/envoy"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/templates"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/templates"
 	envoy_config_listener_v3 "github.com/envoyproxy/go-control-plane/envoy/config/listener/v3"
-	"k8s.io/utils/pointer"
 )
 
 func Test_secretRefsFromListener(t *testing.T) {
@@ -29,9 +29,9 @@ func Test_secretRefsFromListener(t *testing.T) {
 					l, _ := templates.ListenerHTTP_v1("test", &saasv1alpha1.ListenerHttp{
 						Port:                  8080,
 						RouteConfigName:       "my_route",
-						CertificateSecretName: pointer.String("my_certificate"),
-						EnableHttp2:           pointer.Bool(false),
-						ProxyProtocol:         pointer.Bool(false),
+						CertificateSecretName: util.Pointer("my_certificate"),
+						EnableHttp2:           util.Pointer(false),
+						ProxyProtocol:         util.Pointer(false),
 					})
 					return l.(*envoy_config_listener_v3.Listener)
 				}(),
@@ -72,9 +72,9 @@ func TestGenerateSecrets(t *testing.T) {
 						l, _ := templates.ListenerHTTP_v1("test1", &saasv1alpha1.ListenerHttp{
 							Port:                  8080,
 							RouteConfigName:       "my_route",
-							CertificateSecretName: pointer.String("cert1"),
-							EnableHttp2:           pointer.Bool(false),
-							ProxyProtocol:         pointer.Bool(false),
+							CertificateSecretName: util.Pointer("cert1"),
+							EnableHttp2:           util.Pointer(false),
+							ProxyProtocol:         util.Pointer(false),
 						})
 						return l
 					}(),
@@ -82,9 +82,9 @@ func TestGenerateSecrets(t *testing.T) {
 						l, _ := templates.ListenerHTTP_v1("test2", &saasv1alpha1.ListenerHttp{
 							Port:                  8081,
 							RouteConfigName:       "my_route",
-							CertificateSecretName: pointer.String("cert2"),
-							EnableHttp2:           pointer.Bool(false),
-							ProxyProtocol:         pointer.Bool(false),
+							CertificateSecretName: util.Pointer("cert2"),
+							EnableHttp2:           util.Pointer(false),
+							ProxyProtocol:         util.Pointer(false),
 						})
 						return l
 					}(),
@@ -92,9 +92,9 @@ func TestGenerateSecrets(t *testing.T) {
 						l, _ := templates.ListenerHTTP_v1("test3", &saasv1alpha1.ListenerHttp{
 							Port:                  8082,
 							RouteConfigName:       "my_route",
-							CertificateSecretName: pointer.String("cert1"),
-							EnableHttp2:           pointer.Bool(false),
-							ProxyProtocol:         pointer.Bool(false),
+							CertificateSecretName: util.Pointer("cert1"),
+							EnableHttp2:           util.Pointer(false),
+							ProxyProtocol:         util.Pointer(false),
 						})
 						return l
 					}(),

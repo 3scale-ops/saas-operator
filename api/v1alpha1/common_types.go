@@ -22,13 +22,13 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/3scale-ops/basereconciler/util"
 	jsonpatch "github.com/evanphx/json-patch"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/utils/pointer"
 )
 
 const (
@@ -42,8 +42,8 @@ const (
 var (
 	defaultExternalSecretRefreshInterval      metav1.Duration                               = metav1.Duration{Duration: 60 * time.Second}
 	defaultExternalSecretSecretStoreReference defaultExternalSecretSecretStoreReferenceSpec = defaultExternalSecretSecretStoreReferenceSpec{
-		Name: pointer.String("vault-mgmt"),
-		Kind: pointer.String("ClusterSecretStore"),
+		Name: util.Pointer("vault-mgmt"),
+		Kind: util.Pointer("ClusterSecretStore"),
 	}
 )
 

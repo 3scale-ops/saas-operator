@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"sort"
 
-	envoyconfig "github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
+	envoyconfig "github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )

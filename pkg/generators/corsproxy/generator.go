@@ -5,19 +5,19 @@ import (
 
 	"github.com/3scale-ops/basereconciler/mutators"
 	"github.com/3scale-ops/basereconciler/resource"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/generators"
-	"github.com/3scale/saas-operator/pkg/generators/corsproxy/config"
-	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
-	"github.com/3scale/saas-operator/pkg/resource_builders/grafanadashboard"
-	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
-	"github.com/3scale/saas-operator/pkg/resource_builders/podmonitor"
+	"github.com/3scale-ops/basereconciler/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/generators"
+	"github.com/3scale-ops/saas-operator/pkg/generators/corsproxy/config"
+	"github.com/3scale-ops/saas-operator/pkg/reconcilers/workloads"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/grafanadashboard"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/podmonitor"
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/utils/pointer"
 )
 
 const (
@@ -74,7 +74,7 @@ var _ workloads.DeploymentWorkload = &Generator{}
 func (gen *Generator) Deployment() *resource.Template[*appsv1.Deployment] {
 	return resource.NewTemplateFromObjectFunction(gen.deployment).
 		WithMutation(mutators.SetDeploymentReplicas(gen.Spec.HPA.IsDeactivated())).
-		WithMutation(mutators.RolloutTrigger{Name: "cors-proxy-system-database", SecretName: pointer.String("cors-proxy-system-database")}.Add())
+		WithMutation(mutators.RolloutTrigger{Name: "cors-proxy-system-database", SecretName: util.Pointer("cors-proxy-system-database")}.Add())
 }
 
 func (gen *Generator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {

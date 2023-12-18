@@ -4,10 +4,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/3scale/saas-operator/api/v1alpha1"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/basereconciler/util"
+	"github.com/3scale-ops/saas-operator/api/v1alpha1"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/utils/pointer"
 )
 
 func TestClearTextValue_ToEnvVar(t *testing.T) {
@@ -73,7 +73,7 @@ func TestSecretValue_ToEnvVar(t *testing.T) {
 		},
 		{
 			name:   "Returns EnvVar from an overrided Secret",
-			fields: fields{Value: saasv1alpha1.SecretReference{Override: pointer.String("override")}},
+			fields: fields{Value: saasv1alpha1.SecretReference{Override: util.Pointer("override")}},
 			args:   args{key: "key:my-secret"},
 			want:   corev1.EnvVar{Name: "key", Value: "override"},
 		},
@@ -145,7 +145,7 @@ func TestBuildEnvironment(t *testing.T) {
 					Option3 EnvVarValue `env:"OPTION3" secret:"my-secret"`
 				}{
 					Option1: &ClearTextValue{Value: "value1"},
-					Option2: &SecretValue{Value: v1alpha1.SecretReference{Override: pointer.String("override")}},
+					Option2: &SecretValue{Value: v1alpha1.SecretReference{Override: util.Pointer("override")}},
 					Option3: &SecretValue{Value: v1alpha1.SecretReference{}},
 				},
 			},

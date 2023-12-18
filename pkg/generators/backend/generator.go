@@ -6,20 +6,20 @@ import (
 
 	"github.com/3scale-ops/basereconciler/mutators"
 	"github.com/3scale-ops/basereconciler/resource"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/generators"
-	"github.com/3scale/saas-operator/pkg/generators/backend/config"
-	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
-	descriptor "github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
-	"github.com/3scale/saas-operator/pkg/resource_builders/grafanadashboard"
-	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
-	"github.com/3scale/saas-operator/pkg/resource_builders/podmonitor"
+	"github.com/3scale-ops/basereconciler/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/generators"
+	"github.com/3scale-ops/saas-operator/pkg/generators/backend/config"
+	"github.com/3scale-ops/saas-operator/pkg/reconcilers/workloads"
+	descriptor "github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/grafanadashboard"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/podmonitor"
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/utils/pointer"
 )
 
 const (
@@ -214,8 +214,8 @@ func (gen *ListenerGenerator) Labels() map[string]string {
 func (gen *ListenerGenerator) Deployment() *resource.Template[*appsv1.Deployment] {
 	return resource.NewTemplateFromObjectFunction(gen.deployment).
 		WithMutation(mutators.SetDeploymentReplicas(gen.ListenerSpec.HPA.IsDeactivated())).
-		WithMutation(mutators.RolloutTrigger{Name: "backend-internal-api", SecretName: pointer.String("backend-internal-api")}.Add()).
-		WithMutation(mutators.RolloutTrigger{Name: "backend-error-monitoring", SecretName: pointer.String("backend-error-monitoring")}.Add())
+		WithMutation(mutators.RolloutTrigger{Name: "backend-internal-api", SecretName: util.Pointer("backend-internal-api")}.Add()).
+		WithMutation(mutators.RolloutTrigger{Name: "backend-error-monitoring", SecretName: util.Pointer("backend-error-monitoring")}.Add())
 }
 
 func (gen *ListenerGenerator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {
@@ -268,8 +268,8 @@ var _ workloads.DeploymentWorkload = &WorkerGenerator{}
 func (gen *WorkerGenerator) Deployment() *resource.Template[*appsv1.Deployment] {
 	return resource.NewTemplateFromObjectFunction(gen.deployment).
 		WithMutation(mutators.SetDeploymentReplicas(gen.WorkerSpec.HPA.IsDeactivated())).
-		WithMutation(mutators.RolloutTrigger{Name: "backend-system-events-hook", SecretName: pointer.String("backend-system-events-hook")}.Add()).
-		WithMutation(mutators.RolloutTrigger{Name: "backend-error-monitoring", SecretName: pointer.String("backend-error-monitoring")}.Add())
+		WithMutation(mutators.RolloutTrigger{Name: "backend-system-events-hook", SecretName: util.Pointer("backend-system-events-hook")}.Add()).
+		WithMutation(mutators.RolloutTrigger{Name: "backend-error-monitoring", SecretName: util.Pointer("backend-error-monitoring")}.Add())
 }
 func (gen *WorkerGenerator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {
 	return gen.WorkerSpec.HPA
@@ -302,7 +302,7 @@ var _ workloads.DeploymentWorkload = &CronGenerator{}
 func (gen *CronGenerator) Deployment() *resource.Template[*appsv1.Deployment] {
 	return resource.NewTemplateFromObjectFunction(gen.deployment).
 		WithMutation(mutators.SetDeploymentReplicas(true)).
-		WithMutation(mutators.RolloutTrigger{Name: "backend-error-monitoring", SecretName: pointer.String("backend-error-monitoring")}.Add())
+		WithMutation(mutators.RolloutTrigger{Name: "backend-error-monitoring", SecretName: util.Pointer("backend-error-monitoring")}.Add())
 }
 func (gen *CronGenerator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {
 	return &saasv1alpha1.HorizontalPodAutoscalerSpec{}

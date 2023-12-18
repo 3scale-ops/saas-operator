@@ -19,10 +19,12 @@ package controllers
 import (
 	"context"
 
+	"github.com/3scale-ops/basereconciler/reconciler"
 	"github.com/3scale-ops/basereconciler/resource"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/generators/autossl"
-	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
+	"github.com/3scale-ops/basereconciler/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/generators/autossl"
+	"github.com/3scale-ops/saas-operator/pkg/reconcilers/workloads"
 	"github.com/go-logr/logr"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
@@ -57,13 +59,11 @@ func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	ctx = log.IntoContext(ctx, logger)
 
 	instance := &saasv1alpha1.AutoSSL{}
-	result := r.ManageResourceLifecycle(ctx, req, instance)
+	result := r.ManageResourceLifecycle(ctx, req, instance,
+		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)))
 	if result.ShouldReturn() {
 		return result.Values()
 	}
-
-	// Apply defaults for reconcile but do not store them in the API
-	instance.Default()
 
 	gen, err := autossl.NewGenerator(
 		instance.GetName(),

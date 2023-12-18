@@ -22,10 +22,10 @@ import (
 	"github.com/3scale-ops/basereconciler/config"
 	"github.com/3scale-ops/basereconciler/mutators"
 	"github.com/3scale-ops/basereconciler/resource"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
-	"github.com/3scale/saas-operator/pkg/reconcilers/workloads/test/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/util"
+	"github.com/3scale-ops/basereconciler/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/reconcilers/workloads"
+	"github.com/3scale-ops/saas-operator/pkg/reconcilers/workloads/test/api/v1alpha1"
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
 	"github.com/go-logr/logr"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
@@ -36,7 +36,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -156,7 +155,7 @@ func (gen *TestWorkloadGenerator) Deployment() *resource.Template[*appsv1.Deploy
 		func(client.Object) (*appsv1.Deployment, error) {
 			return &appsv1.Deployment{
 				Spec: appsv1.DeploymentSpec{
-					Replicas: pointer.Int32(1),
+					Replicas: util.Pointer[int32](1),
 					Template: corev1.PodTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
 							Labels: map[string]string{"orig-key": "orig-value"},
@@ -174,7 +173,7 @@ func (gen *TestWorkloadGenerator) Deployment() *resource.Template[*appsv1.Deploy
 				},
 			}, nil
 		}).
-		WithMutation(mutators.RolloutTrigger{Name: "secret", SecretName: pointer.String("secret")}.Add()).
+		WithMutation(mutators.RolloutTrigger{Name: "secret", SecretName: util.Pointer("secret")}.Add()).
 		WithMutation(mutators.SetDeploymentReplicas(true))
 }
 
@@ -188,15 +187,15 @@ func (gen *TestWorkloadGenerator) GetSelector() map[string]string {
 }
 func (gen *TestWorkloadGenerator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {
 	return &saasv1alpha1.HorizontalPodAutoscalerSpec{
-		MinReplicas:         pointer.Int32(1),
-		MaxReplicas:         pointer.Int32(2),
-		ResourceUtilization: pointer.Int32(90),
-		ResourceName:        pointer.String("cpu"),
+		MinReplicas:         util.Pointer[int32](1),
+		MaxReplicas:         util.Pointer[int32](2),
+		ResourceUtilization: util.Pointer[int32](90),
+		ResourceName:        util.Pointer("cpu"),
 	}
 }
 func (gen *TestWorkloadGenerator) PDBSpec() *saasv1alpha1.PodDisruptionBudgetSpec {
 	return &saasv1alpha1.PodDisruptionBudgetSpec{
-		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
+		MaxUnavailable: util.Pointer(intstr.FromInt(1)),
 	}
 }
 func (gen *TestWorkloadGenerator) SendTraffic() bool { return gen.TTraffic }

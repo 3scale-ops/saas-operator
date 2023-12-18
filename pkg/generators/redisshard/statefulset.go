@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
-	"github.com/3scale/saas-operator/pkg/util"
+	"github.com/3scale-ops/basereconciler/util"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/pointer"
 )
 
 // StatefulSet returns a function that will return
@@ -23,8 +22,8 @@ func (gen *Generator) statefulSet() *appsv1.StatefulSet {
 		},
 		Spec: appsv1.StatefulSetSpec{
 			PodManagementPolicy:  appsv1.ParallelPodManagement,
-			Replicas:             pointer.Int32(gen.Replicas),
-			RevisionHistoryLimit: pointer.Int32(1),
+			Replicas:             util.Pointer[int32](gen.Replicas),
+			RevisionHistoryLimit: util.Pointer[int32](1),
 			Selector:             &metav1.LabelSelector{MatchLabels: gen.GetSelector()},
 			ServiceName:          gen.ServiceName(),
 			Template: corev1.PodTemplateSpec{
@@ -65,20 +64,20 @@ func (gen *Generator) statefulSet() *appsv1.StatefulSet {
 							},
 						},
 					},
-					TerminationGracePeriodSeconds: pointer.Int64(0),
+					TerminationGracePeriodSeconds: util.Pointer[int64](0),
 					Volumes: []corev1.Volume{
 						{
 							Name: "redis-config",
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
-									DefaultMode:          pointer.Int32(420),
+									DefaultMode:          util.Pointer[int32](420),
 									LocalObjectReference: corev1.LocalObjectReference{Name: "redis-config-" + gen.GetInstanceName()}},
 							}},
 						{
 							Name: "redis-readiness-script",
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
-									DefaultMode:          pointer.Int32(484),
+									DefaultMode:          util.Pointer[int32](484),
 									LocalObjectReference: corev1.LocalObjectReference{Name: "redis-readiness-script-" + gen.GetInstanceName()}},
 							}},
 						{
@@ -92,7 +91,7 @@ func (gen *Generator) statefulSet() *appsv1.StatefulSet {
 			UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
 				Type: appsv1.RollingUpdateStatefulSetStrategyType,
 				RollingUpdate: &appsv1.RollingUpdateStatefulSetStrategy{
-					Partition: pointer.Int32(0),
+					Partition: util.Pointer[int32](0),
 				},
 			},
 		},

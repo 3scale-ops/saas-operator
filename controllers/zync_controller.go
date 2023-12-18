@@ -19,9 +19,11 @@ package controllers
 import (
 	"context"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/generators/zync"
-	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
+	"github.com/3scale-ops/basereconciler/reconciler"
+	"github.com/3scale-ops/basereconciler/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/generators/zync"
+	"github.com/3scale-ops/saas-operator/pkg/reconcilers/workloads"
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
 	"github.com/go-logr/logr"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
@@ -61,13 +63,11 @@ func (r *ZyncReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	ctx = log.IntoContext(ctx, logger)
 
 	instance := &saasv1alpha1.Zync{}
-	result := r.ManageResourceLifecycle(ctx, req, instance)
+	result := r.ManageResourceLifecycle(ctx, req, instance,
+		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)))
 	if result.ShouldReturn() {
 		return result.Values()
 	}
-
-	// Apply defaults for reconcile but do not store them in the API
-	instance.Default()
 
 	gen := zync.NewGenerator(
 		instance.GetName(),

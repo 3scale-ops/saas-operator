@@ -3,8 +3,9 @@ package controllers
 import (
 	"context"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	testutil "github.com/3scale/saas-operator/test/util"
+	"github.com/3scale-ops/basereconciler/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	testutil "github.com/3scale-ops/saas-operator/test/util"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -13,7 +14,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -63,7 +63,7 @@ var _ = Describe("AutoSSL controller", func() {
 					HPA: &saasv1alpha1.HorizontalPodAutoscalerSpec{
 						Behavior: &autoscalingv2.HorizontalPodAutoscalerBehavior{
 							ScaleDown: &autoscalingv2.HPAScalingRules{
-								StabilizationWindowSeconds: pointer.Int32(45),
+								StabilizationWindowSeconds: util.Pointer[int32](45),
 								Policies: []autoscalingv2.HPAScalingPolicy{
 									{
 										Type:          autoscalingv2.PodsScalingPolicy,
@@ -123,7 +123,7 @@ var _ = Describe("AutoSSL controller", func() {
 				(&testutil.ExpectedResource{Name: "autossl", Namespace: namespace}).
 					Assert(k8sClient, hpa, timeout, poll))
 
-			Expect(hpa.Spec.Behavior.ScaleDown.StabilizationWindowSeconds).To(Equal(pointer.Int32(45)))
+			Expect(hpa.Spec.Behavior.ScaleDown.StabilizationWindowSeconds).To(Equal(util.Pointer[int32](45)))
 			Expect(hpa.Spec.Behavior.ScaleDown.Policies).To(Not(BeEmpty()))
 			Expect(hpa.Spec.Behavior.ScaleDown.Policies[0].Type).To(Equal(autoscalingv2.PodsScalingPolicy))
 			Expect(hpa.Spec.Behavior.ScaleDown.Policies[0].Value).To(Equal(int32(4)))
@@ -174,7 +174,7 @@ var _ = Describe("AutoSSL controller", func() {
 					autossl.Spec.Config.ContactEmail = "updated-example@3scale.net"
 					autossl.Spec.Config.VerificationEndpoint = "updated-example.com/verification"
 					autossl.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{
-						MinReplicas: pointer.Int32(3),
+						MinReplicas: util.Pointer[int32](3),
 					}
 					autossl.Spec.GrafanaDashboard = &saasv1alpha1.GrafanaDashboardSpec{}
 					autossl.Spec.LivenessProbe = &saasv1alpha1.ProbeSpec{}
@@ -256,9 +256,9 @@ var _ = Describe("AutoSSL controller", func() {
 
 					patch := client.MergeFrom(autossl.DeepCopy())
 					autossl.Spec.Canary = &saasv1alpha1.Canary{
-						ImageName: pointer.String("newImage"),
-						ImageTag:  pointer.String("newTag"),
-						Replicas:  pointer.Int32(1),
+						ImageName: util.Pointer("newImage"),
+						ImageTag:  util.Pointer("newTag"),
+						Replicas:  util.Pointer[int32](1),
 					}
 
 					return k8sClient.Patch(context.Background(), autossl, patch)
@@ -325,7 +325,7 @@ var _ = Describe("AutoSSL controller", func() {
 
 						patch := client.MergeFrom(autossl.DeepCopy())
 						autossl.Spec.Canary = &saasv1alpha1.Canary{
-							SendTraffic: *pointer.Bool(true),
+							SendTraffic: *util.Pointer(true),
 						}
 						return k8sClient.Patch(context.Background(), autossl, patch)
 					}, timeout, poll).ShouldNot(HaveOccurred())
@@ -370,7 +370,7 @@ var _ = Describe("AutoSSL controller", func() {
 						k8sClient, &appsv1.Deployment{}, "autossl", namespace, timeout, poll)
 
 					patch := client.MergeFrom(autossl.DeepCopy())
-					autossl.Spec.Replicas = pointer.Int32(0)
+					autossl.Spec.Replicas = util.Pointer[int32](0)
 					autossl.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
 					autossl.Spec.PDB = &saasv1alpha1.PodDisruptionBudgetSpec{}
 

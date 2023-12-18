@@ -3,12 +3,12 @@ package system
 import (
 	"fmt"
 
-	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
-	"github.com/3scale/saas-operator/pkg/resource_builders/twemproxy"
+	"github.com/3scale-ops/basereconciler/util"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/twemproxy"
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/pointer"
 )
 
 // task returns a basereconciler.GeneratorFunction function that will return a
@@ -87,7 +87,7 @@ func (gen *SystemTektonGenerator) task() *pipelinev1beta1.Task {
 					Name: "system-config",
 					VolumeSource: corev1.VolumeSource{
 						Secret: &corev1.SecretVolumeSource{
-							DefaultMode: pointer.Int32(420),
+							DefaultMode: util.Pointer[int32](420),
 							SecretName:  gen.ConfigFilesSecret,
 						},
 					},

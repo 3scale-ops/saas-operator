@@ -8,13 +8,13 @@ import (
 	"github.com/3scale-ops/basereconciler/mutators"
 	"github.com/3scale-ops/basereconciler/reconciler"
 	"github.com/3scale-ops/basereconciler/resource"
+	"github.com/3scale-ops/basereconciler/util"
 	reconcilerutil "github.com/3scale-ops/basereconciler/util"
 	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
 	"github.com/3scale-ops/marin3r/pkg/envoy"
 	envoy_serializer "github.com/3scale-ops/marin3r/pkg/envoy/serializer"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	descriptor "github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
-	"github.com/3scale/saas-operator/pkg/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	descriptor "github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 	"github.com/google/go-cmp/cmp"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -25,7 +25,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
@@ -49,7 +48,7 @@ func (gen *TestWorkloadGenerator) Deployment() *resource.Template[*appsv1.Deploy
 		TemplateBuilder: func(client.Object) (*appsv1.Deployment, error) {
 			return &appsv1.Deployment{
 				Spec: appsv1.DeploymentSpec{
-					Replicas: pointer.Int32(1),
+					Replicas: util.Pointer[int32](1),
 					Template: corev1.PodTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
 							Labels: map[string]string{"orig-key": "orig-value"},
@@ -70,7 +69,7 @@ func (gen *TestWorkloadGenerator) Deployment() *resource.Template[*appsv1.Deploy
 		TemplateMutations: []resource.TemplateMutationFunction{
 			mutators.RolloutTrigger{
 				Name:       "secret",
-				SecretName: pointer.String("secret"),
+				SecretName: util.Pointer("secret"),
 			}.Add(),
 			mutators.SetDeploymentReplicas(true),
 		},
@@ -87,15 +86,15 @@ func (gen *TestWorkloadGenerator) GetSelector() map[string]string {
 }
 func (gen *TestWorkloadGenerator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {
 	return &saasv1alpha1.HorizontalPodAutoscalerSpec{
-		MinReplicas:         pointer.Int32(1),
-		MaxReplicas:         pointer.Int32(2),
-		ResourceUtilization: pointer.Int32(90),
-		ResourceName:        pointer.String("cpu"),
+		MinReplicas:         util.Pointer[int32](1),
+		MaxReplicas:         util.Pointer[int32](2),
+		ResourceUtilization: util.Pointer[int32](90),
+		ResourceName:        util.Pointer("cpu"),
 	}
 }
 func (gen *TestWorkloadGenerator) PDBSpec() *saasv1alpha1.PodDisruptionBudgetSpec {
 	return &saasv1alpha1.PodDisruptionBudgetSpec{
-		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
+		MaxUnavailable: util.Pointer(intstr.FromInt(1)),
 	}
 }
 func (gen *TestWorkloadGenerator) SendTraffic() bool { return gen.TTraffic }
@@ -171,7 +170,7 @@ func TestWorkloadReconciler_NewDeploymentWorkload(t *testing.T) {
 						Name: "my-workload", Namespace: "ns",
 						Labels: map[string]string{"l-key": "l-value"}},
 					Spec: appsv1.DeploymentSpec{
-						Replicas: pointer.Int32(1),
+						Replicas: util.Pointer[int32](1),
 						Selector: &metav1.LabelSelector{MatchLabels: map[string]string{"sel-key": "sel-value"}},
 						Template: corev1.PodTemplateSpec{
 							ObjectMeta: metav1.ObjectMeta{
@@ -196,7 +195,7 @@ func TestWorkloadReconciler_NewDeploymentWorkload(t *testing.T) {
 					},
 					Spec: policyv1.PodDisruptionBudgetSpec{
 						Selector:       &metav1.LabelSelector{MatchLabels: map[string]string{"sel-key": "sel-value"}},
-						MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
+						MaxUnavailable: util.Pointer(intstr.FromInt(1)),
 					}},
 				&autoscalingv2.HorizontalPodAutoscaler{
 					ObjectMeta: metav1.ObjectMeta{
@@ -209,7 +208,7 @@ func TestWorkloadReconciler_NewDeploymentWorkload(t *testing.T) {
 							Kind:       "Deployment",
 							Name:       "my-workload",
 						},
-						MinReplicas: pointer.Int32(1),
+						MinReplicas: util.Pointer[int32](1),
 						MaxReplicas: 2,
 						Metrics: []autoscalingv2.MetricSpec{{
 							Type: autoscalingv2.ResourceMetricSourceType,

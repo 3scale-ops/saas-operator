@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
-	"github.com/3scale/saas-operator/pkg/resource_builders/twemproxy"
+	"github.com/3scale-ops/basereconciler/util"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/twemproxy"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/utils/pointer"
 )
 
 // Deployment returns a function that will return a Deployment
@@ -78,7 +78,7 @@ func (gen *AppGenerator) deployment() *appsv1.Deployment {
 			Name: "system-config",
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
-					DefaultMode: pointer.Int32(420),
+					DefaultMode: util.Pointer[int32](420),
 					SecretName:  gen.ConfigFilesSecret,
 				},
 			},

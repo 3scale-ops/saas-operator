@@ -2,8 +2,8 @@ package workloads
 
 import (
 	"github.com/3scale-ops/basereconciler/resource"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	descriptor "github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	descriptor "github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"

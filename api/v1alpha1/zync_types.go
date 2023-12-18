@@ -17,23 +17,22 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/3scale/saas-operator/pkg/util"
+	"github.com/3scale-ops/basereconciler/util"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/utils/pointer"
 )
 
 var (
 	zyncDefaultImage defaultImageSpec = defaultImageSpec{
-		Name:       pointer.String("quay.io/3scale/zync"),
-		Tag:        pointer.String("nightly"),
-		PullPolicy: (*corev1.PullPolicy)(pointer.String(string(corev1.PullIfNotPresent))),
+		Name:       util.Pointer("quay.io/3scale/zync"),
+		Tag:        util.Pointer("nightly"),
+		PullPolicy: (*corev1.PullPolicy)(util.Pointer(string(corev1.PullIfNotPresent))),
 	}
 	zyncDefaultGrafanaDashboard defaultGrafanaDashboardSpec = defaultGrafanaDashboardSpec{
-		SelectorKey:   pointer.String("monitoring-key"),
-		SelectorValue: pointer.String("middleware"),
+		SelectorKey:   util.Pointer("monitoring-key"),
+		SelectorValue: util.Pointer("middleware"),
 	}
 	zyncDefaultRailsConsoleEnabled    bool                               = false
 	zyncDefaultConfigRailsEnvironment string                             = "development"
@@ -41,13 +40,13 @@ var (
 	zyncDefaultConfigRailsMaxThreads  int32                              = 10
 	zyncDefaultConfigBugsnagSpec      BugsnagSpec                        = BugsnagSpec{}
 	zyncDefaultAPIHPA                 defaultHorizontalPodAutoscalerSpec = defaultHorizontalPodAutoscalerSpec{
-		MinReplicas:         pointer.Int32(2),
-		MaxReplicas:         pointer.Int32(4),
-		ResourceUtilization: pointer.Int32(90),
-		ResourceName:        pointer.String("cpu"),
+		MinReplicas:         util.Pointer[int32](2),
+		MaxReplicas:         util.Pointer[int32](4),
+		ResourceUtilization: util.Pointer[int32](90),
+		ResourceName:        util.Pointer("cpu"),
 	}
 	zyncDefaultAPIPDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
-		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
+		MaxUnavailable: util.Pointer(intstr.FromInt(1)),
 	}
 	zyncDefaultAPIReplicas  int32                           = 2
 	zyncDefaultAPIResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
@@ -61,27 +60,27 @@ var (
 		},
 	}
 	zyncDefaultAPILivenessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32(10),
-		TimeoutSeconds:      pointer.Int32(30),
-		PeriodSeconds:       pointer.Int32(10),
-		SuccessThreshold:    pointer.Int32(1),
-		FailureThreshold:    pointer.Int32(3),
+		InitialDelaySeconds: util.Pointer[int32](10),
+		TimeoutSeconds:      util.Pointer[int32](30),
+		PeriodSeconds:       util.Pointer[int32](10),
+		SuccessThreshold:    util.Pointer[int32](1),
+		FailureThreshold:    util.Pointer[int32](3),
 	}
 	zyncDefaultAPIReadinessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32(30),
-		TimeoutSeconds:      pointer.Int32(10),
-		PeriodSeconds:       pointer.Int32(10),
-		SuccessThreshold:    pointer.Int32(1),
-		FailureThreshold:    pointer.Int32(3),
+		InitialDelaySeconds: util.Pointer[int32](30),
+		TimeoutSeconds:      util.Pointer[int32](10),
+		PeriodSeconds:       util.Pointer[int32](10),
+		SuccessThreshold:    util.Pointer[int32](1),
+		FailureThreshold:    util.Pointer[int32](3),
 	}
 	zyncDefaultQueHPA defaultHorizontalPodAutoscalerSpec = defaultHorizontalPodAutoscalerSpec{
-		MinReplicas:         pointer.Int32(2),
-		MaxReplicas:         pointer.Int32(4),
-		ResourceUtilization: pointer.Int32(90),
-		ResourceName:        pointer.String("cpu"),
+		MinReplicas:         util.Pointer[int32](2),
+		MaxReplicas:         util.Pointer[int32](4),
+		ResourceUtilization: util.Pointer[int32](90),
+		ResourceName:        util.Pointer("cpu"),
 	}
 	zyncDefaultQuePDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
-		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
+		MaxUnavailable: util.Pointer(intstr.FromInt(1)),
 	}
 	zyncDefaultQueReplicas  int32                           = 2
 	zyncDefaultQueResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
@@ -95,18 +94,18 @@ var (
 		},
 	}
 	zyncDefaultQueLivenessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32(10),
-		TimeoutSeconds:      pointer.Int32(30),
-		PeriodSeconds:       pointer.Int32(10),
-		SuccessThreshold:    pointer.Int32(1),
-		FailureThreshold:    pointer.Int32(3),
+		InitialDelaySeconds: util.Pointer[int32](10),
+		TimeoutSeconds:      util.Pointer[int32](30),
+		PeriodSeconds:       util.Pointer[int32](10),
+		SuccessThreshold:    util.Pointer[int32](1),
+		FailureThreshold:    util.Pointer[int32](3),
 	}
 	zyncDefaultQueReadinessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32(30),
-		TimeoutSeconds:      pointer.Int32(10),
-		PeriodSeconds:       pointer.Int32(10),
-		SuccessThreshold:    pointer.Int32(1),
-		FailureThreshold:    pointer.Int32(3),
+		InitialDelaySeconds: util.Pointer[int32](30),
+		TimeoutSeconds:      util.Pointer[int32](10),
+		PeriodSeconds:       util.Pointer[int32](10),
+		SuccessThreshold:    util.Pointer[int32](1),
+		FailureThreshold:    util.Pointer[int32](3),
 	}
 	zyncDefaultRailsConsoleResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
 		Requests: corev1.ResourceList{
@@ -315,9 +314,9 @@ type ZyncRailsSpec struct {
 
 // Default applies defaults for ZyncRailsSpec
 func (zrs *ZyncRailsSpec) Default() {
-	zrs.Environment = stringOrDefault(zrs.Environment, pointer.String(zyncDefaultConfigRailsEnvironment))
-	zrs.LogLevel = stringOrDefault(zrs.LogLevel, pointer.String(zyncDefaultConfigRailsLogLevel))
-	zrs.MaxThreads = intOrDefault(zrs.MaxThreads, pointer.Int32(zyncDefaultConfigRailsMaxThreads))
+	zrs.Environment = stringOrDefault(zrs.Environment, util.Pointer(zyncDefaultConfigRailsEnvironment))
+	zrs.LogLevel = stringOrDefault(zrs.LogLevel, util.Pointer(zyncDefaultConfigRailsLogLevel))
+	zrs.MaxThreads = intOrDefault(zrs.MaxThreads, util.Pointer[int32](zyncDefaultConfigRailsMaxThreads))
 }
 
 // ZyncRailsConsoleSpec configures the Console component of Zync
@@ -344,7 +343,7 @@ type ZyncRailsConsoleSpec struct {
 
 // Default implements defaulting for the Zync console component
 func (spec *ZyncRailsConsoleSpec) Default(zyncDefaultImage *ImageSpec) {
-	spec.Enabled = boolOrDefault(spec.Enabled, pointer.Bool(zyncDefaultRailsConsoleEnabled))
+	spec.Enabled = boolOrDefault(spec.Enabled, util.Pointer(zyncDefaultRailsConsoleEnabled))
 	spec.Image = InitializeImageSpec(spec.Image, defaultImageSpec(*zyncDefaultImage))
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, zyncDefaultRailsConsoleResources)
 }

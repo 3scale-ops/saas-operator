@@ -22,7 +22,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/3scale/saas-operator/pkg/util"
+	"github.com/3scale-ops/basereconciler/util"
+	"github.com/samber/lo"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -189,11 +190,11 @@ func (status *ShardedRedisBackupStatus) ApplyHistoryLimit(limit int32, shards []
 		}
 	}
 
-	var joint BackupStatusList = util.ConcatSlices(truncated)
-	sort.Sort(sort.Reverse(joint))
+	var flat BackupStatusList = lo.Flatten(truncated)
+	sort.Sort(sort.Reverse(flat))
 
-	if !reflect.DeepEqual(joint, status.Backups) {
-		status.Backups = joint
+	if !reflect.DeepEqual(flat, status.Backups) {
+		status.Backups = flat
 		return true
 	}
 

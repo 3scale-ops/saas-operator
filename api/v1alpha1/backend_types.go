@@ -17,38 +17,37 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/3scale/saas-operator/pkg/util"
+	"github.com/3scale-ops/basereconciler/util"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/utils/pointer"
 )
 
 var (
 	backendDefaultImage defaultImageSpec = defaultImageSpec{
-		Name:       pointer.String("quay.io/3scale/apisonator"),
-		Tag:        pointer.String("nightly"),
-		PullPolicy: (*corev1.PullPolicy)(pointer.String(string(corev1.PullIfNotPresent))),
+		Name:       util.Pointer("quay.io/3scale/apisonator"),
+		Tag:        util.Pointer("nightly"),
+		PullPolicy: (*corev1.PullPolicy)(util.Pointer(string(corev1.PullIfNotPresent))),
 	}
 	backendDefaultGrafanaDashboard defaultGrafanaDashboardSpec = defaultGrafanaDashboardSpec{
-		SelectorKey:   pointer.String("monitoring-key"),
-		SelectorValue: pointer.String("middleware"),
+		SelectorKey:   util.Pointer("monitoring-key"),
+		SelectorValue: util.Pointer("middleware"),
 	}
 	backendDefaultConfigRackEnv         string                             = "dev"
 	backendDefaultConfigMasterServiceID int32                              = 6
 	backendDefaultListenerHPA           defaultHorizontalPodAutoscalerSpec = defaultHorizontalPodAutoscalerSpec{
-		MinReplicas:         pointer.Int32(2),
-		MaxReplicas:         pointer.Int32(4),
-		ResourceUtilization: pointer.Int32(90),
-		ResourceName:        pointer.String("cpu"),
+		MinReplicas:         util.Pointer[int32](2),
+		MaxReplicas:         util.Pointer[int32](4),
+		ResourceUtilization: util.Pointer[int32](90),
+		ResourceName:        util.Pointer("cpu"),
 	}
 	backendDefaultListenerPDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
-		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
+		MaxUnavailable: util.Pointer(intstr.FromInt(1)),
 	}
 	backendDefaultListenerNLBLoadBalancer defaultNLBLoadBalancerSpec = defaultNLBLoadBalancerSpec{
-		ProxyProtocol:                 pointer.Bool(true),
-		CrossZoneLoadBalancingEnabled: pointer.Bool(true),
+		ProxyProtocol:                 util.Pointer(true),
+		CrossZoneLoadBalancingEnabled: util.Pointer(true),
 	}
 	backendDefaultListenerReplicas  int32                           = 2
 	backendDefaultListenerResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
@@ -62,18 +61,18 @@ var (
 		},
 	}
 	backendDefaultListenerLivenessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32(30),
-		TimeoutSeconds:      pointer.Int32(1),
-		PeriodSeconds:       pointer.Int32(10),
-		SuccessThreshold:    pointer.Int32(1),
-		FailureThreshold:    pointer.Int32(3),
+		InitialDelaySeconds: util.Pointer[int32](30),
+		TimeoutSeconds:      util.Pointer[int32](1),
+		PeriodSeconds:       util.Pointer[int32](10),
+		SuccessThreshold:    util.Pointer[int32](1),
+		FailureThreshold:    util.Pointer[int32](3),
 	}
 	backendDefaultListenerReadinessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32(30),
-		TimeoutSeconds:      pointer.Int32(5),
-		PeriodSeconds:       pointer.Int32(10),
-		SuccessThreshold:    pointer.Int32(1),
-		FailureThreshold:    pointer.Int32(3),
+		InitialDelaySeconds: util.Pointer[int32](30),
+		TimeoutSeconds:      util.Pointer[int32](5),
+		PeriodSeconds:       util.Pointer[int32](10),
+		SuccessThreshold:    util.Pointer[int32](1),
+		FailureThreshold:    util.Pointer[int32](3),
 	}
 	backendDefaultListenerMarin3rSpec                 defaultMarin3rSidecarSpec          = defaultMarin3rSidecarSpec{}
 	backendDefaultListenerConfigLogFormat             string                             = "json"
@@ -81,13 +80,13 @@ var (
 	backendDefaultListenerConfigListenerWorkers       int32                              = 16
 	backendDefaultListenerConfigLegacyReferrerFilters bool                               = true
 	backendDefaultWorkerHPA                           defaultHorizontalPodAutoscalerSpec = defaultHorizontalPodAutoscalerSpec{
-		MinReplicas:         pointer.Int32(2),
-		MaxReplicas:         pointer.Int32(4),
-		ResourceUtilization: pointer.Int32(90),
-		ResourceName:        pointer.String("cpu"),
+		MinReplicas:         util.Pointer[int32](2),
+		MaxReplicas:         util.Pointer[int32](4),
+		ResourceUtilization: util.Pointer[int32](90),
+		ResourceName:        util.Pointer("cpu"),
 	}
 	backendDefaultWorkerPDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
-		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
+		MaxUnavailable: util.Pointer(intstr.FromInt(1)),
 	}
 	backendDefaultWorkerReplicas  int32                           = 2
 	backendDefaultWorkerResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
@@ -101,18 +100,18 @@ var (
 		},
 	}
 	backendDefaultWorkerLivenessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32(10),
-		TimeoutSeconds:      pointer.Int32(3),
-		PeriodSeconds:       pointer.Int32(15),
-		SuccessThreshold:    pointer.Int32(1),
-		FailureThreshold:    pointer.Int32(3),
+		InitialDelaySeconds: util.Pointer[int32](10),
+		TimeoutSeconds:      util.Pointer[int32](3),
+		PeriodSeconds:       util.Pointer[int32](15),
+		SuccessThreshold:    util.Pointer[int32](1),
+		FailureThreshold:    util.Pointer[int32](3),
 	}
 	backendDefaultWorkerReadinessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32(10),
-		TimeoutSeconds:      pointer.Int32(5),
-		PeriodSeconds:       pointer.Int32(30),
-		SuccessThreshold:    pointer.Int32(1),
-		FailureThreshold:    pointer.Int32(3),
+		InitialDelaySeconds: util.Pointer[int32](10),
+		TimeoutSeconds:      util.Pointer[int32](5),
+		PeriodSeconds:       util.Pointer[int32](30),
+		SuccessThreshold:    util.Pointer[int32](1),
+		FailureThreshold:    util.Pointer[int32](3),
 	}
 	backendDefaultWorkerConfigLogFormat  string                          = "json"
 	backendDefaultWorkerConfigRedisAsync bool                            = false
@@ -407,8 +406,8 @@ type BackendConfig struct {
 
 // Default sets default values for any value not specifically set in the BackendConfig struct
 func (cfg *BackendConfig) Default() {
-	cfg.RackEnv = stringOrDefault(cfg.RackEnv, pointer.String(backendDefaultConfigRackEnv))
-	cfg.MasterServiceID = intOrDefault(cfg.MasterServiceID, pointer.Int32(backendDefaultConfigMasterServiceID))
+	cfg.RackEnv = stringOrDefault(cfg.RackEnv, util.Pointer(backendDefaultConfigRackEnv))
+	cfg.MasterServiceID = intOrDefault(cfg.MasterServiceID, util.Pointer[int32](backendDefaultConfigMasterServiceID))
 	cfg.ExternalSecret.SecretStoreRef = InitializeExternalSecretSecretStoreReferenceSpec(cfg.ExternalSecret.SecretStoreRef, defaultExternalSecretSecretStoreReference)
 	cfg.ExternalSecret.RefreshInterval = durationOrDefault(cfg.ExternalSecret.RefreshInterval, &defaultExternalSecretRefreshInterval)
 }
@@ -436,10 +435,10 @@ type ListenerConfig struct {
 
 // Default sets default values for any value not specifically set in the ListenerConfig struct
 func (cfg *ListenerConfig) Default() {
-	cfg.LogFormat = stringOrDefault(cfg.LogFormat, pointer.String(backendDefaultListenerConfigLogFormat))
-	cfg.RedisAsync = boolOrDefault(cfg.RedisAsync, pointer.Bool(backendDefaultListenerConfigRedisAsync))
-	cfg.ListenerWorkers = intOrDefault(cfg.ListenerWorkers, pointer.Int32(backendDefaultListenerConfigListenerWorkers))
-	cfg.LegacyReferrerFilters = boolOrDefault(cfg.LegacyReferrerFilters, pointer.Bool(backendDefaultListenerConfigLegacyReferrerFilters))
+	cfg.LogFormat = stringOrDefault(cfg.LogFormat, util.Pointer(backendDefaultListenerConfigLogFormat))
+	cfg.RedisAsync = boolOrDefault(cfg.RedisAsync, util.Pointer(backendDefaultListenerConfigRedisAsync))
+	cfg.ListenerWorkers = intOrDefault(cfg.ListenerWorkers, util.Pointer[int32](backendDefaultListenerConfigListenerWorkers))
+	cfg.LegacyReferrerFilters = boolOrDefault(cfg.LegacyReferrerFilters, util.Pointer(backendDefaultListenerConfigLegacyReferrerFilters))
 }
 
 // WorkerConfig configures app behavior for Backend Worker
@@ -457,8 +456,8 @@ type WorkerConfig struct {
 
 // Default sets default values for any value not specifically set in the WorkerConfig struct
 func (cfg *WorkerConfig) Default() {
-	cfg.LogFormat = stringOrDefault(cfg.LogFormat, pointer.String(backendDefaultWorkerConfigLogFormat))
-	cfg.RedisAsync = boolOrDefault(cfg.RedisAsync, pointer.Bool(backendDefaultWorkerConfigRedisAsync))
+	cfg.LogFormat = stringOrDefault(cfg.LogFormat, util.Pointer(backendDefaultWorkerConfigLogFormat))
+	cfg.RedisAsync = boolOrDefault(cfg.RedisAsync, util.Pointer(backendDefaultWorkerConfigRedisAsync))
 }
 
 // BackendStatus defines the observed state of Backend

@@ -3,14 +3,12 @@ package zync
 import (
 	"fmt"
 
-	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
-
-	"github.com/3scale/saas-operator/pkg/util"
+	"github.com/3scale-ops/basereconciler/util"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/utils/pointer"
 )
 
 // deployment returns a function that will return a *appsv1.Deployment for zync-que
@@ -21,8 +19,8 @@ func (gen *QueGenerator) deployment() *appsv1.Deployment {
 			Strategy: appsv1.DeploymentStrategy{
 				Type: appsv1.RollingUpdateDeploymentStrategyType,
 				RollingUpdate: &appsv1.RollingUpdateDeployment{
-					MaxUnavailable: util.IntStrPtr(intstr.FromInt(0)),
-					MaxSurge:       util.IntStrPtr(intstr.FromInt(1)),
+					MaxUnavailable: util.Pointer(intstr.FromInt(0)),
+					MaxSurge:       util.Pointer(intstr.FromInt(1)),
 				},
 			},
 			Template: corev1.PodTemplateSpec{
@@ -77,7 +75,7 @@ func (gen *QueGenerator) deployment() *appsv1.Deployment {
 					},
 					Affinity:                      pod.Affinity(gen.GetSelector(), gen.QueSpec.NodeAffinity),
 					Tolerations:                   gen.QueSpec.Tolerations,
-					TerminationGracePeriodSeconds: pointer.Int64(30),
+					TerminationGracePeriodSeconds: util.Pointer[int64](30),
 				},
 			},
 		},

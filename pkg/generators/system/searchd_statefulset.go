@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
-	"github.com/3scale/saas-operator/pkg/util"
+	"github.com/3scale-ops/basereconciler/util"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/utils/pointer"
 )
 
 // StatefulSet returns a basereconciler.GeneratorFunction function that will return
@@ -23,7 +22,7 @@ func (gen *SearchdGenerator) statefulset() *appsv1.StatefulSet {
 			Labels:    gen.GetLabels(),
 		},
 		Spec: appsv1.StatefulSetSpec{
-			Replicas: pointer.Int32(1),
+			Replicas: util.Pointer[int32](1),
 			Selector: &metav1.LabelSelector{MatchLabels: gen.GetSelector()},
 			UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
 				Type: appsv1.RollingUpdateStatefulSetStrategyType,
@@ -74,7 +73,7 @@ func (gen *SearchdGenerator) statefulset() *appsv1.StatefulSet {
 					AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
 					Resources:        corev1.ResourceRequirements{Requests: corev1.ResourceList{corev1.ResourceStorage: gen.DatabaseStorageSize}},
 					StorageClassName: gen.DatabaseStorageClass,
-					VolumeMode:       (*corev1.PersistentVolumeMode)(pointer.String(string(corev1.PersistentVolumeFilesystem))),
+					VolumeMode:       (*corev1.PersistentVolumeMode)(util.Pointer(string(corev1.PersistentVolumeFilesystem))),
 					DataSource:       &corev1.TypedLocalObjectReference{},
 				},
 			}},

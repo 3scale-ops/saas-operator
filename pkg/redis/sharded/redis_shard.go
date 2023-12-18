@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/3scale/saas-operator/pkg/redis/client"
-	redis "github.com/3scale/saas-operator/pkg/redis/server"
-	"github.com/3scale/saas-operator/pkg/util"
+	"github.com/3scale-ops/saas-operator/pkg/redis/client"
+	redis "github.com/3scale-ops/saas-operator/pkg/redis/server"
+	operatorutils "github.com/3scale-ops/saas-operator/pkg/util"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
@@ -31,7 +31,7 @@ func NewShardFromServers(name string, pool *redis.ServerPool, servers ...*RedisS
 
 // NewShardFromTopology returns a Shard object given the passed redis server URLs
 func NewShardFromTopology(name string, servers map[string]string, pool *redis.ServerPool) (*Shard, error) {
-	var merr util.MultiError
+	var merr operatorutils.MultiError
 	shard := &Shard{Name: name, pool: pool}
 	shard.Servers = make([]*RedisServer, 0, len(servers))
 
@@ -59,7 +59,7 @@ func NewShardFromTopology(name string, servers map[string]string, pool *redis.Se
 // Discover retrieves the options for all the servers in the shard
 // If a SentinelServer is provided, it will be used to autodiscover servers and roles in the shard
 func (shard *Shard) Discover(ctx context.Context, sentinel *SentinelServer, options ...DiscoveryOption) error {
-	var merr util.MultiError
+	var merr operatorutils.MultiError
 	logger := log.FromContext(ctx, "function", "(*Shard).Discover", "shard", shard.Name)
 
 	switch sentinel {
@@ -186,7 +186,7 @@ func (shard *Shard) GetMaster() (*RedisServer, error) {
 	}
 
 	if len(master) != 1 {
-		return nil, util.WrapError("(*Shard).GetMasterAddr", fmt.Errorf("wrong number of masters: %d != 1", len(master)))
+		return nil, operatorutils.WrapError("(*Shard).GetMasterAddr", fmt.Errorf("wrong number of masters: %d != 1", len(master)))
 	}
 
 	return master[0], nil
@@ -247,7 +247,7 @@ func (shard *Shard) GetServerByID(hostport string) (*RedisServer, error) {
 
 // Init initializes the shard if not already initialized
 func (shard *Shard) Init(ctx context.Context, masterHostPort string) ([]string, error) {
-	merr := util.MultiError{}
+	merr := operatorutils.MultiError{}
 	listChanged := []string{}
 	var master *RedisServer
 

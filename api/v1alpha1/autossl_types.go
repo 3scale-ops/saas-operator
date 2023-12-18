@@ -17,30 +17,29 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/3scale/saas-operator/pkg/util"
+	"github.com/3scale-ops/basereconciler/util"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/utils/pointer"
 )
 
 var (
 	autosslDefaultReplicas int32            = 2
 	autosslDefaultImage    defaultImageSpec = defaultImageSpec{
-		Name:       pointer.String("quay.io/3scale/autossl"),
-		Tag:        pointer.String("latest"),
-		PullPolicy: (*corev1.PullPolicy)(pointer.String(string(corev1.PullIfNotPresent))),
+		Name:       util.Pointer("quay.io/3scale/autossl"),
+		Tag:        util.Pointer("latest"),
+		PullPolicy: (*corev1.PullPolicy)(util.Pointer(string(corev1.PullIfNotPresent))),
 	}
 	autosslDefaultLoadBalancer defaultLoadBalancerSpec = defaultLoadBalancerSpec{
-		ProxyProtocol:                 pointer.Bool(true),
-		CrossZoneLoadBalancingEnabled: pointer.Bool(true),
-		ConnectionDrainingEnabled:     pointer.Bool(true),
-		ConnectionDrainingTimeout:     pointer.Int32(60),
-		HealthcheckHealthyThreshold:   pointer.Int32(2),
-		HealthcheckUnhealthyThreshold: pointer.Int32(2),
-		HealthcheckInterval:           pointer.Int32(5),
-		HealthcheckTimeout:            pointer.Int32(3),
+		ProxyProtocol:                 util.Pointer(true),
+		CrossZoneLoadBalancingEnabled: util.Pointer(true),
+		ConnectionDrainingEnabled:     util.Pointer(true),
+		ConnectionDrainingTimeout:     util.Pointer[int32](60),
+		HealthcheckHealthyThreshold:   util.Pointer[int32](2),
+		HealthcheckUnhealthyThreshold: util.Pointer[int32](2),
+		HealthcheckInterval:           util.Pointer[int32](5),
+		HealthcheckTimeout:            util.Pointer[int32](3),
 	}
 	autosslDefaultResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
 		Requests: corev1.ResourceList{
@@ -53,25 +52,25 @@ var (
 		},
 	}
 	autosslDefaultHPA defaultHorizontalPodAutoscalerSpec = defaultHorizontalPodAutoscalerSpec{
-		MinReplicas:         pointer.Int32(2),
-		MaxReplicas:         pointer.Int32(4),
-		ResourceUtilization: pointer.Int32(90),
-		ResourceName:        pointer.String("cpu"),
+		MinReplicas:         util.Pointer[int32](2),
+		MaxReplicas:         util.Pointer[int32](4),
+		ResourceUtilization: util.Pointer[int32](90),
+		ResourceName:        util.Pointer("cpu"),
 	}
 	autosslDefaultProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32(25),
-		TimeoutSeconds:      pointer.Int32(1),
-		PeriodSeconds:       pointer.Int32(10),
-		SuccessThreshold:    pointer.Int32(1),
-		FailureThreshold:    pointer.Int32(3),
+		InitialDelaySeconds: util.Pointer[int32](25),
+		TimeoutSeconds:      util.Pointer[int32](1),
+		PeriodSeconds:       util.Pointer[int32](10),
+		SuccessThreshold:    util.Pointer[int32](1),
+		FailureThreshold:    util.Pointer[int32](3),
 	}
 	autosslDefaultPDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
-		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
+		MaxUnavailable: util.Pointer(intstr.FromInt(1)),
 	}
 
 	autosslDefaultGrafanaDashboard defaultGrafanaDashboardSpec = defaultGrafanaDashboardSpec{
-		SelectorKey:   pointer.String("monitoring-key"),
-		SelectorValue: pointer.String("middleware"),
+		SelectorKey:   util.Pointer("monitoring-key"),
+		SelectorValue: util.Pointer("middleware"),
 	}
 	autosslDefaultACMEStaging bool   = false
 	autosslDefaultRedisPort   int32  = 6379
@@ -208,9 +207,9 @@ type AutoSSLConfig struct {
 
 // Default sets default values for any value not specifically set in the AutoSSLConfig struct
 func (cfg *AutoSSLConfig) Default() {
-	cfg.ACMEStaging = boolOrDefault(cfg.ACMEStaging, pointer.Bool(autosslDefaultACMEStaging))
-	cfg.RedisPort = intOrDefault(cfg.RedisPort, pointer.Int32(autosslDefaultRedisPort))
-	cfg.LogLevel = stringOrDefault(cfg.LogLevel, pointer.String(autosslDefaultLogLevel))
+	cfg.ACMEStaging = boolOrDefault(cfg.ACMEStaging, util.Pointer(autosslDefaultACMEStaging))
+	cfg.RedisPort = intOrDefault(cfg.RedisPort, util.Pointer[int32](autosslDefaultRedisPort))
+	cfg.LogLevel = stringOrDefault(cfg.LogLevel, util.Pointer(autosslDefaultLogLevel))
 	if cfg.DomainWhitelist == nil {
 		cfg.DomainWhitelist = []string{}
 	}

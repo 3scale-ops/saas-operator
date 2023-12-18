@@ -17,29 +17,28 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/3scale/saas-operator/pkg/util"
+	"github.com/3scale-ops/basereconciler/util"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/utils/pointer"
 )
 
 var (
 	echoapiDefaultImage defaultImageSpec = defaultImageSpec{
-		Name:       pointer.String("quay.io/3scale/echoapi"),
-		Tag:        pointer.String("v1.0.3"),
-		PullPolicy: (*corev1.PullPolicy)(pointer.String(string(corev1.PullIfNotPresent))),
+		Name:       util.Pointer("quay.io/3scale/echoapi"),
+		Tag:        util.Pointer("v1.0.3"),
+		PullPolicy: (*corev1.PullPolicy)(util.Pointer(string(corev1.PullIfNotPresent))),
 	}
 	echoapiDefaultReplicas int32                              = 2
 	echoapiDefaultHPA      defaultHorizontalPodAutoscalerSpec = defaultHorizontalPodAutoscalerSpec{
-		MinReplicas:         pointer.Int32(2),
-		MaxReplicas:         pointer.Int32(4),
-		ResourceUtilization: pointer.Int32(90),
-		ResourceName:        pointer.String("cpu"),
+		MinReplicas:         util.Pointer[int32](2),
+		MaxReplicas:         util.Pointer[int32](4),
+		ResourceUtilization: util.Pointer[int32](90),
+		ResourceName:        util.Pointer("cpu"),
 	}
 	echoapiDefaultPDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
-		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
+		MaxUnavailable: util.Pointer(intstr.FromInt(1)),
 	}
 	echoapiDefaultResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
 		Requests: corev1.ResourceList{
@@ -52,23 +51,23 @@ var (
 		},
 	}
 	echoapiDefaultLivenessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32(25),
-		TimeoutSeconds:      pointer.Int32(2),
-		PeriodSeconds:       pointer.Int32(20),
-		SuccessThreshold:    pointer.Int32(1),
-		FailureThreshold:    pointer.Int32(5),
+		InitialDelaySeconds: util.Pointer[int32](25),
+		TimeoutSeconds:      util.Pointer[int32](2),
+		PeriodSeconds:       util.Pointer[int32](20),
+		SuccessThreshold:    util.Pointer[int32](1),
+		FailureThreshold:    util.Pointer[int32](5),
 	}
 	echoapiDefaultReadinessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32(25),
-		TimeoutSeconds:      pointer.Int32(2),
-		PeriodSeconds:       pointer.Int32(20),
-		SuccessThreshold:    pointer.Int32(1),
-		FailureThreshold:    pointer.Int32(5),
+		InitialDelaySeconds: util.Pointer[int32](25),
+		TimeoutSeconds:      util.Pointer[int32](2),
+		PeriodSeconds:       util.Pointer[int32](20),
+		SuccessThreshold:    util.Pointer[int32](1),
+		FailureThreshold:    util.Pointer[int32](5),
 	}
 	echoapiDefaultMarin3rSpec     defaultMarin3rSidecarSpec  = defaultMarin3rSidecarSpec{}
 	echoapiDefaultNLBLoadBalancer defaultNLBLoadBalancerSpec = defaultNLBLoadBalancerSpec{
-		ProxyProtocol:                 pointer.Bool(true),
-		CrossZoneLoadBalancingEnabled: pointer.Bool(true),
+		ProxyProtocol:                 util.Pointer(true),
+		CrossZoneLoadBalancingEnabled: util.Pointer(true),
 	}
 )
 

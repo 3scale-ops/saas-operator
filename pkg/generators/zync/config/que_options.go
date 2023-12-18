@@ -1,9 +1,9 @@
 package config
 
 import (
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
-	"k8s.io/utils/pointer"
+	"github.com/3scale-ops/basereconciler/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 )
 
 // QueOptions holds configuration for the que pods
@@ -38,7 +38,7 @@ func NewQueOptions(spec saasv1alpha1.ZyncSpec) QueOptions {
 		}
 
 	} else {
-		opts.BugsnagAPIKey = &pod.SecretValue{Value: saasv1alpha1.SecretReference{Override: pointer.String("")}}
+		opts.BugsnagAPIKey = &pod.SecretValue{Value: saasv1alpha1.SecretReference{Override: util.Pointer("")}}
 	}
 
 	return opts

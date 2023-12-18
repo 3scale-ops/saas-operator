@@ -22,11 +22,12 @@ import (
 	"time"
 
 	"github.com/3scale-ops/basereconciler/reconciler"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/generators/redisshard"
-	"github.com/3scale/saas-operator/pkg/redis/client"
-	redis "github.com/3scale/saas-operator/pkg/redis/server"
-	"github.com/3scale/saas-operator/pkg/redis/sharded"
+	"github.com/3scale-ops/basereconciler/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/generators/redisshard"
+	"github.com/3scale-ops/saas-operator/pkg/redis/client"
+	redis "github.com/3scale-ops/saas-operator/pkg/redis/server"
+	"github.com/3scale-ops/saas-operator/pkg/redis/sharded"
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -57,13 +58,11 @@ func (r *RedisShardReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	ctx = log.IntoContext(ctx, logger)
 
 	instance := &saasv1alpha1.RedisShard{}
-	result := r.ManageResourceLifecycle(ctx, req, instance)
+	result := r.ManageResourceLifecycle(ctx, req, instance,
+		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)))
 	if result.ShouldReturn() {
 		return result.Values()
 	}
-
-	// Apply defaults for reconcile but do not store them in the API
-	instance.Default()
 
 	gen := redisshard.NewGenerator(
 		instance.GetName(),

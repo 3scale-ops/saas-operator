@@ -1,7 +1,7 @@
 package backend
 
 import (
-	"github.com/3scale/saas-operator/pkg/resource_builders/service"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/service"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"

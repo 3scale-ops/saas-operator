@@ -22,13 +22,14 @@ import (
 	"time"
 
 	"github.com/3scale-ops/basereconciler/reconciler"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/generators/sentinel"
-	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
-	"github.com/3scale/saas-operator/pkg/redis/events"
-	"github.com/3scale/saas-operator/pkg/redis/metrics"
-	redis "github.com/3scale/saas-operator/pkg/redis/server"
-	"github.com/3scale/saas-operator/pkg/redis/sharded"
+	"github.com/3scale-ops/basereconciler/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/generators/sentinel"
+	"github.com/3scale-ops/saas-operator/pkg/reconcilers/threads"
+	"github.com/3scale-ops/saas-operator/pkg/redis/events"
+	"github.com/3scale-ops/saas-operator/pkg/redis/metrics"
+	redis "github.com/3scale-ops/saas-operator/pkg/redis/server"
+	"github.com/3scale-ops/saas-operator/pkg/redis/sharded"
 	"github.com/go-logr/logr"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	"golang.org/x/time/rate"
@@ -71,6 +72,7 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	instance := &saasv1alpha1.Sentinel{}
 	result := r.ManageResourceLifecycle(ctx, req, instance,
+		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)),
 		reconciler.WithFinalizer(saasv1alpha1.Finalizer),
 		reconciler.WithFinalizationFunc(r.SentinelEvents.CleanupThreads(instance)),
 		reconciler.WithFinalizationFunc(r.Metrics.CleanupThreads(instance)),
@@ -78,9 +80,6 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	if result.ShouldReturn() {
 		return result.Values()
 	}
-
-	// Apply defaults for reconcile but do not store them in the API
-	instance.Default()
 
 	gen := sentinel.NewGenerator(
 		instance.GetName(),

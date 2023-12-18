@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"strings"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
-	"github.com/3scale/saas-operator/pkg/util"
+	"github.com/3scale-ops/basereconciler/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/pointer"
 )
 
 var (
@@ -37,7 +36,7 @@ func (gen *Generator) statefulSet() *appsv1.StatefulSet {
 				},
 				Spec: corev1.PodSpec{
 					Affinity:                     pod.Affinity(gen.GetSelector(), gen.Spec.NodeAffinity),
-					AutomountServiceAccountToken: pointer.Bool(false),
+					AutomountServiceAccountToken: util.Pointer(false),
 					DNSPolicy:                    corev1.DNSClusterFirst,
 					ImagePullSecrets: func() []corev1.LocalObjectReference {
 						if gen.Spec.Image.PullSecretName != nil {
@@ -100,13 +99,13 @@ func (gen *Generator) statefulSet() *appsv1.StatefulSet {
 						},
 					},
 					Tolerations:                   gen.Spec.Tolerations,
-					TerminationGracePeriodSeconds: pointer.Int64(30),
+					TerminationGracePeriodSeconds: util.Pointer[int64](30),
 					Volumes: []corev1.Volume{
 						{
 							Name: gen.GetComponent() + "-gen-config",
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
-									DefaultMode:          pointer.Int32(484),
+									DefaultMode:          util.Pointer[int32](484),
 									LocalObjectReference: corev1.LocalObjectReference{Name: gen.GetComponent() + "-gen-config"}},
 							}},
 					}},
@@ -114,7 +113,7 @@ func (gen *Generator) statefulSet() *appsv1.StatefulSet {
 			UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
 				Type: appsv1.RollingUpdateStatefulSetStrategyType,
 				RollingUpdate: &appsv1.RollingUpdateStatefulSetStrategy{
-					Partition: pointer.Int32(0),
+					Partition: util.Pointer[int32](0),
 				},
 			},
 			VolumeClaimTemplates: []corev1.PersistentVolumeClaim{{
@@ -125,7 +124,7 @@ func (gen *Generator) statefulSet() *appsv1.StatefulSet {
 					AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
 					Resources:        corev1.ResourceRequirements{Requests: corev1.ResourceList{corev1.ResourceStorage: *gen.Spec.Config.StorageSize}},
 					StorageClassName: gen.Spec.Config.StorageClass,
-					VolumeMode:       (*corev1.PersistentVolumeMode)(pointer.String(string(corev1.PersistentVolumeFilesystem))),
+					VolumeMode:       (*corev1.PersistentVolumeMode)(util.Pointer(string(corev1.PersistentVolumeFilesystem))),
 					DataSource:       &corev1.TypedLocalObjectReference{},
 				},
 				Status: corev1.PersistentVolumeClaimStatus{

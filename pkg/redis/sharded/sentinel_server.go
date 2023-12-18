@@ -4,8 +4,8 @@ import (
 	"context"
 	"sort"
 
-	redis "github.com/3scale/saas-operator/pkg/redis/server"
-	"github.com/3scale/saas-operator/pkg/util"
+	redis "github.com/3scale-ops/saas-operator/pkg/redis/server"
+	operatorutils "github.com/3scale-ops/saas-operator/pkg/util"
 )
 
 const (
@@ -35,7 +35,7 @@ func NewSentinelServerFromParams(srv *redis.Server) *SentinelServer {
 }
 
 func NewHighAvailableSentinel(servers map[string]string, pool *redis.ServerPool) ([]*SentinelServer, error) {
-	var merr util.MultiError
+	var merr operatorutils.MultiError
 	sentinels := make([]*SentinelServer, 0, len(servers))
 
 	for key, connectionString := range servers {
@@ -105,14 +105,14 @@ func (sentinel *SentinelServer) Monitor(ctx context.Context, cluster *Cluster, q
 
 				err = sentinel.SentinelMonitor(ctx, name, master.GetHost(), master.GetPort(), quorum)
 				if err != nil {
-					return changed, util.WrapError("redis-sentinel/SentinelServer.Monitor", err)
+					return changed, operatorutils.WrapError("redis-sentinel/SentinelServer.Monitor", err)
 				}
 				// even if the next call fails, there has already been a write operation to sentinel
 				changed = append(changed, name)
 
 				err = sentinel.SentinelSet(ctx, name, "down-after-milliseconds", "5000")
 				if err != nil {
-					return changed, util.WrapError("redis-sentinel/SentinelServer.Monitor", err)
+					return changed, operatorutils.WrapError("redis-sentinel/SentinelServer.Monitor", err)
 				}
 				// TODO: change the default failover timeout.
 				// TODO: maybe add a generic mechanism to set/modify parameters

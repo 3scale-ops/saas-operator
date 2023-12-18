@@ -6,10 +6,10 @@ import (
 	"sort"
 	"time"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/resource_builders/twemproxy"
-	"github.com/3scale/saas-operator/pkg/util"
-	testutil "github.com/3scale/saas-operator/test/util"
+	"github.com/3scale-ops/basereconciler/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/twemproxy"
+	testutil "github.com/3scale-ops/saas-operator/test/util"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	. "github.com/onsi/ginkgo/v2"
@@ -17,7 +17,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 )
@@ -48,11 +47,11 @@ var _ = Describe("twemproxyconfig e2e suite", func() {
 		shards = []saasv1alpha1.RedisShard{
 			{
 				ObjectMeta: metav1.ObjectMeta{Name: "rs0", Namespace: ns},
-				Spec:       saasv1alpha1.RedisShardSpec{MasterIndex: pointer.Int32(0), SlaveCount: pointer.Int32(2)},
+				Spec:       saasv1alpha1.RedisShardSpec{MasterIndex: util.Pointer[int32](0), SlaveCount: util.Pointer[int32](2)},
 			},
 			{
 				ObjectMeta: metav1.ObjectMeta{Name: "rs1", Namespace: ns},
-				Spec:       saasv1alpha1.RedisShardSpec{MasterIndex: pointer.Int32(0), SlaveCount: pointer.Int32(2)},
+				Spec:       saasv1alpha1.RedisShardSpec{MasterIndex: util.Pointer[int32](0), SlaveCount: util.Pointer[int32](2)},
 			},
 		}
 

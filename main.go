@@ -30,6 +30,7 @@ import (
 
 	"github.com/3scale-ops/basereconciler/reconciler"
 	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
+	operatorutils "github.com/3scale-ops/saas-operator/pkg/util"
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
@@ -41,13 +42,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/controllers"
-	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
-	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
-	redis "github.com/3scale/saas-operator/pkg/redis/server"
-	"github.com/3scale/saas-operator/pkg/util"
-	"github.com/3scale/saas-operator/pkg/version"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/controllers"
+	"github.com/3scale-ops/saas-operator/pkg/reconcilers/threads"
+	"github.com/3scale-ops/saas-operator/pkg/reconcilers/workloads"
+	redis "github.com/3scale-ops/saas-operator/pkg/redis/server"
+	"github.com/3scale-ops/saas-operator/pkg/version"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -86,11 +86,11 @@ func main() {
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
 
-	ctrl.SetLogger((util.Logger{}).New())
+	ctrl.SetLogger((operatorutils.Logger{}).New())
 
 	printVersion()
 
-	if err := (&util.ProfilerConfig{
+	if err := (&operatorutils.ProfilerConfig{
 		Log: ctrl.Log.WithName("profiler"),
 	}).Setup(); err != nil {
 		setupLog.Error(err, "unable to start the Profiler")

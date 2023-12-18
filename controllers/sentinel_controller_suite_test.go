@@ -3,8 +3,8 @@ package controllers
 import (
 	"context"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	testutil "github.com/3scale/saas-operator/test/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	testutil "github.com/3scale-ops/saas-operator/test/util"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

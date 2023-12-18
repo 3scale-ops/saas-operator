@@ -3,9 +3,9 @@ package config
 import (
 	"fmt"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
-	"k8s.io/utils/pointer"
+	"github.com/3scale-ops/basereconciler/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 )
 
 // Options holds configuration for system app and sidekiq pods
@@ -155,7 +155,7 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 		}
 
 	} else {
-		opts.BugsnagAPIKey = &pod.SecretValue{Value: saasv1alpha1.SecretReference{Override: pointer.String("")}}
+		opts.BugsnagAPIKey = &pod.SecretValue{Value: saasv1alpha1.SecretReference{Override: util.Pointer("")}}
 	}
 
 	if spec.Config.Assets.Host == nil {

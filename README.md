@@ -2,9 +2,9 @@
 
 ![3scale-saas](docs/logos/3scale-saas-logo.svg)
 
-[![test](https://github.com/3scale/saas-operator/actions/workflows/test.yaml/badge.svg)](https://github.com/3scale/saas-operator/actions/workflows/test.yaml)
-[![release](https://badgen.net/github/release/3scale/saas-operator)](https://github.com/3scale/saas-operator/releases)
-[![license](https://badgen.net/github/license/3scale/saas-operator)](https://github.com/3scale/saas-operator/LICENSE)
+[![test](https://github.com/3scale-ops/saas-operator/actions/workflows/test.yaml/badge.svg)](https://github.com/3scale-ops/saas-operator/actions/workflows/test.yaml)
+[![release](https://badgen.net/github/release/3scale/saas-operator)](https://github.com/3scale-ops/saas-operator/releases)
+[![license](https://badgen.net/github/license/3scale/saas-operator)](https://github.com/3scale-ops/saas-operator/LICENSE)
 
 A Kubernetes Operator based on the Operator SDK to manage 3scale SaaS (hosted version) on **Kubernetes/OpenShift**.
 

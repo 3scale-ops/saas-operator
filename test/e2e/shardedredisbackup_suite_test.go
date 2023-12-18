@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/util"
-	testutil "github.com/3scale/saas-operator/test/util"
+	"github.com/3scale-ops/basereconciler/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	testutil "github.com/3scale-ops/saas-operator/test/util"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	. "github.com/onsi/ginkgo/v2"
@@ -18,7 +18,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -58,8 +57,8 @@ var _ = Describe("shardedredisbackup e2e suite", func() {
 			{
 				ObjectMeta: metav1.ObjectMeta{Name: "rs0", Namespace: ns},
 				Spec: saasv1alpha1.RedisShardSpec{
-					MasterIndex: pointer.Int32(0),
-					SlaveCount:  pointer.Int32(2),
+					MasterIndex: util.Pointer[int32](0),
+					SlaveCount:  util.Pointer[int32](2),
 					Command:     util.Pointer("/entrypoint.sh"),
 					Image: &saasv1alpha1.ImageSpec{
 						Name: util.Pointer("redis-with-ssh"),
