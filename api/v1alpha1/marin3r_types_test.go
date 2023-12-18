@@ -230,24 +230,24 @@ func TestMapOfEnvoyDynamicConfig_AsList(t *testing.T) {
 			name: "Returns the map as a list of EnvoyDynamicConfigDescriptor",
 			mapofconfs: map[string]EnvoyDynamicConfig{
 				"one": {
-					name:             "",
+					Name:             "",
 					GeneratorVersion: new(string),
 					ListenerHttp:     &ListenerHttp{},
 				},
 				"two": {
-					name:             "",
+					Name:             "",
 					GeneratorVersion: new(string),
 					Cluster:          &Cluster{},
 				},
 			},
 			want: []envoyconfig.EnvoyDynamicConfigDescriptor{
 				&EnvoyDynamicConfig{
-					name:             "one",
+					Name:             "one",
 					GeneratorVersion: new(string),
 					ListenerHttp:     &ListenerHttp{},
 				},
 				&EnvoyDynamicConfig{
-					name:             "two",
+					Name:             "two",
 					GeneratorVersion: new(string),
 					Cluster:          &Cluster{},
 				},
