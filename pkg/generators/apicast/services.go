@@ -7,8 +7,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-// GatewayService returns a function that will return the
-// gateway Service resource when called
 func (gen *EnvGenerator) gatewayService() *corev1.Service {
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -32,8 +30,6 @@ func (gen *EnvGenerator) gatewayService() *corev1.Service {
 	}
 }
 
-// MgmtService returns a function that will return the
-// management Service resource when called
 func (gen *EnvGenerator) mgmtService() *corev1.Service {
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{

@@ -7,8 +7,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-// service returns a function that will return the
-// public service resource when called
 func (gen *ListenerGenerator) service() *corev1.Service {
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -32,8 +30,6 @@ func (gen *ListenerGenerator) service() *corev1.Service {
 	}
 }
 
-// internalService returns a function that will return the
-// internal Service resource when called
 func (gen *ListenerGenerator) internalService() *corev1.Service {
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{

@@ -199,7 +199,7 @@ func (gen *Generator) Resources() ([]resource.TemplateInterface, error) {
 			WithEnabled(gen.config.ErrorMonitoringKey != nil),
 	}
 
-	return operatorutil.ConcatSlices[resource.TemplateInterface](listener_resources, worker_resources, cron_resources, misc), nil
+	return operatorutil.ConcatSlices(listener_resources, worker_resources, cron_resources, misc), nil
 }
 
 // ListenerGenerator has methods to generate resources for a
@@ -315,7 +315,6 @@ var _ deployment_workload.DeploymentWorkload = &CronGenerator{}
 
 func (gen *CronGenerator) Deployment() *resource.Template[*appsv1.Deployment] {
 	return resource.NewTemplateFromObjectFunction(gen.deployment).
-		WithMutation(mutators.SetDeploymentReplicas(true)).
 		WithMutation(mutators.RolloutTrigger{Name: "backend-error-monitoring", SecretName: util.Pointer("backend-error-monitoring")}.Add())
 }
 func (gen *CronGenerator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {

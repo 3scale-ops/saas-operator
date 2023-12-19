@@ -16,8 +16,6 @@ var (
 	healthCommand string = fmt.Sprintf("redis-cli -p %d PING", saasv1alpha1.SentinelPort)
 )
 
-// statefulSet returns a function that will return
-// a StatefulSet resource when called
 func (gen *Generator) statefulSet() *appsv1.StatefulSet {
 	return &appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{

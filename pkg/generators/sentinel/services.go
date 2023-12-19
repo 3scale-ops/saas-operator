@@ -13,8 +13,6 @@ const (
 	statefulsetPodSelectorLabelKey string = "statefulset.kubernetes.io/pod-name"
 )
 
-// statefulSetService returns a function function that returns a Service
-// resource when called
 func (gen *Generator) statefulSetService() *corev1.Service {
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -31,9 +29,6 @@ func (gen *Generator) statefulSetService() *corev1.Service {
 	}
 }
 
-// podServices returns a function that returns a Service that points
-// ot a specific StatefulSet Pod when called
-// resource when called
 func (gen *Generator) podServices(index int) *corev1.Service {
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{

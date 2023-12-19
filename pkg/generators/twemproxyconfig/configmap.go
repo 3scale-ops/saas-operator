@@ -15,8 +15,7 @@ const (
 	HealthBindAddress string = "127.0.0.1:22333"
 )
 
-// configMap returns a function that will return a ConfigMap
-// resource when called. This ConfigMap holds the twemproxy config file.
+// configMap returns a ConfigMap that holds the twemproxy config file.
 func (gen *Generator) configMap(toYAML bool) *corev1.ConfigMap {
 	config := make(map[string]twemproxy.ServerPoolConfig, len(gen.Spec.ServerPools)+1)
 	for _, pool := range gen.Spec.ServerPools {

@@ -7,11 +7,9 @@ import (
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-// deployment returns a function that will return a *appsv1.Deployment for zync-que
 func (gen *QueGenerator) deployment() *appsv1.Deployment {
 	dep := &appsv1.Deployment{
 		Spec: appsv1.DeploymentSpec{
@@ -48,8 +46,8 @@ func (gen *QueGenerator) deployment() *appsv1.Deployment {
 								envVars = append(envVars,
 									corev1.EnvVar{
 										Name: "POD_NAME",
-										ValueFrom: &v1.EnvVarSource{
-											FieldRef: &v1.ObjectFieldSelector{
+										ValueFrom: &corev1.EnvVarSource{
+											FieldRef: &corev1.ObjectFieldSelector{
 												FieldPath:  "metadata.name",
 												APIVersion: "v1",
 											},
@@ -57,8 +55,8 @@ func (gen *QueGenerator) deployment() *appsv1.Deployment {
 									},
 									corev1.EnvVar{
 										Name: "POD_NAMESPACE",
-										ValueFrom: &v1.EnvVarSource{
-											FieldRef: &v1.ObjectFieldSelector{
+										ValueFrom: &corev1.EnvVarSource{
+											FieldRef: &corev1.ObjectFieldSelector{
 												FieldPath:  "metadata.namespace",
 												APIVersion: "v1",
 											},

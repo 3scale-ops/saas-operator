@@ -166,8 +166,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	/* WORKLOADS RECONCILER BASED CONTROLLERS*/
-
 	if err = (&controllers.ApicastReconciler{
 		Reconciler: reconciler.NewFromManager(mgr).
 			WithLogger(ctrl.Log.WithName("controllers").WithName("Apicast")),

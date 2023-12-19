@@ -10,8 +10,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-// Deployment returns a function that will return a Deployment
-// resource when called
 func (gen *CronGenerator) deployment() *appsv1.Deployment {
 	return &appsv1.Deployment{
 		Spec: appsv1.DeploymentSpec{

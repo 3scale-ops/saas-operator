@@ -11,7 +11,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-// deployment returns a function that will return a *appsv1.Deployment for echo-api
 func (gen *Generator) deployment() *appsv1.Deployment {
 
 	dep := &appsv1.Deployment{

@@ -12,8 +12,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// StatefulSet returns a basereconciler.GeneratorFunction function that will return
-// a StatefulSet resource when called
 func (gen *ConsoleGenerator) statefulset() *appsv1.StatefulSet {
 	sts := &appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{

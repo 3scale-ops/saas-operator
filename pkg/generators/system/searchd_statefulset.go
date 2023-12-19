@@ -12,8 +12,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-// StatefulSet returns a basereconciler.GeneratorFunction function that will return
-// a StatefulSet resource when called
 func (gen *SearchdGenerator) statefulset() *appsv1.StatefulSet {
 	return &appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{

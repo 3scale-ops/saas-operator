@@ -125,7 +125,7 @@ func (gen *Generator) Resources() ([]resource.TemplateInterface, error) {
 		),
 	}
 
-	return operatorutil.ConcatSlices[resource.TemplateInterface](
+	return operatorutil.ConcatSlices(
 		app_resources,
 		que_resources,
 		gen.Console.StatefulSet(),
@@ -223,7 +223,6 @@ func (gen *ConsoleGenerator) StatefulSet() []resource.TemplateInterface {
 	return []resource.TemplateInterface{
 		resource.NewTemplateFromObjectFunction(gen.statefulset).
 			WithEnabled(gen.Enabled).
-			WithMutation(mutators.SetDeploymentReplicas(true)).
 			WithMutation(mutators.RolloutTrigger{Name: "zync", SecretName: util.Pointer("zync")}.Add()),
 	}
 }

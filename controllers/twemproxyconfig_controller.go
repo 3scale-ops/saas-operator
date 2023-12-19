@@ -48,7 +48,6 @@ import (
 // TwemproxyConfigReconciler reconciles a TwemproxyConfig object
 type TwemproxyConfigReconciler struct {
 	*reconciler.Reconciler
-	Log            logr.Logger
 	SentinelEvents threads.Manager
 	Pool           *redis.ServerPool
 }

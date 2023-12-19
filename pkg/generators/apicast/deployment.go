@@ -11,8 +11,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-// Deployment returns a function that will return a Deployment
-// resource when called
 func (gen *EnvGenerator) deployment() *appsv1.Deployment {
 
 	dep := &appsv1.Deployment{

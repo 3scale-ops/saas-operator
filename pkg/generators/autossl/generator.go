@@ -94,7 +94,7 @@ func (gen *Generator) Resources() ([]resource.TemplateInterface, error) {
 			grafanadashboard.New(gen.GetKey(), gen.GetLabels(), *gen.Spec.GrafanaDashboard, "dashboards/autossl.json.gtpl")).
 			WithEnabled(!gen.Spec.GrafanaDashboard.IsDeactivated()),
 	}
-	return operatorutil.ConcatSlices[resource.TemplateInterface](workload, misc), nil
+	return operatorutil.ConcatSlices(workload, misc), nil
 }
 
 func (gen *Generator) Services() []*resource.Template[*corev1.Service] {

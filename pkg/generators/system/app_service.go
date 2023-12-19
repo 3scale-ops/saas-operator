@@ -7,7 +7,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-// service returns a function that will return the corev1.Service for system
 func (gen *AppGenerator) service() *corev1.Service {
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{

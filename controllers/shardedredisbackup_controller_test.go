@@ -22,7 +22,7 @@ import (
 	"time"
 
 	"github.com/3scale-ops/basereconciler/reconciler"
-	reconciler_util "github.com/3scale-ops/basereconciler/util"
+	"github.com/3scale-ops/basereconciler/util"
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	testutil "github.com/3scale-ops/saas-operator/test/util"
 	"github.com/google/go-cmp/cmp"
@@ -47,7 +47,7 @@ func TestShardedRedisBackupReconciler_reconcileBackupList(t *testing.T) {
 			args: args{
 				nextRun: testutil.MustParseRFC3339("2023-09-01T00:01:00Z"),
 				instance: &saasv1alpha1.ShardedRedisBackup{
-					Spec:   saasv1alpha1.ShardedRedisBackupSpec{HistoryLimit: reconciler_util.Pointer(int32(10))},
+					Spec:   saasv1alpha1.ShardedRedisBackupSpec{HistoryLimit: util.Pointer(int32(10))},
 					Status: saasv1alpha1.ShardedRedisBackupStatus{},
 				},
 				shards: []string{"shard01", "shard02"},
@@ -76,7 +76,7 @@ func TestShardedRedisBackupReconciler_reconcileBackupList(t *testing.T) {
 			args: args{
 				nextRun: testutil.MustParseRFC3339("2023-09-01T00:01:00Z"),
 				instance: &saasv1alpha1.ShardedRedisBackup{
-					Spec: saasv1alpha1.ShardedRedisBackupSpec{HistoryLimit: reconciler_util.Pointer(int32(10))},
+					Spec: saasv1alpha1.ShardedRedisBackupSpec{HistoryLimit: util.Pointer(int32(10))},
 					Status: saasv1alpha1.ShardedRedisBackupStatus{
 						Backups: []saasv1alpha1.BackupStatus{
 							{
@@ -119,7 +119,7 @@ func TestShardedRedisBackupReconciler_reconcileBackupList(t *testing.T) {
 			args: args{
 				nextRun: testutil.MustParseRFC3339("2023-09-01T00:02:00Z"),
 				instance: &saasv1alpha1.ShardedRedisBackup{
-					Spec: saasv1alpha1.ShardedRedisBackupSpec{HistoryLimit: reconciler_util.Pointer(int32(10))},
+					Spec: saasv1alpha1.ShardedRedisBackupSpec{HistoryLimit: util.Pointer(int32(10))},
 					Status: saasv1alpha1.ShardedRedisBackupStatus{
 						Backups: []saasv1alpha1.BackupStatus{
 							{

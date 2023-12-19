@@ -357,7 +357,7 @@ func (gen *Generator) Resources() ([]resource.TemplateInterface, error) {
 		)
 	}
 
-	return operatorutil.ConcatSlices[resource.TemplateInterface](
+	return operatorutil.ConcatSlices(
 			app_resources,
 			sidekiq_default_resources,
 			sidekiq_billing_resources,
@@ -384,8 +384,8 @@ func getSystemSecrets() []string {
 }
 
 func getSystemSecretsRolloutTriggers(additionalSecrets ...string) []resource.TemplateMutationFunction {
-	triggers := []resource.TemplateMutationFunction{}
 	secrets := append(getSystemSecrets(), additionalSecrets...)
+	triggers := make([]resource.TemplateMutationFunction, 0, len(secrets))
 	for _, secret := range secrets {
 		triggers = append(
 			triggers,

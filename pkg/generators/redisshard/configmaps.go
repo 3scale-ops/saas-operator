@@ -6,8 +6,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// RedisConfigConfigMap returns a function that will return a ConfigMap
-// resource when called
 func (gen *Generator) redisConfigConfigMap() *corev1.ConfigMap {
 	return &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
@@ -24,8 +22,6 @@ func (gen *Generator) redisConfigConfigMap() *corev1.ConfigMap {
 	}
 }
 
-// RedisReadinessScriptConfigMap returns a function that will return a ConfigMap
-// resource when called
 func (gen *Generator) redisReadinessScriptConfigMap() *corev1.ConfigMap {
 	return &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{

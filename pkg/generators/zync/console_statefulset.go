@@ -7,12 +7,9 @@ import (
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// StatefulSet returns a basereconciler.GeneratorFunction function that will return
-// a StatefulSet resource when called
 func (gen *ConsoleGenerator) statefulset() *appsv1.StatefulSet {
 	sts := &appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -55,8 +52,8 @@ func (gen *ConsoleGenerator) statefulset() *appsv1.StatefulSet {
 								envVars = append(envVars,
 									corev1.EnvVar{
 										Name: "POD_NAME",
-										ValueFrom: &v1.EnvVarSource{
-											FieldRef: &v1.ObjectFieldSelector{
+										ValueFrom: &corev1.EnvVarSource{
+											FieldRef: &corev1.ObjectFieldSelector{
 												FieldPath:  "metadata.name",
 												APIVersion: "v1",
 											},
@@ -64,8 +61,8 @@ func (gen *ConsoleGenerator) statefulset() *appsv1.StatefulSet {
 									},
 									corev1.EnvVar{
 										Name: "POD_NAMESPACE",
-										ValueFrom: &v1.EnvVarSource{
-											FieldRef: &v1.ObjectFieldSelector{
+										ValueFrom: &corev1.EnvVarSource{
+											FieldRef: &corev1.ObjectFieldSelector{
 												FieldPath:  "metadata.namespace",
 												APIVersion: "v1",
 											},

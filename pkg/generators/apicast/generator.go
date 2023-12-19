@@ -159,7 +159,7 @@ func (gen *Generator) Resources() ([]resource.TemplateInterface, error) {
 			WithEnabled(!gen.GrafanaDashboardSpec.IsDeactivated()),
 	}
 
-	return operatorutil.ConcatSlices[resource.TemplateInterface](staging, production, misc), nil
+	return operatorutil.ConcatSlices(staging, production, misc), nil
 }
 
 // EnvGenerator has methods to generate resources for an

@@ -70,7 +70,7 @@ func (gen *Generator) Resources() ([]resource.TemplateInterface, error) {
 				*gen.Spec.Config.ExternalSecret.SecretStoreRef.Name, *gen.Spec.Config.ExternalSecret.SecretStoreRef.Kind,
 				*gen.Spec.Config.ExternalSecret.RefreshInterval, gen.GetLabels(), gen.Options)),
 	}
-	return operatorutil.ConcatSlices[resource.TemplateInterface](workload, misc), nil
+	return operatorutil.ConcatSlices(workload, misc), nil
 }
 
 func (gen *Generator) Services() []*resource.Template[*corev1.Service] {

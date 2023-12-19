@@ -7,8 +7,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// pipeline returns a basereconciler.GeneratorFunction function that will return a
-// Tekton Pipeline resource for a Task when called
 func (gen *SystemTektonGenerator) pipeline() *pipelinev1beta1.Pipeline {
 	pipeline := &pipelinev1beta1.Pipeline{
 		ObjectMeta: metav1.ObjectMeta{
