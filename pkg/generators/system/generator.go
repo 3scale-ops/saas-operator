@@ -10,13 +10,12 @@ import (
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/pkg/generators"
 	"github.com/3scale-ops/saas-operator/pkg/generators/system/config"
-	"github.com/3scale-ops/saas-operator/pkg/reconcilers/workloads"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/grafanadashboard"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/podmonitor"
-	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
+	operatorutil "github.com/3scale-ops/saas-operator/pkg/util"
+	deployment_workload "github.com/3scale-ops/saas-operator/pkg/workloads/deployment"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
-	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	res "k8s.io/apimachinery/pkg/api/resource"
@@ -312,11 +311,62 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SystemSpec) (Gen
 	return generator, nil
 }
 
-// GrafanaDashboard returns a basereconciler.GeneratorFunction
-func (gen *Generator) GrafanaDashboard() *resource.Template[*grafanav1alpha1.GrafanaDashboard] {
-	return resource.NewTemplate[*grafanav1alpha1.GrafanaDashboard](
-		grafanadashboard.New(gen.GetKey(), gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/system.json.gtpl")).
-		WithEnabled(!gen.GrafanaDashboardSpec.IsDeactivated())
+// Resources returns the list of resource templates
+func (gen *Generator) Resources() ([]resource.TemplateInterface, error) {
+	app_resources, err := deployment_workload.New(&gen.App, gen.CanaryApp)
+	if err != nil {
+		return nil, err
+	}
+	sidekiq_default_resources, err := deployment_workload.New(&gen.SidekiqDefault, gen.CanarySidekiqDefault)
+	if err != nil {
+		return nil, err
+	}
+	sidekiq_billing_resources, err := deployment_workload.New(&gen.SidekiqBilling, gen.CanarySidekiqBilling)
+	if err != nil {
+		return nil, err
+	}
+	sidekiq_low_resources, err := deployment_workload.New(&gen.SidekiqLow, gen.CanarySidekiqLow)
+	if err != nil {
+		return nil, err
+	}
+
+	misc := []resource.TemplateInterface{
+		resource.NewTemplate(
+			grafanadashboard.New(gen.GetKey(), gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/system.json.gtpl")).
+			WithEnabled(!gen.GrafanaDashboardSpec.IsDeactivated()),
+	}
+	for _, es := range getSystemSecrets() {
+		misc = append(
+			misc,
+			resource.NewTemplate(
+				pod.GenerateExternalSecretFn(es, gen.GetNamespace(),
+					*gen.Config.ExternalSecret.SecretStoreRef.Name, *gen.Config.ExternalSecret.SecretStoreRef.Kind,
+					*gen.Config.ExternalSecret.RefreshInterval, gen.GetLabels(), gen.Options,
+				),
+			),
+		)
+	}
+	for _, tr := range gen.Tekton {
+		// NewTemplateFromObjectFunction receives a function with a pointer receiver so we must
+		// copy the value into a new variable to avoid referencing directly the loop variable, which
+		// leads to unexpected behavior. See https://www.evanjones.ca/go-gotcha-loop-variables.html
+		copy := tr
+		misc = append(misc,
+			resource.NewTemplateFromObjectFunction(copy.task).WithEnabled(copy.Enabled),
+			resource.NewTemplateFromObjectFunction(copy.pipeline).WithEnabled(copy.Enabled),
+		)
+	}
+
+	return operatorutil.ConcatSlices[resource.TemplateInterface](
+			app_resources,
+			sidekiq_default_resources,
+			sidekiq_billing_resources,
+			sidekiq_low_resources,
+			gen.Searchd.StatefulSetWithTraffic(),
+			gen.Console.StatefulSet(),
+			misc,
+		),
+		nil
 }
 
 func getSystemSecrets() []string {
@@ -331,25 +381,6 @@ func getSystemSecrets() []string {
 		"system-smtp",
 		"system-zync",
 	}
-}
-
-// Resources returns functions to generate all System's external secrets resources
-func (gen *Generator) ExternalSecrets() []resource.TemplateInterface {
-
-	resources := []resource.TemplateInterface{}
-	for _, es := range getSystemSecrets() {
-		resources = append(
-			resources,
-			resource.NewTemplate(
-				pod.GenerateExternalSecretFn(es, gen.GetNamespace(),
-					*gen.Config.ExternalSecret.SecretStoreRef.Name, *gen.Config.ExternalSecret.SecretStoreRef.Kind,
-					*gen.Config.ExternalSecret.RefreshInterval, gen.GetLabels(), gen.Options,
-				),
-			),
-		)
-	}
-
-	return resources
 }
 
 func getSystemSecretsRolloutTriggers(additionalSecrets ...string) []resource.TemplateMutationFunction {
@@ -375,11 +406,11 @@ type AppGenerator struct {
 	TwemproxySpec     *saasv1alpha1.TwemproxySpec
 }
 
-// Validate that AppGenerator implements workloads.DeploymentWorkload interface
-var _ workloads.DeploymentWorkload = &AppGenerator{}
+// Validate that AppGenerator implements deployment_workload.DeploymentWorkload interface
+var _ deployment_workload.DeploymentWorkload = &AppGenerator{}
 
-// Validate that AppGenerator implements workloads.WithTraffic interface
-var _ workloads.WithTraffic = &AppGenerator{}
+// Validate that AppGenerator implements deployment_workload.WithTraffic interface
+var _ deployment_workload.WithTraffic = &AppGenerator{}
 
 func (gen *AppGenerator) Services() []*resource.Template[*corev1.Service] {
 	return []*resource.Template[*corev1.Service]{
@@ -418,8 +449,8 @@ func (gen *AppGenerator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint 
 	return pmes
 }
 
-// Validate that SidekiqGenerator implements workloads.DeploymentWorkloadWithTraffic interface
-var _ workloads.DeploymentWorkload = &SidekiqGenerator{}
+// Validate that SidekiqGenerator implements deployment_workload.DeploymentWorkloadWithTraffic interface
+var _ deployment_workload.DeploymentWorkload = &SidekiqGenerator{}
 
 // SidekiqGenerator has methods to generate resources for system-sidekiq
 type SidekiqGenerator struct {
@@ -485,10 +516,12 @@ type ConsoleGenerator struct {
 	TwemproxySpec     *saasv1alpha1.TwemproxySpec
 }
 
-func (gen *ConsoleGenerator) StatefulSet() *resource.Template[*appsv1.StatefulSet] {
-	return resource.NewTemplateFromObjectFunction(gen.statefulset).
-		WithEnabled(gen.Enabled).
-		WithMutations(getSystemSecretsRolloutTriggers(gen.ConfigFilesSecret))
+func (gen *ConsoleGenerator) StatefulSet() []resource.TemplateInterface {
+	return []resource.TemplateInterface{
+		resource.NewTemplateFromObjectFunction(gen.statefulset).
+			WithEnabled(gen.Enabled).
+			WithMutations(getSystemSecretsRolloutTriggers(gen.ConfigFilesSecret)),
+	}
 }
 
 // SystemTektonGenerator has methods to generate resources for system tekton tasks
@@ -500,20 +533,4 @@ type SystemTektonGenerator struct {
 	ConfigFilesSecret string
 	TwemproxySpec     *saasv1alpha1.TwemproxySpec
 	Enabled           bool
-}
-
-// Resources returns functions to generate all System's tekton pipeline resources
-func (gen *Generator) Pipelines() []resource.TemplateInterface {
-
-	resources := []resource.TemplateInterface{}
-	// Tekton resources
-	for _, tr := range gen.Tekton {
-		copy := tr
-		resources = append(resources,
-			resource.NewTemplateFromObjectFunction[*pipelinev1beta1.Task](copy.task).WithEnabled(copy.Enabled),
-			resource.NewTemplateFromObjectFunction[*pipelinev1beta1.Pipeline](copy.pipeline).WithEnabled(copy.Enabled),
-		)
-	}
-
-	return resources
 }

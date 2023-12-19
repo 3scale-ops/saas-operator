@@ -7,9 +7,9 @@ import (
 	"github.com/3scale-ops/basereconciler/resource"
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/pkg/generators"
-	"github.com/3scale-ops/saas-operator/pkg/reconcilers/workloads"
 	descriptor "github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/podmonitor"
+	deployment_workload "github.com/3scale-ops/saas-operator/pkg/workloads/deployment"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -26,14 +26,14 @@ type Generator struct {
 	Traffic bool
 }
 
-// Validate that Generator implements workloads.DeploymentWorkload interface
-var _ workloads.DeploymentWorkload = &Generator{}
+// Validate that Generator implements deployment_workload.DeploymentWorkload interface
+var _ deployment_workload.DeploymentWorkload = &Generator{}
 
-// Validate that Generator implements workloads.WithTraffic interface
-var _ workloads.WithTraffic = &Generator{}
+// Validate that Generator implements deployment_workload.WithTraffic interface
+var _ deployment_workload.WithTraffic = &Generator{}
 
-// Validate that Generator implements workloads.WithEnvoySidecar interface
-var _ workloads.WithEnvoySidecar = &Generator{}
+// Validate that Generator implements deployment_workload.WithEnvoySidecar interface
+var _ deployment_workload.WithEnvoySidecar = &Generator{}
 
 // NewGenerator returns a new Options struct
 func NewGenerator(instance, namespace string, spec saasv1alpha1.EchoAPISpec) Generator {
@@ -50,6 +50,16 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.EchoAPISpec) Gen
 		Spec:    spec,
 		Traffic: true,
 	}
+}
+
+// Resources returns the list of resource templates
+func (gen *Generator) Resources() ([]resource.TemplateInterface, error) {
+	workload, err := deployment_workload.New(gen, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return workload, nil
 }
 
 func (gen *Generator) Services() []*resource.Template[*corev1.Service] {

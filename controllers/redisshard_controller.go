@@ -34,13 +34,11 @@ import (
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 // RedisShardReconciler reconciles a RedisShard object
 type RedisShardReconciler struct {
 	*reconciler.Reconciler
-	Log  logr.Logger
 	Pool *redis.ServerPool
 }
 
@@ -54,9 +52,8 @@ type RedisShardReconciler struct {
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 func (r *RedisShardReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	logger := r.Log.WithValues("name", req.Name, "namespace", req.Namespace)
-	ctx = log.IntoContext(ctx, logger)
 
+	ctx, logger := r.Logger(ctx, "name", req.Name, "namespace", req.Namespace)
 	instance := &saasv1alpha1.RedisShard{}
 	result := r.ManageResourceLifecycle(ctx, req, instance,
 		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)))
@@ -64,11 +61,7 @@ func (r *RedisShardReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return result.Values()
 	}
 
-	gen := redisshard.NewGenerator(
-		instance.GetName(),
-		instance.GetNamespace(),
-		instance.Spec,
-	)
+	gen := redisshard.NewGenerator(instance.GetName(), instance.GetNamespace(), instance.Spec)
 
 	result = r.ReconcileOwnedResources(ctx, instance, gen.Resources())
 	if result.ShouldReturn() {

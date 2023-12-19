@@ -20,13 +20,10 @@ import (
 	"context"
 
 	"github.com/3scale-ops/basereconciler/reconciler"
-	"github.com/3scale-ops/basereconciler/resource"
 	"github.com/3scale-ops/basereconciler/util"
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/pkg/generators/corsproxy"
-	"github.com/3scale-ops/saas-operator/pkg/reconcilers/workloads"
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
-	"github.com/go-logr/logr"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -35,14 +32,12 @@ import (
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 // CORSProxyReconciler reconciles a CORSProxy object
 type CORSProxyReconciler struct {
-	workloads.WorkloadReconciler
-	Log logr.Logger
+	*reconciler.Reconciler
 }
 
 // +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=corsproxies,verbs=get;list;watch;create;update;patch;delete
@@ -60,9 +55,8 @@ type CORSProxyReconciler struct {
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 func (r *CORSProxyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	logger := r.Log.WithValues("name", req.Name, "namespace", req.Namespace)
-	ctx = log.IntoContext(ctx, logger)
 
+	ctx, _ = r.Logger(ctx, "name", req.Name, "namespace", req.Namespace)
 	instance := &saasv1alpha1.CORSProxy{}
 	result := r.ManageResourceLifecycle(ctx, req, instance,
 		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)))
@@ -70,22 +64,11 @@ func (r *CORSProxyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return result.Values()
 	}
 
-	gen := corsproxy.NewGenerator(
-		instance.GetName(),
-		instance.GetNamespace(),
-		instance.Spec,
-	)
-
-	resources := []resource.TemplateInterface{
-		gen.GrafanaDashboard(),
-		gen.ExternalSecret(),
-	}
-
-	workload, err := r.NewDeploymentWorkload(&gen, nil)
+	gen := corsproxy.NewGenerator(instance.GetName(), instance.GetNamespace(), instance.Spec)
+	resources, err := gen.Resources()
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	resources = append(resources, workload...)
 
 	result = r.ReconcileOwnedResources(ctx, instance, resources)
 	if result.ShouldReturn() {

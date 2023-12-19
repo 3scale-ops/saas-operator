@@ -10,13 +10,12 @@ import (
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/pkg/generators"
 	"github.com/3scale-ops/saas-operator/pkg/generators/backend/config"
-	"github.com/3scale-ops/saas-operator/pkg/reconcilers/workloads"
 	descriptor "github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/grafanadashboard"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/podmonitor"
-	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
-	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
+	operatorutil "github.com/3scale-ops/saas-operator/pkg/util"
+	deployment_workload "github.com/3scale-ops/saas-operator/pkg/workloads/deployment"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -162,30 +161,45 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.BackendSpec) (Ge
 	return generator, nil
 }
 
-// Resources returns functions to generate all Backend's shared resources
-func (gen *Generator) Resources() []resource.TemplateInterface {
-	return []resource.TemplateInterface{
+// Resources returns the list of resource templates
+func (gen *Generator) Resources() ([]resource.TemplateInterface, error) {
+	listener_resources, err := deployment_workload.New(&gen.Listener, gen.CanaryListener)
+	if err != nil {
+		return nil, err
+	}
+	worker_resources, err := deployment_workload.New(&gen.Worker, gen.CanaryWorker)
+	if err != nil {
+		return nil, err
+	}
+	cron_resources, err := deployment_workload.New(&gen.Cron, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	misc := []resource.TemplateInterface{
 		// GrafanaDashboard
-		resource.NewTemplate[*grafanav1alpha1.GrafanaDashboard](
+		resource.NewTemplate(
 			grafanadashboard.New(gen.GetKey(), gen.GetLabels(), gen.grafanaDashboardSpec, "dashboards/backend.json.gtpl")).
 			WithEnabled(!gen.grafanaDashboardSpec.IsDeactivated()),
 		// ExternalSecrets
-		resource.NewTemplate[*externalsecretsv1beta1.ExternalSecret](
+		resource.NewTemplate(
 			pod.GenerateExternalSecretFn("backend-system-events-hook", gen.GetNamespace(),
 				*gen.config.ExternalSecret.SecretStoreRef.Name, *gen.config.ExternalSecret.SecretStoreRef.Kind,
 				*gen.config.ExternalSecret.RefreshInterval, gen.GetLabels(), gen.Worker.Options),
 		),
-		resource.NewTemplate[*externalsecretsv1beta1.ExternalSecret](
+		resource.NewTemplate(
 			pod.GenerateExternalSecretFn("backend-internal-api", gen.GetNamespace(),
 				*gen.config.ExternalSecret.SecretStoreRef.Name, *gen.config.ExternalSecret.SecretStoreRef.Kind,
 				*gen.config.ExternalSecret.RefreshInterval, gen.GetLabels(), gen.Listener.Options),
 		),
-		resource.NewTemplate[*externalsecretsv1beta1.ExternalSecret](
+		resource.NewTemplate(
 			pod.GenerateExternalSecretFn("backend-error-monitoring", gen.GetNamespace(),
 				*gen.config.ExternalSecret.SecretStoreRef.Name, *gen.config.ExternalSecret.SecretStoreRef.Kind,
 				*gen.config.ExternalSecret.RefreshInterval, gen.GetLabels(), gen.Listener.Options)).
 			WithEnabled(gen.config.ErrorMonitoringKey != nil),
 	}
+
+	return operatorutil.ConcatSlices[resource.TemplateInterface](listener_resources, worker_resources, cron_resources, misc), nil
 }
 
 // ListenerGenerator has methods to generate resources for a
@@ -199,14 +213,14 @@ type ListenerGenerator struct {
 	TwemproxySpec *saasv1alpha1.TwemproxySpec
 }
 
-// Validate that ListenerGenerator implements workloads.DeploymentWorkloadWithTraffic interface
-var _ workloads.DeploymentWorkload = &ListenerGenerator{}
+// Validate that ListenerGenerator implements deployment_workload.DeploymentWorkloadWithTraffic interface
+var _ deployment_workload.DeploymentWorkload = &ListenerGenerator{}
 
-// Validate that ListenerGenerator implements workloads.WithTraffic interface
-var _ workloads.WithTraffic = &ListenerGenerator{}
+// Validate that ListenerGenerator implements deployment_workload.WithTraffic interface
+var _ deployment_workload.WithTraffic = &ListenerGenerator{}
 
-// Validate that ListenerGenerator implements workloads.WithEnvoySidecar interface
-var _ workloads.WithEnvoySidecar = &ListenerGenerator{}
+// Validate that ListenerGenerator implements deployment_workload.WithEnvoySidecar interface
+var _ deployment_workload.WithEnvoySidecar = &ListenerGenerator{}
 
 func (gen *ListenerGenerator) Labels() map[string]string {
 	return gen.GetLabels()
@@ -262,8 +276,8 @@ type WorkerGenerator struct {
 	TwemproxySpec *saasv1alpha1.TwemproxySpec
 }
 
-// Validate that WorkerGenerator implements workloads.DeploymentWorkload interface
-var _ workloads.DeploymentWorkload = &WorkerGenerator{}
+// Validate that WorkerGenerator implements deployment_workload.DeploymentWorkload interface
+var _ deployment_workload.DeploymentWorkload = &WorkerGenerator{}
 
 func (gen *WorkerGenerator) Deployment() *resource.Template[*appsv1.Deployment] {
 	return resource.NewTemplateFromObjectFunction(gen.deployment).
@@ -296,8 +310,8 @@ type CronGenerator struct {
 	Options  config.CronOptions
 }
 
-// Validate that CronGenerator implements workloads.DeploymentWorkload interface
-var _ workloads.DeploymentWorkload = &CronGenerator{}
+// Validate that CronGenerator implements deployment_workload.DeploymentWorkload interface
+var _ deployment_workload.DeploymentWorkload = &CronGenerator{}
 
 func (gen *CronGenerator) Deployment() *resource.Template[*appsv1.Deployment] {
 	return resource.NewTemplateFromObjectFunction(gen.deployment).

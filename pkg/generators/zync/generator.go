@@ -10,10 +10,11 @@ import (
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/pkg/generators"
 	"github.com/3scale-ops/saas-operator/pkg/generators/zync/config"
-	"github.com/3scale-ops/saas-operator/pkg/reconcilers/workloads"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/grafanadashboard"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/podmonitor"
+	operatorutil "github.com/3scale-ops/saas-operator/pkg/util"
+	deployment_workload "github.com/3scale-ops/saas-operator/pkg/workloads/deployment"
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
@@ -101,9 +102,17 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.ZyncSpec) Genera
 	}
 }
 
-// Resources returns functions to generate all Zync's shared resources
-func (gen *Generator) Resources() []resource.TemplateInterface {
-	return []resource.TemplateInterface{
+// Resources returns the list of templates
+func (gen *Generator) Resources() ([]resource.TemplateInterface, error) {
+	app_resources, err := deployment_workload.New(&gen.API, nil)
+	if err != nil {
+		return nil, err
+	}
+	que_resources, err := deployment_workload.New(&gen.Que, nil)
+	if err != nil {
+		return nil, err
+	}
+	misc := []resource.TemplateInterface{
 		// GrafanaDashboard
 		resource.NewTemplate[*grafanav1alpha1.GrafanaDashboard](
 			grafanadashboard.New(gen.GetKey(), gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/zync.json.gtpl")).
@@ -115,6 +124,13 @@ func (gen *Generator) Resources() []resource.TemplateInterface {
 				*gen.Config.ExternalSecret.RefreshInterval, gen.GetLabels(), gen.API.Options),
 		),
 	}
+
+	return operatorutil.ConcatSlices[resource.TemplateInterface](
+		app_resources,
+		que_resources,
+		gen.Console.StatefulSet(),
+		misc,
+	), nil
 }
 
 // APIGenerator has methods to generate resources for a
@@ -127,11 +143,11 @@ type APIGenerator struct {
 	Traffic bool
 }
 
-// Validate that APIGenerator implements workloads.DeploymentWorkload interface
-var _ workloads.DeploymentWorkload = &APIGenerator{}
+// Validate that APIGenerator implements deployment_workload.DeploymentWorkload interface
+var _ deployment_workload.DeploymentWorkload = &APIGenerator{}
 
-// Validate that APIGenerator implements workloads.WithTraffic interface
-var _ workloads.WithTraffic = &APIGenerator{}
+// Validate that APIGenerator implements deployment_workload.WithTraffic interface
+var _ deployment_workload.WithTraffic = &APIGenerator{}
 
 func (gen *APIGenerator) Labels() map[string]string {
 	return gen.GetLabels()
@@ -174,8 +190,8 @@ type QueGenerator struct {
 	Options config.QueOptions
 }
 
-// Validate that QueGenerator implements workloads.DeploymentWorkload interface
-var _ workloads.DeploymentWorkload = &QueGenerator{}
+// Validate that QueGenerator implements deployment_workload.DeploymentWorkload interface
+var _ deployment_workload.DeploymentWorkload = &QueGenerator{}
 
 func (gen *QueGenerator) Deployment() *resource.Template[*appsv1.Deployment] {
 	return resource.NewTemplateFromObjectFunction(gen.deployment).
@@ -203,9 +219,11 @@ type ConsoleGenerator struct {
 	Enabled bool
 }
 
-func (gen *ConsoleGenerator) StatefulSet() *resource.Template[*appsv1.StatefulSet] {
-	return resource.NewTemplateFromObjectFunction(gen.statefulset).
-		WithEnabled(gen.Enabled).
-		WithMutation(mutators.SetDeploymentReplicas(true)).
-		WithMutation(mutators.RolloutTrigger{Name: "zync", SecretName: util.Pointer("zync")}.Add())
+func (gen *ConsoleGenerator) StatefulSet() []resource.TemplateInterface {
+	return []resource.TemplateInterface{
+		resource.NewTemplateFromObjectFunction(gen.statefulset).
+			WithEnabled(gen.Enabled).
+			WithMutation(mutators.SetDeploymentReplicas(true)).
+			WithMutation(mutators.RolloutTrigger{Name: "zync", SecretName: util.Pointer("zync")}.Add()),
+	}
 }

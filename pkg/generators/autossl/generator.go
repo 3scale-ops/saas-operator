@@ -9,10 +9,10 @@ import (
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/pkg/generators"
 	"github.com/3scale-ops/saas-operator/pkg/generators/autossl/config"
-	"github.com/3scale-ops/saas-operator/pkg/reconcilers/workloads"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/grafanadashboard"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/podmonitor"
-	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
+	operatorutil "github.com/3scale-ops/saas-operator/pkg/util"
+	deployment_workload "github.com/3scale-ops/saas-operator/pkg/workloads/deployment"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -31,11 +31,11 @@ type Generator struct {
 	Traffic bool
 }
 
-// Validate that Generator implements workloads.DeploymentWorkload interface
-var _ workloads.DeploymentWorkload = &Generator{}
+// Validate that Generator implements deployment_workload.DeploymentWorkload interface
+var _ deployment_workload.DeploymentWorkload = &Generator{}
 
-// Validate that Generator implements workloads.WithTraffic interface
-var _ workloads.WithTraffic = &Generator{}
+// Validate that Generator implements deployment_workload.WithTraffic interface
+var _ deployment_workload.WithTraffic = &Generator{}
 
 // NewGenerator returns a new Options struct
 func NewGenerator(instance, namespace string, spec saasv1alpha1.AutoSSLSpec) (Generator, error) {
@@ -83,6 +83,20 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.AutoSSLSpec) (Ge
 	return generator, nil
 }
 
+// Resources returns the list of resource templates
+func (gen *Generator) Resources() ([]resource.TemplateInterface, error) {
+	workload, err := deployment_workload.New(gen, gen.Canary)
+	if err != nil {
+		return nil, err
+	}
+	misc := []resource.TemplateInterface{
+		resource.NewTemplate(
+			grafanadashboard.New(gen.GetKey(), gen.GetLabels(), *gen.Spec.GrafanaDashboard, "dashboards/autossl.json.gtpl")).
+			WithEnabled(!gen.Spec.GrafanaDashboard.IsDeactivated()),
+	}
+	return operatorutil.ConcatSlices[resource.TemplateInterface](workload, misc), nil
+}
+
 func (gen *Generator) Services() []*resource.Template[*corev1.Service] {
 	return []*resource.Template[*corev1.Service]{
 		resource.NewTemplateFromObjectFunction(gen.service).
@@ -96,8 +110,8 @@ func (gen *Generator) TrafficSelector() map[string]string {
 	}
 }
 
-// Validate that Generator implements workloads.DeploymentWorkload interface
-var _ workloads.DeploymentWorkload = &Generator{}
+// Validate that Generator implements deployment_workload.DeploymentWorkload interface
+var _ deployment_workload.DeploymentWorkload = &Generator{}
 
 func (gen *Generator) Deployment() *resource.Template[*appsv1.Deployment] {
 	return resource.NewTemplateFromObjectFunction(gen.deployment).
@@ -116,11 +130,4 @@ func (gen *Generator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint {
 	return []monitoringv1.PodMetricsEndpoint{
 		podmonitor.PodMetricsEndpoint("/metrics", "metrics", 30),
 	}
-}
-
-// GrafanaDashboard returns a basereconciler_resources.GrafanaDashboardTemplate
-func (gen *Generator) GrafanaDashboard() *resource.Template[*grafanav1alpha1.GrafanaDashboard] {
-	return resource.NewTemplate[*grafanav1alpha1.GrafanaDashboard](
-		grafanadashboard.New(gen.GetKey(), gen.GetLabels(), *gen.Spec.GrafanaDashboard, "dashboards/autossl.json.gtpl")).
-		WithEnabled(!gen.Spec.GrafanaDashboard.IsDeactivated())
 }

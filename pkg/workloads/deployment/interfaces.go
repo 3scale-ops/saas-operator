@@ -1,4 +1,4 @@
-package workloads
+package delpoyment_workload
 
 import (
 	"github.com/3scale-ops/basereconciler/resource"

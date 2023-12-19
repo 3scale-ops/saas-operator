@@ -41,7 +41,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/ratelimiter"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
@@ -49,7 +48,6 @@ import (
 // SentinelReconciler reconciles a Sentinel object
 type SentinelReconciler struct {
 	*reconciler.Reconciler
-	Log            logr.Logger
 	SentinelEvents threads.Manager
 	Metrics        threads.Manager
 	Pool           *redis.ServerPool
@@ -67,9 +65,8 @@ type SentinelReconciler struct {
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	logger := r.Log.WithValues("name", req.Name, "namespace", req.Namespace)
-	ctx = log.IntoContext(ctx, logger)
 
+	ctx, logger := r.Logger(ctx, "name", req.Name, "namespace", req.Namespace)
 	instance := &saasv1alpha1.Sentinel{}
 	result := r.ManageResourceLifecycle(ctx, req, instance,
 		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)),
@@ -81,12 +78,7 @@ func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return result.Values()
 	}
 
-	gen := sentinel.NewGenerator(
-		instance.GetName(),
-		instance.GetNamespace(),
-		instance.Spec,
-	)
-
+	gen := sentinel.NewGenerator(instance.GetName(), instance.GetNamespace(), instance.Spec)
 	result = r.ReconcileOwnedResources(ctx, instance, gen.Resources())
 	if result.ShouldReturn() {
 		return result.Values()

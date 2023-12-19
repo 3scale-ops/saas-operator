@@ -29,7 +29,6 @@ import (
 	redis "github.com/3scale-ops/saas-operator/pkg/redis/server"
 	"github.com/3scale-ops/saas-operator/pkg/redis/sharded"
 	operatorutils "github.com/3scale-ops/saas-operator/pkg/util"
-	"github.com/go-logr/logr"
 	"github.com/robfig/cron/v3"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -44,7 +43,6 @@ import (
 // ShardedRedisBackupReconciler reconciles a ShardedRedisBackup object
 type ShardedRedisBackupReconciler struct {
 	*reconciler.Reconciler
-	Log          logr.Logger
 	BackupRunner threads.Manager
 	Pool         *redis.ServerPool
 }
@@ -63,8 +61,8 @@ type ShardedRedisBackupReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.13.0/pkg/reconcile
 func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	logger := r.Log.WithValues("name", req.Name, "namespace", req.Namespace)
-	ctx = log.IntoContext(ctx, logger)
+
+	ctx, logger := r.Logger(ctx, "name", req.Name, "namespace", req.Namespace)
 	now := time.Now()
 
 	// ----------------------------------

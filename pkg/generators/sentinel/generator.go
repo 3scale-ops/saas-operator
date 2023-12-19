@@ -15,10 +15,7 @@ import (
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/grafanadashboard"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pdb"
 	operatorutils "github.com/3scale-ops/saas-operator/pkg/util"
-	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
-	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	policyv1 "k8s.io/api/policy/v1"
 )
 
 const (
@@ -49,14 +46,14 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SentinelSpec) Ge
 	}
 }
 
-// Returns all the resource templates that this generator manages
+// Resources returns a list of templates
 func (gen *Generator) Resources() []resource.TemplateInterface {
 	resources := []resource.TemplateInterface{
-		resource.NewTemplateFromObjectFunction[*appsv1.StatefulSet](gen.statefulSet),
-		resource.NewTemplateFromObjectFunction[*corev1.Service](gen.statefulSetService).WithMutation(mutators.SetServiceLiveValues()),
-		resource.NewTemplate[*policyv1.PodDisruptionBudget](pdb.New(gen.GetKey(), gen.GetLabels(), gen.GetSelector(), *gen.Spec.PDB)),
-		resource.NewTemplateFromObjectFunction[*corev1.ConfigMap](gen.configMap),
-		resource.NewTemplate[*grafanav1alpha1.GrafanaDashboard](grafanadashboard.New(gen.GetKey(), gen.GetLabels(), *gen.Spec.GrafanaDashboard, "dashboards/redis-sentinel.json.gtpl")).
+		resource.NewTemplateFromObjectFunction(gen.statefulSet),
+		resource.NewTemplateFromObjectFunction(gen.statefulSetService).WithMutation(mutators.SetServiceLiveValues()),
+		resource.NewTemplate(pdb.New(gen.GetKey(), gen.GetLabels(), gen.GetSelector(), *gen.Spec.PDB)),
+		resource.NewTemplateFromObjectFunction(gen.configMap),
+		resource.NewTemplate(grafanadashboard.New(gen.GetKey(), gen.GetLabels(), *gen.Spec.GrafanaDashboard, "dashboards/redis-sentinel.json.gtpl")).
 			WithEnabled(!gen.Spec.GrafanaDashboard.IsDeactivated()),
 	}
 

@@ -1,9 +1,8 @@
-package workloads
+package delpoyment_workload
 
 import (
 	"reflect"
 
-	"github.com/3scale-ops/basereconciler/reconciler"
 	"github.com/3scale-ops/basereconciler/resource"
 	"github.com/3scale-ops/basereconciler/util"
 	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
@@ -20,22 +19,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
-type WorkloadReconciler struct {
-	*reconciler.Reconciler
-}
-
-// NewFromManager constructs a new Reconciler from the given manager
-func NewFromManager(mgr manager.Manager) WorkloadReconciler {
-	return WorkloadReconciler{
-		Reconciler: reconciler.NewFromManager(mgr),
-	}
-}
-
-func (r *WorkloadReconciler) NewDeploymentWorkload(
-	main DeploymentWorkload, canary DeploymentWorkload) ([]resource.TemplateInterface, error) {
+func New(main DeploymentWorkload, canary DeploymentWorkload) ([]resource.TemplateInterface, error) {
 
 	resources := workloadResources(main)
 

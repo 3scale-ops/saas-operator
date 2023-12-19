@@ -24,8 +24,6 @@ import (
 	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/pkg/generators/echoapi"
-	"github.com/3scale-ops/saas-operator/pkg/reconcilers/workloads"
-	"github.com/go-logr/logr"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -33,13 +31,11 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 // EchoAPIReconciler reconciles a EchoAPI object
 type EchoAPIReconciler struct {
-	workloads.WorkloadReconciler
-	Log logr.Logger
+	*reconciler.Reconciler
 }
 
 // +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=echoapis,verbs=get;list;watch;create;update;patch;delete
@@ -55,9 +51,8 @@ type EchoAPIReconciler struct {
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 func (r *EchoAPIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	logger := r.Log.WithValues("name", req.Name, "namespace", req.Namespace)
-	ctx = log.IntoContext(ctx, logger)
 
+	ctx, _ = r.Logger(ctx, "name", req.Name, "namespace", req.Namespace)
 	instance := &saasv1alpha1.EchoAPI{}
 	result := r.ManageResourceLifecycle(ctx, req, instance,
 		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)))
@@ -65,13 +60,8 @@ func (r *EchoAPIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return result.Values()
 	}
 
-	gen := echoapi.NewGenerator(
-		instance.GetName(),
-		instance.GetNamespace(),
-		instance.Spec,
-	)
-
-	resources, err := r.NewDeploymentWorkload(&gen, nil)
+	gen := echoapi.NewGenerator(instance.GetName(), instance.GetNamespace(), instance.Spec)
+	resources, err := gen.Resources()
 	if err != nil {
 		return ctrl.Result{}, err
 	}

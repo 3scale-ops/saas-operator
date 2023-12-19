@@ -8,11 +8,11 @@ import (
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/pkg/generators"
 	"github.com/3scale-ops/saas-operator/pkg/generators/apicast/config"
-	"github.com/3scale-ops/saas-operator/pkg/reconcilers/workloads"
 	descriptor "github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/grafanadashboard"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/podmonitor"
-	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
+	operatorutil "github.com/3scale-ops/saas-operator/pkg/util"
+	deployment_workload "github.com/3scale-ops/saas-operator/pkg/workloads/deployment"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -126,7 +126,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.ApicastSpec) (Ge
 			},
 			Spec:    canarySpec.Production,
 			Options: config.NewEnvOptions(canarySpec.Production, "production"),
-			Traffic: *&canarySpec.Production.Canary.SendTraffic,
+			Traffic: canarySpec.Production.Canary.SendTraffic,
 		}
 		// Disable PDB and HPA for the canary Deployment
 		generator.CanaryProduction.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
@@ -136,20 +136,30 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.ApicastSpec) (Ge
 	return generator, nil
 }
 
-// Resources returns a list of basereconciler_v2.Resource
-func (gen *Generator) Resources() []resource.TemplateInterface {
-	return []resource.TemplateInterface{
-		resource.NewTemplate[*grafanav1alpha1.GrafanaDashboard](
+// Resources returns the list of resource templates
+func (gen *Generator) Resources() ([]resource.TemplateInterface, error) {
+	staging, err := deployment_workload.New(&gen.Staging, gen.CanaryStaging)
+	if err != nil {
+		return nil, err
+	}
+	production, err := deployment_workload.New(&gen.Production, gen.CanaryProduction)
+	if err != nil {
+		return nil, err
+	}
+	misc := []resource.TemplateInterface{
+		resource.NewTemplate(
 			grafanadashboard.New(
 				types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace},
 				gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/apicast.json.gtpl")).
 			WithEnabled(!gen.GrafanaDashboardSpec.IsDeactivated()),
-		resource.NewTemplate[*grafanav1alpha1.GrafanaDashboard](
+		resource.NewTemplate(
 			grafanadashboard.New(
 				types.NamespacedName{Name: gen.Component + "-services", Namespace: gen.Namespace},
 				gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/apicast-services.json.gtpl")).
 			WithEnabled(!gen.GrafanaDashboardSpec.IsDeactivated()),
 	}
+
+	return operatorutil.ConcatSlices[resource.TemplateInterface](staging, production, misc), nil
 }
 
 // EnvGenerator has methods to generate resources for an
@@ -161,14 +171,14 @@ type EnvGenerator struct {
 	Traffic bool
 }
 
-// Validate that EnvGenerator implements workloads.DeploymentWorkload interface
-var _ workloads.DeploymentWorkload = &EnvGenerator{}
+// Validate that EnvGenerator implements deployment_workload.DeploymentWorkload interface
+var _ deployment_workload.DeploymentWorkload = &EnvGenerator{}
 
-// Validate that EnvGenerator implements workloads.WithTraffic interface
-var _ workloads.WithTraffic = &EnvGenerator{}
+// Validate that EnvGenerator implements deployment_workload.WithTraffic interface
+var _ deployment_workload.WithTraffic = &EnvGenerator{}
 
-// Validate that EnvGenerator implements workloads.WithEnvoySidecar interface
-var _ workloads.WithEnvoySidecar = &EnvGenerator{}
+// Validate that EnvGenerator implements deployment_workload.WithEnvoySidecar interface
+var _ deployment_workload.WithEnvoySidecar = &EnvGenerator{}
 
 func (gen *EnvGenerator) Labels() map[string]string {
 	return gen.GetLabels()

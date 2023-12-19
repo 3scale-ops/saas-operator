@@ -20,11 +20,9 @@ import (
 	"context"
 
 	"github.com/3scale-ops/basereconciler/reconciler"
-	"github.com/3scale-ops/basereconciler/resource"
 	"github.com/3scale-ops/basereconciler/util"
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/pkg/generators/system"
-	"github.com/3scale-ops/saas-operator/pkg/reconcilers/workloads"
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
 	"github.com/go-logr/logr"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
@@ -36,13 +34,12 @@ import (
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 // SystemReconciler reconciles a System object
 type SystemReconciler struct {
-	workloads.WorkloadReconciler
+	*reconciler.Reconciler
 	Log logr.Logger
 }
 
@@ -63,9 +60,8 @@ type SystemReconciler struct {
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	logger := r.Log.WithValues("name", req.Name, "namespace", req.Namespace)
-	ctx = log.IntoContext(ctx, logger)
 
+	ctx, _ = r.Logger(ctx, "name", req.Name, "namespace", req.Namespace)
 	instance := &saasv1alpha1.System{}
 	result := r.ManageResourceLifecycle(ctx, req, instance,
 		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)))
@@ -73,55 +69,14 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return result.Values()
 	}
 
-	gen, err := system.NewGenerator(
-		instance.GetName(),
-		instance.GetNamespace(),
-		instance.Spec,
-	)
+	gen, err := system.NewGenerator(instance.GetName(), instance.GetNamespace(), instance.Spec)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-
-	// Shared resources
-	resources := []resource.TemplateInterface{gen.GrafanaDashboard()}
-	resources = append(resources, gen.ExternalSecrets()...)
-
-	// System APP
-	app_resources, err := r.NewDeploymentWorkload(&gen.App, gen.CanaryApp)
+	resources, err := gen.Resources()
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	resources = append(resources, app_resources...)
-
-	// Sidekiq Default resources
-	sidekiq_default_resources, err := r.NewDeploymentWorkload(&gen.SidekiqDefault, gen.CanarySidekiqDefault)
-	if err != nil {
-		return ctrl.Result{}, err
-	}
-	resources = append(resources, sidekiq_default_resources...)
-
-	// Sidekiq Billing resources
-	sidekiq_billing_resources, err := r.NewDeploymentWorkload(&gen.SidekiqBilling, gen.CanarySidekiqBilling)
-	if err != nil {
-		return ctrl.Result{}, err
-	}
-	resources = append(resources, sidekiq_billing_resources...)
-
-	// Sidekiq Low resources
-	sidekiq_low_resources, err := r.NewDeploymentWorkload(&gen.SidekiqLow, gen.CanarySidekiqLow)
-	if err != nil {
-		return ctrl.Result{}, err
-	}
-	resources = append(resources, sidekiq_low_resources...)
-
-	// Searchd resources
-	resources = append(resources, gen.Searchd.StatefulSetWithTraffic()...)
-
-	// Console resources
-	resources = append(resources, gen.Console.StatefulSet())
-
-	// Tekton resources
-	resources = append(resources, gen.Pipelines()...)
 
 	result = r.ReconcileOwnedResources(ctx, instance, resources)
 	if result.ShouldReturn() {

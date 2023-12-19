@@ -25,7 +25,6 @@ import (
 	reconciler_util "github.com/3scale-ops/basereconciler/util"
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	testutil "github.com/3scale-ops/saas-operator/test/util"
-	"github.com/go-logr/logr"
 	"github.com/google/go-cmp/cmp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -163,7 +162,6 @@ func TestShardedRedisBackupReconciler_reconcileBackupList(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			r := &ShardedRedisBackupReconciler{
 				Reconciler: &reconciler.Reconciler{},
-				Log:        logr.Discard(),
 			}
 			got, err := r.reconcileBackupList(context.TODO(), tt.args.instance, tt.args.nextRun, tt.args.shards)
 			if (err != nil) != tt.wantErr {

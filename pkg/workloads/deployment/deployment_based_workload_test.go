@@ -1,4 +1,4 @@
-package workloads
+package delpoyment_workload
 
 import (
 	"context"
@@ -6,10 +6,8 @@ import (
 	"testing"
 
 	"github.com/3scale-ops/basereconciler/mutators"
-	"github.com/3scale-ops/basereconciler/reconciler"
 	"github.com/3scale-ops/basereconciler/resource"
 	"github.com/3scale-ops/basereconciler/util"
-	reconcilerutil "github.com/3scale-ops/basereconciler/util"
 	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
 	"github.com/3scale-ops/marin3r/pkg/envoy"
 	envoy_serializer "github.com/3scale-ops/marin3r/pkg/envoy/serializer"
@@ -22,7 +20,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -128,31 +125,18 @@ func (gen *TestWorkloadGenerator) EnvoyDynamicConfigurations() []descriptor.Envo
 // // TESTS START HERE
 
 func TestWorkloadReconciler_NewDeploymentWorkload(t *testing.T) {
-	type fields struct {
-		Client client.Client
-		Scheme *runtime.Scheme
-	}
 	type args struct {
 		main   DeploymentWorkload
 		canary DeploymentWorkload
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
 		want    []client.Object
 		wantErr bool
 	}{
 		{
 			name: "Generates the workload resources",
-			fields: fields{
-				Client: fake.NewClientBuilder().Build(),
-				Scheme: func() *runtime.Scheme {
-					s := runtime.NewScheme()
-					monitoringv1.AddToScheme(s)
-					return s
-				}(),
-			},
 			args: args{
 				main: &TestWorkloadGenerator{
 					TName:            "my-workload",
@@ -262,24 +246,18 @@ func TestWorkloadReconciler_NewDeploymentWorkload(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &WorkloadReconciler{
-				Reconciler: &reconciler.Reconciler{
-					Client: tt.fields.Client,
-					Scheme: tt.fields.Scheme,
-				},
-			}
-			templates, err := r.NewDeploymentWorkload(tt.args.main, tt.args.canary)
+			templates, err := New(tt.args.main, tt.args.canary)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("WorkloadReconciler.NewDeploymentWorkload() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("New() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			got := make([]client.Object, 0, len(templates))
 			for _, tpl := range templates {
-				o, _ := tpl.Build(context.TODO(), r.Client, nil)
+				o, _ := tpl.Build(context.TODO(), fake.NewClientBuilder().Build(), nil)
 				got = append(got, o)
 			}
-			if diff := cmp.Diff(got, tt.want, reconcilerutil.IgnoreProperty("Status")); len(diff) > 0 {
-				t.Errorf("WorkloadReconciler.NewDeploymentWorkload() diff %v", diff)
+			if diff := cmp.Diff(got, tt.want, util.IgnoreProperty("Status")); len(diff) > 0 {
+				t.Errorf("New() diff %v", diff)
 			}
 		})
 	}
