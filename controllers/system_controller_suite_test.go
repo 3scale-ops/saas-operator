@@ -1038,6 +1038,7 @@ var _ = Describe("System controller", func() {
 								},
 								Command: []string{"cmd"},
 								Args:    []string{"arg1", "arg1"},
+								Timeout: &metav1.Duration{Duration: 1 * time.Hour},
 								ExtraEnv: []corev1.EnvVar{
 									{Name: "test", Value: "test"},
 									{Name: "THINKING_SPHINX_BATCH_SIZE", Value: "50"},
@@ -1073,6 +1074,8 @@ var _ = Describe("System controller", func() {
 
 				Expect(task.Spec.Params[0].Default.StringVal).To(Equal("quay.io/3scale/porta"))
 				Expect(task.Spec.Params[1].Default.StringVal).To(Equal("nightly"))
+				Expect(task.Spec.Steps[0].Timeout).
+					To(Equal(&metav1.Duration{Duration: 3 * time.Hour}))
 
 				By("updating the system-searchd-reindex task",
 					(&testutil.ExpectedResource{
@@ -1085,6 +1088,8 @@ var _ = Describe("System controller", func() {
 
 				Expect(task.Spec.Steps[0].Command[0]).To(Equal("cmd"))
 				Expect(task.Spec.Steps[0].Args[0]).To(Equal("arg1"))
+				Expect(task.Spec.Steps[0].Timeout).
+					To(Equal(&metav1.Duration{Duration: 1 * time.Hour}))
 
 				for _, env := range task.Spec.StepTemplate.Env {
 					switch env.Name {

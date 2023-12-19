@@ -657,7 +657,7 @@ metadata:
     capabilities: Basic Install
     categories: Integration & Delivery
     containerImage: quay.io/3scale/saas-operator
-    createdAt: "2023-11-16T11:11:43Z"
+    createdAt: "2023-12-19T09:45:35Z"
     description: |-
       The 3scale SaaS Operator creates and maintains a SaaS-ready deployment
       of the Red Hat 3scale API Management on OpenShift.
@@ -3936,6 +3936,9 @@ spec:
       - description: Image tag
         displayName: Tag
         path: tasks[0].config.image.tag
+      - description: Timeout for the Tekton task
+        displayName: Timeout
+        path: tasks[0].config.timeout
       - description: Description for the Tekton task and pipeline
         displayName: Description
         path: tasks[0].description

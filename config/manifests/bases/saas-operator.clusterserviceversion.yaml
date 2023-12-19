@@ -3418,6 +3418,9 @@ spec:
       - description: Image tag
         displayName: Tag
         path: tasks[0].config.image.tag
+      - description: Timeout for the Tekton task
+        displayName: Timeout
+        path: tasks[0].config.timeout
       - description: Description for the Tekton task and pipeline
         displayName: Description
         path: tasks[0].description
