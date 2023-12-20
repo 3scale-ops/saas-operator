@@ -55,8 +55,8 @@ type Options struct {
 	BackendRedisURL            pod.EnvVarValue `env:"BACKEND_REDIS_URL"`
 	BackendRedisSentinelHosts  pod.EnvVarValue `env:"BACKEND_REDIS_SENTINEL_HOSTS"`
 	BackendRedisSentinelRole   pod.EnvVarValue `env:"BACKEND_REDIS_SENTINEL_ROLE"`
-	ApicastBackendRootEndpoint pod.EnvVarValue `env:"APICAST_BACKEND_ROOT_ENDPOINT"`
-	BackendRoute               pod.EnvVarValue `env:"BACKEND_ROUTE"`
+	BackendRoute               pod.EnvVarValue `env:"BACKEND_ROUTE"` // DEPRECATED
+	BackendURL                 pod.EnvVarValue `env:"BACKEND_URL"`
 	BackendPublicURL           pod.EnvVarValue `env:"BACKEND_PUBLIC_URL"`
 	BackendInternalAPIUser     pod.EnvVarValue `env:"CONFIG_INTERNAL_API_USER" secret:"system-backend"`
 	BackendInternalAPIPassword pod.EnvVarValue `env:"CONFIG_INTERNAL_API_PASSWORD" secret:"system-backend"`
@@ -125,8 +125,8 @@ func NewOptions(spec saasv1alpha1.SystemSpec) Options {
 		BackendRedisURL:            &pod.ClearTextValue{Value: spec.Config.Backend.RedisDSN},
 		BackendRedisSentinelHosts:  &pod.ClearTextValue{Value: ""},
 		BackendRedisSentinelRole:   &pod.ClearTextValue{Value: ""},
-		ApicastBackendRootEndpoint: &pod.ClearTextValue{Value: spec.Config.Backend.InternalEndpoint},
-		BackendRoute:               &pod.ClearTextValue{Value: spec.Config.Backend.InternalEndpoint},
+		BackendRoute:               &pod.ClearTextValue{Value: spec.Config.Backend.InternalEndpoint}, // DEPRECATED
+		BackendURL:                 &pod.ClearTextValue{Value: spec.Config.Backend.InternalEndpoint},
 		BackendPublicURL:           &pod.ClearTextValue{Value: spec.Config.Backend.ExternalEndpoint},
 		BackendInternalAPIUser:     &pod.SecretValue{Value: spec.Config.Backend.InternalAPIUser},
 		BackendInternalAPIPassword: &pod.SecretValue{Value: spec.Config.Backend.InternalAPIPassword},
