@@ -1,8 +1,6 @@
 package delpoyment_workload
 
 import (
-	"reflect"
-
 	"github.com/3scale-ops/basereconciler/resource"
 	"github.com/3scale-ops/basereconciler/util"
 	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
@@ -12,6 +10,7 @@ import (
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pdb"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/podmonitor"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	"github.com/samber/lo"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
@@ -25,7 +24,7 @@ func New(main DeploymentWorkload, canary DeploymentWorkload) ([]resource.Templat
 
 	resources := workloadResources(main)
 
-	if unwrapNil(canary) != nil {
+	if !lo.IsNil(canary) {
 		resources = append(resources, workloadResources(canary)...)
 	}
 
@@ -194,15 +193,8 @@ func nodeIdToEnvoyConfig(w WithWorkloadMeta) resource.TemplateBuilderFunction[*m
 	}
 }
 
-func unwrapNil(w DeploymentWorkload) DeploymentWorkload {
-	if w == nil || reflect.ValueOf(w).IsNil() {
-		return nil
-	}
-	return w
-}
-
 func toWithTraffic(w DeploymentWorkload) WithTraffic {
-	if w == nil || reflect.ValueOf(w).IsNil() {
+	if lo.IsNil(w) {
 		return nil
 	}
 	return w.(WithTraffic)

@@ -38,7 +38,7 @@ func (gen *Generator) deployment() *appsv1.Deployment {
 								pod.ContainerPortTCP("management", 8090),
 								pod.ContainerPortTCP("metrics", 9421),
 							),
-							Env:             pod.BuildEnvironment(gen.Options),
+							Env:             gen.Options.BuildEnvironment(),
 							Resources:       corev1.ResourceRequirements(*gen.Spec.Resources),
 							ImagePullPolicy: *gen.Spec.Image.PullPolicy,
 							LivenessProbe:   pod.TCPProbe(intstr.FromString("mapping"), *gen.Spec.LivenessProbe),

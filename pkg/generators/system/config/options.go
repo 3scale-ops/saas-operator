@@ -1,191 +1,84 @@
 package config
 
 import (
-	"fmt"
-
-	"github.com/3scale-ops/basereconciler/util"
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 )
 
-// Options holds configuration for system app and sidekiq pods
-type Options struct {
-	ForceSSL                      pod.EnvVarValue `env:"FORCE_SSL"`
-	ProviderPlan                  pod.EnvVarValue `env:"PROVIDER_PLAN"`
-	SSLCertDir                    pod.EnvVarValue `env:"SSL_CERT_DIR"`
-	SandboxProxyOpensslVerifyMode pod.EnvVarValue `env:"THREESCALE_SANDBOX_PROXY_OPENSSL_VERIFY_MODE"`
-	Superdomain                   pod.EnvVarValue `env:"THREESCALE_SUPERDOMAIN"`
+// cat <file> | grep secret: | sed -r 's/.*`env:"(\w*)"(\s*secret:"([0-9a-zA-Z\-]*)")?`/Unpack().IntoEnvvar("\1").AsSecretRef("\3"),/gm'
+func NewOptions(spec saasv1alpha1.SystemSpec) pod.Options {
+	opts := pod.Options{}
 
-	RailsEnvironment pod.EnvVarValue `env:"RAILS_ENV"`
-	RailsLogLevel    pod.EnvVarValue `env:"RAILS_LOG_LEVEL"`
-	RailsLogToStdout pod.EnvVarValue `env:"RAILS_LOG_TO_STDOUT"`
+	opts.Unpack(spec.Config.ForceSSL).IntoEnvvar("FORCE_SSL")
+	opts.Unpack(spec.Config.ThreescaleProviderPlan).IntoEnvvar("PROVIDER_PLAN")
+	opts.Unpack(spec.Config.SSLCertsDir).IntoEnvvar("SSL_CERT_DIR")
+	opts.Unpack(spec.Config.SandboxProxyOpensslVerifyMode).IntoEnvvar("THREESCALE_SANDBOX_PROXY_OPENSSL_VERIFY_MODE")
+	opts.Unpack(spec.Config.ThreescaleSuperdomain).IntoEnvvar("THREESCALE_SUPERDOMAIN")
 
-	SearchServerAddress   pod.EnvVarValue `env:"THINKING_SPHINX_ADDRESS"`
-	SearchServerPort      pod.EnvVarValue `env:"THINKING_SPHINX_PORT"`
-	SearchServerBatchSize pod.EnvVarValue `env:"THINKING_SPHINX_BATCH_SIZE"`
+	opts.Unpack(spec.Config.Rails.Environment).IntoEnvvar("RAILS_ENV")
+	opts.Unpack(spec.Config.Rails.LogLevel).IntoEnvvar("RAILS_LOG_LEVEL")
+	opts.Unpack("true").IntoEnvvar("RAILS_LOG_TO_STDOUT")
 
-	DatabaseURL pod.EnvVarValue `env:"DATABASE_URL" secret:"system-database"`
+	opts.Unpack(spec.Config.SearchServer.Host).IntoEnvvar("THINKING_SPHINX_ADDRESS")
+	opts.Unpack(spec.Config.SearchServer.Port).IntoEnvvar("THINKING_SPHINX_PORT")
+	opts.Unpack(spec.Config.SearchServer.BatchSize).IntoEnvvar("THINKING_SPHINX_BATCH_SIZE")
 
-	MemcachedServers pod.EnvVarValue `env:"MEMCACHE_SERVERS"`
+	opts.Unpack(spec.Config.DatabaseDSN).IntoEnvvar("DATABASE_URL").AsSecretRef("system-database")
 
-	RecaptchaPublicKey  pod.EnvVarValue `env:"RECAPTCHA_PUBLIC_KEY" secret:"system-recaptcha"`
-	RecaptchaPrivateKey pod.EnvVarValue `env:"RECAPTCHA_PRIVATE_KEY" secret:"system-recaptcha"`
+	opts.Unpack(spec.Config.MemcachedServers).IntoEnvvar("MEMCACHE_SERVERS")
 
-	EventsHookPassword pod.EnvVarValue `env:"EVENTS_SHARED_SECRET" secret:"system-events-hook"`
+	opts.Unpack(spec.Config.Recaptcha.PublicKey).IntoEnvvar("RECAPTCHA_PUBLIC_KEY").AsSecretRef("system-recaptcha")
+	opts.Unpack(spec.Config.Recaptcha.PrivateKey).IntoEnvvar("RECAPTCHA_PRIVATE_KEY").AsSecretRef("system-recaptcha")
 
-	RedisURL           pod.EnvVarValue `env:"REDIS_URL"`
-	RedisNamespace     pod.EnvVarValue `env:"REDIS_NAMESPACE"`
-	RedisSentinelHosts pod.EnvVarValue `env:"REDIS_SENTINEL_HOSTS"`
-	RedisSentinelRole  pod.EnvVarValue `env:"REDIS_SENTINEL_ROLE"`
+	opts.Unpack(spec.Config.EventsSharedSecret).IntoEnvvar("EVENTS_SHARED_SECRET").AsSecretRef("system-events-hook")
 
-	SMTPAddress           pod.EnvVarValue `env:"SMTP_ADDRESS"`
-	SMTPUserName          pod.EnvVarValue `env:"SMTP_USER_NAME" secret:"system-smtp"`
-	SMTPPassword          pod.EnvVarValue `env:"SMTP_PASSWORD" secret:"system-smtp"`
-	SMTPPort              pod.EnvVarValue `env:"SMTP_PORT"`
-	SMTPAuthentication    pod.EnvVarValue `env:"SMTP_AUTHENTICATION"`
-	SMTPOpensslVerifyMode pod.EnvVarValue `env:"SMTP_OPENSSL_VERIFY_MODE"`
-	SMTPSTARTTLS          pod.EnvVarValue `env:"SMTP_STARTTLS"`
-	SMTPSTARTTLSAuto      pod.EnvVarValue `env:"SMTP_STARTTLS_AUTO"`
+	opts.Unpack(spec.Config.Redis.QueuesDSN).IntoEnvvar("REDIS_URL")
+	opts.Unpack("").IntoEnvvar("REDIS_NAMESPACE")
+	opts.Unpack("").IntoEnvvar("REDIS_SENTINEL_HOSTS")
+	opts.Unpack("").IntoEnvvar("REDIS_SENTINEL_ROLE")
 
-	MappingServiceAccessToken pod.EnvVarValue `env:"APICAST_ACCESS_TOKEN" secret:"system-master-apicast"`
+	opts.Unpack(spec.Config.SMTP.Address).IntoEnvvar("SMTP_ADDRESS")
+	opts.Unpack(spec.Config.SMTP.User).IntoEnvvar("SMTP_USER_NAME").AsSecretRef("system-smtp")
+	opts.Unpack(spec.Config.SMTP.Password).IntoEnvvar("SMTP_PASSWORD").AsSecretRef("system-smtp")
+	opts.Unpack(spec.Config.SMTP.Port).IntoEnvvar("SMTP_PORT")
+	opts.Unpack(spec.Config.SMTP.AuthProtocol).IntoEnvvar("SMTP_AUTHENTICATION")
+	opts.Unpack(spec.Config.SMTP.OpenSSLVerifyMode).IntoEnvvar("SMTP_OPENSSL_VERIFY_MODE")
+	opts.Unpack(spec.Config.SMTP.STARTTLS).IntoEnvvar("SMTP_STARTTLS")
+	opts.Unpack(spec.Config.SMTP.STARTTLSAuto).IntoEnvvar("SMTP_STARTTLS_AUTO")
 
-	ZyncEndpoint            pod.EnvVarValue `env:"ZYNC_ENDPOINT"`
-	ZyncAuthenticationToken pod.EnvVarValue `env:"ZYNC_AUTHENTICATION_TOKEN" secret:"system-zync"`
+	opts.Unpack(spec.Config.MappingServiceAccessToken).IntoEnvvar("APICAST_ACCESS_TOKEN").AsSecretRef("system-master-apicast")
 
-	BackendRedisURL            pod.EnvVarValue `env:"BACKEND_REDIS_URL"`
-	BackendRedisSentinelHosts  pod.EnvVarValue `env:"BACKEND_REDIS_SENTINEL_HOSTS"`
-	BackendRedisSentinelRole   pod.EnvVarValue `env:"BACKEND_REDIS_SENTINEL_ROLE"`
-	BackendRoute               pod.EnvVarValue `env:"BACKEND_ROUTE"` // DEPRECATED
-	BackendURL                 pod.EnvVarValue `env:"BACKEND_URL"`
-	BackendPublicURL           pod.EnvVarValue `env:"BACKEND_PUBLIC_URL"`
-	BackendInternalAPIUser     pod.EnvVarValue `env:"CONFIG_INTERNAL_API_USER" secret:"system-backend"`
-	BackendInternalAPIPassword pod.EnvVarValue `env:"CONFIG_INTERNAL_API_PASSWORD" secret:"system-backend"`
+	opts.Unpack(spec.Config.Zync.Endpoint).IntoEnvvar("ZYNC_ENDPOINT")
+	opts.Unpack(spec.Config.Zync.AuthToken).IntoEnvvar("ZYNC_AUTHENTICATION_TOKEN").AsSecretRef("system-zync")
 
-	AssetsAWSAccessKeyID     pod.EnvVarValue `env:"AWS_ACCESS_KEY_ID" secret:"system-multitenant-assets-s3"`
-	AssetsAWSSecretAccessKey pod.EnvVarValue `env:"AWS_SECRET_ACCESS_KEY" secret:"system-multitenant-assets-s3"`
-	AssetsAWSBucket          pod.EnvVarValue `env:"AWS_BUCKET"`
-	AssetsAWSRegion          pod.EnvVarValue `env:"AWS_REGION"`
-	AssetsHost               pod.EnvVarValue `env:"RAILS_ASSET_HOST"`
+	opts.Unpack(spec.Config.Backend.RedisDSN).IntoEnvvar("BACKEND_REDIS_URL")
+	opts.Unpack("").IntoEnvvar("BACKEND_REDIS_SENTINEL_HOSTS")
+	opts.Unpack("").IntoEnvvar("BACKEND_REDIS_SENTINEL_ROLE")
+	opts.Unpack(spec.Config.Backend.InternalEndpoint).IntoEnvvar("BACKEND_ROUTE") // DEPRECATED
+	opts.Unpack(spec.Config.Backend.InternalEndpoint).IntoEnvvar("BACKEND_URL")
+	opts.Unpack(spec.Config.Backend.ExternalEndpoint).IntoEnvvar("BACKEND_PUBLIC_URL")
+	opts.Unpack(spec.Config.Backend.InternalAPIUser).IntoEnvvar("CONFIG_INTERNAL_API_USER").AsSecretRef("system-backend")
+	opts.Unpack(spec.Config.Backend.InternalAPIPassword).IntoEnvvar("CONFIG_INTERNAL_API_PASSWORD").AsSecretRef("system-backend")
 
-	AppSecretKeyBase                 pod.EnvVarValue `env:"SECRET_KEY_BASE" secret:"system-app"`
-	AccessCode                       pod.EnvVarValue `env:"ACCESS_CODE" secret:"system-app"`
-	SegmentDeletionToken             pod.EnvVarValue `env:"SEGMENT_DELETION_TOKEN" secret:"system-app"`
-	SegmentDeletionWorkspace         pod.EnvVarValue `env:"SEGMENT_DELETION_WORKSPACE"`
-	SegmentWriteKey                  pod.EnvVarValue `env:"SEGMENT_WRITE_KEY" secret:"system-app"`
-	GithubClientID                   pod.EnvVarValue `env:"GITHUB_CLIENT_ID" secret:"system-app"`
-	GithubClientSecret               pod.EnvVarValue `env:"GITHUB_CLIENT_SECRET" secret:"system-app"`
-	RedHatCustomerPortalClientID     pod.EnvVarValue `env:"RH_CUSTOMER_PORTAL_CLIENT_ID" secret:"system-app"`
-	RedHatCustomerPortalClientSecret pod.EnvVarValue `env:"RH_CUSTOMER_PORTAL_CLIENT_SECRET" secret:"system-app"`
-	RedHatCustomerPortalRealm        pod.EnvVarValue `env:"RH_CUSTOMER_PORTAL_REALM"`
-	BugsnagAPIKey                    pod.EnvVarValue `env:"BUGSNAG_API_KEY" secret:"system-app"`
-	BugsnagReleaseStage              pod.EnvVarValue `env:"BUGSNAG_RELEASE_STAGE"`
-	DatabaseSecret                   pod.EnvVarValue `env:"DB_SECRET" secret:"system-app"`
-}
+	opts.Unpack(spec.Config.Assets.AccessKey).IntoEnvvar("AWS_ACCESS_KEY_ID").AsSecretRef("system-multitenant-assets-s3")
+	opts.Unpack(spec.Config.Assets.SecretKey).IntoEnvvar("AWS_SECRET_ACCESS_KEY").AsSecretRef("system-multitenant-assets-s3")
+	opts.Unpack(spec.Config.Assets.Bucket).IntoEnvvar("AWS_BUCKET")
+	opts.Unpack(spec.Config.Assets.Region).IntoEnvvar("AWS_REGION")
+	opts.Unpack(spec.Config.Assets.Host).IntoEnvvar("RAILS_ASSET_HOST")
 
-// NewOptions returns an Options struct for the given saasv1alpha1.SystemSpec
-func NewOptions(spec saasv1alpha1.SystemSpec) Options {
-	opts := Options{
-		ForceSSL:                      &pod.ClearTextValue{Value: fmt.Sprintf("%t", *spec.Config.ForceSSL)},
-		ProviderPlan:                  &pod.ClearTextValue{Value: *spec.Config.ThreescaleProviderPlan},
-		SSLCertDir:                    &pod.ClearTextValue{Value: *spec.Config.SSLCertsDir},
-		SandboxProxyOpensslVerifyMode: &pod.ClearTextValue{Value: *spec.Config.SandboxProxyOpensslVerifyMode},
-		Superdomain:                   &pod.ClearTextValue{Value: *spec.Config.ThreescaleSuperdomain},
-
-		RailsEnvironment: &pod.ClearTextValue{Value: *spec.Config.Rails.Environment},
-		RailsLogLevel:    &pod.ClearTextValue{Value: *spec.Config.Rails.LogLevel},
-		RailsLogToStdout: &pod.ClearTextValue{Value: "true"},
-
-		SearchServerAddress:   &pod.ClearTextValue{Value: *spec.Config.SearchServer.Host},
-		SearchServerPort:      &pod.ClearTextValue{Value: fmt.Sprintf("%d", *spec.Config.SearchServer.Port)},
-		SearchServerBatchSize: &pod.ClearTextValue{Value: fmt.Sprintf("%d", *spec.Config.SearchServer.BatchSize)},
-
-		DatabaseURL: &pod.SecretValue{Value: spec.Config.DatabaseDSN},
-
-		MemcachedServers: &pod.ClearTextValue{Value: spec.Config.MemcachedServers},
-
-		RecaptchaPublicKey:  &pod.SecretValue{Value: spec.Config.Recaptcha.PublicKey},
-		RecaptchaPrivateKey: &pod.SecretValue{Value: spec.Config.Recaptcha.PrivateKey},
-
-		EventsHookPassword: &pod.SecretValue{Value: spec.Config.EventsSharedSecret},
-
-		RedisURL:           &pod.ClearTextValue{Value: spec.Config.Redis.QueuesDSN},
-		RedisNamespace:     &pod.ClearTextValue{Value: ""},
-		RedisSentinelHosts: &pod.ClearTextValue{Value: ""},
-		RedisSentinelRole:  &pod.ClearTextValue{Value: ""},
-
-		SMTPAddress:           &pod.ClearTextValue{Value: spec.Config.SMTP.Address},
-		SMTPUserName:          &pod.SecretValue{Value: spec.Config.SMTP.User},
-		SMTPPassword:          &pod.SecretValue{Value: spec.Config.SMTP.Password},
-		SMTPPort:              &pod.ClearTextValue{Value: fmt.Sprintf("%d", spec.Config.SMTP.Port)},
-		SMTPAuthentication:    &pod.ClearTextValue{Value: spec.Config.SMTP.AuthProtocol},
-		SMTPOpensslVerifyMode: &pod.ClearTextValue{Value: spec.Config.SMTP.OpenSSLVerifyMode},
-
-		MappingServiceAccessToken: &pod.SecretValue{Value: spec.Config.MappingServiceAccessToken},
-
-		BackendRedisURL:            &pod.ClearTextValue{Value: spec.Config.Backend.RedisDSN},
-		BackendRedisSentinelHosts:  &pod.ClearTextValue{Value: ""},
-		BackendRedisSentinelRole:   &pod.ClearTextValue{Value: ""},
-		BackendRoute:               &pod.ClearTextValue{Value: spec.Config.Backend.InternalEndpoint}, // DEPRECATED
-		BackendURL:                 &pod.ClearTextValue{Value: spec.Config.Backend.InternalEndpoint},
-		BackendPublicURL:           &pod.ClearTextValue{Value: spec.Config.Backend.ExternalEndpoint},
-		BackendInternalAPIUser:     &pod.SecretValue{Value: spec.Config.Backend.InternalAPIUser},
-		BackendInternalAPIPassword: &pod.SecretValue{Value: spec.Config.Backend.InternalAPIPassword},
-
-		AssetsAWSAccessKeyID:     &pod.SecretValue{Value: spec.Config.Assets.AccessKey},
-		AssetsAWSSecretAccessKey: &pod.SecretValue{Value: spec.Config.Assets.SecretKey},
-		AssetsAWSBucket:          &pod.ClearTextValue{Value: spec.Config.Assets.Bucket},
-		AssetsAWSRegion:          &pod.ClearTextValue{Value: spec.Config.Assets.Region},
-
-		AppSecretKeyBase:                 &pod.SecretValue{Value: spec.Config.SecretKeyBase},
-		SegmentDeletionToken:             &pod.SecretValue{Value: spec.Config.Segment.DeletionToken},
-		SegmentDeletionWorkspace:         &pod.ClearTextValue{Value: spec.Config.Segment.DeletionWorkspace},
-		SegmentWriteKey:                  &pod.SecretValue{Value: spec.Config.Segment.WriteKey},
-		GithubClientID:                   &pod.SecretValue{Value: spec.Config.Github.ClientID},
-		GithubClientSecret:               &pod.SecretValue{Value: spec.Config.Github.ClientSecret},
-		RedHatCustomerPortalClientID:     &pod.SecretValue{Value: spec.Config.RedHatCustomerPortal.ClientID},
-		RedHatCustomerPortalClientSecret: &pod.SecretValue{Value: spec.Config.RedHatCustomerPortal.ClientSecret},
-		DatabaseSecret:                   &pod.SecretValue{Value: spec.Config.DatabaseSecret},
-	}
-
-	if spec.Config.Bugsnag.Enabled() {
-		opts.BugsnagAPIKey = &pod.SecretValue{Value: spec.Config.Bugsnag.APIKey}
-
-		if spec.Config.Bugsnag.ReleaseStage != nil {
-			opts.BugsnagReleaseStage = &pod.ClearTextValue{Value: *spec.Config.Bugsnag.ReleaseStage}
-		}
-
-	} else {
-		opts.BugsnagAPIKey = &pod.SecretValue{Value: saasv1alpha1.SecretReference{Override: util.Pointer("")}}
-	}
-
-	if spec.Config.Assets.Host == nil {
-		opts.AssetsHost = &pod.ClearTextValue{Value: ""}
-	} else {
-		opts.AssetsHost = &pod.ClearTextValue{Value: *spec.Config.Assets.Host}
-	}
-
-	if spec.Config.AccessCode != nil {
-		opts.AccessCode = &pod.SecretValue{Value: *spec.Config.AccessCode}
-	}
-
-	if spec.Config.RedHatCustomerPortal.Realm != nil {
-		opts.RedHatCustomerPortalRealm = &pod.ClearTextValue{Value: *spec.Config.RedHatCustomerPortal.Realm}
-	}
-
-	if spec.Config.SMTP.STARTTLS != nil {
-		opts.SMTPSTARTTLS = &pod.ClearTextValue{Value: fmt.Sprintf("%t", *spec.Config.SMTP.STARTTLS)}
-	}
-
-	if spec.Config.SMTP.STARTTLSAuto != nil {
-		opts.SMTPSTARTTLSAuto = &pod.ClearTextValue{Value: fmt.Sprintf("%t", *spec.Config.SMTP.STARTTLSAuto)}
-	}
-
-	if spec.Config.Zync != nil {
-		opts.ZyncEndpoint = &pod.ClearTextValue{Value: spec.Config.Zync.Endpoint}
-		opts.ZyncAuthenticationToken = &pod.SecretValue{Value: spec.Config.Zync.AuthToken}
-	} else {
-		opts.ZyncAuthenticationToken = &pod.SecretValue{Value: *spec.Config.ZyncAuthToken}
-	}
+	opts.Unpack(spec.Config.SecretKeyBase).IntoEnvvar("SECRET_KEY_BASE").AsSecretRef("system-app")
+	opts.Unpack(spec.Config.AccessCode).IntoEnvvar("ACCESS_CODE").AsSecretRef("system-app")
+	opts.Unpack(spec.Config.Segment.DeletionToken).IntoEnvvar("SEGMENT_DELETION_TOKEN").AsSecretRef("system-app")
+	opts.Unpack(spec.Config.Segment.DeletionWorkspace).IntoEnvvar("SEGMENT_DELETION_WORKSPACE")
+	opts.Unpack(spec.Config.Segment.WriteKey).IntoEnvvar("SEGMENT_WRITE_KEY").AsSecretRef("system-app")
+	opts.Unpack(spec.Config.Github.ClientID).IntoEnvvar("GITHUB_CLIENT_ID").AsSecretRef("system-app")
+	opts.Unpack(spec.Config.Github.ClientSecret).IntoEnvvar("GITHUB_CLIENT_SECRET").AsSecretRef("system-app")
+	opts.Unpack(spec.Config.RedHatCustomerPortal.ClientID).IntoEnvvar("RH_CUSTOMER_PORTAL_CLIENT_ID").AsSecretRef("system-app")
+	opts.Unpack(spec.Config.RedHatCustomerPortal.ClientSecret).IntoEnvvar("RH_CUSTOMER_PORTAL_CLIENT_SECRET").AsSecretRef("system-app")
+	opts.Unpack(spec.Config.RedHatCustomerPortal.Realm).IntoEnvvar("RH_CUSTOMER_PORTAL_REALM")
+	opts.Unpack(spec.Config.Bugsnag.APIKey).IntoEnvvar("BUGSNAG_API_KEY").AsSecretRef("system-app").EmptyIf(!spec.Config.Bugsnag.Enabled())
+	opts.Unpack(spec.Config.Bugsnag.ReleaseStage).IntoEnvvar("BUGSNAG_RELEASE_STAGE")
+	opts.Unpack(spec.Config.DatabaseSecret).IntoEnvvar("DB_SECRET").AsSecretRef("system-app")
 
 	return opts
 }

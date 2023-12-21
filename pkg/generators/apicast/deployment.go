@@ -40,7 +40,7 @@ func (gen *EnvGenerator) deployment() *appsv1.Deployment {
 								pod.ContainerPortTCP("management", 8090),
 								pod.ContainerPortTCP("metrics", 9421),
 							),
-							Env:             pod.BuildEnvironment(gen.Options),
+							Env:             gen.Options.BuildEnvironment(),
 							Resources:       corev1.ResourceRequirements(*gen.Spec.Resources),
 							LivenessProbe:   pod.TCPProbe(intstr.FromString("gateway"), *gen.Spec.LivenessProbe),
 							ReadinessProbe:  pod.HTTPProbe("/status/ready", intstr.FromString("management"), corev1.URISchemeHTTP, *gen.Spec.ReadinessProbe),

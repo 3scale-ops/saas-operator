@@ -1,35 +1,21 @@
 package config
 
 import (
-	"fmt"
-
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 )
 
-// EnvOptions holds configuration for the apicasts pods
-type EnvOptions struct {
-	ApicastConfigurationLoader pod.EnvVarValue `env:"APICAST_CONFIGURATION_LOADER"`
-	ApicastConfigurationCache  pod.EnvVarValue `env:"APICAST_CONFIGURATION_CACHE"`
-	ApicastExtendedMetrics     pod.EnvVarValue `env:"APICAST_EXTENDED_METRICS"`
-	ThreeScaleDeploymentEnv    pod.EnvVarValue `env:"THREESCALE_DEPLOYMENT_ENV"`
-	ThreescalePortalEndpoint   pod.EnvVarValue `env:"THREESCALE_PORTAL_ENDPOINT"`
-	ApicastLogLevel            pod.EnvVarValue `env:"APICAST_LOG_LEVEL"`
-	ApicastOIDCLogLevel        pod.EnvVarValue `env:"APICAST_OIDC_LOG_LEVEL"`
-	ApicastResponseCodes       pod.EnvVarValue `env:"APICAST_RESPONSE_CODES"`
-}
+func NewEnvOptions(spec saasv1alpha1.ApicastEnvironmentSpec, env string) pod.Options {
+	opts := pod.Options{}
 
-// NewEnvOptions returns an Options struct for the given saasv1alpha1.ApicastEnvironmentSpec
-func NewEnvOptions(spec saasv1alpha1.ApicastEnvironmentSpec, env string) EnvOptions {
-	opts := EnvOptions{
-		ApicastConfigurationLoader: &pod.ClearTextValue{Value: "lazy"},
-		ApicastConfigurationCache:  &pod.ClearTextValue{Value: fmt.Sprintf("%d", spec.Config.ConfigurationCache)},
-		ApicastExtendedMetrics:     &pod.ClearTextValue{Value: "true"},
-		ThreeScaleDeploymentEnv:    &pod.ClearTextValue{Value: env},
-		ThreescalePortalEndpoint:   &pod.ClearTextValue{Value: spec.Config.ThreescalePortalEndpoint},
-		ApicastLogLevel:            &pod.ClearTextValue{Value: *spec.Config.LogLevel},
-		ApicastOIDCLogLevel:        &pod.ClearTextValue{Value: *spec.Config.OIDCLogLevel},
-		ApicastResponseCodes:       &pod.ClearTextValue{Value: "true"},
-	}
+	opts.Unpack("lazy").IntoEnvvar("APICAST_CONFIGURATION_LOADER")
+	opts.Unpack(spec.Config.ConfigurationCache).IntoEnvvar("APICAST_CONFIGURATION_CACHE")
+	opts.Unpack("true").IntoEnvvar("APICAST_EXTENDED_METRICS")
+	opts.Unpack(env).IntoEnvvar("THREESCALE_DEPLOYMENT_ENV")
+	opts.Unpack(spec.Config.ThreescalePortalEndpoint).IntoEnvvar("THREESCALE_PORTAL_ENDPOINT")
+	opts.Unpack(spec.Config.LogLevel).IntoEnvvar("APICAST_LOG_LEVEL")
+	opts.Unpack(spec.Config.OIDCLogLevel).IntoEnvvar("APICAST_OIDC_LOG_LEVEL")
+	opts.Unpack("true").IntoEnvvar("APICAST_RESPONSE_CODES")
+
 	return opts
 }

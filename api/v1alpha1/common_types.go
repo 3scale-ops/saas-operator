@@ -559,7 +559,7 @@ func (spec *ExternalSecret) Default() {
 
 // SecretReference is a reference to a secret stored in some secrets engine
 type SecretReference struct {
-	// VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
+	// FromVault is a reference to a secret key/value stored in a Hashicorp Vault
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	FromVault *VaultSecretReference `json:"fromVault,omitempty"`

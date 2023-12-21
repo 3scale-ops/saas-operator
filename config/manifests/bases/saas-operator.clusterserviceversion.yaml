@@ -849,7 +849,7 @@ spec:
           key
         displayName: Error Monitoring Key
         path: config.errorMonitoringKey
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.errorMonitoringKey.fromVault
@@ -866,7 +866,7 @@ spec:
           service
         displayName: Error Monitoring Service
         path: config.errorMonitoringService
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.errorMonitoringService.fromVault
@@ -899,7 +899,7 @@ spec:
       - description: A reference to the secret holding the backend-internal-api password
         displayName: Internal APIPassword
         path: config.internalAPIPassword
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.internalAPIPassword.fromVault
@@ -915,7 +915,7 @@ spec:
       - description: A reference to the secret holding the backend-internal-api user
         displayName: Internal APIUser
         path: config.internalAPIUser
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.internalAPIUser.fromVault
@@ -944,7 +944,7 @@ spec:
           password
         displayName: System Events Hook Password
         path: config.systemEventsHookPassword
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.systemEventsHookPassword.fromVault
@@ -961,7 +961,7 @@ spec:
           URL
         displayName: System Events Hook URL
         path: config.systemEventsHookURL
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.systemEventsHookURL.fromVault
@@ -1481,7 +1481,7 @@ spec:
       - description: System database connection string
         displayName: System Database DSN
         path: config.systemDatabaseDSN
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.systemDatabaseDSN.fromVault
@@ -1834,7 +1834,7 @@ spec:
       - description: A reference to the secret holding the system admin token
         displayName: System Admin Token
         path: config.systemAdminToken
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.systemAdminToken.fromVault
@@ -2335,7 +2335,7 @@ spec:
       - description: AccessCode to protect admin urls
         displayName: Access Code
         path: config.accessCode
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.accessCode.fromVault
@@ -2351,7 +2351,7 @@ spec:
       - description: AWS access key
         displayName: Access Key
         path: config.assets.accessKey
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.assets.accessKey.fromVault
@@ -2376,7 +2376,7 @@ spec:
       - description: AWS secret access key
         displayName: Secret Key
         path: config.assets.secretKey
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.assets.secretKey.fromVault
@@ -2398,7 +2398,7 @@ spec:
       - description: Internal API password
         displayName: Internal APIPassword
         path: config.backend.internalAPIPassword
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.backend.internalAPIPassword.fromVault
@@ -2414,7 +2414,7 @@ spec:
       - description: Internal API user
         displayName: Internal APIUser
         path: config.backend.internalAPIUser
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.backend.internalAPIUser.fromVault
@@ -2439,7 +2439,7 @@ spec:
       - description: API key
         displayName: APIKey
         path: config.bugsnag.apiKey
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.bugsnag.apiKey.fromVault
@@ -2462,7 +2462,7 @@ spec:
       - description: DSN of system's main database
         displayName: Database DSN
         path: config.databaseDSN
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.databaseDSN.fromVault
@@ -2478,7 +2478,7 @@ spec:
       - description: Database secret
         displayName: Database Secret
         path: config.databaseSecret
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.databaseSecret.fromVault
@@ -2494,7 +2494,7 @@ spec:
       - description: EventsSharedSecret
         displayName: Events Shared Secret
         path: config.eventsSharedSecret
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.eventsSharedSecret.fromVault
@@ -2533,7 +2533,7 @@ spec:
       - description: Client ID
         displayName: Client ID
         path: config.github.clientID
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.github.clientID.fromVault
@@ -2549,7 +2549,7 @@ spec:
       - description: Client secret
         displayName: Client Secret
         path: config.github.clientSecret
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.github.clientSecret.fromVault
@@ -2565,7 +2565,7 @@ spec:
       - description: Mapping Service access token
         displayName: Mapping Service Access Token
         path: config.mappingServiceAccessToken
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.mappingServiceAccessToken.fromVault
@@ -2599,7 +2599,7 @@ spec:
       - description: Private key
         displayName: Private Key
         path: config.recaptcha.privateKey
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.recaptcha.privateKey.fromVault
@@ -2615,7 +2615,7 @@ spec:
       - description: Public key
         displayName: Public Key
         path: config.recaptcha.publicKey
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.recaptcha.publicKey.fromVault
@@ -2634,7 +2634,7 @@ spec:
       - description: Client ID
         displayName: Client ID
         path: config.redhatCustomerPortal.clientID
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.redhatCustomerPortal.clientID.fromVault
@@ -2650,7 +2650,7 @@ spec:
       - description: Client secret
         displayName: Client Secret
         path: config.redhatCustomerPortal.clientSecret
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.redhatCustomerPortal.clientSecret.fromVault
@@ -2690,7 +2690,7 @@ spec:
       - description: SecretKeyBase
         displayName: Secret Key Base
         path: config.secretKeyBase
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.secretKeyBase.fromVault
@@ -2709,7 +2709,7 @@ spec:
       - description: Deletion token
         displayName: Deletion Token
         path: config.segment.deletionToken
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.segment.deletionToken.fromVault
@@ -2728,7 +2728,7 @@ spec:
       - description: Write key
         displayName: Write Key
         path: config.segment.writeKey
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.segment.writeKey.fromVault
@@ -2756,7 +2756,7 @@ spec:
       - description: Password
         displayName: Password
         path: config.smtp.password
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.smtp.password.fromVault
@@ -2781,7 +2781,7 @@ spec:
       - description: User
         displayName: User
         path: config.smtp.user
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.smtp.user.fromVault
@@ -2809,7 +2809,7 @@ spec:
       - description: Zync authentication token
         displayName: Auth Token
         path: config.zync.authToken
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.zync.authToken.fromVault
@@ -2825,22 +2825,6 @@ spec:
       - description: Zync endpoint
         displayName: Endpoint
         path: config.zync.endpoint
-      - description: Zync authentication token
-        displayName: Zync Auth Token
-        path: config.zyncAuthToken
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
-          Vault
-        displayName: From Vault
-        path: config.zyncAuthToken.fromVault
-      - description: The Vault key of the secret
-        displayName: Key
-        path: config.zyncAuthToken.fromVault.key
-      - description: The Vault path where the secret is located
-        displayName: Path
-        path: config.zyncAuthToken.fromVault.path
-      - description: Override allows to directly specify a string value.
-        displayName: Override
-        path: config.zyncAuthToken.override
       - description: Console specific configuration options
         displayName: Console
         path: console
@@ -3712,7 +3696,7 @@ spec:
       - description: API key
         displayName: APIKey
         path: config.bugsnag.apiKey
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.bugsnag.apiKey.fromVault
@@ -3731,7 +3715,7 @@ spec:
       - description: A reference to the secret holding the database DSN
         displayName: Database DSN
         path: config.databaseDSN
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.databaseDSN.fromVault
@@ -3776,7 +3760,7 @@ spec:
       - description: A reference to the secret holding the secret-key-base
         displayName: Secret Key Base
         path: config.secretKeyBase
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.secretKeyBase.fromVault
@@ -3792,7 +3776,7 @@ spec:
       - description: A reference to the secret holding the zync authentication token
         displayName: Zync Auth Token
         path: config.zyncAuthToken
-      - description: VaultSecretReference is a reference to a secret stored in a Hashicorp
+      - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
         path: config.zyncAuthToken.fromVault

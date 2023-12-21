@@ -41,6 +41,8 @@ require (
 	sigs.k8s.io/yaml v1.3.0
 )
 
+require github.com/huandu/go-clone v1.6.0 // indirect
+
 // For local dev uncomment this and point it to the correct path in your system
 // replace github.com/3scale-ops/basereconciler => /home/roi/github.com/3scale/basereconciler
 
@@ -91,6 +93,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
+	github.com/huandu/go-clone/generic v1.7.2
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect

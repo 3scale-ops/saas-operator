@@ -5,26 +5,15 @@ import (
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 )
 
-// Options holds configuration for the mapping-service pod
-type Options struct {
-	MasterAccessToken          pod.EnvVarValue `env:"MASTER_ACCESS_TOKEN" secret:"mapping-service-system-master-access-token"`
-	APIHost                    pod.EnvVarValue `env:"API_HOST"`
-	ApicastConfigurationLoader pod.EnvVarValue `env:"APICAST_CONFIGURATION_LOADER"`
-	ApicastLogLevel            pod.EnvVarValue `env:"APICAST_LOG_LEVEL"`
-	PreviewBaseDomain          pod.EnvVarValue `env:"PREVIEW_BASE_DOMAIN"`
-}
+// NewOptions returns mapping-service options for the given saasv1alpha1.CORSProxySpec
+func NewOptions(spec saasv1alpha1.MappingServiceSpec) pod.Options {
+	opts := pod.Options{}
 
-// NewOptions returns an Options struct for the given saasv1alpha1.CORSProxySpec
-func NewOptions(spec saasv1alpha1.MappingServiceSpec) Options {
-	opts := Options{
-		MasterAccessToken:          &pod.SecretValue{Value: spec.Config.SystemAdminToken},
-		APIHost:                    &pod.ClearTextValue{Value: spec.Config.APIHost},
-		ApicastConfigurationLoader: &pod.ClearTextValue{Value: "lazy"},
-		ApicastLogLevel:            &pod.ClearTextValue{Value: *spec.Config.LogLevel},
-	}
-	if spec.Config.PreviewBaseDomain != nil {
-		opts.PreviewBaseDomain = &pod.ClearTextValue{Value: *spec.Config.PreviewBaseDomain}
-	}
+	opts.Unpack(spec.Config.SystemAdminToken).IntoEnvvar("MASTER_ACCESS_TOKEN").AsSecretRef("mapping-service-system-master-access-token")
+	opts.Unpack(spec.Config.APIHost).IntoEnvvar("API_HOST")
+	opts.Unpack("lazy").IntoEnvvar("APICAST_CONFIGURATION_LOADER")
+	opts.Unpack(spec.Config.LogLevel).IntoEnvvar("APICAST_LOG_LEVEL")
+	opts.Unpack(spec.Config.PreviewBaseDomain).IntoEnvvar("PREVIEW_BASE_DOMAIN")
 
 	return opts
 }

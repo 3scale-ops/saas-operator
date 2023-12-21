@@ -27,7 +27,7 @@ const (
 type Generator struct {
 	generators.BaseOptionsV2
 	Spec    saasv1alpha1.MappingServiceSpec
-	Options config.Options
+	Options pod.Options
 	Traffic bool
 }
 
@@ -61,16 +61,17 @@ func (gen *Generator) Resources() ([]resource.TemplateInterface, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	externalsecrets := gen.Options.GenerateExternalSecrets(gen.GetKey().Namespace, gen.GetLabels(),
+		*gen.Spec.Config.ExternalSecret.SecretStoreRef.Name, *gen.Spec.Config.ExternalSecret.SecretStoreRef.Kind,
+		*gen.Spec.Config.ExternalSecret.RefreshInterval)
+
 	misc := []resource.TemplateInterface{
 		resource.NewTemplate(
 			grafanadashboard.New(gen.GetKey(), gen.GetLabels(), *gen.Spec.GrafanaDashboard, "dashboards/mapping-service.json.gtpl")).
 			WithEnabled(!gen.Spec.GrafanaDashboard.IsDeactivated()),
-		resource.NewTemplate(
-			pod.GenerateExternalSecretFn("mapping-service-system-master-access-token", gen.GetNamespace(),
-				*gen.Spec.Config.ExternalSecret.SecretStoreRef.Name, *gen.Spec.Config.ExternalSecret.SecretStoreRef.Kind,
-				*gen.Spec.Config.ExternalSecret.RefreshInterval, gen.GetLabels(), gen.Options)),
 	}
-	return operatorutil.ConcatSlices(workload, misc), nil
+	return operatorutil.ConcatSlices(workload, externalsecrets, misc), nil
 }
 
 func (gen *Generator) Services() []*resource.Template[*corev1.Service] {

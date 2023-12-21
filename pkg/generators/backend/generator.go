@@ -176,30 +176,18 @@ func (gen *Generator) Resources() ([]resource.TemplateInterface, error) {
 		return nil, err
 	}
 
+	externalsecrets := pod.Union(gen.Listener.Options, gen.Worker.Options, gen.Cron.Options).
+		GenerateExternalSecrets(gen.GetKey().Namespace, gen.GetLabels(),
+			*gen.config.ExternalSecret.SecretStoreRef.Name, *gen.config.ExternalSecret.SecretStoreRef.Kind, *gen.config.ExternalSecret.RefreshInterval)
+
 	misc := []resource.TemplateInterface{
 		// GrafanaDashboard
 		resource.NewTemplate(
 			grafanadashboard.New(gen.GetKey(), gen.GetLabels(), gen.grafanaDashboardSpec, "dashboards/backend.json.gtpl")).
 			WithEnabled(!gen.grafanaDashboardSpec.IsDeactivated()),
-		// ExternalSecrets
-		resource.NewTemplate(
-			pod.GenerateExternalSecretFn("backend-system-events-hook", gen.GetNamespace(),
-				*gen.config.ExternalSecret.SecretStoreRef.Name, *gen.config.ExternalSecret.SecretStoreRef.Kind,
-				*gen.config.ExternalSecret.RefreshInterval, gen.GetLabels(), gen.Worker.Options),
-		),
-		resource.NewTemplate(
-			pod.GenerateExternalSecretFn("backend-internal-api", gen.GetNamespace(),
-				*gen.config.ExternalSecret.SecretStoreRef.Name, *gen.config.ExternalSecret.SecretStoreRef.Kind,
-				*gen.config.ExternalSecret.RefreshInterval, gen.GetLabels(), gen.Listener.Options),
-		),
-		resource.NewTemplate(
-			pod.GenerateExternalSecretFn("backend-error-monitoring", gen.GetNamespace(),
-				*gen.config.ExternalSecret.SecretStoreRef.Name, *gen.config.ExternalSecret.SecretStoreRef.Kind,
-				*gen.config.ExternalSecret.RefreshInterval, gen.GetLabels(), gen.Listener.Options)).
-			WithEnabled(gen.config.ErrorMonitoringKey != nil),
 	}
 
-	return operatorutil.ConcatSlices(listener_resources, worker_resources, cron_resources, misc), nil
+	return operatorutil.ConcatSlices(listener_resources, worker_resources, cron_resources, externalsecrets, misc), nil
 }
 
 // ListenerGenerator has methods to generate resources for a
@@ -208,7 +196,7 @@ type ListenerGenerator struct {
 	generators.BaseOptionsV2
 	Image         saasv1alpha1.ImageSpec
 	ListenerSpec  saasv1alpha1.ListenerSpec
-	Options       config.ListenerOptions
+	Options       pod.Options
 	Traffic       bool
 	TwemproxySpec *saasv1alpha1.TwemproxySpec
 }
@@ -272,7 +260,7 @@ type WorkerGenerator struct {
 	generators.BaseOptionsV2
 	Image         saasv1alpha1.ImageSpec
 	WorkerSpec    saasv1alpha1.WorkerSpec
-	Options       config.WorkerOptions
+	Options       pod.Options
 	TwemproxySpec *saasv1alpha1.TwemproxySpec
 }
 
@@ -307,7 +295,7 @@ type CronGenerator struct {
 	generators.BaseOptionsV2
 	Image    saasv1alpha1.ImageSpec
 	CronSpec saasv1alpha1.CronSpec
-	Options  config.CronOptions
+	Options  pod.Options
 }
 
 // Validate that CronGenerator implements deployment_workload.DeploymentWorkload interface

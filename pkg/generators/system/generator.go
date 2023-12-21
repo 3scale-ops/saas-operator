@@ -6,7 +6,6 @@ import (
 
 	"github.com/3scale-ops/basereconciler/mutators"
 	"github.com/3scale-ops/basereconciler/resource"
-	"github.com/3scale-ops/basereconciler/util"
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/pkg/generators"
 	"github.com/3scale-ops/saas-operator/pkg/generators/system/config"
@@ -48,7 +47,7 @@ type Generator struct {
 	Config               saasv1alpha1.SystemConfig
 	GrafanaDashboardSpec saasv1alpha1.GrafanaDashboardSpec
 	ConfigFilesSecret    string
-	Options              config.Options
+	Options              pod.Options
 	Tekton               []SystemTektonGenerator
 }
 
@@ -330,22 +329,15 @@ func (gen *Generator) Resources() ([]resource.TemplateInterface, error) {
 		return nil, err
 	}
 
+	externalsecrets := gen.Options.GenerateExternalSecrets(gen.GetKey().Namespace, gen.GetLabels(),
+		*gen.Config.ExternalSecret.SecretStoreRef.Name, *gen.Config.ExternalSecret.SecretStoreRef.Kind, *gen.Config.ExternalSecret.RefreshInterval)
+
 	misc := []resource.TemplateInterface{
 		resource.NewTemplate(
 			grafanadashboard.New(gen.GetKey(), gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/system.json.gtpl")).
 			WithEnabled(!gen.GrafanaDashboardSpec.IsDeactivated()),
 	}
-	for _, es := range getSystemSecrets() {
-		misc = append(
-			misc,
-			resource.NewTemplate(
-				pod.GenerateExternalSecretFn(es, gen.GetNamespace(),
-					*gen.Config.ExternalSecret.SecretStoreRef.Name, *gen.Config.ExternalSecret.SecretStoreRef.Kind,
-					*gen.Config.ExternalSecret.RefreshInterval, gen.GetLabels(), gen.Options,
-				),
-			),
-		)
-	}
+
 	for _, tr := range gen.Tekton {
 		// NewTemplateFromObjectFunction receives a function with a pointer receiver so we must
 		// copy the value into a new variable to avoid referencing directly the loop variable, which
@@ -364,42 +356,17 @@ func (gen *Generator) Resources() ([]resource.TemplateInterface, error) {
 			sidekiq_low_resources,
 			gen.Searchd.StatefulSetWithTraffic(),
 			gen.Console.StatefulSet(),
+			externalsecrets,
 			misc,
 		),
 		nil
-}
-
-func getSystemSecrets() []string {
-	return []string{
-		"system-app",
-		"system-backend",
-		"system-database",
-		"system-events-hook",
-		"system-master-apicast",
-		"system-multitenant-assets-s3",
-		"system-recaptcha",
-		"system-smtp",
-		"system-zync",
-	}
-}
-
-func getSystemSecretsRolloutTriggers(additionalSecrets ...string) []resource.TemplateMutationFunction {
-	secrets := append(getSystemSecrets(), additionalSecrets...)
-	triggers := make([]resource.TemplateMutationFunction, 0, len(secrets))
-	for _, secret := range secrets {
-		triggers = append(
-			triggers,
-			mutators.RolloutTrigger{Name: secret, SecretName: util.Pointer(secret)}.Add(),
-		)
-	}
-	return triggers
 }
 
 // AppGenerator has methods to generate resources for system-app
 type AppGenerator struct {
 	generators.BaseOptionsV2
 	Spec              saasv1alpha1.SystemAppSpec
-	Options           config.Options
+	Options           pod.Options
 	Image             saasv1alpha1.ImageSpec
 	ConfigFilesSecret string
 	Traffic           bool
@@ -427,7 +394,7 @@ func (gen *AppGenerator) TrafficSelector() map[string]string {
 
 func (gen *AppGenerator) Deployment() *resource.Template[*appsv1.Deployment] {
 	return resource.NewTemplateFromObjectFunction(gen.deployment).
-		WithMutations(getSystemSecretsRolloutTriggers(gen.ConfigFilesSecret)).
+		WithMutations(gen.Options.GenerateRolloutTriggers(gen.ConfigFilesSecret)).
 		WithMutation(mutators.SetDeploymentReplicas(gen.Spec.HPA.IsDeactivated()))
 }
 
@@ -456,7 +423,7 @@ var _ deployment_workload.DeploymentWorkload = &SidekiqGenerator{}
 type SidekiqGenerator struct {
 	generators.BaseOptionsV2
 	Spec              saasv1alpha1.SystemSidekiqSpec
-	Options           config.Options
+	Options           pod.Options
 	Image             saasv1alpha1.ImageSpec
 	ConfigFilesSecret string
 	TwemproxySpec     *saasv1alpha1.TwemproxySpec
@@ -464,7 +431,7 @@ type SidekiqGenerator struct {
 
 func (gen *SidekiqGenerator) Deployment() *resource.Template[*appsv1.Deployment] {
 	return resource.NewTemplateFromObjectFunction(gen.deployment).
-		WithMutations(getSystemSecretsRolloutTriggers(gen.ConfigFilesSecret)).
+		WithMutations(gen.Options.GenerateRolloutTriggers(gen.ConfigFilesSecret)).
 		WithMutation(mutators.SetDeploymentReplicas(gen.Spec.HPA.IsDeactivated()))
 }
 
@@ -509,7 +476,7 @@ func (gen *SearchdGenerator) StatefulSetWithTraffic() []resource.TemplateInterfa
 type ConsoleGenerator struct {
 	generators.BaseOptionsV2
 	Spec              saasv1alpha1.SystemRailsConsoleSpec
-	Options           config.Options
+	Options           pod.Options
 	Image             saasv1alpha1.ImageSpec
 	ConfigFilesSecret string
 	Enabled           bool
@@ -520,7 +487,7 @@ func (gen *ConsoleGenerator) StatefulSet() []resource.TemplateInterface {
 	return []resource.TemplateInterface{
 		resource.NewTemplateFromObjectFunction(gen.statefulset).
 			WithEnabled(gen.Enabled).
-			WithMutations(getSystemSecretsRolloutTriggers(gen.ConfigFilesSecret)),
+			WithMutations(gen.Options.GenerateRolloutTriggers(gen.ConfigFilesSecret)),
 	}
 }
 
@@ -528,7 +495,7 @@ func (gen *ConsoleGenerator) StatefulSet() []resource.TemplateInterface {
 type SystemTektonGenerator struct {
 	generators.BaseOptionsV2
 	Spec              saasv1alpha1.SystemTektonTaskSpec
-	Options           config.Options
+	Options           pod.Options
 	Image             saasv1alpha1.ImageSpec
 	ConfigFilesSecret string
 	TwemproxySpec     *saasv1alpha1.TwemproxySpec

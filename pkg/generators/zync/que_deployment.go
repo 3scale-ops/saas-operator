@@ -41,10 +41,9 @@ func (gen *QueGenerator) deployment() *appsv1.Deployment {
 							Ports: pod.ContainerPorts(
 								pod.ContainerPortTCP("metrics", 9394),
 							),
-							Env: func() []corev1.EnvVar {
-								envVars := pod.BuildEnvironment(gen.Options)
-								envVars = append(envVars,
-									corev1.EnvVar{
+							Env: gen.Options.WithExtraEnv(
+								[]corev1.EnvVar{
+									{
 										Name: "POD_NAME",
 										ValueFrom: &corev1.EnvVarSource{
 											FieldRef: &corev1.ObjectFieldSelector{
@@ -53,7 +52,7 @@ func (gen *QueGenerator) deployment() *appsv1.Deployment {
 											},
 										},
 									},
-									corev1.EnvVar{
+									{
 										Name: "POD_NAMESPACE",
 										ValueFrom: &corev1.EnvVarSource{
 											FieldRef: &corev1.ObjectFieldSelector{
@@ -62,9 +61,8 @@ func (gen *QueGenerator) deployment() *appsv1.Deployment {
 											},
 										},
 									},
-								)
-								return envVars
-							}(),
+								},
+							).BuildEnvironment(),
 							Resources:       corev1.ResourceRequirements(*gen.QueSpec.Resources),
 							ImagePullPolicy: *gen.Image.PullPolicy,
 							LivenessProbe:   pod.HTTPProbe("/metrics", intstr.FromString("metrics"), corev1.URISchemeHTTP, *gen.QueSpec.LivenessProbe),

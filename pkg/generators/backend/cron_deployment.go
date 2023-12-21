@@ -29,7 +29,7 @@ func (gen *CronGenerator) deployment() *appsv1.Deployment {
 							Name:            strings.Join([]string{component, cron}, "-"),
 							Image:           pod.Image(gen.Image),
 							Args:            []string{"backend-cron"},
-							Env:             pod.BuildEnvironment(gen.Options),
+							Env:             gen.Options.BuildEnvironment(),
 							Resources:       corev1.ResourceRequirements(*gen.CronSpec.Resources),
 							ImagePullPolicy: *gen.Image.PullPolicy,
 						},

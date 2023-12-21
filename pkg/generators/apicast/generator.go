@@ -10,6 +10,7 @@ import (
 	"github.com/3scale-ops/saas-operator/pkg/generators/apicast/config"
 	descriptor "github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/grafanadashboard"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/podmonitor"
 	operatorutil "github.com/3scale-ops/saas-operator/pkg/util"
 	deployment_workload "github.com/3scale-ops/saas-operator/pkg/workloads/deployment"
@@ -167,7 +168,7 @@ func (gen *Generator) Resources() ([]resource.TemplateInterface, error) {
 type EnvGenerator struct {
 	generators.BaseOptionsV2
 	Spec    saasv1alpha1.ApicastEnvironmentSpec
-	Options config.EnvOptions
+	Options pod.Options
 	Traffic bool
 }
 

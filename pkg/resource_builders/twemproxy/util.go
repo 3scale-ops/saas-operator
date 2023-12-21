@@ -19,7 +19,7 @@ const (
 func TwemproxyContainer(twemproxySpec *saasv1alpha1.TwemproxySpec) corev1.Container {
 
 	return corev1.Container{
-		Env:   pod.BuildEnvironment(NewTwemproxyOptions(*twemproxySpec)),
+		Env:   NewOptions(*twemproxySpec).BuildEnvironment(),
 		Name:  twemproxy,
 		Image: pod.Image(*twemproxySpec.Image),
 		Ports: pod.ContainerPorts(

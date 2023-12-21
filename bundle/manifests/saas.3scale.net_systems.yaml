@@ -657,7 +657,7 @@ spec:
                     description: AccessCode to protect admin urls
                     properties:
                       fromVault:
-                        description: VaultSecretReference is a reference to a secret
+                        description: FromVault is a reference to a secret key/value
                           stored in a Hashicorp Vault
                         properties:
                           key:
@@ -683,8 +683,8 @@ spec:
                         description: AWS access key
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: FromVault is a reference to a secret key/value
+                              stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -714,8 +714,8 @@ spec:
                         description: AWS secret access key
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: FromVault is a reference to a secret key/value
+                              stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -749,8 +749,8 @@ spec:
                         description: Internal API password
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: FromVault is a reference to a secret key/value
+                              stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -771,8 +771,8 @@ spec:
                         description: Internal API user
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: FromVault is a reference to a secret key/value
+                              stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -809,8 +809,8 @@ spec:
                         description: API key
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: FromVault is a reference to a secret key/value
+                              stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -841,7 +841,7 @@ spec:
                     description: DSN of system's main database
                     properties:
                       fromVault:
-                        description: VaultSecretReference is a reference to a secret
+                        description: FromVault is a reference to a secret key/value
                           stored in a Hashicorp Vault
                         properties:
                           key:
@@ -863,7 +863,7 @@ spec:
                     description: Database secret
                     properties:
                       fromVault:
-                        description: VaultSecretReference is a reference to a secret
+                        description: FromVault is a reference to a secret key/value
                           stored in a Hashicorp Vault
                         properties:
                           key:
@@ -885,7 +885,7 @@ spec:
                     description: EventsSharedSecret
                     properties:
                       fromVault:
-                        description: VaultSecretReference is a reference to a secret
+                        description: FromVault is a reference to a secret key/value
                           stored in a Hashicorp Vault
                         properties:
                           key:
@@ -932,8 +932,8 @@ spec:
                         description: Client ID
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: FromVault is a reference to a secret key/value
+                              stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -954,8 +954,8 @@ spec:
                         description: Client secret
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: FromVault is a reference to a secret key/value
+                              stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -980,7 +980,7 @@ spec:
                     description: Mapping Service access token
                     properties:
                       fromVault:
-                        description: VaultSecretReference is a reference to a secret
+                        description: FromVault is a reference to a secret key/value
                           stored in a Hashicorp Vault
                         properties:
                           key:
@@ -1029,8 +1029,8 @@ spec:
                         description: Private key
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: FromVault is a reference to a secret key/value
+                              stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -1051,8 +1051,8 @@ spec:
                         description: Public key
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: FromVault is a reference to a secret key/value
+                              stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -1080,8 +1080,8 @@ spec:
                         description: Client ID
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: FromVault is a reference to a secret key/value
+                              stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -1102,8 +1102,8 @@ spec:
                         description: Client secret
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: FromVault is a reference to a secret key/value
+                              stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -1158,7 +1158,7 @@ spec:
                     description: SecretKeyBase
                     properties:
                       fromVault:
-                        description: VaultSecretReference is a reference to a secret
+                        description: FromVault is a reference to a secret key/value
                           stored in a Hashicorp Vault
                         properties:
                           key:
@@ -1183,8 +1183,8 @@ spec:
                         description: Deletion token
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: FromVault is a reference to a secret key/value
+                              stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -1208,8 +1208,8 @@ spec:
                         description: Write key
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: FromVault is a reference to a secret key/value
+                              stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -1247,8 +1247,8 @@ spec:
                         description: Password
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: FromVault is a reference to a secret key/value
+                              stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -1279,8 +1279,8 @@ spec:
                         description: User
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: FromVault is a reference to a secret key/value
+                              stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -1322,8 +1322,8 @@ spec:
                         description: Zync authentication token
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: FromVault is a reference to a secret key/value
+                              stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -1346,28 +1346,6 @@ spec:
                     required:
                     - authToken
                     - endpoint
-                    type: object
-                  zyncAuthToken:
-                    description: Zync authentication token
-                    properties:
-                      fromVault:
-                        description: VaultSecretReference is a reference to a secret
-                          stored in a Hashicorp Vault
-                        properties:
-                          key:
-                            description: The Vault key of the secret
-                            type: string
-                          path:
-                            description: The Vault path where the secret is located
-                            type: string
-                        required:
-                        - key
-                        - path
-                        type: object
-                      override:
-                        description: Override allows to directly specify a string
-                          value.
-                        type: string
                     type: object
                 required:
                 - assets

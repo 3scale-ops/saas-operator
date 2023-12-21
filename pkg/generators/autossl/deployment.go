@@ -54,7 +54,7 @@ func (gen *Generator) deployment() *appsv1.Deployment {
 								pod.ContainerPortTCP("https-no-pp", 8443),
 								pod.ContainerPortTCP("metrics", 9145),
 							),
-							Env:             pod.BuildEnvironment(gen.Options),
+							Env:             gen.Options.BuildEnvironment(),
 							Resources:       corev1.ResourceRequirements(*gen.Spec.Resources),
 							ImagePullPolicy: *gen.Spec.Image.PullPolicy,
 							VolumeMounts: []corev1.VolumeMount{
