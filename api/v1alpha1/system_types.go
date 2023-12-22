@@ -17,6 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"time"
+
 	"github.com/3scale/saas-operator/pkg/util"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -254,7 +256,6 @@ var (
 			},
 		},
 	}
-
 	systemDefaultSystemTektonTaskResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
 		Requests: corev1.ResourceList{
 			corev1.ResourceCPU:    resource.MustParse("200m"),
@@ -265,6 +266,7 @@ var (
 			corev1.ResourceMemory: resource.MustParse("2Gi"),
 		},
 	}
+	systemDefaultSystemTektonTasksTimeout metav1.Duration = metav1.Duration{Duration: 3 * time.Hour}
 )
 
 // SystemSpec defines the desired state of System
@@ -1074,6 +1076,10 @@ type SystemTektonTaskConfig struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	ExtraEnv []corev1.EnvVar `json:"extraEnv,omitempty"`
+	// Timeout for the Tekton task
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Timeout *metav1.Duration `json:"timeout,omitempty"`
 }
 
 // Default sets default values for any value not specifically set in the SystemTektonTaskConfig struct
@@ -1081,6 +1087,7 @@ func (cfg *SystemTektonTaskConfig) Default(systemDefaultImage *ImageSpec) {
 	cfg.Image = InitializeImageSpec(cfg.Image, defaultImageSpec(*systemDefaultImage))
 	cfg.Command = stringSliceOrDefault(cfg.Command, []string{"echo"})
 	cfg.Args = stringSliceOrDefault(cfg.Args, []string{"Step command not set."})
+	cfg.Timeout = durationOrDefault(cfg.Timeout, &systemDefaultSystemTektonTasksTimeout)
 	if len(cfg.ExtraEnv) == 0 {
 		cfg.ExtraEnv = []corev1.EnvVar{}
 	}

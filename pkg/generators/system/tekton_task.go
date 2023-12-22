@@ -82,6 +82,7 @@ func (gen *SystemTektonGenerator) task() func() *pipelinev1beta1.Task {
 								MountPath: "/opt/system-extra-configs",
 							},
 						},
+						Timeout: gen.Spec.Config.Timeout,
 					},
 				},
 				Volumes: []corev1.Volume{

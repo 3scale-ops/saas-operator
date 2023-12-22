@@ -1917,6 +1917,7 @@ SystemTektonTaskConfig configures app behavior for System SystemTektonTask
 | *`command`* __string array__ | List of commands to be consumed by the task.
 | *`args`* __string array__ | List of args to be consumed by the task.
 | *`extraEnv`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#envvar-v1-core[$$EnvVar$$] array__ | List of extra evironment variables to be consumed by the task.
+| *`timeout`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#duration-v1-meta[$$Duration$$]__ | Timeout for the Tekton task
 |===
 
 

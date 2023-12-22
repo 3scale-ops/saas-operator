@@ -4184,6 +4184,9 @@ spec:
                               description: Image tag
                               type: string
                           type: object
+                        timeout:
+                          description: Timeout for the Tekton task
+                          type: string
                       type: object
                     description:
                       description: Description for the Tekton task and pipeline
