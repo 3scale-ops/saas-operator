@@ -125,6 +125,8 @@ func TestListenerHTTP_v1(t *testing.T) {
                           tls_minimum_protocol_version: TLSv1_2
                 listener_filters:
                 - name: envoy.filters.listener.tls_inspector
+                  typed_config:
+                    '@type': type.googleapis.com/envoy.extensions.filters.listener.tls_inspector.v3.TlsInspector
                 - name: envoy.filters.listener.proxy_protocol
                 name: test
                 per_connection_buffer_limit_bytes: 32768
