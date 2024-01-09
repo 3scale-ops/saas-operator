@@ -11,6 +11,7 @@ import (
 	envoy_config_ratelimit_v3 "github.com/envoyproxy/go-control-plane/envoy/config/ratelimit/v3"
 	envoy_extensions_access_loggers_file_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/access_loggers/file/v3"
 	envoy_extensions_filters_http_ratelimit_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ratelimit/v3"
+	envoy_extensions_filters_http_router_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/router/v3"
 	envoy_extensions_filters_listener_proxy_protocol_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/listener/proxy_protocol/v3"
 	envoy_extensions_filters_listener_tls_inspector_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/listener/tls_inspector/v3"
 	http_connection_manager_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
@@ -148,7 +149,20 @@ func HttpFilters_v1(rlOpts *saasv1alpha1.RateLimitOptions) []*http_connection_ma
 	if rlOpts != nil {
 		filters = append(filters, HttpFilterRateLimit_v1(rlOpts))
 	}
-	filters = append(filters, &http_connection_manager_v3.HttpFilter{Name: "envoy.filters.http.router"})
+	filters = append(filters, &http_connection_manager_v3.HttpFilter{
+		Name: "envoy.filters.http.router",
+		ConfigType: &http_connection_manager_v3.HttpFilter_TypedConfig{
+			TypedConfig: func() *anypb.Any {
+				any, err := anypb.New(
+					&envoy_extensions_filters_http_router_v3.Router{},
+				)
+				if err != nil {
+					panic(err)
+				}
+				return any
+			}(),
+		},
+	})
 	return filters
 }
 
