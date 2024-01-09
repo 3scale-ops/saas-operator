@@ -167,6 +167,8 @@ func TestNew(t *testing.T) {
                                 typed_config:
                                   '@type': type.googleapis.com/envoy.extensions.filters.listener.tls_inspector.v3.TlsInspector
                               - name: envoy.filters.listener.proxy_protocol
+                                typed_config:
+                                  '@type': type.googleapis.com/envoy.extensions.filters.listener.proxy_protocol.v3.ProxyProtocol
                               name: my_listener
                               per_connection_buffer_limit_bytes: 32768
 							`),

@@ -128,6 +128,8 @@ func TestListenerHTTP_v1(t *testing.T) {
                   typed_config:
                     '@type': type.googleapis.com/envoy.extensions.filters.listener.tls_inspector.v3.TlsInspector
                 - name: envoy.filters.listener.proxy_protocol
+                  typed_config:
+                    '@type': type.googleapis.com/envoy.extensions.filters.listener.proxy_protocol.v3.ProxyProtocol
                 name: test
                 per_connection_buffer_limit_bytes: 32768
 			`),
@@ -217,6 +219,8 @@ func TestListenerHTTP_v1(t *testing.T) {
                       use_remote_address: true
                 listener_filters:
                 - name: envoy.filters.listener.proxy_protocol
+                  typed_config:
+                    '@type': type.googleapis.com/envoy.extensions.filters.listener.proxy_protocol.v3.ProxyProtocol
                 name: test
                 per_connection_buffer_limit_bytes: 32768
 			`),
