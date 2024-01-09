@@ -62,11 +62,13 @@ func (re *RemoteExecutor) Run() error {
 type Runnable interface {
 	Run(*ssh.Client) (string, error)
 	Info() string
+	WithSudo(bool) Runnable
 }
 
 type Command struct {
 	value     string
 	sensitive []string
+	sudo      bool
 }
 
 var _ Runnable = &Command{}
@@ -75,8 +77,20 @@ func NewCommand(value string, sensitive ...string) *Command {
 	return &Command{value: value, sensitive: sensitive}
 }
 
+func (c *Command) WithSudo(sudo bool) Runnable {
+	c.sudo = sudo
+	return c
+}
+
+func (c *Command) resolveValue() string {
+	if c.sudo {
+		return "sudo " + c.value
+	}
+	return c.value
+}
+
 func (c *Command) Info() string {
-	return fmt.Sprintf("run command: %s", hideSensitive(c.value, c.sensitive...))
+	return fmt.Sprintf("run command: %s", hideSensitive(c.resolveValue(), c.sensitive...))
 }
 
 func (c *Command) Run(client *ssh.Client) (string, error) {
@@ -87,7 +101,7 @@ func (c *Command) Run(client *ssh.Client) (string, error) {
 	}
 	defer session.Close()
 
-	output, err := session.CombinedOutput(c.value)
+	output, err := session.CombinedOutput(c.resolveValue())
 	if err != nil {
 		return string(output), err
 	}
@@ -99,6 +113,7 @@ type Script struct {
 	value       []byte
 	interpreter string
 	sensitive   []string
+	sudo        bool
 }
 
 var _ Runnable = &Script{}
@@ -111,11 +126,23 @@ func NewScript(interpreter string, script string, sensitive ...string) *Script {
 	}
 }
 
+func (s *Script) WithSudo(sudo bool) Runnable {
+	s.sudo = sudo
+	return s
+}
+
 func (s *Script) Info() string {
 	return fmt.Sprintf("run script with: '%s' \n'%s'",
-		hideSensitive(s.interpreter, s.sensitive...),
+		hideSensitive(s.resolveInterpreter(), s.sensitive...),
 		hideSensitive(string(s.value), s.sensitive...),
 	)
+}
+
+func (s *Script) resolveInterpreter() string {
+	if s.sudo {
+		return "sudo " + s.interpreter
+	}
+	return s.interpreter
 }
 
 func (s *Script) Run(client *ssh.Client) (string, error) {
@@ -140,7 +167,7 @@ func (s *Script) Run(client *ssh.Client) (string, error) {
 	chRsp := make(chan response)
 
 	go func() {
-		output, err := session.CombinedOutput(s.interpreter)
+		output, err := session.CombinedOutput(s.resolveInterpreter())
 		if err != nil {
 			chRsp <- response{output: output, err: err}
 			return

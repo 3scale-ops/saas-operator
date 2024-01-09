@@ -70,8 +70,8 @@ func (br *Runner) UploadBackup(ctx context.Context) error {
 		Logger:     logger,
 		CmdTimeout: 0,
 		Commands: []ssh.Runnable{
-			ssh.NewCommand(fmt.Sprintf("mv %s %s/%s", br.RedisDBFile, path.Dir(br.RedisDBFile), br.BackupFile())),
-			ssh.NewCommand(fmt.Sprintf("gzip -1 %s/%s", path.Dir(br.RedisDBFile), br.BackupFile())),
+			ssh.NewCommand(fmt.Sprintf("mv %s %s/%s", br.RedisDBFile, path.Dir(br.RedisDBFile), br.BackupFile())).WithSudo(br.SSHSudo),
+			ssh.NewCommand(fmt.Sprintf("gzip -1 %s/%s", path.Dir(br.RedisDBFile), br.BackupFile())).WithSudo(br.SSHSudo),
 			ssh.NewScript(fmt.Sprintf("%s=%s %s=%s %s=%s python -",
 				operatorutils.AWSRegionEnvvar, br.AWSRegion,
 				operatorutils.AWSAccessKeyEnvvar, br.AWSAccessKeyID,
@@ -79,7 +79,7 @@ func (br *Runner) UploadBackup(ctx context.Context) error {
 				uploadScript,
 				br.AWSSecretAccessKey,
 			),
-			ssh.NewCommand(fmt.Sprintf("rm -f %s/%s*", path.Dir(br.RedisDBFile), br.BackupFileBaseName())),
+			ssh.NewCommand(fmt.Sprintf("rm -f %s/%s*", path.Dir(br.RedisDBFile), br.BackupFileBaseName())).WithSudo(br.SSHSudo),
 		},
 	}
 
