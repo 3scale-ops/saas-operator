@@ -11,6 +11,7 @@ import (
 	envoy_config_ratelimit_v3 "github.com/envoyproxy/go-control-plane/envoy/config/ratelimit/v3"
 	envoy_extensions_access_loggers_file_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/access_loggers/file/v3"
 	envoy_extensions_filters_http_ratelimit_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ratelimit/v3"
+	envoy_extensions_filters_listener_proxy_protocol_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/listener/proxy_protocol/v3"
 	envoy_extensions_filters_listener_tls_inspector_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/listener/tls_inspector/v3"
 	http_connection_manager_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
 	envoy_extensions_transport_sockets_tls_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/tls/v3"
@@ -111,6 +112,17 @@ func ListenerFilters_v1(tls, proxyProtocol bool) []*envoy_config_listener_v3.Lis
 	if proxyProtocol {
 		filters = append(filters, &envoy_config_listener_v3.ListenerFilter{
 			Name: "envoy.filters.listener.proxy_protocol",
+			ConfigType: &envoy_config_listener_v3.ListenerFilter_TypedConfig{
+				TypedConfig: func() *anypb.Any {
+					any, err := anypb.New(
+						&envoy_extensions_filters_listener_proxy_protocol_v3.ProxyProtocol{},
+					)
+					if err != nil {
+						panic(err)
+					}
+					return any
+				}(),
+			},
 		})
 	}
 	return filters
