@@ -276,7 +276,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(rails_requests_total{namespace='$namespace',pod=~'system-app-[a-z0-9]+-[a-z0-9]+',status=~'2[0-9]*'}[1m])) by (controller)",
+          "expr": "sum(rate(rails_requests_total{namespace='$namespace',pod=~'system-app-[a-z0-9]+-[a-z0-9]+',status='2xx'}[1m])) by (controller)",
           "format": "time_series",
           "interval": "1m",
           "intervalFactor": 10,
@@ -374,7 +374,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(rails_requests_total{namespace='$namespace',pod=~'system-app-[a-z0-9]+-[a-z0-9]+',status=~'4[0-9]*'}[1m])) by (controller)",
+          "expr": "sum(rate(rails_requests_total{namespace='$namespace',pod=~'system-app-[a-z0-9]+-[a-z0-9]+',status='4xx'}[1m])) by (controller)",
           "format": "time_series",
           "interval": "1m",
           "intervalFactor": 10,
@@ -472,7 +472,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(rails_requests_total{namespace='$namespace',pod=~'system-app-[a-z0-9]+-[a-z0-9]+',status=~'5[0-9]*'}[1m])) by (controller)",
+          "expr": "sum(rate(rails_requests_total{namespace='$namespace',pod=~'system-app-[a-z0-9]+-[a-z0-9]+',status='5xx'}[1m])) by (controller)",
           "format": "time_series",
           "interval": "1m",
           "intervalFactor": 10,
@@ -576,22 +576,6 @@
           "intervalFactor": 10,
           "legendFormat": "Total",
           "refId": "A"
-        },
-        {
-          "expr": "sum(rate(rails_db_runtime_seconds_sum{namespace='$namespace',pod=~'system-app-[a-z0-9]+-[a-z0-9]+'}[1m])) / sum(rate(rails_db_runtime_seconds_count{namespace='$namespace',pod=~'system-app-[a-z0-9]+-[a-z0-9]+'}[1m]))",
-          "format": "time_series",
-          "interval": "1m",
-          "intervalFactor": 10,
-          "legendFormat": "ActiveRecord",
-          "refId": "B"
-        },
-        {
-          "expr": "sum(rate(rails_view_runtime_seconds_sum{namespace='$namespace',pod=~'system-app-[a-z0-9]+-[a-z0-9]+'}[1m])) / sum(rate(rails_view_runtime_seconds_count{namespace='$namespace',pod=~'system-app-[a-z0-9]+-[a-z0-9]+'}[1m]))",
-          "format": "time_series",
-          "interval": "1m",
-          "intervalFactor": 10,
-          "legendFormat": "View",
-          "refId": "C"
         }
       ],
       "thresholds": [],
