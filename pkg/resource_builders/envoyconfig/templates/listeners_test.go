@@ -93,6 +93,8 @@ func TestListenerHTTP_v1(t *testing.T) {
                             transport_api_version: V3
                           timeout: 0.010s
                       - name: envoy.filters.http.router
+                        typed_config:
+                          '@type': type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
                       http_protocol_options:
                         accept_http_10: true
                         default_host_for_http_10: example.com
@@ -201,6 +203,8 @@ func TestListenerHTTP_v1(t *testing.T) {
                             transport_api_version: V3
                           timeout: 0.010s
                       - name: envoy.filters.http.router
+                        typed_config:
+                          '@type': type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
                       http_protocol_options:
                         accept_http_10: true
                         default_host_for_http_10: example.com

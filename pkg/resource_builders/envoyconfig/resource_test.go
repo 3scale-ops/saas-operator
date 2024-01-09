@@ -134,6 +134,8 @@ func TestNew(t *testing.T) {
                                       max_connection_duration: 900s
                                     http_filters:
                                     - name: envoy.filters.http.router
+                                      typed_config:
+                                        '@type': type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
                                     http_protocol_options: {}
                                     http2_protocol_options:
                                       initial_connection_window_size: 1048576
