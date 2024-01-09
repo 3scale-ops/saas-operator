@@ -19,12 +19,12 @@ package controllers
 import (
 	"context"
 
+	"github.com/3scale-ops/basereconciler/reconciler"
+	"github.com/3scale-ops/basereconciler/util"
 	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/generators/backend"
-	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/generators/backend"
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
-	"github.com/go-logr/logr"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -32,16 +32,13 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 // BackendReconciler reconciles a Backend object
 type BackendReconciler struct {
-	workloads.WorkloadReconciler
-	Log logr.Logger
+	*reconciler.Reconciler
 }
 
 // +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=backends,verbs=get;list;watch;create;update;patch;delete
@@ -60,53 +57,28 @@ type BackendReconciler struct {
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 func (r *BackendReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	logger := r.Log.WithValues("name", req.Name, "namespace", req.Namespace)
-	ctx = log.IntoContext(ctx, logger)
 
+	ctx, _ = r.Logger(ctx, "name", req.Name, "namespace", req.Namespace)
 	instance := &saasv1alpha1.Backend{}
-	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx, key, instance, nil, nil)
-	if result != nil || err != nil {
-		return *result, err
+	result := r.ManageResourceLifecycle(ctx, req, instance,
+		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)))
+	if result.ShouldReturn() {
+		return result.Values()
 	}
-
-	// Apply defaults for reconcile but do not store them in the API
-	instance.Default()
 
 	gen, err := backend.NewGenerator(instance.GetName(), instance.GetNamespace(), instance.Spec)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-
-	// Shared resources
-	resources := gen.Resources()
-
-	// Listener resources
-	listener_resources, err := r.NewDeploymentWorkload(&gen.Listener, gen.CanaryListener)
+	resources, err := gen.Resources()
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	resources = append(resources, listener_resources...)
-
-	// Worker resources
-	worker_resources, err := r.NewDeploymentWorkload(&gen.Worker, gen.CanaryWorker)
-	if err != nil {
-		return ctrl.Result{}, err
-	}
-	resources = append(resources, worker_resources...)
-
-	// Cron resources
-	cron_resources, err := r.NewDeploymentWorkload(&gen.Cron, nil)
-	if err != nil {
-		return ctrl.Result{}, err
-	}
-	resources = append(resources, cron_resources...)
 
 	// Reconcile all resources
-	err = r.ReconcileOwnedResources(ctx, instance, resources)
-	if err != nil {
-		logger.Error(err, "unable to reconcile owned resources")
-		return ctrl.Result{}, err
+	result = r.ReconcileOwnedResources(ctx, instance, resources)
+	if result.ShouldReturn() {
+		return result.Values()
 	}
 
 	return ctrl.Result{}, nil
@@ -125,6 +97,6 @@ func (r *BackendReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&grafanav1alpha1.GrafanaDashboard{}).
 		Owns(&marin3rv1alpha1.EnvoyConfig{}).
 		Watches(&source.Kind{Type: &corev1.Secret{TypeMeta: metav1.TypeMeta{Kind: "Secret"}}},
-			r.SecretEventHandler(&saasv1alpha1.BackendList{}, r.Log)).
+			r.FilteredEventHandler(&saasv1alpha1.BackendList{}, nil, r.Log)).
 		Complete(r)
 }

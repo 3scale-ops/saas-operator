@@ -19,12 +19,11 @@ package controllers
 import (
 	"context"
 
-	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/generators/corsproxy"
-	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
+	"github.com/3scale-ops/basereconciler/reconciler"
+	"github.com/3scale-ops/basereconciler/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/generators/corsproxy"
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
-	"github.com/go-logr/logr"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -32,16 +31,13 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 // CORSProxyReconciler reconciles a CORSProxy object
 type CORSProxyReconciler struct {
-	workloads.WorkloadReconciler
-	Log logr.Logger
+	*reconciler.Reconciler
 }
 
 // +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=corsproxies,verbs=get;list;watch;create;update;patch;delete
@@ -59,40 +55,24 @@ type CORSProxyReconciler struct {
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 func (r *CORSProxyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	logger := r.Log.WithValues("name", req.Name, "namespace", req.Namespace)
-	ctx = log.IntoContext(ctx, logger)
 
+	ctx, _ = r.Logger(ctx, "name", req.Name, "namespace", req.Namespace)
 	instance := &saasv1alpha1.CORSProxy{}
-	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx, key, instance, nil, nil)
-	if result != nil || err != nil {
-		return *result, err
+	result := r.ManageResourceLifecycle(ctx, req, instance,
+		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)))
+	if result.ShouldReturn() {
+		return result.Values()
 	}
 
-	// Apply defaults for reconcile but do not store them in the API
-	instance.Default()
-
-	gen := corsproxy.NewGenerator(
-		instance.GetName(),
-		instance.GetNamespace(),
-		instance.Spec,
-	)
-
-	resources := []basereconciler.Resource{
-		gen.GrafanaDashboard(),
-		gen.ExternalSecret(),
-	}
-
-	workload, err := r.NewDeploymentWorkload(&gen, nil)
+	gen := corsproxy.NewGenerator(instance.GetName(), instance.GetNamespace(), instance.Spec)
+	resources, err := gen.Resources()
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	resources = append(resources, workload...)
 
-	err = r.ReconcileOwnedResources(ctx, instance, resources)
-	if err != nil {
-		logger.Error(err, "unable to reconcile owned resources")
-		return ctrl.Result{}, err
+	result = r.ReconcileOwnedResources(ctx, instance, resources)
+	if result.ShouldReturn() {
+		return result.Values()
 	}
 
 	return ctrl.Result{}, nil
@@ -110,6 +90,6 @@ func (r *CORSProxyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&externalsecretsv1beta1.ExternalSecret{}).
 		Owns(&grafanav1alpha1.GrafanaDashboard{}).
 		Watches(&source.Kind{Type: &corev1.Secret{TypeMeta: metav1.TypeMeta{Kind: "Secret"}}},
-			r.SecretEventHandler(&saasv1alpha1.CORSProxyList{}, r.Log)).
+			r.FilteredEventHandler(&saasv1alpha1.CORSProxyList{}, nil, r.Log)).
 		Complete(r)
 }

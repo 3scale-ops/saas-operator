@@ -3,10 +3,9 @@ package redisshard
 import (
 	"fmt"
 
-	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
-	basereconciler_resources "github.com/3scale-ops/basereconciler/resources"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/generators"
+	"github.com/3scale-ops/basereconciler/resource"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/generators"
 )
 
 const (
@@ -47,30 +46,17 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.RedisShardSpec) 
 	}
 }
 
+// Resources returns the list of templates
+func (gen *Generator) Resources() []resource.TemplateInterface {
+	return []resource.TemplateInterface{
+		resource.NewTemplateFromObjectFunction(gen.statefulSet),
+		resource.NewTemplateFromObjectFunction(gen.service),
+		resource.NewTemplateFromObjectFunction(gen.redisConfigConfigMap),
+		resource.NewTemplateFromObjectFunction(gen.redisReadinessScriptConfigMap),
+	}
+}
+
 // Returns the name of the StatefulSet headless Service
 func (gen *Generator) ServiceName() string {
 	return fmt.Sprintf("%s-%s", gen.GetComponent(), gen.GetInstanceName())
-}
-
-// Returns all the resource templates that this generator manages
-func (gen *Generator) Resources() []basereconciler.Resource {
-	return []basereconciler.Resource{
-		basereconciler_resources.StatefulSetTemplate{
-			Template:        gen.statefulSet(),
-			IsEnabled:       true,
-			RolloutTriggers: nil,
-		},
-		basereconciler_resources.ServiceTemplate{
-			Template:  gen.service(),
-			IsEnabled: true,
-		},
-		basereconciler_resources.ConfigMapTemplate{
-			Template:  gen.redisConfigConfigMap(),
-			IsEnabled: true,
-		},
-		basereconciler_resources.ConfigMapTemplate{
-			Template:  gen.redisReadinessScriptConfigMap(),
-			IsEnabled: true,
-		},
-	}
 }

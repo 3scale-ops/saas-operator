@@ -21,19 +21,15 @@ import (
 	"testing"
 	"time"
 
-	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/util"
-	"github.com/go-logr/logr"
+	"github.com/3scale-ops/basereconciler/reconciler"
+	"github.com/3scale-ops/basereconciler/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	testutil "github.com/3scale-ops/saas-operator/test/util"
 	"github.com/google/go-cmp/cmp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestShardedRedisBackupReconciler_reconcileBackupList(t *testing.T) {
-	type fields struct {
-		Reconciler basereconciler.Reconciler
-		Log        logr.Logger
-	}
 	type args struct {
 		instance *saasv1alpha1.ShardedRedisBackup
 		nextRun  time.Time
@@ -41,7 +37,6 @@ func TestShardedRedisBackupReconciler_reconcileBackupList(t *testing.T) {
 	}
 	tests := []struct {
 		name        string
-		fields      fields
 		args        args
 		wantChanged bool
 		wantStatus  saasv1alpha1.ShardedRedisBackupStatus
@@ -49,12 +44,8 @@ func TestShardedRedisBackupReconciler_reconcileBackupList(t *testing.T) {
 	}{
 		{
 			name: "List is empty, adds a backup",
-			fields: fields{
-				Reconciler: basereconciler.Reconciler{},
-				Log:        logr.Discard(),
-			},
 			args: args{
-				nextRun: util.MustParseRFC3339("2023-09-01T00:01:00Z"),
+				nextRun: testutil.MustParseRFC3339("2023-09-01T00:01:00Z"),
 				instance: &saasv1alpha1.ShardedRedisBackup{
 					Spec:   saasv1alpha1.ShardedRedisBackupSpec{HistoryLimit: util.Pointer(int32(10))},
 					Status: saasv1alpha1.ShardedRedisBackupStatus{},
@@ -66,13 +57,13 @@ func TestShardedRedisBackupReconciler_reconcileBackupList(t *testing.T) {
 				Backups: []saasv1alpha1.BackupStatus{
 					{
 						Shard:        "shard02",
-						ScheduledFor: metav1.NewTime(util.MustParseRFC3339("2023-09-01T00:01:00Z")),
+						ScheduledFor: metav1.NewTime(testutil.MustParseRFC3339("2023-09-01T00:01:00Z")),
 						Message:      "backup scheduled",
 						State:        saasv1alpha1.BackupPendingState,
 					},
 					{
 						Shard:        "shard01",
-						ScheduledFor: metav1.NewTime(util.MustParseRFC3339("2023-09-01T00:01:00Z")),
+						ScheduledFor: metav1.NewTime(testutil.MustParseRFC3339("2023-09-01T00:01:00Z")),
 						Message:      "backup scheduled",
 						State:        saasv1alpha1.BackupPendingState,
 					},
@@ -82,25 +73,21 @@ func TestShardedRedisBackupReconciler_reconcileBackupList(t *testing.T) {
 		},
 		{
 			name: "No changes",
-			fields: fields{
-				Reconciler: basereconciler.Reconciler{},
-				Log:        logr.Discard(),
-			},
 			args: args{
-				nextRun: util.MustParseRFC3339("2023-09-01T00:01:00Z"),
+				nextRun: testutil.MustParseRFC3339("2023-09-01T00:01:00Z"),
 				instance: &saasv1alpha1.ShardedRedisBackup{
 					Spec: saasv1alpha1.ShardedRedisBackupSpec{HistoryLimit: util.Pointer(int32(10))},
 					Status: saasv1alpha1.ShardedRedisBackupStatus{
 						Backups: []saasv1alpha1.BackupStatus{
 							{
 								Shard:        "shard02",
-								ScheduledFor: metav1.NewTime(util.MustParseRFC3339("2023-09-01T00:01:00Z")),
+								ScheduledFor: metav1.NewTime(testutil.MustParseRFC3339("2023-09-01T00:01:00Z")),
 								Message:      "backup scheduled",
 								State:        saasv1alpha1.BackupPendingState,
 							},
 							{
 								Shard:        "shard01",
-								ScheduledFor: metav1.NewTime(util.MustParseRFC3339("2023-09-01T00:01:00Z")),
+								ScheduledFor: metav1.NewTime(testutil.MustParseRFC3339("2023-09-01T00:01:00Z")),
 								Message:      "backup scheduled",
 								State:        saasv1alpha1.BackupPendingState,
 							},
@@ -113,13 +100,13 @@ func TestShardedRedisBackupReconciler_reconcileBackupList(t *testing.T) {
 				Backups: []saasv1alpha1.BackupStatus{
 					{
 						Shard:        "shard02",
-						ScheduledFor: metav1.NewTime(util.MustParseRFC3339("2023-09-01T00:01:00Z")),
+						ScheduledFor: metav1.NewTime(testutil.MustParseRFC3339("2023-09-01T00:01:00Z")),
 						Message:      "backup scheduled",
 						State:        saasv1alpha1.BackupPendingState,
 					},
 					{
 						Shard:        "shard01",
-						ScheduledFor: metav1.NewTime(util.MustParseRFC3339("2023-09-01T00:01:00Z")),
+						ScheduledFor: metav1.NewTime(testutil.MustParseRFC3339("2023-09-01T00:01:00Z")),
 						Message:      "backup scheduled",
 						State:        saasv1alpha1.BackupPendingState,
 					},
@@ -129,25 +116,21 @@ func TestShardedRedisBackupReconciler_reconcileBackupList(t *testing.T) {
 		},
 		{
 			name: "Adds new backups",
-			fields: fields{
-				Reconciler: basereconciler.Reconciler{},
-				Log:        logr.Discard(),
-			},
 			args: args{
-				nextRun: util.MustParseRFC3339("2023-09-01T00:02:00Z"),
+				nextRun: testutil.MustParseRFC3339("2023-09-01T00:02:00Z"),
 				instance: &saasv1alpha1.ShardedRedisBackup{
 					Spec: saasv1alpha1.ShardedRedisBackupSpec{HistoryLimit: util.Pointer(int32(10))},
 					Status: saasv1alpha1.ShardedRedisBackupStatus{
 						Backups: []saasv1alpha1.BackupStatus{
 							{
 								Shard:        "shard02",
-								ScheduledFor: metav1.NewTime(util.MustParseRFC3339("2023-09-01T00:01:00Z")),
+								ScheduledFor: metav1.NewTime(testutil.MustParseRFC3339("2023-09-01T00:01:00Z")),
 								Message:      "backup scheduled",
 								State:        saasv1alpha1.BackupPendingState,
 							},
 							{
 								Shard:        "shard01",
-								ScheduledFor: metav1.NewTime(util.MustParseRFC3339("2023-09-01T00:01:00Z")),
+								ScheduledFor: metav1.NewTime(testutil.MustParseRFC3339("2023-09-01T00:01:00Z")),
 								Message:      "backup scheduled",
 								State:        saasv1alpha1.BackupPendingState,
 							},
@@ -160,13 +143,13 @@ func TestShardedRedisBackupReconciler_reconcileBackupList(t *testing.T) {
 				Backups: []saasv1alpha1.BackupStatus{
 					{
 						Shard:        "shard02",
-						ScheduledFor: metav1.NewTime(util.MustParseRFC3339("2023-09-01T00:02:00Z")),
+						ScheduledFor: metav1.NewTime(testutil.MustParseRFC3339("2023-09-01T00:02:00Z")),
 						Message:      "backup scheduled",
 						State:        saasv1alpha1.BackupPendingState,
 					},
 					{
 						Shard:        "shard01",
-						ScheduledFor: metav1.NewTime(util.MustParseRFC3339("2023-09-01T00:02:00Z")),
+						ScheduledFor: metav1.NewTime(testutil.MustParseRFC3339("2023-09-01T00:02:00Z")),
 						Message:      "backup scheduled",
 						State:        saasv1alpha1.BackupPendingState,
 					},
@@ -178,8 +161,7 @@ func TestShardedRedisBackupReconciler_reconcileBackupList(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := &ShardedRedisBackupReconciler{
-				Reconciler: tt.fields.Reconciler,
-				Log:        tt.fields.Log,
+				Reconciler: &reconciler.Reconciler{},
 			}
 			got, err := r.reconcileBackupList(context.TODO(), tt.args.instance, tt.args.nextRun, tt.args.shards)
 			if (err != nil) != tt.wantErr {

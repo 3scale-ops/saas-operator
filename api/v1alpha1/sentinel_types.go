@@ -21,15 +21,14 @@ import (
 	"sort"
 	"time"
 
-	"github.com/3scale/saas-operator/pkg/redis/client"
-	redis "github.com/3scale/saas-operator/pkg/redis/server"
-	"github.com/3scale/saas-operator/pkg/redis/sharded"
-	"github.com/3scale/saas-operator/pkg/util"
+	"github.com/3scale-ops/basereconciler/util"
+	"github.com/3scale-ops/saas-operator/pkg/redis/client"
+	redis "github.com/3scale-ops/saas-operator/pkg/redis/server"
+	"github.com/3scale-ops/saas-operator/pkg/redis/sharded"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/utils/pointer"
 )
 
 const (
@@ -42,9 +41,9 @@ var (
 	SentinelDefaultReplicas int32            = 3
 	SentinelDefaultQuorum   int              = 2
 	sentinelDefaultImage    defaultImageSpec = defaultImageSpec{
-		Name:       pointer.String("bitnami/redis-sentinel"),
-		Tag:        pointer.String("4.0.11-debian-9-r110"),
-		PullPolicy: (*corev1.PullPolicy)(pointer.String(string(corev1.PullIfNotPresent))),
+		Name:       util.Pointer("bitnami/redis-sentinel"),
+		Tag:        util.Pointer("4.0.11-debian-9-r110"),
+		PullPolicy: (*corev1.PullPolicy)(util.Pointer(string(corev1.PullIfNotPresent))),
 	}
 	sentinelDefaultResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
 		Requests: corev1.ResourceList{
@@ -57,19 +56,19 @@ var (
 		},
 	}
 	sentinelDefaultProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32(25),
-		TimeoutSeconds:      pointer.Int32(1),
-		PeriodSeconds:       pointer.Int32(10),
-		SuccessThreshold:    pointer.Int32(1),
-		FailureThreshold:    pointer.Int32(3),
+		InitialDelaySeconds: util.Pointer[int32](25),
+		TimeoutSeconds:      util.Pointer[int32](1),
+		PeriodSeconds:       util.Pointer[int32](10),
+		SuccessThreshold:    util.Pointer[int32](1),
+		FailureThreshold:    util.Pointer[int32](3),
 	}
 	sentinelDefaultPDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
-		MaxUnavailable: util.IntStrPtr(intstr.FromInt(1)),
+		MaxUnavailable: util.Pointer(intstr.FromInt(1)),
 	}
 
 	sentinelDefaultGrafanaDashboard defaultGrafanaDashboardSpec = defaultGrafanaDashboardSpec{
-		SelectorKey:   pointer.String("monitoring-key"),
-		SelectorValue: pointer.String("middleware"),
+		SelectorKey:   util.Pointer("monitoring-key"),
+		SelectorValue: util.Pointer("middleware"),
 	}
 	sentinelDefaultStorageSize            string        = "10Mi"
 	sentinelDefaultMetricsRefreshInterval time.Duration = 30 * time.Second

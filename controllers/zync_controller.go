@@ -19,9 +19,10 @@ package controllers
 import (
 	"context"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/generators/zync"
-	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
+	"github.com/3scale-ops/basereconciler/reconciler"
+	"github.com/3scale-ops/basereconciler/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/generators/zync"
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
 	"github.com/go-logr/logr"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
@@ -31,15 +32,13 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 // ZyncReconciler reconciles a Zync object
 type ZyncReconciler struct {
-	workloads.WorkloadReconciler
+	*reconciler.Reconciler
 	Log logr.Logger
 }
 
@@ -58,50 +57,24 @@ type ZyncReconciler struct {
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 func (r *ZyncReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	logger := r.Log.WithValues("name", req.Name, "namespace", req.Namespace)
-	ctx = log.IntoContext(ctx, logger)
 
+	ctx, _ = r.Logger(ctx, "name", req.Name, "namespace", req.Namespace)
 	instance := &saasv1alpha1.Zync{}
-	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx, key, instance, nil, nil)
-	if result != nil || err != nil {
-		return *result, err
+	result := r.ManageResourceLifecycle(ctx, req, instance,
+		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)))
+	if result.ShouldReturn() {
+		return result.Values()
 	}
 
-	// Apply defaults for reconcile but do not store them in the API
-	instance.Default()
-
-	gen := zync.NewGenerator(
-		instance.GetName(),
-		instance.GetNamespace(),
-		instance.Spec,
-	)
-
-	// Shared resources
-	resources := gen.Resources()
-
-	// Api resources
-	api_resources, err := r.NewDeploymentWorkload(&gen.API, nil)
+	gen := zync.NewGenerator(instance.GetName(), instance.GetNamespace(), instance.Spec)
+	resources, err := gen.Resources()
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	resources = append(resources, api_resources...)
 
-	// Que resources
-	que_resources, err := r.NewDeploymentWorkload(&gen.Que, nil)
-	if err != nil {
-		return ctrl.Result{}, err
-	}
-	resources = append(resources, que_resources...)
-
-	// Console resources
-	resources = append(resources, gen.Console.StatefulSet())
-
-	// Reconcile all resources
-	err = r.ReconcileOwnedResources(ctx, instance, resources)
-	if err != nil {
-		logger.Error(err, "unable to reconcile owned resources")
-		return ctrl.Result{}, err
+	result = r.ReconcileOwnedResources(ctx, instance, resources)
+	if result.ShouldReturn() {
+		return result.Values()
 	}
 
 	return ctrl.Result{}, nil
@@ -120,6 +93,6 @@ func (r *ZyncReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&externalsecretsv1beta1.ExternalSecret{}).
 		Owns(&grafanav1alpha1.GrafanaDashboard{}).
 		Watches(&source.Kind{Type: &corev1.Secret{TypeMeta: metav1.TypeMeta{Kind: "Secret"}}},
-			r.SecretEventHandler(&saasv1alpha1.ZyncList{}, r.Log)).
+			r.FilteredEventHandler(&saasv1alpha1.ZyncList{}, nil, r.Log)).
 		Complete(r)
 }

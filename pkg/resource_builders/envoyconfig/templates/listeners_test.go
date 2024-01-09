@@ -4,12 +4,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/3scale-ops/basereconciler/util"
 	envoy_serializer_v3 "github.com/3scale-ops/marin3r/pkg/envoy/serializer/v3"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/MakeNowJust/heredoc"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/pointer"
 	"sigs.k8s.io/yaml"
 )
 
@@ -30,18 +29,18 @@ func TestListenerHTTP_v1(t *testing.T) {
 				opts: &saasv1alpha1.ListenerHttp{
 					Port:                  8080,
 					RouteConfigName:       "my_route",
-					CertificateSecretName: pointer.String("my_certificate"),
+					CertificateSecretName: util.Pointer("my_certificate"),
 					RateLimitOptions: &saasv1alpha1.RateLimitOptions{
 						Domain:           "test_domain",
-						FailureModeDeny:  pointer.Bool(true),
+						FailureModeDeny:  util.Pointer(true),
 						Timeout:          metav1.Duration{Duration: 10 * time.Millisecond},
 						RateLimitCluster: "ratelimit",
 					},
-					DefaultHostForHttp10:        pointer.String("example.com"),
-					EnableHttp2:                 pointer.Bool(false),
-					AllowHeadersWithUnderscores: pointer.Bool(true),
-					MaxConnectionDuration:       util.Metav1DurationPtr(900 * time.Second),
-					ProxyProtocol:               pointer.Bool(true),
+					DefaultHostForHttp10:        util.Pointer("example.com"),
+					EnableHttp2:                 util.Pointer(false),
+					AllowHeadersWithUnderscores: util.Pointer(true),
+					MaxConnectionDuration:       util.Pointer(metav1.Duration{Duration: 900 * time.Second}),
+					ProxyProtocol:               util.Pointer(true),
 				},
 			},
 			want: heredoc.Doc(`
@@ -140,15 +139,15 @@ func TestListenerHTTP_v1(t *testing.T) {
 					RouteConfigName: "my_route",
 					RateLimitOptions: &saasv1alpha1.RateLimitOptions{
 						Domain:           "test_domain",
-						FailureModeDeny:  pointer.Bool(false),
+						FailureModeDeny:  util.Pointer(false),
 						Timeout:          metav1.Duration{Duration: 10 * time.Millisecond},
 						RateLimitCluster: "ratelimit",
 					},
-					DefaultHostForHttp10:        pointer.String("example.com"),
-					EnableHttp2:                 pointer.Bool(false),
-					AllowHeadersWithUnderscores: pointer.Bool(true),
-					MaxConnectionDuration:       util.Metav1DurationPtr(900 * time.Second),
-					ProxyProtocol:               pointer.Bool(true),
+					DefaultHostForHttp10:        util.Pointer("example.com"),
+					EnableHttp2:                 util.Pointer(false),
+					AllowHeadersWithUnderscores: util.Pointer(true),
+					MaxConnectionDuration:       util.Pointer(metav1.Duration{Duration: 900 * time.Second}),
+					ProxyProtocol:               util.Pointer(true),
 				},
 			},
 			want: heredoc.Doc(`

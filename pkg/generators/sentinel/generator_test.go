@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/util"
+	"github.com/3scale-ops/basereconciler/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/go-test/deep"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -26,7 +26,7 @@ func TestGenerator_ClusterTopology(t *testing.T) {
 			name: "Generates a correct cluster topology from 'spec.config.monitoredShards'",
 			key:  types.NamespacedName{Name: "test", Namespace: "test"},
 			spec: saasv1alpha1.SentinelSpec{
-				Replicas: util.Pointer(int32(3)),
+				Replicas: util.Pointer[int32](3),
 				Config: &saasv1alpha1.SentinelConfig{
 					MonitoredShards: map[string][]string{
 						"shard01": {

@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
-	redis "github.com/3scale/saas-operator/pkg/redis/server"
-	"github.com/3scale/saas-operator/pkg/redis/sharded"
+	"github.com/3scale-ops/saas-operator/pkg/reconcilers/threads"
+	redis "github.com/3scale-ops/saas-operator/pkg/redis/server"
+	"github.com/3scale-ops/saas-operator/pkg/redis/sharded"
 	"github.com/go-logr/logr"
 	"github.com/prometheus/client_golang/prometheus"
 	"sigs.k8s.io/controller-runtime/pkg/client"

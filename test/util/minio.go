@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/3scale/saas-operator/pkg/util"
+	"github.com/3scale-ops/basereconciler/util"
+	operatorutils "github.com/3scale-ops/saas-operator/pkg/util"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
@@ -22,7 +23,7 @@ func MinioClient(ctx context.Context, cfg *rest.Config, podKey types.NamespacedN
 		return nil, nil, err
 	}
 
-	awsconfig, err := util.AWSConfig(ctx, user, passwd, region, util.Pointer(fmt.Sprintf("http://localhost:%d", localPort)))
+	awsconfig, err := operatorutils.AWSConfig(ctx, user, passwd, region, util.Pointer(fmt.Sprintf("http://localhost:%d", localPort)))
 	if err != nil {
 		return nil, nil, err
 	}

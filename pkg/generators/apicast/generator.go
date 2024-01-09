@@ -3,16 +3,19 @@ package apicast
 import (
 	"fmt"
 
-	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
-	basereconciler_resources "github.com/3scale-ops/basereconciler/resources"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/generators"
-	"github.com/3scale/saas-operator/pkg/generators/apicast/config"
-	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
-	descriptor "github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
-	"github.com/3scale/saas-operator/pkg/resource_builders/grafanadashboard"
-	"github.com/3scale/saas-operator/pkg/resource_builders/podmonitor"
+	mutators "github.com/3scale-ops/basereconciler/mutators"
+	"github.com/3scale-ops/basereconciler/resource"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/generators"
+	"github.com/3scale-ops/saas-operator/pkg/generators/apicast/config"
+	descriptor "github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/grafanadashboard"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/podmonitor"
+	operatorutil "github.com/3scale-ops/saas-operator/pkg/util"
+	deployment_workload "github.com/3scale-ops/saas-operator/pkg/workloads/deployment"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
 
@@ -123,7 +126,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.ApicastSpec) (Ge
 			},
 			Spec:    canarySpec.Production,
 			Options: config.NewEnvOptions(canarySpec.Production, "production"),
-			Traffic: *&canarySpec.Production.Canary.SendTraffic,
+			Traffic: canarySpec.Production.Canary.SendTraffic,
 		}
 		// Disable PDB and HPA for the canary Deployment
 		generator.CanaryProduction.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
@@ -133,22 +136,30 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.ApicastSpec) (Ge
 	return generator, nil
 }
 
-// Resources returns a list of basereconciler_v2.Resource
-func (gen *Generator) Resources() []basereconciler.Resource {
-	return []basereconciler.Resource{
-		basereconciler_resources.GrafanaDashboardTemplate{
-			Template: grafanadashboard.New(
-				types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace},
-				gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/apicast.json.gtpl"),
-			IsEnabled: !gen.GrafanaDashboardSpec.IsDeactivated(),
-		},
-		basereconciler_resources.GrafanaDashboardTemplate{
-			Template: grafanadashboard.New(
-				types.NamespacedName{Name: gen.Component + "-services", Namespace: gen.Namespace},
-				gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/apicast-services.json.gtpl"),
-			IsEnabled: !gen.GrafanaDashboardSpec.IsDeactivated(),
-		},
+// Resources returns the list of resource templates
+func (gen *Generator) Resources() ([]resource.TemplateInterface, error) {
+	staging, err := deployment_workload.New(&gen.Staging, gen.CanaryStaging)
+	if err != nil {
+		return nil, err
 	}
+	production, err := deployment_workload.New(&gen.Production, gen.CanaryProduction)
+	if err != nil {
+		return nil, err
+	}
+	misc := []resource.TemplateInterface{
+		resource.NewTemplate(
+			grafanadashboard.New(
+				types.NamespacedName{Name: gen.Component, Namespace: gen.Namespace},
+				gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/apicast.json.gtpl")).
+			WithEnabled(!gen.GrafanaDashboardSpec.IsDeactivated()),
+		resource.NewTemplate(
+			grafanadashboard.New(
+				types.NamespacedName{Name: gen.Component + "-services", Namespace: gen.Namespace},
+				gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/apicast-services.json.gtpl")).
+			WithEnabled(!gen.GrafanaDashboardSpec.IsDeactivated()),
+	}
+
+	return operatorutil.ConcatSlices(staging, production, misc), nil
 }
 
 // EnvGenerator has methods to generate resources for an
@@ -160,25 +171,21 @@ type EnvGenerator struct {
 	Traffic bool
 }
 
-// Validate that EnvGenerator implements workloads.DeploymentWorkload interface
-var _ workloads.DeploymentWorkload = &EnvGenerator{}
+// Validate that EnvGenerator implements deployment_workload.DeploymentWorkload interface
+var _ deployment_workload.DeploymentWorkload = &EnvGenerator{}
 
-// Validate that EnvGenerator implements workloads.WithTraffic interface
-var _ workloads.WithTraffic = &EnvGenerator{}
+// Validate that EnvGenerator implements deployment_workload.WithTraffic interface
+var _ deployment_workload.WithTraffic = &EnvGenerator{}
 
-// Validate that EnvGenerator implements workloads.WithEnvoySidecar interface
-var _ workloads.WithEnvoySidecar = &EnvGenerator{}
+// Validate that EnvGenerator implements deployment_workload.WithEnvoySidecar interface
+var _ deployment_workload.WithEnvoySidecar = &EnvGenerator{}
 
 func (gen *EnvGenerator) Labels() map[string]string {
 	return gen.GetLabels()
 }
-func (gen *EnvGenerator) Deployment() basereconciler_resources.DeploymentTemplate {
-	return basereconciler_resources.DeploymentTemplate{
-		Template:        gen.deployment(),
-		RolloutTriggers: nil,
-		EnforceReplicas: gen.Spec.HPA.IsDeactivated(),
-		IsEnabled:       true,
-	}
+func (gen *EnvGenerator) Deployment() *resource.Template[*appsv1.Deployment] {
+	return resource.NewTemplateFromObjectFunction(gen.deployment).
+		WithMutation(mutators.SetDeploymentReplicas(gen.Spec.HPA.IsDeactivated()))
 }
 
 func (gen *EnvGenerator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {
@@ -193,10 +200,10 @@ func (gen *EnvGenerator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint 
 		podmonitor.PodMetricsEndpoint("/stats/prometheus", "envoy-metrics", 60),
 	}
 }
-func (gen *EnvGenerator) Services() []basereconciler_resources.ServiceTemplate {
-	return []basereconciler_resources.ServiceTemplate{
-		{Template: gen.gatewayService(), IsEnabled: true},
-		{Template: gen.mgmtService(), IsEnabled: true},
+func (gen *EnvGenerator) Services() []*resource.Template[*corev1.Service] {
+	return []*resource.Template[*corev1.Service]{
+		resource.NewTemplateFromObjectFunction(gen.gatewayService).WithMutation(mutators.SetServiceLiveValues()),
+		resource.NewTemplateFromObjectFunction(gen.mgmtService).WithMutation(mutators.SetServiceLiveValues()),
 	}
 }
 func (gen *EnvGenerator) SendTraffic() bool { return gen.Traffic }

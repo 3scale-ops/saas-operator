@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/3scale/saas-operator/pkg/redis/client"
+	"github.com/3scale-ops/saas-operator/pkg/redis/client"
 	"github.com/go-redis/redis/v8"
 	"github.com/go-test/deep"
 )

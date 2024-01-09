@@ -20,17 +20,16 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/3scale/saas-operator/pkg/util"
+	"github.com/3scale-ops/basereconciler/util"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/pointer"
 )
 
 var (
 	redisShardDefaultImage defaultImageSpec = defaultImageSpec{
-		Name:       pointer.String("redis"),
-		Tag:        pointer.String("4.0.11-alpine"),
-		PullPolicy: (*corev1.PullPolicy)(pointer.String(string(corev1.PullIfNotPresent))),
+		Name:       util.Pointer("redis"),
+		Tag:        util.Pointer("4.0.11-alpine"),
+		PullPolicy: (*corev1.PullPolicy)(util.Pointer(string(corev1.PullIfNotPresent))),
 	}
 	redisShardDefaultMasterIndex int32  = 0
 	redisShardDefaultCommand     string = "redis-server /redis/redis.conf"

@@ -3,13 +3,11 @@ package twemproxy
 import (
 	"path/filepath"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
-	"github.com/3scale/saas-operator/pkg/util"
-
+	"github.com/3scale-ops/basereconciler/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/utils/pointer"
 )
 
 const (
@@ -28,12 +26,10 @@ func TwemproxyContainer(twemproxySpec *saasv1alpha1.TwemproxySpec) corev1.Contai
 			pod.ContainerPortTCP(twemproxy, 22121),
 			pod.ContainerPortTCP("twem-metrics", int32(*twemproxySpec.Options.MetricsPort)),
 		),
-		Resources:                corev1.ResourceRequirements(*twemproxySpec.Resources),
-		ImagePullPolicy:          *twemproxySpec.Image.PullPolicy,
-		LivenessProbe:            pod.ExecProbe(healthCommand, *twemproxySpec.LivenessProbe),
-		ReadinessProbe:           pod.ExecProbe(healthCommand, *twemproxySpec.ReadinessProbe),
-		TerminationMessagePath:   corev1.TerminationMessagePathDefault,
-		TerminationMessagePolicy: corev1.TerminationMessageReadFile,
+		Resources:       corev1.ResourceRequirements(*twemproxySpec.Resources),
+		ImagePullPolicy: *twemproxySpec.Image.PullPolicy,
+		LivenessProbe:   pod.ExecProbe(healthCommand, *twemproxySpec.LivenessProbe),
+		ReadinessProbe:  pod.ExecProbe(healthCommand, *twemproxySpec.ReadinessProbe),
 		Lifecycle: &corev1.Lifecycle{
 			PreStop: &corev1.LifecycleHandler{
 				Exec: &corev1.ExecAction{
@@ -58,7 +54,7 @@ func TwemproxyContainerVolume(twemproxySpec *saasv1alpha1.TwemproxySpec) corev1.
 				LocalObjectReference: corev1.LocalObjectReference{
 					Name: twemproxySpec.ConfigMapName(),
 				},
-				DefaultMode: pointer.Int32(420),
+				DefaultMode: util.Pointer[int32](420),
 			},
 		},
 	}

@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"sort"
 
-	envoyconfig "github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
+	envoyconfig "github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
@@ -132,8 +132,8 @@ func (mapofconfs MapOfEnvoyDynamicConfig) AsList() []envoyconfig.EnvoyDynamicCon
 // +kubebuilder:validation:MinProperties:=2
 // +kubebuilder:validation:MaxProperties:=2
 type EnvoyDynamicConfig struct {
-	// unexported, hidden field
-	name string `json:"-"`
+	// hidden field
+	Name string `json:"-"`
 	// GeneratorVersion specifies the version of a given template.
 	// "v1" is the default.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
@@ -165,12 +165,12 @@ type EnvoyDynamicConfig struct {
 // AsEnvoyDynamicConfigDescriptor converts the external API type into the internal EnvoyDynamicConfigDescriptor
 // interface. The name field is populated with the parameter passed to the function.
 func (config *EnvoyDynamicConfig) AsEnvoyDynamicConfigDescriptor(name string) envoyconfig.EnvoyDynamicConfigDescriptor {
-	config.name = name
+	config.Name = name
 	return config
 }
 
 func (config *EnvoyDynamicConfig) GetName() string {
-	return config.name
+	return config.Name
 }
 
 // GetGeneratorVersion returns the template's version

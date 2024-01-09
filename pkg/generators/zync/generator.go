@@ -4,19 +4,22 @@ import (
 	"fmt"
 	"strings"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/generators"
-
-	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
-	basereconciler_resources "github.com/3scale-ops/basereconciler/resources"
-	"github.com/3scale/saas-operator/pkg/generators/zync/config"
-	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
-	"github.com/3scale/saas-operator/pkg/resource_builders/grafanadashboard"
-	"github.com/3scale/saas-operator/pkg/resource_builders/pod"
-	"github.com/3scale/saas-operator/pkg/resource_builders/podmonitor"
+	"github.com/3scale-ops/basereconciler/mutators"
+	"github.com/3scale-ops/basereconciler/resource"
+	"github.com/3scale-ops/basereconciler/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/generators"
+	"github.com/3scale-ops/saas-operator/pkg/generators/zync/config"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/grafanadashboard"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/podmonitor"
+	operatorutil "github.com/3scale-ops/saas-operator/pkg/util"
+	deployment_workload "github.com/3scale-ops/saas-operator/pkg/workloads/deployment"
+	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
+	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
-
-	"k8s.io/utils/pointer"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -99,20 +102,35 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.ZyncSpec) Genera
 	}
 }
 
-// Resources returns functions to generate all Zync's shared resources
-func (gen *Generator) Resources() []basereconciler.Resource {
-	return []basereconciler.Resource{
-		// GrafanaDashboard
-		basereconciler_resources.GrafanaDashboardTemplate{
-			Template:  grafanadashboard.New(gen.GetKey(), gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/zync.json.gtpl"),
-			IsEnabled: !gen.GrafanaDashboardSpec.IsDeactivated(),
-		},
-		// ExternalSecret
-		basereconciler_resources.ExternalSecretTemplate{
-			Template:  pod.GenerateExternalSecretFn("zync", gen.GetNamespace(), *gen.Config.ExternalSecret.SecretStoreRef.Name, *gen.Config.ExternalSecret.SecretStoreRef.Kind, *gen.Config.ExternalSecret.RefreshInterval, gen.GetLabels(), gen.API.Options),
-			IsEnabled: true,
-		},
+// Resources returns the list of templates
+func (gen *Generator) Resources() ([]resource.TemplateInterface, error) {
+	app_resources, err := deployment_workload.New(&gen.API, nil)
+	if err != nil {
+		return nil, err
 	}
+	que_resources, err := deployment_workload.New(&gen.Que, nil)
+	if err != nil {
+		return nil, err
+	}
+	misc := []resource.TemplateInterface{
+		// GrafanaDashboard
+		resource.NewTemplate[*grafanav1alpha1.GrafanaDashboard](
+			grafanadashboard.New(gen.GetKey(), gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/zync.json.gtpl")).
+			WithEnabled(!gen.GrafanaDashboardSpec.IsDeactivated()),
+		// ExternalSecret
+		resource.NewTemplate[*externalsecretsv1beta1.ExternalSecret](
+			pod.GenerateExternalSecretFn("zync", gen.GetNamespace(),
+				*gen.Config.ExternalSecret.SecretStoreRef.Name, *gen.Config.ExternalSecret.SecretStoreRef.Kind,
+				*gen.Config.ExternalSecret.RefreshInterval, gen.GetLabels(), gen.API.Options),
+		),
+	}
+
+	return operatorutil.ConcatSlices(
+		app_resources,
+		que_resources,
+		gen.Console.StatefulSet(),
+		misc,
+	), nil
 }
 
 // APIGenerator has methods to generate resources for a
@@ -125,26 +143,19 @@ type APIGenerator struct {
 	Traffic bool
 }
 
-// Validate that APIGenerator implements workloads.DeploymentWorkload interface
-var _ workloads.DeploymentWorkload = &APIGenerator{}
+// Validate that APIGenerator implements deployment_workload.DeploymentWorkload interface
+var _ deployment_workload.DeploymentWorkload = &APIGenerator{}
 
-// Validate that APIGenerator implements workloads.WithTraffic interface
-var _ workloads.WithTraffic = &APIGenerator{}
+// Validate that APIGenerator implements deployment_workload.WithTraffic interface
+var _ deployment_workload.WithTraffic = &APIGenerator{}
 
 func (gen *APIGenerator) Labels() map[string]string {
 	return gen.GetLabels()
 }
-func (gen *APIGenerator) Deployment() basereconciler_resources.DeploymentTemplate {
-	return basereconciler_resources.DeploymentTemplate{
-		Template: gen.deployment(),
-		RolloutTriggers: func() []basereconciler_resources.RolloutTrigger {
-			return []basereconciler_resources.RolloutTrigger{
-				{Name: "zync", SecretName: pointer.String("zync")},
-			}
-		}(),
-		EnforceReplicas: gen.APISpec.HPA.IsDeactivated(),
-		IsEnabled:       true,
-	}
+func (gen *APIGenerator) Deployment() *resource.Template[*appsv1.Deployment] {
+	return resource.NewTemplateFromObjectFunction(gen.deployment).
+		WithMutation(mutators.SetDeploymentReplicas(gen.APISpec.HPA.IsDeactivated())).
+		WithMutation(mutators.RolloutTrigger{Name: "zync", SecretName: util.Pointer("zync")}.Add())
 }
 
 func (gen *APIGenerator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {
@@ -158,9 +169,9 @@ func (gen *APIGenerator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint 
 		podmonitor.PodMetricsEndpoint("/metrics", "metrics", 30),
 	}
 }
-func (gen *APIGenerator) Services() []basereconciler_resources.ServiceTemplate {
-	return []basereconciler_resources.ServiceTemplate{
-		{Template: gen.service(), IsEnabled: true},
+func (gen *APIGenerator) Services() []*resource.Template[*corev1.Service] {
+	return []*resource.Template[*corev1.Service]{
+		resource.NewTemplateFromObjectFunction(gen.service).WithMutation(mutators.SetServiceLiveValues()),
 	}
 }
 func (gen *APIGenerator) SendTraffic() bool { return gen.Traffic }
@@ -179,20 +190,13 @@ type QueGenerator struct {
 	Options config.QueOptions
 }
 
-// Validate that QueGenerator implements workloads.DeploymentWorkload interface
-var _ workloads.DeploymentWorkload = &QueGenerator{}
+// Validate that QueGenerator implements deployment_workload.DeploymentWorkload interface
+var _ deployment_workload.DeploymentWorkload = &QueGenerator{}
 
-func (gen *QueGenerator) Deployment() basereconciler_resources.DeploymentTemplate {
-	return basereconciler_resources.DeploymentTemplate{
-		Template: gen.deployment(),
-		RolloutTriggers: func() []basereconciler_resources.RolloutTrigger {
-			return []basereconciler_resources.RolloutTrigger{
-				{Name: "zync", SecretName: pointer.String("zync")},
-			}
-		}(),
-		EnforceReplicas: gen.QueSpec.HPA.IsDeactivated(),
-		IsEnabled:       true,
-	}
+func (gen *QueGenerator) Deployment() *resource.Template[*appsv1.Deployment] {
+	return resource.NewTemplateFromObjectFunction(gen.deployment).
+		WithMutation(mutators.SetDeploymentReplicas(gen.QueSpec.HPA.IsDeactivated())).
+		WithMutation(mutators.RolloutTrigger{Name: "zync", SecretName: util.Pointer("zync")}.Add())
 }
 func (gen *QueGenerator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {
 	return gen.QueSpec.HPA
@@ -215,14 +219,10 @@ type ConsoleGenerator struct {
 	Enabled bool
 }
 
-func (gen *ConsoleGenerator) StatefulSet() basereconciler_resources.StatefulSetTemplate {
-	return basereconciler_resources.StatefulSetTemplate{
-		Template: gen.statefulset(),
-		RolloutTriggers: func() []basereconciler_resources.RolloutTrigger {
-			return []basereconciler_resources.RolloutTrigger{
-				{Name: "zync", SecretName: pointer.String("zync")},
-			}
-		}(),
-		IsEnabled: gen.Enabled,
+func (gen *ConsoleGenerator) StatefulSet() []resource.TemplateInterface {
+	return []resource.TemplateInterface{
+		resource.NewTemplateFromObjectFunction(gen.statefulset).
+			WithEnabled(gen.Enabled).
+			WithMutation(mutators.RolloutTrigger{Name: "zync", SecretName: util.Pointer("zync")}.Add()),
 	}
 }

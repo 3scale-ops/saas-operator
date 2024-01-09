@@ -3,10 +3,10 @@ package templates
 import (
 	"testing"
 
+	"github.com/3scale-ops/basereconciler/util"
 	envoy_serializer_v3 "github.com/3scale-ops/marin3r/pkg/envoy/serializer/v3"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/MakeNowJust/heredoc"
-	"k8s.io/utils/pointer"
 	"sigs.k8s.io/yaml"
 )
 
@@ -27,7 +27,7 @@ func TestCluster_v1(t *testing.T) {
 				opts: &saasv1alpha1.Cluster{
 					Host:    "localhost",
 					Port:    8080,
-					IsHttp2: pointer.Bool(false),
+					IsHttp2: util.Pointer(false),
 				},
 			},
 			want: heredoc.Doc(`
@@ -53,7 +53,7 @@ func TestCluster_v1(t *testing.T) {
 				opts: &saasv1alpha1.Cluster{
 					Host:    "localhost",
 					Port:    8080,
-					IsHttp2: pointer.Bool(true),
+					IsHttp2: util.Pointer(true),
 				},
 			},
 			want: heredoc.Doc(`

@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/3scale-ops/basereconciler/util"
 	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	testutil "github.com/3scale/saas-operator/test/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	testutil "github.com/3scale-ops/saas-operator/test/util"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -15,7 +16,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -253,15 +253,15 @@ var _ = Describe("Apicast controller", func() {
 							DNS: []string{"updated-apicast-production.example.com"},
 						},
 						HPA: &saasv1alpha1.HorizontalPodAutoscalerSpec{
-							MinReplicas: pointer.Int32(3),
+							MinReplicas: util.Pointer[int32](3),
 						},
 						LivenessProbe:  &saasv1alpha1.ProbeSpec{},
 						ReadinessProbe: &saasv1alpha1.ProbeSpec{},
 						Marin3r: &saasv1alpha1.Marin3rSidecarSpec{
-							NodeID: pointer.String("apicast-production"),
+							NodeID: util.Pointer("apicast-production"),
 							EnvoyDynamicConfig: saasv1alpha1.MapOfEnvoyDynamicConfig{
 								"http": {
-									GeneratorVersion: pointer.String("v1"),
+									GeneratorVersion: util.Pointer("v1"),
 									ListenerHttp: &saasv1alpha1.ListenerHttp{
 										Port:            8080,
 										RouteConfigName: "route",
@@ -278,16 +278,16 @@ var _ = Describe("Apicast controller", func() {
 							DNS: []string{"updated-apicast-staging.example.com"},
 						},
 						HPA: &saasv1alpha1.HorizontalPodAutoscalerSpec{
-							MinReplicas: pointer.Int32(3),
+							MinReplicas: util.Pointer[int32](3),
 						},
 						LivenessProbe:  &saasv1alpha1.ProbeSpec{},
 						ReadinessProbe: &saasv1alpha1.ProbeSpec{},
 						Marin3r: &saasv1alpha1.Marin3rSidecarSpec{
-							NodeID: pointer.String("apicast-production"),
+							NodeID: util.Pointer("apicast-production"),
 							EnvoyDynamicConfig: saasv1alpha1.MapOfEnvoyDynamicConfig{
 								"http": {
 
-									GeneratorVersion: pointer.String("v1"),
+									GeneratorVersion: util.Pointer("v1"),
 									ListenerHttp: &saasv1alpha1.ListenerHttp{
 										Port:            8080,
 										RouteConfigName: "route",
@@ -419,14 +419,14 @@ var _ = Describe("Apicast controller", func() {
 
 					patch := client.MergeFrom(apicast.DeepCopy())
 					apicast.Spec.Production.Canary = &saasv1alpha1.Canary{
-						ImageName: pointer.String("newImage"),
-						ImageTag:  pointer.String("newTag"),
-						Replicas:  pointer.Int32(1),
+						ImageName: util.Pointer("newImage"),
+						ImageTag:  util.Pointer("newTag"),
+						Replicas:  util.Pointer[int32](1),
 					}
 					apicast.Spec.Staging.Canary = &saasv1alpha1.Canary{
-						ImageName: pointer.String("newImage"),
-						ImageTag:  pointer.String("newTag"),
-						Replicas:  pointer.Int32(1),
+						ImageName: util.Pointer("newImage"),
+						ImageTag:  util.Pointer("newTag"),
+						Replicas:  util.Pointer[int32](1),
 					}
 
 					if err := k8sClient.Patch(context.Background(), apicast, patch); err != nil {
@@ -558,10 +558,10 @@ var _ = Describe("Apicast controller", func() {
 
 						patch := client.MergeFrom(apicast.DeepCopy())
 						apicast.Spec.Production.Canary = &saasv1alpha1.Canary{
-							SendTraffic: *pointer.Bool(true),
+							SendTraffic: *util.Pointer(true),
 						}
 						apicast.Spec.Staging.Canary = &saasv1alpha1.Canary{
-							SendTraffic: *pointer.Bool(true),
+							SendTraffic: *util.Pointer(true),
 						}
 						return k8sClient.Patch(context.Background(), apicast, patch)
 					}, timeout, poll).ShouldNot(HaveOccurred())
@@ -657,11 +657,11 @@ var _ = Describe("Apicast controller", func() {
 
 					patch := client.MergeFrom(apicast.DeepCopy())
 
-					apicast.Spec.Production.Replicas = pointer.Int32(0)
+					apicast.Spec.Production.Replicas = util.Pointer[int32](0)
 					apicast.Spec.Production.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
 					apicast.Spec.Production.PDB = &saasv1alpha1.PodDisruptionBudgetSpec{}
 
-					apicast.Spec.Staging.Replicas = pointer.Int32(0)
+					apicast.Spec.Staging.Replicas = util.Pointer[int32](0)
 					apicast.Spec.Staging.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
 					apicast.Spec.Staging.PDB = &saasv1alpha1.PodDisruptionBudgetSpec{}
 

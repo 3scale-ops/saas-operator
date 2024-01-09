@@ -1,16 +1,15 @@
-module github.com/3scale/saas-operator
+module github.com/3scale-ops/saas-operator
 
 go 1.20
 
 require (
-	github.com/3scale-ops/basereconciler v0.3.5
+	github.com/3scale-ops/basereconciler v0.4.0
 	github.com/3scale-ops/marin3r v0.12.2
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/aws/aws-sdk-go-v2 v1.21.0
 	github.com/aws/aws-sdk-go-v2/config v1.18.37
 	github.com/aws/aws-sdk-go-v2/credentials v1.13.35
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.38.5
-	github.com/davecgh/go-spew v1.1.1
 	github.com/envoyproxy/go-control-plane v0.11.1-0.20230524094728-9239064ad72f
 	github.com/evanphx/json-patch v5.6.0+incompatible
 	github.com/external-secrets/external-secrets v0.8.1
@@ -29,6 +28,7 @@ require (
 	github.com/prometheus/client_golang v1.14.0
 	github.com/prometheus/client_model v0.3.0
 	github.com/robfig/cron/v3 v3.0.1
+	github.com/samber/lo v1.39.0
 	github.com/tektoncd/pipeline v0.49.0
 	go.uber.org/zap v1.24.0
 	golang.org/x/crypto v0.14.0
@@ -37,10 +37,12 @@ require (
 	k8s.io/api v0.26.2
 	k8s.io/apimachinery v0.26.5
 	k8s.io/client-go v0.26.2
-	k8s.io/utils v0.0.0-20230313181309-38a27ef9d749
 	sigs.k8s.io/controller-runtime v0.14.5
 	sigs.k8s.io/yaml v1.3.0
 )
+
+// For local dev uncomment this and point it to the correct path in your system
+// replace github.com/3scale-ops/basereconciler => /home/roi/github.com/3scale/basereconciler
 
 require (
 	contrib.go.opencensus.io/exporter/ocagent v0.7.1-0.20200907061046-05415f1de66d // indirect
@@ -65,6 +67,7 @@ require (
 	github.com/census-instrumentation/opencensus-proto v0.4.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cncf/xds/go v0.0.0-20230607035331-e9ce68804cb4 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/emicklei/go-restful/v3 v3.10.2 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.10.1 // indirect
@@ -97,6 +100,8 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
+	github.com/nsf/jsondiff v0.0.0-20230430225905-43f6cf3098c1 // indirect
+	github.com/ohler55/ojg v1.20.3 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/openshift/api v0.0.0-20220715133027-dab5b363ebd1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -128,6 +133,7 @@ require (
 	k8s.io/component-base v0.26.2 // indirect
 	k8s.io/klog/v2 v2.90.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20230308215209-15aac26d736a // indirect
+	k8s.io/utils v0.0.0-20230313181309-38a27ef9d749 // indirect
 	knative.dev/pkg v0.0.0-20230221145627-8efb3485adcf // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect

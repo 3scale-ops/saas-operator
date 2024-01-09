@@ -4,8 +4,9 @@ import (
 	"context"
 	"time"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	testutil "github.com/3scale/saas-operator/test/util"
+	"github.com/3scale-ops/basereconciler/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	testutil "github.com/3scale-ops/saas-operator/test/util"
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	. "github.com/onsi/ginkgo/v2"
@@ -14,7 +15,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -158,12 +158,12 @@ var _ = Describe("MappingService controller", func() {
 
 					mappingservice.Spec.Config.ExternalSecret.RefreshInterval = &metav1.Duration{Duration: 1 * time.Second}
 					mappingservice.Spec.Config.ExternalSecret.SecretStoreRef = &saasv1alpha1.ExternalSecretSecretStoreReferenceSpec{
-						Name: pointer.String("other-store"),
-						Kind: pointer.String("SecretStore"),
+						Name: util.Pointer("other-store"),
+						Kind: util.Pointer("SecretStore"),
 					}
 					mappingservice.Spec.Config.SystemAdminToken.FromVault.Path = "secret/data/updated-path"
 					mappingservice.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{
-						MinReplicas: pointer.Int32(3),
+						MinReplicas: util.Pointer[int32](3),
 					}
 					mappingservice.Spec.LivenessProbe = &saasv1alpha1.ProbeSpec{}
 					mappingservice.Spec.ReadinessProbe = &saasv1alpha1.ProbeSpec{}
@@ -251,7 +251,7 @@ var _ = Describe("MappingService controller", func() {
 					rvs["deployment/mappingservice"] = testutil.GetResourceVersion(
 						k8sClient, &appsv1.Deployment{}, "mapping-service", namespace, timeout, poll)
 					patch := client.MergeFrom(mappingservice.DeepCopy())
-					mappingservice.Spec.Replicas = pointer.Int32(0)
+					mappingservice.Spec.Replicas = util.Pointer[int32](0)
 					mappingservice.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
 					mappingservice.Spec.PDB = &saasv1alpha1.PodDisruptionBudgetSpec{}
 

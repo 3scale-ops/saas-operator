@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/3scale-ops/basereconciler/util"
 	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	testutil "github.com/3scale/saas-operator/test/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	testutil "github.com/3scale-ops/saas-operator/test/util"
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	. "github.com/onsi/ginkgo/v2"
@@ -18,7 +19,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -64,7 +64,7 @@ var _ = Describe("Backend controller", func() {
 					Config: saasv1alpha1.BackendConfig{
 						RedisStorageDSN:     "storageDSN",
 						RedisQueuesDSN:      "queuesDSN",
-						SystemEventsHookURL: saasv1alpha1.SecretReference{Override: pointer.String("system-app")},
+						SystemEventsHookURL: saasv1alpha1.SecretReference{Override: util.Pointer("system-app")},
 						SystemEventsHookPassword: saasv1alpha1.SecretReference{
 							FromVault: &saasv1alpha1.VaultSecretReference{
 								Path: "some-path-hook-password",
@@ -307,39 +307,39 @@ var _ = Describe("Backend controller", func() {
 
 					patch := client.MergeFrom(backend.DeepCopy())
 					backend.Spec.Image = &saasv1alpha1.ImageSpec{
-						Name: pointer.String("newImage"),
-						Tag:  pointer.String("newTag"),
+						Name: util.Pointer("newImage"),
+						Tag:  util.Pointer("newTag"),
 					}
-					backend.Spec.Listener.Replicas = pointer.Int32(3)
+					backend.Spec.Listener.Replicas = util.Pointer[int32](3)
 					backend.Spec.Listener.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
 					backend.Spec.Listener.Config = &saasv1alpha1.ListenerConfig{
-						RedisAsync: pointer.Bool(true),
+						RedisAsync: util.Pointer(true),
 					}
 					backend.Spec.Worker = &saasv1alpha1.WorkerSpec{
 						HPA: &saasv1alpha1.HorizontalPodAutoscalerSpec{
-							MinReplicas: pointer.Int32(3),
+							MinReplicas: util.Pointer[int32](3),
 						},
 					}
 					backend.Spec.Cron = &saasv1alpha1.CronSpec{
-						Replicas: pointer.Int32(3),
+						Replicas: util.Pointer[int32](3),
 					}
 					backend.Spec.Listener.LoadBalancer = &saasv1alpha1.NLBLoadBalancerSpec{
-						CrossZoneLoadBalancingEnabled: pointer.Bool(false),
+						CrossZoneLoadBalancingEnabled: util.Pointer(false),
 					}
 					backend.Spec.Config.ExternalSecret.RefreshInterval = &metav1.Duration{Duration: 1 * time.Second}
 					backend.Spec.Config.ExternalSecret.SecretStoreRef = &saasv1alpha1.ExternalSecretSecretStoreReferenceSpec{
-						Name: pointer.String("other-store"),
-						Kind: pointer.String("SecretStore"),
+						Name: util.Pointer("other-store"),
+						Kind: util.Pointer("SecretStore"),
 					}
 					backend.Spec.Config.InternalAPIUser.FromVault.Path = "secret/data/updated-path-api"
 					backend.Spec.Config.SystemEventsHookPassword.FromVault.Path = "secret/data/updated-path-hook"
 					backend.Spec.Config.ErrorMonitoringKey.FromVault.Path = "secret/data/updated-path-error"
 
 					backend.Spec.Listener.Marin3r = &saasv1alpha1.Marin3rSidecarSpec{
-						NodeID: pointer.String("backend-listener"),
+						NodeID: util.Pointer("backend-listener"),
 						EnvoyDynamicConfig: saasv1alpha1.MapOfEnvoyDynamicConfig{
 							"http": {
-								GeneratorVersion: pointer.String("v1"),
+								GeneratorVersion: util.Pointer("v1"),
 								ListenerHttp: &saasv1alpha1.ListenerHttp{
 									Port:            8080,
 									RouteConfigName: "route",
@@ -393,7 +393,7 @@ var _ = Describe("Backend controller", func() {
 						LastVersion: rvs["hpa/backend-worker"],
 					}).Assert(k8sClient, hpa, timeout, poll))
 
-				Expect(hpa.Spec.MinReplicas).To(Equal(pointer.Int32(3)))
+				Expect(hpa.Spec.MinReplicas).To(Equal(util.Pointer[int32](3)))
 
 				By("updating the backend-cron workload",
 					(&testutil.ExpectedWorkload{
@@ -490,13 +490,13 @@ var _ = Describe("Backend controller", func() {
 
 					patch := client.MergeFrom(backend.DeepCopy())
 					backend.Spec.Listener.Canary = &saasv1alpha1.Canary{
-						ImageName: pointer.String("newImage"),
-						ImageTag:  pointer.String("newTag"),
+						ImageName: util.Pointer("newImage"),
+						ImageTag:  util.Pointer("newTag"),
 					}
 					backend.Spec.Worker = &saasv1alpha1.WorkerSpec{
 						Canary: &saasv1alpha1.Canary{
-							ImageName: pointer.String("newImage"),
-							ImageTag:  pointer.String("newTag"),
+							ImageName: util.Pointer("newImage"),
+							ImageTag:  util.Pointer("newTag"),
 							Patches: []string{
 								`[{"op": "add", "path": "/config/rackEnv", "value": "test"}]`,
 								`[{"op": "replace", "path": "/config/redisStorageDSN", "value": "testDSN"}]`,
@@ -600,16 +600,16 @@ var _ = Describe("Backend controller", func() {
 							k8sClient, &appsv1.Deployment{}, "backend-worker-canary", namespace, timeout, poll)
 
 						patch := client.MergeFrom(backend.DeepCopy())
-						backend.Spec.Listener.Replicas = pointer.Int32(3)
+						backend.Spec.Listener.Replicas = util.Pointer[int32](3)
 						backend.Spec.Listener.Canary = &saasv1alpha1.Canary{
-							SendTraffic: *pointer.Bool(true),
-							Replicas:    pointer.Int32(3),
+							SendTraffic: *util.Pointer(true),
+							Replicas:    util.Pointer[int32](3),
 						}
 						backend.Spec.Worker = &saasv1alpha1.WorkerSpec{
-							Replicas: pointer.Int32(3),
+							Replicas: util.Pointer[int32](3),
 						}
 						backend.Spec.Worker.Canary = &saasv1alpha1.Canary{
-							Replicas: pointer.Int32(3),
+							Replicas: util.Pointer[int32](3),
 						}
 						return k8sClient.Patch(context.Background(), backend, patch)
 
@@ -629,7 +629,7 @@ var _ = Describe("Backend controller", func() {
 							LastVersion: rvs["deployment/backend-listener-canary"],
 						}).Assert(k8sClient, dep, timeout, poll))
 
-					Expect(dep.Spec.Replicas).To(Equal(pointer.Int32(3)))
+					Expect(dep.Spec.Replicas).To(Equal(util.Pointer[int32](3)))
 
 					svc := &corev1.Service{}
 					By("removing the backend-listener service deployment label selector",
@@ -721,18 +721,18 @@ var _ = Describe("Backend controller", func() {
 						k8sClient, &appsv1.Deployment{}, "backend-cron", namespace, timeout, poll)
 
 					patch := client.MergeFrom(backend.DeepCopy())
-					backend.Spec.Listener.Replicas = pointer.Int32(2)
+					backend.Spec.Listener.Replicas = util.Pointer[int32](2)
 					backend.Spec.Listener.Canary = &saasv1alpha1.Canary{
-						Replicas: pointer.Int32(2),
+						Replicas: util.Pointer[int32](2),
 						Patches: []string{
 							`[{"op":"add","path":"/twemproxy","value":{"twemproxyConfigRef":"backend-canary-twemproxyconfig","options":{"logLevel":3}}}]`,
 						},
 					}
 					backend.Spec.Worker = &saasv1alpha1.WorkerSpec{
-						Replicas: pointer.Int32(2),
+						Replicas: util.Pointer[int32](2),
 					}
 					backend.Spec.Worker.Canary = &saasv1alpha1.Canary{
-						Replicas: pointer.Int32(2),
+						Replicas: util.Pointer[int32](2),
 						Patches: []string{
 							`[{"op":"add","path":"/twemproxy/options","value":{"logLevel":4}}]`,
 						},
@@ -740,7 +740,7 @@ var _ = Describe("Backend controller", func() {
 					backend.Spec.Twemproxy = &saasv1alpha1.TwemproxySpec{
 						TwemproxyConfigRef: "backend-twemproxyconfig",
 						Options: &saasv1alpha1.TwemproxyOptions{
-							LogLevel: pointer.Int32(2),
+							LogLevel: util.Pointer[int32](2),
 						},
 					}
 

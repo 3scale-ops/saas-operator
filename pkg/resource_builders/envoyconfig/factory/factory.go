@@ -5,7 +5,7 @@ import (
 	"reflect"
 
 	"github.com/3scale-ops/marin3r/pkg/envoy"
-	descriptor "github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
+	descriptor "github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 )
 
 // EnvoyDynamicConfigClass contains properties to generate specific types

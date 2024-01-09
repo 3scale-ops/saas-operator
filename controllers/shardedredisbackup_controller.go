@@ -21,32 +21,28 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/3scale-ops/basereconciler/reconciler"
+	"github.com/3scale-ops/basereconciler/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/reconcilers/threads"
+	"github.com/3scale-ops/saas-operator/pkg/redis/backup"
+	redis "github.com/3scale-ops/saas-operator/pkg/redis/server"
+	"github.com/3scale-ops/saas-operator/pkg/redis/sharded"
+	operatorutils "github.com/3scale-ops/saas-operator/pkg/util"
+	"github.com/robfig/cron/v3"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-
-	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
-	"github.com/3scale/saas-operator/pkg/redis/backup"
-	redis "github.com/3scale/saas-operator/pkg/redis/server"
-	"github.com/3scale/saas-operator/pkg/redis/sharded"
-	"github.com/3scale/saas-operator/pkg/util"
-	"github.com/go-logr/logr"
-	"github.com/robfig/cron/v3"
 )
 
 // ShardedRedisBackupReconciler reconciles a ShardedRedisBackup object
 type ShardedRedisBackupReconciler struct {
-	basereconciler.Reconciler
-	Log          logr.Logger
+	*reconciler.Reconciler
 	BackupRunner threads.Manager
 	Pool         *redis.ServerPool
 }
@@ -65,8 +61,8 @@ type ShardedRedisBackupReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.13.0/pkg/reconcile
 func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	logger := r.Log.WithValues("name", req.Name, "namespace", req.Namespace)
-	ctx = log.IntoContext(ctx, logger)
+
+	ctx, logger := r.Logger(ctx, "name", req.Name, "namespace", req.Namespace)
 	now := time.Now()
 
 	// ----------------------------------
@@ -74,13 +70,14 @@ func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.R
 	// ----------------------------------
 
 	instance := &saasv1alpha1.ShardedRedisBackup{}
-	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx, key, instance, pointer.String(saasv1alpha1.Finalizer), []func(){r.BackupRunner.CleanupThreads(instance)})
-	if result != nil || err != nil {
-		return *result, err
+	result := r.ManageResourceLifecycle(ctx, req, instance,
+		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)),
+		reconciler.WithFinalizer(saasv1alpha1.Finalizer),
+		reconciler.WithFinalizationFunc(r.BackupRunner.CleanupThreads(instance)),
+	)
+	if result.ShouldReturn() {
+		return result.Values()
 	}
-
-	instance.Default()
 
 	// Get Sentinel status
 	sentinel := &saasv1alpha1.Sentinel{ObjectMeta: metav1.ObjectMeta{Name: instance.Spec.SentinelRef, Namespace: req.Namespace}}
@@ -112,11 +109,11 @@ func (r *ShardedRedisBackupReconciler) Reconcile(ctx context.Context, req ctrl.R
 	if err := r.Client.Get(ctx, client.ObjectKeyFromObject(awsCredentials), awsCredentials); err != nil {
 		return ctrl.Result{}, err
 	}
-	if _, ok := awsCredentials.Data[util.AWSAccessKeyEnvvar]; !ok {
-		return ctrl.Result{}, fmt.Errorf("secret %s is missing %s key", awsCredentials.GetName(), util.AWSAccessKeyEnvvar)
+	if _, ok := awsCredentials.Data[operatorutils.AWSAccessKeyEnvvar]; !ok {
+		return ctrl.Result{}, fmt.Errorf("secret %s is missing %s key", awsCredentials.GetName(), operatorutils.AWSAccessKeyEnvvar)
 	}
-	if _, ok := awsCredentials.Data[util.AWSSecretKeyEnvvar]; !ok {
-		return ctrl.Result{}, fmt.Errorf("secret %s is missing %s key", awsCredentials.GetName(), util.AWSSecretKeyEnvvar)
+	if _, ok := awsCredentials.Data[operatorutils.AWSSecretKeyEnvvar]; !ok {
+		return ctrl.Result{}, fmt.Errorf("secret %s is missing %s key", awsCredentials.GetName(), operatorutils.AWSSecretKeyEnvvar)
 	}
 
 	// ----------------------------------------

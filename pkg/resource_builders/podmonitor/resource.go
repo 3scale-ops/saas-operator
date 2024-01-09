@@ -6,20 +6,17 @@ import (
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // New returns a basereconciler_types.GeneratorFunction function that will return a PodMonitor
 // resource when called
 func New(key types.NamespacedName, labels map[string]string, selector map[string]string,
-	endpoints ...monitoringv1.PodMetricsEndpoint) func() *monitoringv1.PodMonitor {
+	endpoints ...monitoringv1.PodMetricsEndpoint) func(client.Object) (*monitoringv1.PodMonitor, error) {
 
-	return func() *monitoringv1.PodMonitor {
+	return func(client.Object) (*monitoringv1.PodMonitor, error) {
 
 		return &monitoringv1.PodMonitor{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       "PodMonitor",
-				APIVersion: monitoringv1.SchemeGroupVersion.String(),
-			},
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      key.Name,
 				Namespace: key.Namespace,
@@ -31,7 +28,7 @@ func New(key types.NamespacedName, labels map[string]string, selector map[string
 					MatchLabels: selector,
 				},
 			},
-		}
+		}, nil
 	}
 }
 

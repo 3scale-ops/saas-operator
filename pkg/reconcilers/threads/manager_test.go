@@ -11,6 +11,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 )
 
@@ -308,7 +309,7 @@ func TestManager_CleanupThreads(t *testing.T) {
 				channel: tt.fields.channel,
 				threads: tt.fields.threads,
 			}
-			mgr.CleanupThreads(tt.args.instance)()
+			mgr.CleanupThreads(tt.args.instance)(context.TODO(), fake.NewClientBuilder().Build())
 			if diff := deep.Equal(mgr.threads, tt.want); len(diff) > 0 {
 				t.Errorf("Manager.CleanupThreads() = diff %v", diff)
 			}

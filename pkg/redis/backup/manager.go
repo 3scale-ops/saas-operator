@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/3scale/saas-operator/pkg/redis/sharded"
+	"github.com/3scale-ops/saas-operator/pkg/redis/sharded"
 	"github.com/go-logr/logr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"

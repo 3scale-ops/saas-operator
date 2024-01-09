@@ -21,14 +21,15 @@ import (
 	"errors"
 	"time"
 
-	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/generators/sentinel"
-	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
-	"github.com/3scale/saas-operator/pkg/redis/events"
-	"github.com/3scale/saas-operator/pkg/redis/metrics"
-	redis "github.com/3scale/saas-operator/pkg/redis/server"
-	"github.com/3scale/saas-operator/pkg/redis/sharded"
+	"github.com/3scale-ops/basereconciler/reconciler"
+	"github.com/3scale-ops/basereconciler/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/generators/sentinel"
+	"github.com/3scale-ops/saas-operator/pkg/reconcilers/threads"
+	"github.com/3scale-ops/saas-operator/pkg/redis/events"
+	"github.com/3scale-ops/saas-operator/pkg/redis/metrics"
+	redis "github.com/3scale-ops/saas-operator/pkg/redis/server"
+	"github.com/3scale-ops/saas-operator/pkg/redis/sharded"
 	"github.com/go-logr/logr"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	"golang.org/x/time/rate"
@@ -36,21 +37,17 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/workqueue"
-	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/ratelimiter"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 // SentinelReconciler reconciles a Sentinel object
 type SentinelReconciler struct {
-	basereconciler.Reconciler
-	Log            logr.Logger
+	*reconciler.Reconciler
 	SentinelEvents threads.Manager
 	Metrics        threads.Manager
 	Pool           *redis.ServerPool
@@ -68,32 +65,23 @@ type SentinelReconciler struct {
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 func (r *SentinelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	logger := r.Log.WithValues("name", req.Name, "namespace", req.Namespace)
-	ctx = log.IntoContext(ctx, logger)
 
+	ctx, logger := r.Logger(ctx, "name", req.Name, "namespace", req.Namespace)
 	instance := &saasv1alpha1.Sentinel{}
-	key := types.NamespacedName{Name: req.Name, Namespace: req.Namespace}
-	result, err := r.GetInstance(ctx,
-		key,
-		instance,
-		pointer.String(saasv1alpha1.Finalizer),
-		[]func(){r.SentinelEvents.CleanupThreads(instance), r.Metrics.CleanupThreads(instance)})
-	if result != nil || err != nil {
-		return *result, err
+	result := r.ManageResourceLifecycle(ctx, req, instance,
+		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)),
+		reconciler.WithFinalizer(saasv1alpha1.Finalizer),
+		reconciler.WithFinalizationFunc(r.SentinelEvents.CleanupThreads(instance)),
+		reconciler.WithFinalizationFunc(r.Metrics.CleanupThreads(instance)),
+	)
+	if result.ShouldReturn() {
+		return result.Values()
 	}
 
-	// Apply defaults for reconcile but do not store them in the API
-	instance.Default()
-
-	gen := sentinel.NewGenerator(
-		instance.GetName(),
-		instance.GetNamespace(),
-		instance.Spec,
-	)
-
-	if err := r.ReconcileOwnedResources(ctx, instance, gen.Resources()); err != nil {
-		logger.Error(err, "unable to update owned resources")
-		return ctrl.Result{}, err
+	gen := sentinel.NewGenerator(instance.GetName(), instance.GetNamespace(), instance.Spec)
+	result = r.ReconcileOwnedResources(ctx, instance, gen.Resources())
+	if result.ShouldReturn() {
+		return result.Values()
 	}
 
 	clustermap, err := gen.ClusterTopology(ctx)

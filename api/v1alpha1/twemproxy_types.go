@@ -3,33 +3,33 @@ package v1alpha1
 import (
 	"time"
 
+	"github.com/3scale-ops/basereconciler/util"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/pointer"
 )
 
 var (
 	// Twemproxy defaults
 	defaultTwemproxyLivenessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32(0),
-		TimeoutSeconds:      pointer.Int32(1),
-		PeriodSeconds:       pointer.Int32(5),
-		SuccessThreshold:    pointer.Int32(1),
-		FailureThreshold:    pointer.Int32(3),
+		InitialDelaySeconds: util.Pointer[int32](0),
+		TimeoutSeconds:      util.Pointer[int32](1),
+		PeriodSeconds:       util.Pointer[int32](5),
+		SuccessThreshold:    util.Pointer[int32](1),
+		FailureThreshold:    util.Pointer[int32](3),
 	}
 	defaultTwemproxyReadinessProbe defaultProbeSpec = defaultProbeSpec{
-		InitialDelaySeconds: pointer.Int32(0),
-		TimeoutSeconds:      pointer.Int32(1),
-		PeriodSeconds:       pointer.Int32(5),
-		SuccessThreshold:    pointer.Int32(1),
-		FailureThreshold:    pointer.Int32(3),
+		InitialDelaySeconds: util.Pointer[int32](0),
+		TimeoutSeconds:      util.Pointer[int32](1),
+		PeriodSeconds:       util.Pointer[int32](5),
+		SuccessThreshold:    util.Pointer[int32](1),
+		FailureThreshold:    util.Pointer[int32](3),
 	}
 	// TODO: add requirements
 	defaultTwemproxyResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{}
 	defaultTwemproxyImage     defaultImageSpec                = defaultImageSpec{
-		Name:       pointer.String("quay.io/3scale/twemproxy"),
-		Tag:        pointer.String("v0.5.0"),
-		PullPolicy: (*corev1.PullPolicy)(pointer.String(string(corev1.PullIfNotPresent))),
+		Name:       util.Pointer("quay.io/3scale/twemproxy"),
+		Tag:        util.Pointer("v0.5.0"),
+		PullPolicy: (*corev1.PullPolicy)(util.Pointer(string(corev1.PullIfNotPresent))),
 	}
 	twemproxyDefaultLogLevel      int32           = 6
 	twemproxyDefaultMetricsPort   int32           = 9151

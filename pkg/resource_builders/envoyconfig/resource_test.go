@@ -4,14 +4,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/3scale-ops/basereconciler/util"
 	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
 	"github.com/3scale-ops/marin3r/pkg/envoy"
 	envoy_serializer "github.com/3scale-ops/marin3r/pkg/envoy/serializer"
-	marin3r_pointer "github.com/3scale-ops/marin3r/pkg/util/pointer"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	descriptor "github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
-	"github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/factory"
-	"github.com/3scale/saas-operator/pkg/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	descriptor "github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/factory"
 	"github.com/MakeNowJust/heredoc"
 	envoy_config_cluster_v3 "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
 	envoy_config_core_v3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
@@ -24,7 +23,6 @@ import (
 	"google.golang.org/protobuf/types/known/durationpb"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/utils/pointer"
 )
 
 func TestNew(t *testing.T) {
@@ -48,23 +46,23 @@ func TestNew(t *testing.T) {
 				factory: factory.Default(),
 				resources: saasv1alpha1.MapOfEnvoyDynamicConfig{
 					"my_cluster": {
-						GeneratorVersion: pointer.String("v1"),
+						GeneratorVersion: util.Pointer("v1"),
 						Cluster: &saasv1alpha1.Cluster{
 							Host:    "localhost",
 							Port:    8080,
-							IsHttp2: pointer.Bool(false),
+							IsHttp2: util.Pointer(false),
 						},
 					},
 					"my_listener": {
-						GeneratorVersion: pointer.String("v1"),
+						GeneratorVersion: util.Pointer("v1"),
 						ListenerHttp: &saasv1alpha1.ListenerHttp{
 							Port:                        0,
 							RouteConfigName:             "routeconfig",
-							CertificateSecretName:       pointer.String("certificate"),
-							EnableHttp2:                 pointer.Bool(false),
-							AllowHeadersWithUnderscores: pointer.Bool(true),
-							MaxConnectionDuration:       util.Metav1DurationPtr(900 * time.Second),
-							ProxyProtocol:               pointer.Bool(true),
+							CertificateSecretName:       util.Pointer("certificate"),
+							EnableHttp2:                 util.Pointer(false),
+							AllowHeadersWithUnderscores: util.Pointer(true),
+							MaxConnectionDuration:       util.Pointer(metav1.Duration{Duration: 900 * time.Second}),
+							ProxyProtocol:               util.Pointer(true),
 						},
 					},
 				}.AsList(),
@@ -76,8 +74,8 @@ func TestNew(t *testing.T) {
 				},
 				Spec: marin3rv1alpha1.EnvoyConfigSpec{
 					NodeID:        "test",
-					Serialization: marin3r_pointer.New(envoy_serializer.YAML),
-					EnvoyAPI:      marin3r_pointer.New(envoy.APIv3),
+					Serialization: util.Pointer(envoy_serializer.YAML),
+					EnvoyAPI:      util.Pointer(envoy.APIv3),
 					EnvoyResources: &marin3rv1alpha1.EnvoyResources{
 						Clusters: []marin3rv1alpha1.EnvoyResource{{
 							Value: heredoc.Doc(`
@@ -182,7 +180,7 @@ func TestNew(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := New(tt.args.key, tt.args.nodeID, tt.args.factory, tt.args.resources...)()
+			got, err := New(tt.args.key, tt.args.nodeID, tt.args.factory, tt.args.resources...)(nil)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("New() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -260,8 +258,8 @@ func Test_newFromProtos(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{Name: "test", Namespace: "ns"},
 				Spec: marin3rv1alpha1.EnvoyConfigSpec{
 					NodeID:        "test",
-					Serialization: marin3r_pointer.New(envoy_serializer.YAML),
-					EnvoyAPI:      marin3r_pointer.New(envoy.APIv3),
+					Serialization: util.Pointer(envoy_serializer.YAML),
+					EnvoyAPI:      util.Pointer(envoy.APIv3),
 					EnvoyResources: &marin3rv1alpha1.EnvoyResources{
 						Clusters: []marin3rv1alpha1.EnvoyResource{{
 							Value: heredoc.Doc(`

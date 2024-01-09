@@ -4,14 +4,18 @@ import (
 	"fmt"
 	"strings"
 
-	basereconciler_resources "github.com/3scale-ops/basereconciler/resources"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/generators"
-	"github.com/3scale/saas-operator/pkg/generators/autossl/config"
-	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
-	"github.com/3scale/saas-operator/pkg/resource_builders/grafanadashboard"
-	"github.com/3scale/saas-operator/pkg/resource_builders/podmonitor"
+	"github.com/3scale-ops/basereconciler/mutators"
+	"github.com/3scale-ops/basereconciler/resource"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/generators"
+	"github.com/3scale-ops/saas-operator/pkg/generators/autossl/config"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/grafanadashboard"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/podmonitor"
+	operatorutil "github.com/3scale-ops/saas-operator/pkg/util"
+	deployment_workload "github.com/3scale-ops/saas-operator/pkg/workloads/deployment"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -27,11 +31,11 @@ type Generator struct {
 	Traffic bool
 }
 
-// Validate that Generator implements workloads.DeploymentWorkload interface
-var _ workloads.DeploymentWorkload = &Generator{}
+// Validate that Generator implements deployment_workload.DeploymentWorkload interface
+var _ deployment_workload.DeploymentWorkload = &Generator{}
 
-// Validate that Generator implements workloads.WithTraffic interface
-var _ workloads.WithTraffic = &Generator{}
+// Validate that Generator implements deployment_workload.WithTraffic interface
+var _ deployment_workload.WithTraffic = &Generator{}
 
 // NewGenerator returns a new Options struct
 func NewGenerator(instance, namespace string, spec saasv1alpha1.AutoSSLSpec) (Generator, error) {
@@ -79,9 +83,24 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.AutoSSLSpec) (Ge
 	return generator, nil
 }
 
-func (gen *Generator) Services() []basereconciler_resources.ServiceTemplate {
-	return []basereconciler_resources.ServiceTemplate{
-		{Template: gen.service(), IsEnabled: true},
+// Resources returns the list of resource templates
+func (gen *Generator) Resources() ([]resource.TemplateInterface, error) {
+	workload, err := deployment_workload.New(gen, gen.Canary)
+	if err != nil {
+		return nil, err
+	}
+	misc := []resource.TemplateInterface{
+		resource.NewTemplate(
+			grafanadashboard.New(gen.GetKey(), gen.GetLabels(), *gen.Spec.GrafanaDashboard, "dashboards/autossl.json.gtpl")).
+			WithEnabled(!gen.Spec.GrafanaDashboard.IsDeactivated()),
+	}
+	return operatorutil.ConcatSlices(workload, misc), nil
+}
+
+func (gen *Generator) Services() []*resource.Template[*corev1.Service] {
+	return []*resource.Template[*corev1.Service]{
+		resource.NewTemplateFromObjectFunction(gen.service).
+			WithMutation(mutators.SetServiceLiveValues()),
 	}
 }
 func (gen *Generator) SendTraffic() bool { return gen.Traffic }
@@ -91,15 +110,12 @@ func (gen *Generator) TrafficSelector() map[string]string {
 	}
 }
 
-// Validate that Generator implements workloads.DeploymentWorkload interface
-var _ workloads.DeploymentWorkload = &Generator{}
+// Validate that Generator implements deployment_workload.DeploymentWorkload interface
+var _ deployment_workload.DeploymentWorkload = &Generator{}
 
-func (gen *Generator) Deployment() basereconciler_resources.DeploymentTemplate {
-	return basereconciler_resources.DeploymentTemplate{
-		Template:        gen.deployment(),
-		EnforceReplicas: gen.Spec.HPA.IsDeactivated(),
-		IsEnabled:       true,
-	}
+func (gen *Generator) Deployment() *resource.Template[*appsv1.Deployment] {
+	return resource.NewTemplateFromObjectFunction(gen.deployment).
+		WithMutation(mutators.SetDeploymentReplicas(gen.Spec.HPA.IsDeactivated()))
 }
 
 func (gen *Generator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {
@@ -113,13 +129,5 @@ func (gen *Generator) PDBSpec() *saasv1alpha1.PodDisruptionBudgetSpec {
 func (gen *Generator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint {
 	return []monitoringv1.PodMetricsEndpoint{
 		podmonitor.PodMetricsEndpoint("/metrics", "metrics", 30),
-	}
-}
-
-// GrafanaDashboard returns a basereconciler_resources.GrafanaDashboardTemplate
-func (gen *Generator) GrafanaDashboard() basereconciler_resources.GrafanaDashboardTemplate {
-	return basereconciler_resources.GrafanaDashboardTemplate{
-		Template:  grafanadashboard.New(gen.GetKey(), gen.GetLabels(), *gen.Spec.GrafanaDashboard, "dashboards/autossl.json.gtpl"),
-		IsEnabled: !gen.Spec.GrafanaDashboard.IsDeactivated(),
 	}
 }

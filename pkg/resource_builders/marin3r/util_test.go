@@ -4,12 +4,12 @@ import (
 	"reflect"
 	"testing"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/basereconciler/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/pointer"
 )
 
 func TestEnableSidecar(t *testing.T) {
@@ -33,9 +33,9 @@ func TestEnableSidecar(t *testing.T) {
 					},
 				},
 				spec: saasv1alpha1.Marin3rSidecarSpec{
-					EnvoyAPIVersion:                    pointer.String("xx"),
-					EnvoyImage:                         pointer.String("image"),
-					NodeID:                             pointer.String("node-id"),
+					EnvoyAPIVersion:                    util.Pointer("xx"),
+					EnvoyImage:                         util.Pointer("image"),
+					NodeID:                             util.Pointer("node-id"),
 					ShutdownManagerPort:                func() *uint32 { var v uint32 = 5000; return &v }(),
 					ShutdownManagerExtraLifecycleHooks: []string{"container1", "container2"},
 					Ports: []saasv1alpha1.SidecarPort{
@@ -123,7 +123,7 @@ func TestEnableSidecar(t *testing.T) {
 					},
 				},
 				spec: saasv1alpha1.Marin3rSidecarSpec{
-					EnvoyImage: pointer.String("image"),
+					EnvoyImage: util.Pointer("image"),
 					ExtraPodAnnotations: map[string]string{
 						"marin3r.3scale.net/envoy-image": "override",
 					},

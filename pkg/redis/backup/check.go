@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/3scale/saas-operator/pkg/util"
+	operatorutils "github.com/3scale-ops/saas-operator/pkg/util"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -14,7 +14,7 @@ import (
 func (br *Runner) CheckBackup(ctx context.Context) error {
 	logger := log.FromContext(ctx, "function", "(br *Runner) CheckBackup()")
 
-	awsconfig, err := util.AWSConfig(ctx, br.AWSAccessKeyID, br.AWSSecretAccessKey, br.AWSRegion, br.AWSS3Endpoint)
+	awsconfig, err := operatorutils.AWSConfig(ctx, br.AWSAccessKeyID, br.AWSSecretAccessKey, br.AWSRegion, br.AWSS3Endpoint)
 	if err != nil {
 		return err
 	}

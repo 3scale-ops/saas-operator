@@ -3,8 +3,8 @@ package metrics
 import (
 	"context"
 
-	"github.com/3scale/saas-operator/pkg/redis/client"
-	"github.com/3scale/saas-operator/pkg/redis/sharded"
+	"github.com/3scale-ops/saas-operator/pkg/redis/client"
+	"github.com/3scale-ops/saas-operator/pkg/redis/sharded"
 	"github.com/prometheus/client_golang/prometheus"
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
 )

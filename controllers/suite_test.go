@@ -24,11 +24,10 @@ import (
 	"testing"
 	"time"
 
-	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
+	"github.com/3scale-ops/basereconciler/reconciler"
 	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
-	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
-	redis "github.com/3scale/saas-operator/pkg/redis/server"
+	"github.com/3scale-ops/saas-operator/pkg/reconcilers/threads"
+	redis "github.com/3scale-ops/saas-operator/pkg/redis/server"
 	"github.com/goombaio/namegenerator"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -41,7 +40,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
@@ -68,7 +67,7 @@ func TestAPIs(t *testing.T) {
 }
 
 var _ = BeforeSuite(func() {
-	logf.SetLogger(zap.New(zap.WriteTo(GinkgoWriter), zap.UseDevMode(false)))
+	logf.SetLogger(zap.New(zap.WriteTo(GinkgoWriter), zap.UseDevMode(true)))
 
 	By("bootstrapping test environment")
 	testEnv = &envtest.Environment{
@@ -122,66 +121,66 @@ var _ = BeforeSuite(func() {
 
 	// Add controllers for testing
 	err = (&AutoSSLReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr),
-		Log:                ctrl.Log.WithName("controllers").WithName("AutoSSL"),
+		Reconciler: reconciler.NewFromManager(mgr).
+			WithLogger(ctrl.Log.WithName("controllers").WithName("AutoSSL")),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&ApicastReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr),
-		Log:                ctrl.Log.WithName("controllers").WithName("Apicast"),
+		Reconciler: reconciler.NewFromManager(mgr).
+			WithLogger(ctrl.Log.WithName("controllers").WithName("Apicast")),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&EchoAPIReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr),
-		Log:                ctrl.Log.WithName("controllers").WithName("EchoAPI"),
+		Reconciler: reconciler.NewFromManager(mgr).
+			WithLogger(ctrl.Log.WithName("controllers").WithName("EchoAPI")),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&MappingServiceReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr),
-		Log:                ctrl.Log.WithName("controllers").WithName("MappingService"),
+		Reconciler: reconciler.NewFromManager(mgr).
+			WithLogger(ctrl.Log.WithName("controllers").WithName("MappingService")),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&CORSProxyReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr),
-		Log:                ctrl.Log.WithName("controllers").WithName("CORSProxy"),
+		Reconciler: reconciler.NewFromManager(mgr).
+			WithLogger(ctrl.Log.WithName("controllers").WithName("CORSProxy")),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&BackendReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr),
-		Log:                ctrl.Log.WithName("controllers").WithName("Backend"),
+		Reconciler: reconciler.NewFromManager(mgr).
+			WithLogger(ctrl.Log.WithName("controllers").WithName("Backend")),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&RedisShardReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr),
-		Log:        ctrl.Log.WithName("controllers").WithName("RedisShard"),
-		Pool:       redisPool,
+		Reconciler: reconciler.NewFromManager(mgr).
+			WithLogger(ctrl.Log.WithName("controllers").WithName("RedisShard")),
+		Pool: redisPool,
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&SentinelReconciler{
-		Reconciler:     basereconciler.NewFromManager(mgr),
+		Reconciler: reconciler.NewFromManager(mgr).
+			WithLogger(ctrl.Log.WithName("controllers").WithName("Sentinel")),
 		SentinelEvents: threads.NewManager(),
 		Metrics:        threads.NewManager(),
 		Pool:           redisPool,
-		Log:            ctrl.Log.WithName("controllers").WithName("Sentinel"),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&SystemReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr),
-		Log:                ctrl.Log.WithName("controllers").WithName("System"),
+		Reconciler: reconciler.NewFromManager(mgr).
+			WithLogger(ctrl.Log.WithName("controllers").WithName("System")),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&ZyncReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr),
-		Log:                ctrl.Log.WithName("controllers").WithName("Zync"),
+		Reconciler: reconciler.NewFromManager(mgr).
+			WithLogger(ctrl.Log.WithName("controllers").WithName("Zync")),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 

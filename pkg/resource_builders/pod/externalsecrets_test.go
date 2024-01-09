@@ -5,11 +5,11 @@ import (
 	"testing"
 	"time"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/basereconciler/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
 	"github.com/go-test/deep"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/pointer"
 )
 
 func TestGenerateExternalSecretFn(t *testing.T) {
@@ -142,7 +142,7 @@ func TestGenerateExternalSecretFn(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := GenerateExternalSecretFn(tt.args.name, tt.args.namespace, tt.args.secretStoreName, tt.args.secretStoreKind, tt.args.refreshInterval, tt.args.labels, tt.args.opts)()
+			got, _ := GenerateExternalSecretFn(tt.args.name, tt.args.namespace, tt.args.secretStoreName, tt.args.secretStoreKind, tt.args.refreshInterval, tt.args.labels, tt.args.opts)(nil)
 			if diff := deep.Equal(got, tt.want); len(diff) > 0 {
 				t.Errorf("GenerateExternalSecretFn() = diff %v", diff)
 			}
@@ -216,7 +216,7 @@ func Test_keysSlice(t *testing.T) {
 					Option2: &SecretValue{Value: saasv1alpha1.SecretReference{
 						FromVault: &saasv1alpha1.VaultSecretReference{Key: "key2", Path: "path2"}}},
 					Option3: &SecretValue{Value: saasv1alpha1.SecretReference{
-						Override: pointer.String("override")}},
+						Override: util.Pointer("override")}},
 					Option4: &SecretValue{Value: saasv1alpha1.SecretReference{
 						FromVault: &saasv1alpha1.VaultSecretReference{Key: "key4", Path: "path4"}}},
 				},

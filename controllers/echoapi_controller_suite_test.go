@@ -3,9 +3,10 @@ package controllers
 import (
 	"context"
 
+	"github.com/3scale-ops/basereconciler/util"
 	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	testutil "github.com/3scale/saas-operator/test/util"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	testutil "github.com/3scale-ops/saas-operator/test/util"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
@@ -13,7 +14,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -141,16 +141,16 @@ var _ = Describe("EchoAPI controller", func() {
 
 					patch := client.MergeFrom(echoapi.DeepCopy())
 					echoapi.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{
-						MinReplicas: pointer.Int32(3),
+						MinReplicas: util.Pointer[int32](3),
 					}
 					echoapi.Spec.LivenessProbe = &saasv1alpha1.ProbeSpec{}
 					echoapi.Spec.ReadinessProbe = &saasv1alpha1.ProbeSpec{}
 
 					echoapi.Spec.Marin3r = &saasv1alpha1.Marin3rSidecarSpec{
-						NodeID: pointer.String("echo-api"),
+						NodeID: util.Pointer("echo-api"),
 						EnvoyDynamicConfig: saasv1alpha1.MapOfEnvoyDynamicConfig{
 							"http": {
-								GeneratorVersion: pointer.String("v1"),
+								GeneratorVersion: util.Pointer("v1"),
 								ListenerHttp: &saasv1alpha1.ListenerHttp{
 									Port:            8080,
 									RouteConfigName: "route",
@@ -207,7 +207,7 @@ var _ = Describe("EchoAPI controller", func() {
 						k8sClient, &appsv1.Deployment{}, "echo-api", namespace, timeout, poll)
 
 					patch := client.MergeFrom(echoapi.DeepCopy())
-					echoapi.Spec.Replicas = pointer.Int32(0)
+					echoapi.Spec.Replicas = util.Pointer[int32](0)
 					echoapi.Spec.HPA = &saasv1alpha1.HorizontalPodAutoscalerSpec{}
 					echoapi.Spec.PDB = &saasv1alpha1.PodDisruptionBudgetSpec{}
 

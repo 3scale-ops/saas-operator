@@ -1,30 +1,168 @@
 package controllers
 
 import (
-	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
-	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
-	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
-	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
-	appsv1 "k8s.io/api/apps/v1"
-	autoscalingv2 "k8s.io/api/autoscaling/v2"
-	corev1 "k8s.io/api/core/v1"
-	policyv1 "k8s.io/api/policy/v1"
+	"github.com/3scale-ops/basereconciler/config"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 func init() {
-	basereconciler.Config.AnnotationsDomain = saasv1alpha1.AnnotationsDomain
-	basereconciler.Config.ResourcePruner = true
-	basereconciler.Config.ManagedTypes = basereconciler.NewManagedTypes().
-		Register(&corev1.ServiceList{}).
-		Register(&corev1.ConfigMapList{}).
-		Register(&appsv1.DeploymentList{}).
-		Register(&appsv1.StatefulSetList{}).
-		Register(&externalsecretsv1beta1.ExternalSecretList{}).
-		Register(&grafanav1alpha1.GrafanaDashboardList{}).
-		Register(&autoscalingv2.HorizontalPodAutoscalerList{}).
-		Register(&policyv1.PodDisruptionBudgetList{}).
-		Register(&monitoringv1.PodMonitorList{}).
-		Register(&marin3rv1alpha1.EnvoyConfigList{})
+	config.SetAnnotationsDomain(saasv1alpha1.AnnotationsDomain)
+	config.EnableResourcePruner()
+
+	config.SetDefaultReconcileConfigForGVK(
+		schema.FromAPIVersionAndKind("v1", "Service"),
+		config.ReconcileConfigForGVK{
+			EnsureProperties: []string{
+				"metadata.annotations",
+				"metadata.labels",
+				"spec.type",
+				"spec.ports",
+				"spec.selector",
+				"spec.clusterIP",
+				"spec.clusterIPs",
+			},
+		})
+	config.SetDefaultReconcileConfigForGVK(
+		schema.FromAPIVersionAndKind("v1", "ConfigMap"),
+		config.ReconcileConfigForGVK{
+			EnsureProperties: []string{
+				"metadata.annotations",
+				"metadata.labels",
+				"data",
+			},
+		})
+	config.SetDefaultReconcileConfigForGVK(
+		schema.FromAPIVersionAndKind("apps/v1", "Deployment"),
+		config.ReconcileConfigForGVK{
+			EnsureProperties: []string{
+				"metadata.annotations",
+				"metadata.labels",
+				"spec.minReadySeconds",
+				"spec.replicas",
+				"spec.selector",
+				"spec.strategy",
+				"spec.template.metadata.labels",
+				"spec.template.metadata.annotations",
+				"spec.template.spec",
+			},
+			IgnoreProperties: []string{
+				"metadata.annotations['deployment.kubernetes.io/revision']",
+				"spec.template.spec.dnsPolicy",
+				"spec.template.spec.schedulerName",
+				"spec.template.spec.restartPolicy",
+				"spec.template.spec.securityContext",
+				"spec.template.spec.containers[*].terminationMessagePath",
+				"spec.template.spec.containers[*].terminationMessagePolicy",
+				"spec.template.spec.initContainers[*].terminationMessagePath",
+				"spec.template.spec.initContainers[*].terminationMessagePolicy",
+			},
+		})
+	config.SetDefaultReconcileConfigForGVK(
+		schema.FromAPIVersionAndKind("apps/v1", "StatefulSet"),
+		config.ReconcileConfigForGVK{
+			EnsureProperties: []string{
+				"metadata.annotations",
+				"metadata.labels",
+				"spec.minReadySeconds",
+				"spec.persistentVolumeClaimRetentionPolicy",
+				"spec.podManagementPolicy",
+				"spec.replicas",
+				"spec.selector",
+				"spec.serviceName",
+				"spec.updateStrategy",
+				"spec.volumeClaimTemplates",
+				"spec.template.metadata.labels",
+				"spec.template.metadata.annotations",
+				"spec.template.spec",
+			},
+			IgnoreProperties: []string{
+				"metadata.annotations['deployment.kubernetes.io/revision']",
+				"spec.template.spec.dnsPolicy",
+				"spec.template.spec.restartPolicy",
+				"spec.template.spec.schedulerName",
+				"spec.template.spec.securityContext",
+				"spec.template.spec.containers[*].terminationMessagePath",
+				"spec.template.spec.containers[*].terminationMessagePolicy",
+				"spec.template.spec.initContainers[*].terminationMessagePath",
+				"spec.template.spec.initContainers[*].terminationMessagePolicy",
+			},
+		})
+	config.SetDefaultReconcileConfigForGVK(
+		schema.FromAPIVersionAndKind("autoscaling/v2", "HorizontalPodAutoscaler"),
+		config.ReconcileConfigForGVK{
+			EnsureProperties: []string{
+				"metadata.annotations",
+				"metadata.labels",
+				"spec.scaleTargetRef",
+				"spec.minReplicas",
+				"spec.maxReplicas",
+				"spec.metrics",
+			},
+		})
+	config.SetDefaultReconcileConfigForGVK(
+		schema.FromAPIVersionAndKind("policy/v1", "PodDisruptionBudget"),
+		config.ReconcileConfigForGVK{
+			EnsureProperties: []string{
+				"metadata.annotations",
+				"metadata.labels",
+				"spec.maxUnavailable",
+				"spec.minAvailable",
+				"spec.selector",
+			},
+		})
+	config.SetDefaultReconcileConfigForGVK(
+		schema.FromAPIVersionAndKind("external-secrets.io/v1beta1", "ExternalSecret"),
+		config.ReconcileConfigForGVK{
+			EnsureProperties: []string{
+				"metadata.annotations",
+				"metadata.labels",
+				"spec",
+			},
+			IgnoreProperties: []string{
+				"spec.data[*].remoteRef.metadataPolicy",
+			},
+		})
+	config.SetDefaultReconcileConfigForGVK(
+		schema.FromAPIVersionAndKind("pipeline/v1beta1", "Task"),
+		config.ReconcileConfigForGVK{
+			EnsureProperties: []string{
+				"metadata.annotations",
+				"metadata.labels",
+				"spec.displayName",
+				"spec.description",
+				"spec.params",
+				"spec.steps",
+				"spec.stepTemplate",
+				"spec.volumes",
+				"spec.sidecars",
+				"spec.workspaces",
+				"spec.results",
+			},
+		})
+	config.SetDefaultReconcileConfigForGVK(
+		schema.FromAPIVersionAndKind("pipeline/v1beta1", "Pipeline"),
+		config.ReconcileConfigForGVK{
+			EnsureProperties: []string{
+				"metadata.annotations",
+				"metadata.labels",
+				"spec.displayName",
+				"spec.description",
+				"spec.params",
+				"spec.tasks",
+				"spec.workspaces",
+				"spec.results",
+				"spec.finally",
+			},
+		})
+	// default config for any GVK not explicitely declared in the config
+	config.SetDefaultReconcileConfigForGVK(
+		schema.GroupVersionKind{},
+		config.ReconcileConfigForGVK{
+			EnsureProperties: []string{
+				"metadata.annotations",
+				"metadata.labels",
+				"spec",
+			},
+		})
 }

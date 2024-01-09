@@ -6,8 +6,8 @@ import (
 	"sort"
 	"time"
 
-	redis "github.com/3scale/saas-operator/pkg/redis/server"
-	"github.com/3scale/saas-operator/pkg/util"
+	redis "github.com/3scale-ops/saas-operator/pkg/redis/server"
+	operatorutils "github.com/3scale-ops/saas-operator/pkg/util"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
@@ -104,7 +104,7 @@ func (cluster Cluster) LookupServerByID(hostport string) *RedisServer {
 }
 
 func (cluster *Cluster) Discover(ctx context.Context, options ...DiscoveryOption) error {
-	var merr util.MultiError
+	var merr operatorutils.MultiError
 
 	for _, shard := range cluster.Shards {
 		if err := shard.Discover(ctx, nil, options...); err != nil {
@@ -117,7 +117,7 @@ func (cluster *Cluster) Discover(ctx context.Context, options ...DiscoveryOption
 
 // Updates the status of the cluster as seen from sentinel
 func (cluster *Cluster) SentinelDiscover(ctx context.Context, opts ...DiscoveryOption) error {
-	merr := util.MultiError{}
+	merr := operatorutils.MultiError{}
 
 	// Get a healthy sentinel server
 	sentinel := cluster.GetSentinel(ctx)
@@ -146,7 +146,7 @@ func (cluster *Cluster) SentinelDiscover(ctx context.Context, opts ...DiscoveryO
 		}
 
 		if err := shard.Discover(ctx, sentinel, opts...); err != nil {
-			merr = append(merr, ShardDiscoveryError{ShardName: master.Name, Errors: err.(util.MultiError)})
+			merr = append(merr, ShardDiscoveryError{ShardName: master.Name, Errors: err.(operatorutils.MultiError)})
 			// keep going with the other shards
 			continue
 		}
@@ -186,7 +186,7 @@ func (cluster *Cluster) GetSentinel(pctx context.Context) *SentinelServer {
 
 type ShardDiscoveryError struct {
 	ShardName string
-	Errors    util.MultiError
+	Errors    operatorutils.MultiError
 }
 
 func (e ShardDiscoveryError) Error() string {

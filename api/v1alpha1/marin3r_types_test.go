@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	envoyconfig "github.com/3scale/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
+	envoyconfig "github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
@@ -230,24 +230,24 @@ func TestMapOfEnvoyDynamicConfig_AsList(t *testing.T) {
 			name: "Returns the map as a list of EnvoyDynamicConfigDescriptor",
 			mapofconfs: map[string]EnvoyDynamicConfig{
 				"one": {
-					name:             "",
+					Name:             "",
 					GeneratorVersion: new(string),
 					ListenerHttp:     &ListenerHttp{},
 				},
 				"two": {
-					name:             "",
+					Name:             "",
 					GeneratorVersion: new(string),
 					Cluster:          &Cluster{},
 				},
 			},
 			want: []envoyconfig.EnvoyDynamicConfigDescriptor{
 				&EnvoyDynamicConfig{
-					name:             "one",
+					Name:             "one",
 					GeneratorVersion: new(string),
 					ListenerHttp:     &ListenerHttp{},
 				},
 				&EnvoyDynamicConfig{
-					name:             "two",
+					Name:             "two",
 					GeneratorVersion: new(string),
 					Cluster:          &Cluster{},
 				},

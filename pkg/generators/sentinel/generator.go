@@ -7,14 +7,15 @@ import (
 	"net/url"
 	"strings"
 
-	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
-	basereconciler_resources "github.com/3scale-ops/basereconciler/resources"
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/pkg/generators"
-	"github.com/3scale/saas-operator/pkg/generators/sentinel/config"
-	"github.com/3scale/saas-operator/pkg/resource_builders/grafanadashboard"
-	"github.com/3scale/saas-operator/pkg/resource_builders/pdb"
-	"github.com/3scale/saas-operator/pkg/util"
+	"github.com/3scale-ops/basereconciler/mutators"
+	"github.com/3scale-ops/basereconciler/resource"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/generators"
+	"github.com/3scale-ops/saas-operator/pkg/generators/sentinel/config"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/grafanadashboard"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pdb"
+	operatorutils "github.com/3scale-ops/saas-operator/pkg/util"
+	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -45,35 +46,24 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SentinelSpec) Ge
 	}
 }
 
-// Returns all the resource templates that this generator manages
-func (gen *Generator) Resources() []basereconciler.Resource {
-	resources := []basereconciler.Resource{
-		basereconciler_resources.StatefulSetTemplate{
-			Template:        gen.statefulSet(),
-			RolloutTriggers: []basereconciler_resources.RolloutTrigger{},
-			IsEnabled:       true,
-		},
-		basereconciler_resources.ServiceTemplate{
-			Template:  gen.statefulSetService(),
-			IsEnabled: true,
-		},
-		basereconciler_resources.PodDisruptionBudgetTemplate{
-			Template:  pdb.New(gen.GetKey(), gen.GetLabels(), gen.GetSelector(), *gen.Spec.PDB),
-			IsEnabled: !gen.Spec.PDB.IsDeactivated(),
-		},
-		basereconciler_resources.ConfigMapTemplate{
-			Template:  gen.configMap(),
-			IsEnabled: true,
-		},
-		basereconciler_resources.GrafanaDashboardTemplate{
-			Template:  grafanadashboard.New(gen.GetKey(), gen.GetLabels(), *gen.Spec.GrafanaDashboard, "dashboards/redis-sentinel.json.gtpl"),
-			IsEnabled: !gen.Spec.GrafanaDashboard.IsDeactivated(),
-		},
+// Resources returns a list of templates
+func (gen *Generator) Resources() []resource.TemplateInterface {
+	resources := []resource.TemplateInterface{
+		resource.NewTemplateFromObjectFunction(gen.statefulSet),
+		resource.NewTemplateFromObjectFunction(gen.statefulSetService).WithMutation(mutators.SetServiceLiveValues()),
+		resource.NewTemplate(pdb.New(gen.GetKey(), gen.GetLabels(), gen.GetSelector(), *gen.Spec.PDB)),
+		resource.NewTemplateFromObjectFunction(gen.configMap),
+		resource.NewTemplate(grafanadashboard.New(gen.GetKey(), gen.GetLabels(), *gen.Spec.GrafanaDashboard, "dashboards/redis-sentinel.json.gtpl")).
+			WithEnabled(!gen.Spec.GrafanaDashboard.IsDeactivated()),
 	}
 
 	for idx := 0; idx < int(*gen.Spec.Replicas); idx++ {
+		i := idx
 		resources = append(resources,
-			basereconciler_resources.ServiceTemplate{Template: gen.podServices(idx), IsEnabled: true})
+			resource.NewTemplateFromObjectFunction(
+				func() *corev1.Service { return gen.podServices(i) }).
+				WithMutation(mutators.SetServiceLiveValues()),
+		)
 	}
 
 	return resources
@@ -94,7 +84,7 @@ func (gen *Generator) ClusterTopology(ctx context.Context) (map[string]map[strin
 				if err != nil {
 					return nil, err
 				}
-				ip, err := util.LookupIPv4(ctx, u.Hostname())
+				ip, err := operatorutils.LookupIPv4(ctx, u.Hostname())
 				if err != nil {
 					return nil, err
 				}
@@ -119,7 +109,7 @@ func (gen *Generator) ClusterTopology(ctx context.Context) (map[string]map[strin
 					return nil, err
 				}
 				alias := u.Host
-				ip, err := util.LookupIPv4(ctx, u.Hostname())
+				ip, err := operatorutils.LookupIPv4(ctx, u.Hostname())
 				if err != nil {
 					return nil, err
 				}

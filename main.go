@@ -28,8 +28,9 @@ import (
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
-	basereconciler "github.com/3scale-ops/basereconciler/reconciler"
+	"github.com/3scale-ops/basereconciler/reconciler"
 	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
+	operatorutils "github.com/3scale-ops/saas-operator/pkg/util"
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
@@ -41,13 +42,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 
-	saasv1alpha1 "github.com/3scale/saas-operator/api/v1alpha1"
-	"github.com/3scale/saas-operator/controllers"
-	"github.com/3scale/saas-operator/pkg/reconcilers/threads"
-	"github.com/3scale/saas-operator/pkg/reconcilers/workloads"
-	redis "github.com/3scale/saas-operator/pkg/redis/server"
-	"github.com/3scale/saas-operator/pkg/util"
-	"github.com/3scale/saas-operator/pkg/version"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/controllers"
+	"github.com/3scale-ops/saas-operator/pkg/reconcilers/threads"
+	redis "github.com/3scale-ops/saas-operator/pkg/redis/server"
+	"github.com/3scale-ops/saas-operator/pkg/version"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -82,15 +81,15 @@ func main() {
 	var probeAddr string
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
-	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
+	flag.BoolVar(&enableLeaderElection, "leader-elect", true,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
 
-	ctrl.SetLogger((util.Logger{}).New())
+	ctrl.SetLogger((operatorutils.Logger{}).New())
 
 	printVersion()
 
-	if err := (&util.ProfilerConfig{
+	if err := (&operatorutils.ProfilerConfig{
 		Log: ctrl.Log.WithName("profiler"),
 	}).Setup(); err != nil {
 		setupLog.Error(err, "unable to start the Profiler")
@@ -128,31 +127,29 @@ func main() {
 		os.Exit(1)
 	}
 
-	/* BASERECONCILER_V2 BASED CONTROLLERS*/
-
 	redisPool := redis.NewServerPool()
 	if err = (&controllers.SentinelReconciler{
-		Reconciler:     basereconciler.NewFromManager(mgr),
+		Reconciler: reconciler.NewFromManager(mgr).
+			WithLogger(ctrl.Log.WithName("controllers").WithName("Sentinel")),
 		SentinelEvents: threads.NewManager(),
 		Metrics:        threads.NewManager(),
-		Log:            ctrl.Log.WithName("controllers").WithName("Sentinel"),
 		Pool:           redisPool,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Sentinel")
 		os.Exit(1)
 	}
 	if err = (&controllers.RedisShardReconciler{
-		Reconciler: basereconciler.NewFromManager(mgr),
-		Log:        ctrl.Log.WithName("controllers").WithName("RedisShard"),
-		Pool:       redisPool,
+		Reconciler: reconciler.NewFromManager(mgr).
+			WithLogger(ctrl.Log.WithName("controllers").WithName("RedisShard")),
+		Pool: redisPool,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "RedisShard")
 		os.Exit(1)
 	}
 	if err = (&controllers.TwemproxyConfigReconciler{
-		Reconciler:     basereconciler.NewFromManager(mgr),
+		Reconciler: reconciler.NewFromManager(mgr).
+			WithLogger(ctrl.Log.WithName("controllers").WithName("TwemproxyConfig")),
 		SentinelEvents: threads.NewManager(),
-		Log:            ctrl.Log.WithName("controllers").WithName("TwemproxyConfig"),
 		Pool:           redisPool,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TwemproxyConfig")
@@ -160,76 +157,74 @@ func main() {
 	}
 
 	if err = (&controllers.ShardedRedisBackupReconciler{
-		Reconciler:   basereconciler.NewFromManager(mgr),
+		Reconciler: reconciler.NewFromManager(mgr).
+			WithLogger(ctrl.Log.WithName("controllers").WithName("ShardedRedisBackup")),
 		BackupRunner: threads.NewManager(),
-		Log:          ctrl.Log.WithName("controllers").WithName("ShardedRedisBackup"),
 		Pool:         redisPool,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ShardedRedisBackup")
 		os.Exit(1)
 	}
 
-	/* WORKLOADS RECONCILER BASED CONTROLLERS*/
-
 	if err = (&controllers.ApicastReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr),
-		Log:                ctrl.Log.WithName("controllers").WithName("Apicast"),
+		Reconciler: reconciler.NewFromManager(mgr).
+			WithLogger(ctrl.Log.WithName("controllers").WithName("Apicast")),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Apicast")
 		os.Exit(1)
 	}
 
 	if err = (&controllers.ZyncReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr),
-		Log:                ctrl.Log.WithName("controllers").WithName("Zync"),
+		Reconciler: reconciler.NewFromManager(mgr).
+			WithLogger(ctrl.Log.WithName("controllers").WithName("Zync")),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Zync")
 		os.Exit(1)
 	}
 
 	if err = (&controllers.MappingServiceReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr),
-		Log:                ctrl.Log.WithName("controllers").WithName("MappingService"),
+		Reconciler: reconciler.NewFromManager(mgr).
+			WithLogger(ctrl.Log.WithName("controllers").WithName("MappingService")),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "MappingService")
 		os.Exit(1)
 	}
 
 	if err = (&controllers.CORSProxyReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr),
-		Log:                ctrl.Log.WithName("controllers").WithName("CORSProxy"),
+		Reconciler: reconciler.NewFromManager(mgr).
+			WithLogger(ctrl.Log.WithName("controllers").WithName("CORSProxy")),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "CORSProxy")
 		os.Exit(1)
 	}
 
 	if err = (&controllers.AutoSSLReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr),
-		Log:                ctrl.Log.WithName("controllers").WithName("AutoSSL"),
+		Reconciler: reconciler.NewFromManager(mgr).
+			WithLogger(ctrl.Log.WithName("controllers").WithName("AutoSSL")),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "AutoSSL")
 		os.Exit(1)
 	}
 
 	if err = (&controllers.EchoAPIReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr),
-		Log:                ctrl.Log.WithName("controllers").WithName("EchoAPI"),
+		Reconciler: reconciler.NewFromManager(mgr).
+			WithLogger(ctrl.Log.WithName("controllers").WithName("EchoAPI")),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "EchoAPI")
 		os.Exit(1)
 	}
 
 	if err = (&controllers.BackendReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr),
-		Log:                ctrl.Log.WithName("controllers").WithName("Backend"),
+		Reconciler: reconciler.NewFromManager(mgr).
+			WithLogger(ctrl.Log.WithName("controllers").WithName("Backend")),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Backend")
 		os.Exit(1)
 	}
 
 	if err = (&controllers.SystemReconciler{
-		WorkloadReconciler: workloads.NewFromManager(mgr),
-		Log:                ctrl.Log.WithName("controllers").WithName("System"),
+		Reconciler: reconciler.NewFromManager(mgr).
+			WithLogger(ctrl.Log.WithName("controllers").WithName("System")),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "System")
 		os.Exit(1)

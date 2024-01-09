@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/3scale-ops/basereconciler/util"
 	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -13,7 +14,6 @@ import (
 	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	policyv1 "k8s.io/api/policy/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -71,9 +71,9 @@ func (ew *ExpectedWorkload) Assert(c client.Client, dep *appsv1.Deployment, time
 		if ew.HPA {
 			Expect(hpa.Spec.ScaleTargetRef.Kind).Should(Equal("Deployment"))
 			Expect(hpa.Spec.ScaleTargetRef.Name).Should(Equal(ew.Name))
-			Expect(hpa.Spec.MinReplicas).Should(Equal(pointer.Int32(ew.Replicas)))
+			Expect(hpa.Spec.MinReplicas).Should(Equal(util.Pointer[int32](ew.Replicas)))
 		} else {
-			Expect(dep.Spec.Replicas).To(Equal(pointer.Int32(ew.Replicas)))
+			Expect(dep.Spec.Replicas).To(Equal(util.Pointer[int32](ew.Replicas)))
 		}
 
 		pdb := &policyv1.PodDisruptionBudget{}
@@ -160,7 +160,7 @@ func (er *ExpectedResource) Assert(c client.Client, o client.Object, timeout, po
 	}
 
 	return func() {
-		By(fmt.Sprintf("%s object does exists", er.Name))
+		By(fmt.Sprintf("%s object does exist", er.Name))
 		Eventually(func() error {
 			return c.Get(context.Background(),
 				types.NamespacedName{Name: er.Name, Namespace: er.Namespace}, o,
