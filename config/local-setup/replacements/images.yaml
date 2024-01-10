@@ -1,0 +1,203 @@
+# APICAST
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.APICAST_IMAGE_NAME
+  targets:
+    - select:
+        kind: Apicast
+      fieldPaths:
+        - spec.staging.image.name
+        - spec.production.image.name
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.APICAST_IMAGE_TAG
+  targets:
+    - select:
+        kind: Apicast
+      fieldPaths:
+        - spec.staging.image.tag
+        - spec.production.image.tag
+
+# MAPPINGSERVICE
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.MAPPINGSERVICE_IMAGE_NAME
+  targets:
+    - select:
+        kind: MappingService
+      fieldPaths:
+        - spec.image.name
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.MAPPINGSERVICE_IMAGE_TAG
+  targets:
+    - select:
+        kind: MappingService
+      fieldPaths:
+        - spec.image.tag
+
+# AUTOSSL
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.AUTOSSL_IMAGE_NAME
+  targets:
+    - select:
+        kind: AutoSSL
+      fieldPaths:
+        - spec.image.name
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.AUTOSSL_IMAGE_TAG
+  targets:
+    - select:
+        kind: AutoSSL
+      fieldPaths:
+        - spec.image.tag
+
+# BACKEND
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.BACKEND_IMAGE_NAME
+  targets:
+    - select:
+        kind: Backend
+      fieldPaths:
+        - spec.image.name
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.BACKEND_IMAGE_TAG
+  targets:
+    - select:
+        kind: Backend
+      fieldPaths:
+        - spec.image.tag
+
+# CORSPROXY
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.CORSPROXY_IMAGE_NAME
+  targets:
+    - select:
+        kind: CORSProxy
+      fieldPaths:
+        - spec.image.name
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.CORSPROXY_IMAGE_TAG
+  targets:
+    - select:
+        kind: CORSProxy
+      fieldPaths:
+        - spec.image.tag
+
+# ECHOAPI
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.ECHOAPI_IMAGE_NAME
+  targets:
+    - select:
+        kind: EchoAPI
+      fieldPaths:
+        - spec.image.name
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.ECHOAPI_IMAGE_TAG
+  targets:
+    - select:
+        kind: EchoAPI
+      fieldPaths:
+        - spec.image.tag
+
+# SYSTEM
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.SYSTEM_IMAGE_NAME
+  targets:
+    - select:
+        kind: System
+      fieldPaths:
+        - spec.image.name
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.SYSTEM_IMAGE_TAG
+  targets:
+    - select:
+        kind: System
+      fieldPaths:
+        - spec.image.tag
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.SEARCHD_IMAGE_NAME
+  targets:
+    - select:
+        kind: System
+      fieldPaths:
+        - spec.searchd.image.name
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.SEARCHD_IMAGE_TAG
+  targets:
+    - select:
+        kind: System
+      fieldPaths:
+        - spec.searchd.image.tag
+
+# ZYNC
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.ZYNC_IMAGE_NAME
+  targets:
+    - select:
+        kind: Zync
+      fieldPaths:
+        - spec.image.name
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.ZYNC_IMAGE_TAG
+  targets:
+    - select:
+        kind: Zync
+      fieldPaths:
+        - spec.image.tag
+
+# ENVOY
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.ENVOY_IMAGE
+  targets:
+    - select:
+        kind: Apicast
+      fieldPaths:
+        - spec.staging.marin3r.envoyImage
+        - spec.production.marin3r.envoyImage
+    - select:
+        kind: Backend
+      fieldPaths:
+        - spec.listener.marin3r.envoyImage
+    - select:
+        kind: EchoAPI
+      fieldPaths:
+        - spec.marin3r.envoyImage
+    - select:
+        kind: EnvoyDeployment
+      fieldPaths:
+        - spec.image

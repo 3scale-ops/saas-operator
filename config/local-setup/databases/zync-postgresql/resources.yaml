@@ -1,0 +1,94 @@
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: zync-psql
+spec:
+  serviceName: zync-psql
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: zync-psql
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: zync-psql
+    spec:
+      containers:
+        - name: psql
+          image: postgres:13.13-alpine
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: psql
+              containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: app
+            - name: POSTGRES_PASSWORD
+              value: password
+            - name: POSTGRES_DB
+              value: zync
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - exec pg_isready --host $POD_IP
+            failureThreshold: 6
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - exec pg_isready --host $POD_IP
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 3
+          resources:
+            requests:
+              cpu: 5m
+              memory: 128Mi
+            limits:
+              cpu: 100m
+              memory: 256Mi
+          volumeMounts:
+            - name: zync-psql
+              mountPath: /var/lib/postgresql/data
+              subPath: postgres
+  volumeClaimTemplates:
+    - metadata:
+        name: zync-psql
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zync-psql
+spec:
+  ports:
+    - name: psql
+      port: 5432
+      protocol: TCP
+      targetPort: psql
+  selector:
+    app.kubernetes.io/name: zync-psql
+  type: ClusterIP

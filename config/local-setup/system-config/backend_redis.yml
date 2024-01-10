@@ -1,0 +1,3 @@
+production:
+  url: "<%= ENV.fetch('BACKEND_REDIS_URL') %>"
+  pool_timeout: 5

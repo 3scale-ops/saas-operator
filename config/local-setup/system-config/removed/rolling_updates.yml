@@ -1,0 +1,27 @@
+production:
+  forum: false
+  apicast_v2: true
+  provider_sso: []
+  apicast_oidc: true
+  log_requests: false
+  duplicate_user_key: []
+  duplicate_application_id: []
+  billable_contracts: []
+  instant_bill_plan_change: []
+  repeatable_usernames: []
+  plan_changes_wizard: true
+  proxy_pro: []
+  policies: true
+  policy_registry: true
+  billing_sidekiq: true
+  old_charts: []
+  new_provider_documentation: []
+  service_permissions: []
+  require_cc_on_signup: []
+  apicast_per_service: []
+  cms_api: []
+  service_mesh_integration: []
+  proxy_private_base_path: true
+  api_as_product: true
+  published_service_plan_signup: []
+  new_notification_system: []

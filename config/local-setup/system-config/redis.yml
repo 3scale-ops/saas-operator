@@ -1,0 +1,4 @@
+production:
+  url: "<%= ENV.fetch('REDIS_URL') %>"
+  pool_timeout: 5
+  timeout: 1

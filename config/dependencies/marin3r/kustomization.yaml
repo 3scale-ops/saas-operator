@@ -1,0 +1,49 @@
+namespace: marin3r
+resources:
+  - https://github.com/3scale-ops/marin3r/config/default/?ref=v0.12.3
+
+# somehow this works in upstream repo but not here
+patches:
+  - target:
+      group: admissionregistration.k8s.io
+      version: v1
+      kind: MutatingWebhookConfiguration
+    patch: |-
+      - op: remove
+        path: /metadata/creationTimestamp
+  # use cluster scoped installation
+  - target:
+      group: rbac.authorization.k8s.io
+      kind: Role
+      name: manager-role
+      version: v1
+    patch: |-
+      - op: replace
+        path: /kind
+        value: ClusterRole
+      - op: remove
+        path: /metadata/namespace
+  - target:
+      group: rbac.authorization.k8s.io
+      kind: RoleBinding
+      name: manager-rolebinding
+      version: v1
+    patch: |-
+      - op: replace
+        path: /kind
+        value: ClusterRoleBinding
+      - op: replace
+        path: /roleRef/kind
+        value: ClusterRole
+      - op: remove
+        path: /metadata/namespace
+  # no HA
+  - target:
+      group: apps
+      kind: Deployment
+      name: controller-webhook
+      version: v1
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1

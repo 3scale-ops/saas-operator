@@ -1,0 +1,22 @@
+apiVersion: saas.3scale.net/v1alpha1
+kind: AutoSSL
+metadata:
+  name: autossl
+spec:
+  image:
+    name: REPLACE
+    tag: REPLACE
+    pullSecretName: pull-secrets
+    pullPolicy: Always
+  config:
+    contactEmail: 3scale-operations@redhat.com
+    domainWhitelist: []
+    logLevel: debug
+    proxyEndpoint: "https://multitenant-admin.system-172-27-27-105.nip.io"
+    redisHost: autossl-redis
+    verificationEndpoint: "https://multitenant-admin.system-172-27-27-105.nip.io/swagger/spec.json"
+  endpoint: {dns: []}
+  hpa: {}
+  pdb: {}
+  replicas: 1
+  resources: {}

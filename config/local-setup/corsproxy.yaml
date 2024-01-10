@@ -1,0 +1,17 @@
+apiVersion: saas.3scale.net/v1alpha1
+kind: CORSProxy
+metadata:
+  name: cors-proxy
+spec:
+  image:
+    name: REPLACE
+    tag: REPLACE
+    pullSecretName: pull-secrets
+    pullPolicy: Always
+  config:
+    systemDatabaseDSN:
+      override: mysql://app:password@system-mysql:3306/system_enterprise
+  hpa: {}
+  pdb: {}
+  replicas: 1
+  resources: {}

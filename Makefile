@@ -108,14 +108,23 @@ vet: ## Run go vet against code.
 TEST_PKG = ./api/... ./controllers/... ./pkg/...
 KUBEBUILDER_ASSETS = "$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)"
 
-test: manifests generate fmt vet envtest assets ginkgo ## Run tests.
+test/assets/external-apis/crds.yaml: kustomize
+	mkdir -p $(@D)
+	$(KUSTOMIZE) build config/dependencies/external-secrets-crds > $@
+	echo "---" >> $@ && $(KUSTOMIZE) build config/dependencies/grafana-crds >> $@
+	echo "---" >> $@ && $(KUSTOMIZE) build config/dependencies/marin3r-crds >> $@
+	echo "---" >> $@ && $(KUSTOMIZE) build config/dependencies/prometheus-crds >> $@
+	echo "---" >> $@ && $(KUSTOMIZE) build config/dependencies/tekton-crds >> $@
+
+test: manifests generate fmt vet envtest assets ginkgo test/assets/external-apis/crds.yaml ## Run tests.
 	KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) $(GINKGO) -p -r $(TEST_PKG)  -coverprofile cover.out
 
-test-debug: manifests generate fmt vet envtest assets ginkgo ## Run tests.
+test-debug: manifests generate fmt vet envtest assets ginkgo test/assets/external-apis/crds.yaml ## Run tests.
 	KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) $(GINKGO) -v -r $(TEST_PKG)  -coverprofile cover.out
 
+TEST_E2E_DEPLOY = marin3r-crds prometheus-crds tekton-crds grafana-crds external-secrets-crds minio
 test-e2e: export KUBECONFIG = $(PWD)/kubeconfig
-test-e2e: manifests ginkgo kind-create kind-deploy kind-deploy-backup-assets ## Runs e2e tests
+test-e2e: manifests ginkgo kind-create $(foreach elem,$(TEST_E2E_DEPLOY),install-$(elem)) kind-deploy-controller kind-load-redis-with-ssh ## Runs e2e tests
 	$(GINKGO) -p -r ./test/e2e
 	$(MAKE) kind-delete
 
@@ -250,40 +259,78 @@ catalog-retag-latest:
 ##@ Kind Deployment
 
 kind-create: export KUBECONFIG = $(PWD)/kubeconfig
-kind-create: docker-build kind ## Runs a k8s kind cluster with a local registry in "localhost:5000" and ports 1080 and 1443 exposed to the host
-	$(KIND) create cluster --wait 5m --image kindest/node:$(KIND_K8S_VERSION) || true
+# kind-create: KIND_EXPERIMENTAL_DOCKER_NETWORK=kind-saas-operator
+kind-create: kind ## Runs a k8s kind cluster
+	docker inspect kind-saas-operator > /dev/null || docker network create -d bridge --subnet 172.27.27.0/24 kind-saas-operator
+	KIND_EXPERIMENTAL_DOCKER_NETWORK=kind-saas-operator $(KIND) create cluster --wait 5m --image kindest/node:$(KIND_K8S_VERSION)
+
+install-%: export KUBECONFIG = $(PWD)/kubeconfig
+install-%: kustomize yq
+	echo
+	KUSTOMIZE_BIN=$(KUSTOMIZE) YQ_BIN=$(YQ) BASE_PATH=config/dependencies hack/apply-kustomize.sh $*
 
 kind-delete: ## Deletes the kind cluster and the registry
 kind-delete: kind
 	$(KIND) delete cluster
 
-kind-deploy: export KUBECONFIG = $(PWD)/kubeconfig
-kind-deploy: manifests kustomize ## Deploy operator to the Kind K8s cluster
-	kubectl apply -f config/test/external-apis/ && \
-		find config/test/external-apis/ -name '*yaml' -type f \
-            | sed -n 's/.*\/\(.*\).yaml/\1/p' \
-            | xargs -n1 kubectl wait --for condition=established --timeout=60s crd
+CONTROLLER_DEPS = prometheus-crds grafana-crds
+kind-deploy-controller: export KUBECONFIG = $(PWD)/kubeconfig
+kind-deploy-controller: manifests kustomize docker-build $(foreach elem,$(CONTROLLER_DEPS),install-$(elem)) ## Deploy operator to the Kind K8s cluster
 	$(KIND) load docker-image $(IMG)
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
-	$(KUSTOMIZE) build config/test | kubectl apply -f -
+	$(KUSTOMIZE) build config/test --enable-helm --load-restrictor LoadRestrictionsNone | kubectl apply -f -
 
-kind-refresh-operator: export KUBECONFIG = ${PWD}/kubeconfig
-kind-refresh-operator: manifests kind docker-build ## Reloads the operator image into the K8s cluster and deletes the old Pod
+kind-refresh-controller: export KUBECONFIG = ${PWD}/kubeconfig
+kind-refresh-controller: manifests kind docker-build ## Reloads the controller image into the K8s cluster and deletes the old Pod
 	$(KIND) load docker-image $(IMG)
 	kubectl delete pod -l control-plane=controller-manager
+
+kind-deploy-databases: export KUBECONFIG = $(PWD)/kubeconfig
+kind-deploy-databases: kind-deploy-controller
+	$(KUSTOMIZE) build config/local-setup/databases | kubectl apply -f -
+	sleep 10
+	kubectl wait --for condition=ready --timeout=300s pod --all
 
 kind-undeploy: export KUBECONFIG = $(PWD)/kubeconfig
 kind-undeploy: ## Undeploy controller from the Kind K8s cluster
 	$(KUSTOMIZE) build config/test | kubectl delete -f -
 
-kind-deploy-backup-assets: export KUBECONFIG = $(PWD)/kubeconfig
-kind-deploy-backup-assets: kind-load-redis-with-ssh
-	$(KUSTOMIZE) build config/test/redis-backups --load-restrictor LoadRestrictionsNone --enable-helm | kubectl apply -f -
-
 REDIS_WITH_SSH_IMG = redis-with-ssh:6.2.13-alpine
 kind-load-redis-with-ssh:
 	docker build -t $(REDIS_WITH_SSH_IMG) test/assets/redis-with-ssh
 	$(KIND) load docker-image $(REDIS_WITH_SSH_IMG)
+
+kind-deploy-saas: export KUBECONFIG = ${PWD}/kubeconfig
+kind-deploy-saas: kind-load-redis-with-ssh ## Deploys a 3scale SaaS dev environment
+	$(KUSTOMIZE) build config/local-setup | kubectl apply -f -
+	sleep 5
+	kubectl wait --for condition=ready --timeout=300s pod system-console-0
+	kubectl get pods --no-headers -o name | grep -v system | xargs kubectl wait --for condition=ready --timeout=300s
+	kubectl -ti exec system-console-0 -c system-console -- bash -c '\
+		MASTER_DOMAIN=multitenant-admin \
+		MASTER_ACCESS_TOKEN=mtoken \
+		MASTER_PASSWORD=mpass \
+		MASTER_USER=admin \
+		TENANT_NAME=provider \
+		PROVIDER_NAME="3scale SaaS Dev Provider" \
+		USER_LOGIN=admin \
+		USER_PASSWORD=ppass \
+		ADMIN_ACCESS_TOKEN=ptoken \
+		USER_EMAIL="3scale-ops+dev-saas@redhat.com" \
+		DISABLE_DATABASE_ENVIRONMENT_CHECK=1 \
+		bundle exec rake db:setup'
+	kubectl get pods --no-headers -o name | grep system | xargs kubectl wait --for condition=ready --timeout=300s
+
+kind-cleanup-saas: export KUBECONFIG = ${PWD}/kubeconfig
+kind-cleanup-saas:
+	-$(KUSTOMIZE) build config/local-setup/databases | kubectl delete -f -
+	-$(KUSTOMIZE) build config/local-setup | kubectl delete -f -
+	-kubectl get pod --no-headers -o name | grep -v saas-operator | xargs kubectl delete --grace-period=0 --force
+	-kubectl get pvc --no-headers -o name | xargs kubectl delete
+
+LOCAL_SETUP_DEPS = metallb cert-manager marin3r prometheus-crds tekton-crds grafana-crds external-secrets-crds minio
+kind-local-setup: export KUBECONFIG = ${PWD}/kubeconfig
+kind-local-setup: $(foreach elem,$(LOCAL_SETUP_DEPS),install-$(elem)) kind-deploy-controller kind-deploy-databases kind-deploy-saas
 
 ##@ Build Dependencies
 
@@ -300,6 +347,7 @@ GINKGO ?= $(LOCALBIN)/ginkgo
 CRD_REFDOCS ?= $(LOCALBIN)/crd-ref-docs
 KIND ?= $(LOCALBIN)/kind
 GOBINDATA ?= $(LOCALBIN)/go-bindata
+YQ ?= $(LOCALBIN)/yq
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v5.1.1
@@ -310,6 +358,7 @@ KIND_VERSION ?= v0.16.0
 ENVTEST_VERSION ?= latest
 GOBINDATA_VERSION ?= latest
 TEKTON_VERSION ?= v0.49.0
+YQ_VERSION ?= v4.40.5
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
@@ -344,6 +393,11 @@ $(KIND):
 go-bindata: $(GOBINDATA) ## Download go-bindata locally if necessary.
 $(GOBINDATA):
 	test -s $(GOBINDATA) || GOBIN=$(LOCALBIN) go install github.com/go-bindata/go-bindata/...@$(GOBINDATA_VERSION)
+
+.PHONY: yq
+yq: $(YQ)
+$(YQ):
+	test -s $(YQ) || GOBIN=$(LOCALBIN) go install github.com/mikefarah/yq/v4@$(YQ_VERSION)
 
 ##@ Other
 

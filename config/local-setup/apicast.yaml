@@ -1,0 +1,113 @@
+apiVersion: saas.3scale.net/v1alpha1
+kind: Apicast
+metadata:
+  name: apicast
+spec:
+  production:
+    image:
+      name: REPLACE
+      tag: REPLACE
+      pullSecretName: pull-secrets
+      pullPolicy: Always
+    config:
+      configurationCache: 300
+      threescalePortalEndpoint: "http://mapping-service/config"
+    endpoint: {dns: []}
+    hpa: {}
+    marin3r:
+      dynamicConfigs:
+        gateway_cluster:
+          cluster:
+            host: 127.0.0.1
+            port: 8080
+        http:
+          listenerHttp:
+            proxyProtocol: false
+            port: 38080
+            routeConfigName: router
+        router:
+          routeConfiguration:
+            virtualHosts:
+              - domains: ["*"]
+                name: gateway
+                routes:
+                  - match:
+                      prefix: /
+                    route:
+                      cluster: gateway_cluster
+                      timeout: 30s
+      envoyImage: REPLACE
+      nodeID: apicast-production
+      ports:
+        - name: gateway-http
+          port: 38080
+        - name: gateway-https
+          port: 38443
+        - name: envoy-metrics
+          port: 9901
+      shtdnmgrExtraLifecycleHooks:
+        - apicast
+      shtdnmgrPort: 8091
+    pdb: {}
+    replicas: 1
+    resources: {}
+  staging:
+    image:
+      name: REPLACE
+      tag: REPLACE
+      pullSecretName: pull-secrets
+      pullPolicy: Always
+    config:
+      configurationCache: 60
+      threescalePortalEndpoint: "http://mapping-service/config"
+    endpoint: {dns: []}
+    hpa: {}
+    marin3r:
+      dynamicConfigs:
+        gateway_cluster:
+          cluster:
+            host: 127.0.0.1
+            port: 8080
+        http:
+          listenerHttp:
+            proxyProtocol: false
+            port: 38080
+            routeConfigName: router
+        mgmt_cluster:
+          cluster:
+            host: 127.0.0.1
+            port: 8090
+        router:
+          routeConfiguration:
+            virtualHosts:
+              - domains: [policies.staging-172-27-27-102.nip.io]
+                name: policies
+                routes:
+                  - match:
+                      prefix: /policies
+                    route:
+                      cluster: mgmt_cluster
+              - domains: ["*"]
+                name: gateway
+                routes:
+                  - match:
+                      prefix: /
+                    route:
+                      cluster: gateway_cluster
+                      timeout: 30s
+      envoyImage: REPLACE
+      nodeID: apicast-staging
+      ports:
+        - name: gateway-http
+          port: 38080
+        - name: gateway-https
+          port: 38443
+        - name: envoy-metrics
+          port: 9901
+      resources: {}
+      shtdnmgrExtraLifecycleHooks:
+        - apicast
+      shtdnmgrPort: 8091
+    pdb: {}
+    replicas: 1
+    resources: {}

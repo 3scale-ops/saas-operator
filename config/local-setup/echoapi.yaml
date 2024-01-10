@@ -1,0 +1,48 @@
+apiVersion: saas.3scale.net/v1alpha1
+kind: EchoAPI
+metadata:
+  name: echo-api
+spec:
+  endpoint: {dns: []}
+  hpa: {}
+  image:
+      name: REPLACE
+      tag: REPLACE
+      pullSecretName: pull-secrets
+      pullPolicy: Always
+  marin3r:
+    dynamicConfigs:
+      echo_api_cluster:
+        cluster:
+          host: 127.0.0.1
+          port: 9292
+      echo_api_route:
+        routeConfiguration:
+          virtualHosts:
+            - domains: ['*']
+              name: echo_api
+              routes:
+                - match:
+                    prefix: /
+                  route:
+                    cluster: echo_api_cluster
+      http:
+        listenerHttp:
+          proxyProtocol: false
+          port: 38080
+          routeConfigName: echo_api_route
+    envoyImage: REPLACE
+    nodeID: echo-api
+    ports:
+      - name: echo-api-http
+        port: 38080
+      - name: echo-api-https
+        port: 38443
+      - name: envoy-metrics
+        port: 9901
+    resources: {}
+    shtdnmgrExtraLifecycleHooks:
+      - echo-api
+  pdb: {}
+  replicas: 1
+  resources: {}

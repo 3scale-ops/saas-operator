@@ -430,13 +430,15 @@ type SystemConfig struct {
 	// DSN of system's main database
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	DatabaseDSN SecretReference `json:"databaseDSN"`
-	// EventsSharedSecret
+	// EventsSharedSecret is a password that protects System's event
+	// hooks endpoint.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	EventsSharedSecret SecretReference `json:"eventsSharedSecret"`
 	// Holds recaptcha configuration options
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Recaptcha SystemRecaptchaSpec `json:"recaptcha"`
-	// SecretKeyBase
+	// SecretKeyBase: https://api.rubyonrails.org/classes/Rails/Application.html#method-i-secret_key_base
+	// You can generate one random key using 'bundle exec rake secret'
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	SecretKeyBase SecretReference `json:"secretKeyBase"`
 	// AccessCode to protect admin urls
@@ -456,7 +458,8 @@ type SystemConfig struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Bugsnag *BugsnagSpec `json:"bugsnag,omitempty"`
-	// Database secret
+	// DatabaseSecret is a site key stored off-database for improved more secure password hashing
+	// See https://github.com/3scale/porta/blob/ae498814cef3d856613f60d29330882fa870271d/config/initializers/site_keys.rb#L2-L19
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	DatabaseSecret SecretReference `json:"databaseSecret"`
 	// Memcached servers

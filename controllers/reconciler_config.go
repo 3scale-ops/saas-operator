@@ -22,6 +22,9 @@ func init() {
 				"spec.clusterIP",
 				"spec.clusterIPs",
 			},
+			IgnoreProperties: []string{
+				"metadata.annotations['metallb.universe.tf/ip-allocated-from-pool']",
+			},
 		})
 	config.SetDefaultReconcileConfigForGVK(
 		schema.FromAPIVersionAndKind("v1", "ConfigMap"),
