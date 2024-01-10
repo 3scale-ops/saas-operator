@@ -14,53 +14,53 @@
 Package v1alpha1 contains API Schema definitions for the saas v1alpha1 API group
 
 .Resource Types
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicast[$$Apicast$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autossl[$$AutoSSL$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backend[$$Backend$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxy[$$CORSProxy$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapi[$$EchoAPI$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservice[$$MappingService$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshard[$$RedisShard$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinel[$$Sentinel$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-shardedredisbackup[$$ShardedRedisBackup$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-system[$$System$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfig[$$TwemproxyConfig$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zync[$$Zync$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apicast[$$Apicast$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-autossl[$$AutoSSL$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-backend[$$Backend$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-corsproxy[$$CORSProxy$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-echoapi[$$EchoAPI$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-mappingservice[$$MappingService$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-redisshard[$$RedisShard$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-sentinel[$$Sentinel$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-shardedredisbackup[$$ShardedRedisBackup$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-system[$$System$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-twemproxyconfig[$$TwemproxyConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-zync[$$Zync$$]
 
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apispec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apispec"]
 ==== APISpec 
 
 APISpec is the configuration for main Zync api component
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
-| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
+| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
+| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
 | *`replicas`* __integer__ | Number of replicas (ignored if hpa is enabled) for the component
-| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
-| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
-| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
+| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
+| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-addressspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-addressspec"]
 ==== AddressSpec 
 
 AddressSpec allows the definition of an address
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-searchserverspec[$$SearchServerSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-searchserverspec[$$SearchServerSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -71,7 +71,7 @@ AddressSpec allows the definition of an address
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicast"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apicast"]
 ==== Apicast 
 
 Apicast is the Schema for the apicasts API
@@ -85,19 +85,19 @@ Apicast is the Schema for the apicasts API
 | *`kind`* __string__ | `Apicast`
 | *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
-| *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastspec[$$ApicastSpec$$]__ | 
-| *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicaststatus[$$ApicastStatus$$]__ | 
+| *`spec`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apicastspec[$$ApicastSpec$$]__ | 
+| *`status`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apicaststatus[$$ApicastStatus$$]__ | 
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastconfig"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apicastconfig"]
 ==== ApicastConfig 
 
 ApicastConfig configures app behavior for Apicast
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -110,65 +110,65 @@ ApicastConfig configures app behavior for Apicast
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastenvironmentspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apicastenvironmentspec"]
 ==== ApicastEnvironmentSpec 
 
 ApicastEnvironmentSpec is the configuration for an Apicast environment
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastspec[$$ApicastSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apicastspec[$$ApicastSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
-| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
-| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
+| *`image`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
+| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
+| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
 | *`replicas`* __integer__ | Number of replicas (ignored if hpa is enabled) for the component
-| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
-| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
-| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
-| *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastconfig[$$ApicastConfig$$]__ | Application specific configuration options for the component
-| *`endpoint`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-endpoint[$$Endpoint$$]__ | The external endpoint/s for the component
-| *`marin3r`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]__ | Marin3r configures the Marin3r sidecars for the component
-| *`loadBalancer`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-loadbalancerspec[$$LoadBalancerSpec$$]__ | Configures the AWS load balancer for the component
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
+| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
+| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+| *`config`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apicastconfig[$$ApicastConfig$$]__ | Application specific configuration options for the component
+| *`endpoint`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-endpoint[$$Endpoint$$]__ | The external endpoint/s for the component
+| *`marin3r`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]__ | Marin3r configures the Marin3r sidecars for the component
+| *`loadBalancer`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-loadbalancerspec[$$LoadBalancerSpec$$]__ | Configures the AWS load balancer for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
-| *`canary`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
+| *`canary`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apicastspec"]
 ==== ApicastSpec 
 
 ApicastSpec defines the desired state of Apicast
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicast[$$Apicast$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apicast[$$Apicast$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`staging`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]__ | Configures the staging Apicast environment
-| *`production`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]__ | Configures the production Apicast environment
-| *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
+| *`staging`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]__ | Configures the staging Apicast environment
+| *`production`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]__ | Configures the production Apicast environment
+| *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
 |===
 
 
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-assetsspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-assetsspec"]
 ==== AssetsSpec 
 
 AssetsSpec has configuration to access assets in AWS s3
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -176,13 +176,13 @@ AssetsSpec has configuration to access assets in AWS s3
 | Field | Description
 | *`bucket`* __string__ | AWS S3 bucket name
 | *`region`* __string__ | AWS S3 region
-| *`accessKey`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | AWS access key
-| *`secretKey`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | AWS secret access key
+| *`accessKey`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | AWS access key
+| *`secretKey`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | AWS secret access key
 | *`host`* __string__ | Assets host (CDN)
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autossl"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-autossl"]
 ==== AutoSSL 
 
 AutoSSL is the Schema for the autossls API
@@ -196,19 +196,19 @@ AutoSSL is the Schema for the autossls API
 | *`kind`* __string__ | `AutoSSL`
 | *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
-| *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]__ | 
-| *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslstatus[$$AutoSSLStatus$$]__ | 
+| *`spec`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]__ | 
+| *`status`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-autosslstatus[$$AutoSSLStatus$$]__ | 
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslconfig"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-autosslconfig"]
 ==== AutoSSLConfig 
 
 AutoSSLConfig defines configuration options for the component
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -226,39 +226,39 @@ AutoSSLConfig defines configuration options for the component
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-autosslspec"]
 ==== AutoSSLSpec 
 
 AutoSSLSpec defines the desired state of AutoSSL
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autossl[$$AutoSSL$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-autossl[$$AutoSSL$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
-| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
-| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
+| *`image`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
+| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
+| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
 | *`replicas`* __integer__ | Number of replicas (ignored if hpa is enabled) for the component
-| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
-| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
-| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
-| *`loadBalancer`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-loadbalancerspec[$$LoadBalancerSpec$$]__ | Configures the AWS load balancer for the component
-| *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
-| *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslconfig[$$AutoSSLConfig$$]__ | Application specific configuration options for the component
-| *`endpoint`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-endpoint[$$Endpoint$$]__ | The external endpoint/s for the component
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
+| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
+| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+| *`loadBalancer`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-loadbalancerspec[$$LoadBalancerSpec$$]__ | Configures the AWS load balancer for the component
+| *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
+| *`config`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-autosslconfig[$$AutoSSLConfig$$]__ | Application specific configuration options for the component
+| *`endpoint`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-endpoint[$$Endpoint$$]__ | The external endpoint/s for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
-| *`canary`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
+| *`canary`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
 |===
 
 
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backend"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-backend"]
 ==== Backend 
 
 Backend is the Schema for the backends API
@@ -272,19 +272,19 @@ Backend is the Schema for the backends API
 | *`kind`* __string__ | `Backend`
 | *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
-| *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backendspec[$$BackendSpec$$]__ | 
-| *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backendstatus[$$BackendStatus$$]__ | 
+| *`spec`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-backendspec[$$BackendSpec$$]__ | 
+| *`status`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-backendstatus[$$BackendStatus$$]__ | 
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backendconfig"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-backendconfig"]
 ==== BackendConfig 
 
 BackendConfig configures app behavior for Backend
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backendspec[$$BackendSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-backendspec[$$BackendSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -294,36 +294,36 @@ BackendConfig configures app behavior for Backend
 | *`masterServiceID`* __integer__ | Master service account ID in Porta
 | *`redisStorageDSN`* __string__ | Redis Storage DSN
 | *`redisQueuesDSN`* __string__ | Redis Queues DSN
-| *`externalSecret`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-externalsecret[$$ExternalSecret$$]__ | External Secret common configuration
-| *`systemEventsHookURL`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the backend-system-events-hook URL
-| *`systemEventsHookPassword`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the backend-system-events-hook password
-| *`internalAPIUser`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the backend-internal-api user
-| *`internalAPIPassword`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the backend-internal-api password
-| *`errorMonitoringService`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the backend-error-monitoring service
-| *`errorMonitoringKey`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the backend-error-monitoring key
+| *`externalSecret`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-externalsecret[$$ExternalSecret$$]__ | External Secret common configuration
+| *`systemEventsHookURL`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the backend-system-events-hook URL
+| *`systemEventsHookPassword`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the backend-system-events-hook password
+| *`internalAPIUser`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the backend-internal-api user
+| *`internalAPIPassword`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the backend-internal-api password
+| *`errorMonitoringService`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the backend-error-monitoring service
+| *`errorMonitoringKey`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the backend-error-monitoring key
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backendspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-backendspec"]
 ==== BackendSpec 
 
 BackendSpec defines the desired state of Backend
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backend[$$Backend$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-backend[$$Backend$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
-| *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backendconfig[$$BackendConfig$$]__ | Application specific configuration options for the component
-| *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
-| *`listener`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]__ | Configures the backend listener
-| *`worker`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]__ | Configures the backend worker
-| *`cron`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-cronspec[$$CronSpec$$]__ | Configures the backend cron
-| *`twemproxy`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyspec[$$TwemproxySpec$$]__ | Configures twemproxy
+| *`image`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
+| *`config`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-backendconfig[$$BackendConfig$$]__ | Application specific configuration options for the component
+| *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
+| *`listener`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]__ | Configures the backend listener
+| *`worker`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]__ | Configures the backend worker
+| *`cron`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-cronspec[$$CronSpec$$]__ | Configures the backend cron
+| *`twemproxy`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-twemproxyspec[$$TwemproxySpec$$]__ | Configures twemproxy
 |===
 
 
@@ -331,26 +331,26 @@ BackendSpec defines the desired state of Backend
 
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-bugsnagspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-bugsnagspec"]
 ==== BugsnagSpec 
 
 BugsnagSpec has configuration for Bugsnag integration
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncconfig[$$ZyncConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-zyncconfig[$$ZyncConfig$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
 | *`releaseStage`* __string__ | Release Stage to identify environment
-| *`apiKey`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | API key
+| *`apiKey`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | API key
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxy"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-corsproxy"]
 ==== CORSProxy 
 
 CORSProxy is the Schema for the corsproxies API
@@ -364,51 +364,51 @@ CORSProxy is the Schema for the corsproxies API
 | *`kind`* __string__ | `CORSProxy`
 | *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
-| *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]__ | 
-| *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxystatus[$$CORSProxyStatus$$]__ | 
+| *`spec`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]__ | 
+| *`status`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-corsproxystatus[$$CORSProxyStatus$$]__ | 
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyconfig"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-corsproxyconfig"]
 ==== CORSProxyConfig 
 
 CORSProxyConfig defines configuration options for the component
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`externalSecret`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-externalsecret[$$ExternalSecret$$]__ | External Secret common configuration
-| *`systemDatabaseDSN`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | System database connection string
+| *`externalSecret`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-externalsecret[$$ExternalSecret$$]__ | External Secret common configuration
+| *`systemDatabaseDSN`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | System database connection string
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-corsproxyspec"]
 ==== CORSProxySpec 
 
 CORSProxySpec defines the desired state of CORSProxy
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxy[$$CORSProxy$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-corsproxy[$$CORSProxy$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
-| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
-| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
+| *`image`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
+| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
+| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
 | *`replicas`* __integer__ | Number of replicas (ignored if hpa is enabled) for the component
-| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
-| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
-| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
-| *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
-| *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyconfig[$$CORSProxyConfig$$]__ | Application specific configuration options for the component
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
+| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
+| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+| *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
+| *`config`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-corsproxyconfig[$$CORSProxyConfig$$]__ | Application specific configuration options for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 |===
@@ -416,19 +416,19 @@ CORSProxySpec defines the desired state of CORSProxy
 
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-canary"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-canary"]
 ==== Canary 
 
 Canary allows the definition of a canary Deployment
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -442,14 +442,14 @@ Canary allows the definition of a canary Deployment
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-cluster"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-cluster"]
 ==== Cluster 
 
 Cluster contains options for an Envoy cluster protobuffer message
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -461,35 +461,35 @@ Cluster contains options for an Envoy cluster protobuffer message
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-cronspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-cronspec"]
 ==== CronSpec 
 
 CronSpec is the configuration for Backend Cron
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backendspec[$$BackendSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-backendspec[$$BackendSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
 | *`replicas`* __integer__ | Number of replicas for the component
-| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-deploymentstrategyspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-deploymentstrategyspec"]
 ==== DeploymentStrategySpec 
 
 
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -500,7 +500,7 @@ CronSpec is the configuration for Backend Cron
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapi"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-echoapi"]
 ==== EchoAPI 
 
 EchoAPI is the Schema for the echoapis API
@@ -514,34 +514,34 @@ EchoAPI is the Schema for the echoapis API
 | *`kind`* __string__ | `EchoAPI`
 | *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
-| *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]__ | 
-| *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapistatus[$$EchoAPIStatus$$]__ | 
+| *`spec`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]__ | 
+| *`status`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-echoapistatus[$$EchoAPIStatus$$]__ | 
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapispec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-echoapispec"]
 ==== EchoAPISpec 
 
 EchoAPISpec defines the desired state of echoapi
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapi[$$EchoAPI$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-echoapi[$$EchoAPI$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
+| *`image`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
 | *`replicas`* __integer__ | Configures the Grafana Dashboard for the component
-| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Resource requirements for the component
-| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Number of replicas (ignored if hpa is enabled) for the component
-| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Horizontal Pod Autoscaler for the component
-| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
-| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
-| *`marin3r`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]__ | Marin3r configures the Marin3r sidecars for the component
-| *`loadBalancer`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-nlbloadbalancerspec[$$NLBLoadBalancerSpec$$]__ | Configures the AWS Network load balancer for the component
-| *`endpoint`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-endpoint[$$Endpoint$$]__ | The external endpoint/s for the component
+| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Resource requirements for the component
+| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Number of replicas (ignored if hpa is enabled) for the component
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Horizontal Pod Autoscaler for the component
+| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
+| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+| *`marin3r`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]__ | Marin3r configures the Marin3r sidecars for the component
+| *`loadBalancer`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-nlbloadbalancerspec[$$NLBLoadBalancerSpec$$]__ | Configures the AWS Network load balancer for the component
+| *`endpoint`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-endpoint[$$Endpoint$$]__ | The external endpoint/s for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 |===
@@ -549,17 +549,17 @@ EchoAPISpec defines the desired state of echoapi
 
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-endpoint"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-endpoint"]
 ==== Endpoint 
 
 Endpoint sets the external endpoint for the component
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -569,58 +569,58 @@ Endpoint sets the external endpoint for the component
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfig"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-envoydynamicconfig"]
 ==== EnvoyDynamicConfig 
 
 
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
 | *`generatorVersion`* __string__ | GeneratorVersion specifies the version of a given template. "v1" is the default.
-| *`listenerHttp`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerhttp[$$ListenerHttp$$]__ | ListenerHttp contains options for an HTTP/HTTPS listener
-| *`routeConfiguration`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-routeconfiguration[$$RouteConfiguration$$]__ | RouteConfiguration contains options for an Envoy route_configuration protobuffer message
-| *`cluster`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-cluster[$$Cluster$$]__ | Cluster contains options for an Envoy cluster protobuffer message
-| *`runtime`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-runtime[$$Runtime$$]__ | Runtime contains options for an Envoy runtime protobuffer message
-| *`rawConfig`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-rawconfig[$$RawConfig$$]__ | 
+| *`listenerHttp`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-listenerhttp[$$ListenerHttp$$]__ | ListenerHttp contains options for an HTTP/HTTPS listener
+| *`routeConfiguration`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-routeconfiguration[$$RouteConfiguration$$]__ | RouteConfiguration contains options for an Envoy route_configuration protobuffer message
+| *`cluster`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-cluster[$$Cluster$$]__ | Cluster contains options for an Envoy cluster protobuffer message
+| *`runtime`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-runtime[$$Runtime$$]__ | Runtime contains options for an Envoy runtime protobuffer message
+| *`rawConfig`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-rawconfig[$$RawConfig$$]__ | 
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-externalsecret"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-externalsecret"]
 ==== ExternalSecret 
 
 ExternalSecret is a reference to the ExternalSecret common configuration
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backendconfig[$$BackendConfig$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyconfig[$$CORSProxyConfig$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingserviceconfig[$$MappingServiceConfig$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncconfig[$$ZyncConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-backendconfig[$$BackendConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-corsproxyconfig[$$CORSProxyConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-mappingserviceconfig[$$MappingServiceConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-zyncconfig[$$ZyncConfig$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`secretStoreRef`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-externalsecretsecretstorereferencespec[$$ExternalSecretSecretStoreReferenceSpec$$]__ | SecretStoreRef defines which SecretStore to use when fetching the secret data
+| *`secretStoreRef`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-externalsecretsecretstorereferencespec[$$ExternalSecretSecretStoreReferenceSpec$$]__ | SecretStoreRef defines which SecretStore to use when fetching the secret data
 | *`refreshInterval`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#duration-v1-meta[$$Duration$$]__ | RefreshInterval is the amount of time before the values reading again from the SecretStore provider (duration)
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-externalsecretsecretstorereferencespec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-externalsecretsecretstorereferencespec"]
 ==== ExternalSecretSecretStoreReferenceSpec 
 
 ExternalSecretSecretStoreReferenceSpec is a reference to a secret store
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-externalsecret[$$ExternalSecret$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-externalsecret[$$ExternalSecret$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -631,40 +631,40 @@ ExternalSecretSecretStoreReferenceSpec is a reference to a secret store
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-githubspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-githubspec"]
 ==== GithubSpec 
 
 GithubSpec has configuration for Github integration
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`clientID`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Client ID
-| *`clientSecret`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Client secret
+| *`clientID`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Client ID
+| *`clientSecret`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Client secret
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-grafanadashboardspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-grafanadashboardspec"]
 ==== GrafanaDashboardSpec 
 
 GrafanaDashboardSpec configures the Grafana Dashboard for the component
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastspec[$$ApicastSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backendspec[$$BackendSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelspec[$$SentinelSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfigspec[$$TwemproxyConfigSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apicastspec[$$ApicastSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-backendspec[$$BackendSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-sentinelspec[$$SentinelSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-twemproxyconfigspec[$$TwemproxyConfigSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -675,24 +675,24 @@ GrafanaDashboardSpec configures the Grafana Dashboard for the component
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-horizontalpodautoscalerspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-horizontalpodautoscalerspec"]
 ==== HorizontalPodAutoscalerSpec 
 
 HorizontalPodAutoscalerSpec defines the HPA for the component
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apispec[$$APISpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-quespec[$$QueSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apispec[$$APISpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-quespec[$$QueSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -706,28 +706,28 @@ HorizontalPodAutoscalerSpec defines the HPA for the component
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-imagespec"]
 ==== ImageSpec 
 
 ImageSpec defines the image for the component
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backendspec[$$BackendSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshardspec[$$RedisShardSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelspec[$$SentinelSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemrailsconsolespec[$$SystemRailsConsoleSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsearchdspec[$$SystemSearchdSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemtektontaskconfig[$$SystemTektonTaskConfig$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyspec[$$TwemproxySpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncrailsconsolespec[$$ZyncRailsConsoleSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-backendspec[$$BackendSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-redisshardspec[$$RedisShardSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-sentinelspec[$$SentinelSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemrailsconsolespec[$$SystemRailsConsoleSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemsearchdspec[$$SystemSearchdSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemtektontaskconfig[$$SystemTektonTaskConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-twemproxyspec[$$TwemproxySpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-zyncrailsconsolespec[$$ZyncRailsConsoleSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -740,14 +740,14 @@ ImageSpec defines the image for the component
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerconfig"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-listenerconfig"]
 ==== ListenerConfig 
 
 ListenerConfig configures app behavior for Backend Listener
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -760,14 +760,14 @@ ListenerConfig configures app behavior for Backend Listener
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerhttp"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-listenerhttp"]
 ==== ListenerHttp 
 
 ListenerHttp contains options for an HTTP/HTTPS listener
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -777,7 +777,7 @@ ListenerHttp contains options for an HTTP/HTTPS listener
 | *`proxyProtocol`* __boolean__ | Whether proxy protocol should be enabled or not. Defaults to true.
 | *`routeConfigName`* __string__ | The name of the RouteConfiguration to use in the listener
 | *`certificateSecretName`* __string__ | The name of the Secret containing a valid certificate. If unset the listener will be http, if set https
-| *`rateLimitOptions`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-ratelimitoptions[$$RateLimitOptions$$]__ | Rate limit options for the ratelimit filter of the HTTP connection manager
+| *`rateLimitOptions`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-ratelimitoptions[$$RateLimitOptions$$]__ | Rate limit options for the ratelimit filter of the HTTP connection manager
 | *`defaultHostForHttp10`* __string__ | If this filed is set, http 1.0 will be enabled and this will be the default hostname to use.
 | *`enableHttp2`* __boolean__ | Enable http2 in the listener.Disabled by default.
 | *`allowHeadersWithUnderscores`* __boolean__ | Allow headers with underscores
@@ -785,44 +785,44 @@ ListenerHttp contains options for an HTTP/HTTPS listener
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-listenerspec"]
 ==== ListenerSpec 
 
 ListenerSpec is the configuration for Backend Listener
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backendspec[$$BackendSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-backendspec[$$BackendSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerconfig[$$ListenerConfig$$]__ | Listener specific configuration options for the component element
-| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
-| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
+| *`config`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-listenerconfig[$$ListenerConfig$$]__ | Listener specific configuration options for the component element
+| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
+| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
 | *`replicas`* __integer__ | Number of replicas (ignored if hpa is enabled) for the component
-| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
-| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
-| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
-| *`endpoint`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-endpoint[$$Endpoint$$]__ | The external endpoint/s for the component
-| *`marin3r`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]__ | Marin3r configures the Marin3r sidecars for the component
-| *`loadBalancer`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-nlbloadbalancerspec[$$NLBLoadBalancerSpec$$]__ | Configures the AWS Network load balancer for the component
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
+| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
+| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+| *`endpoint`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-endpoint[$$Endpoint$$]__ | The external endpoint/s for the component
+| *`marin3r`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]__ | Marin3r configures the Marin3r sidecars for the component
+| *`loadBalancer`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-nlbloadbalancerspec[$$NLBLoadBalancerSpec$$]__ | Configures the AWS Network load balancer for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
-| *`canary`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
+| *`canary`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-loadbalancerspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-loadbalancerspec"]
 ==== LoadBalancerSpec 
 
 LoadBalancerSpec configures the AWS load balancer for the component
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -841,7 +841,7 @@ LoadBalancerSpec configures the AWS load balancer for the component
 
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservice"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-mappingservice"]
 ==== MappingService 
 
 MappingService is the Schema for the mappingservices API
@@ -855,19 +855,19 @@ MappingService is the Schema for the mappingservices API
 | *`kind`* __string__ | `MappingService`
 | *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
-| *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]__ | 
-| *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicestatus[$$MappingServiceStatus$$]__ | 
+| *`spec`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]__ | 
+| *`status`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-mappingservicestatus[$$MappingServiceStatus$$]__ | 
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingserviceconfig"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-mappingserviceconfig"]
 ==== MappingServiceConfig 
 
 MappingServiceConfig configures app behavior for MappingService
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -876,33 +876,33 @@ MappingServiceConfig configures app behavior for MappingService
 | *`apiHost`* __string__ | System endpoint to fetch proxy configs from
 | *`previewBaseDomain`* __string__ | Base domain to replace the proxy configs base domain
 | *`logLevel`* __string__ | Openresty log level
-| *`externalSecret`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-externalsecret[$$ExternalSecret$$]__ | External Secret common configuration
-| *`systemAdminToken`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the system admin token
+| *`externalSecret`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-externalsecret[$$ExternalSecret$$]__ | External Secret common configuration
+| *`systemAdminToken`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the system admin token
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-mappingservicespec"]
 ==== MappingServiceSpec 
 
 MappingServiceSpec defines the desired state of MappingService
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservice[$$MappingService$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-mappingservice[$$MappingService$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
-| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
-| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
+| *`image`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
+| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
+| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
 | *`replicas`* __integer__ | Number of replicas (ignored if hpa is enabled) for the component
-| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
-| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
-| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
-| *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
-| *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingserviceconfig[$$MappingServiceConfig$$]__ | Application specific configuration options for the component
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
+| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
+| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+| *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
+| *`config`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-mappingserviceconfig[$$MappingServiceConfig$$]__ | Application specific configuration options for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 |===
@@ -910,16 +910,16 @@ MappingServiceSpec defines the desired state of MappingService
 
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-marin3rsidecarspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-marin3rsidecarspec"]
 ==== Marin3rSidecarSpec 
 
 Marin3rSidecarSpec defines the marin3r sidecar for the component
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -928,44 +928,44 @@ Marin3rSidecarSpec defines the marin3r sidecar for the component
 | *`nodeID`* __string__ | The NodeID that identifies the Envoy sidecar to the DiscoveryService
 | *`envoyAPIVersion`* __string__ | The Envoy API version to use
 | *`envoyImage`* __string__ | The Envoy iamge to use
-| *`ports`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sidecarport[$$SidecarPort$$] array__ | The ports that the sidecar exposes
-| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Compute Resources required by this container.
+| *`ports`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-sidecarport[$$SidecarPort$$] array__ | The ports that the sidecar exposes
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Compute Resources required by this container.
 | *`shtdnmgrPort`* __integer__ | The port where Marin3r's shutdown manager listens
 | *`shtdnmgrExtraLifecycleHooks`* __string array__ | Extra containers to sync with the shutdown manager upon pod termination
 | *`extraPodAnnotations`* __object (keys:string, values:string)__ | Extra annotations to pass the Pod to further configure the sidecar container.
-| *`dynamicConfigs`* __object (keys:string, values:xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$])__ | Envoy dynamic configuration. Populating this field causes the operator to create a Marin3r EnvoyConfig resource, so Marin3r must be installed in the cluster.
+| *`dynamicConfigs`* __object (keys:string, values:xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$])__ | Envoy dynamic configuration. Populating this field causes the operator to create a Marin3r EnvoyConfig resource, so Marin3r must be installed in the cluster.
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-monitoredshard"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-monitoredshard"]
 ==== MonitoredShard 
 
 MonitoredShard contains information of one of the shards monitored by the Sentinel resource
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelstatus[$$SentinelStatus$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-sentinelstatus[$$SentinelStatus$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
 | *`name`* __string__ | Name is the name of the redis shard
-| *`servers`* __object (keys:string, values:xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisserverdetails[$$RedisServerDetails$$])__ | Server is a map intended to store configuration information of each of the RedisServer instances that belong to the MonitoredShard
+| *`servers`* __object (keys:string, values:xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-redisserverdetails[$$RedisServerDetails$$])__ | Server is a map intended to store configuration information of each of the RedisServer instances that belong to the MonitoredShard
 |===
 
 
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-nlbloadbalancerspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-nlbloadbalancerspec"]
 ==== NLBLoadBalancerSpec 
 
 NLBLoadBalancerSpec configures the AWS NLB load balancer for the component
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -977,25 +977,25 @@ NLBLoadBalancerSpec configures the AWS NLB load balancer for the component
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-poddisruptionbudgetspec"]
 ==== PodDisruptionBudgetSpec 
 
 PodDisruptionBudgetSpec defines the PDB for the component
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apispec[$$APISpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-quespec[$$QueSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelspec[$$SentinelSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apispec[$$APISpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-quespec[$$QueSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-sentinelspec[$$SentinelSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -1006,27 +1006,27 @@ PodDisruptionBudgetSpec defines the PDB for the component
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec"]
 ==== ProbeSpec 
 
 ProbeSpec specifies configuration for a probe
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apispec[$$APISpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-quespec[$$QueSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelspec[$$SentinelSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsearchdspec[$$SystemSearchdSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyspec[$$TwemproxySpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apispec[$$APISpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-quespec[$$QueSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-sentinelspec[$$SentinelSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemsearchdspec[$$SystemSearchdSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-twemproxyspec[$$TwemproxySpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -1040,58 +1040,58 @@ ProbeSpec specifies configuration for a probe
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-quespec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-quespec"]
 ==== QueSpec 
 
 QueSpec is the configuration for Zync que
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
-| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
+| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
+| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
 | *`replicas`* __integer__ | Number of replicas (ignored if hpa is enabled) for the component
-| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
-| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
-| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
+| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
+| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-ratelimitoptions"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-ratelimitoptions"]
 ==== RateLimitOptions 
 
 RateLimitOptions contains options for the ratelimit filter of the http connection manager
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerhttp[$$ListenerHttp$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-listenerhttp[$$ListenerHttp$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
 | *`domain`* __string__ | The rate limit domain
-| *`failureModeDeny`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-bool[$$bool$$]__ | Whether to allow requests or not if the rate limit service is unavailable
+| *`failureModeDeny`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-bool[$$bool$$]__ | Whether to allow requests or not if the rate limit service is unavailable
 | *`timeout`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#duration-v1-meta[$$Duration$$]__ | Max time to wait for a response from the rate limit service
 | *`rateLimitCluster`* __string__ | Location of the rate limit service. Must point to one of the defined clusters.
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-rawconfig"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-rawconfig"]
 ==== RawConfig 
 
 RawConfig is a struct with methods to manage a configuration defined using directly the Envoy config API
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -1102,33 +1102,33 @@ RawConfig is a struct with methods to manage a configuration defined using direc
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redhatcustomerportalspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-redhatcustomerportalspec"]
 ==== RedHatCustomerPortalSpec 
 
 RedHatCustomerPortalSpec has configuration for integration with Red Hat Customer Portal
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`clientID`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Client ID
-| *`clientSecret`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Client secret
+| *`clientID`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Client ID
+| *`clientSecret`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Client secret
 | *`realm`* __string__ | Realm
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisserverdetails"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-redisserverdetails"]
 ==== RedisServerDetails 
 
 
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-monitoredshard[$$MonitoredShard$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-monitoredshard[$$MonitoredShard$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -1141,7 +1141,7 @@ RedHatCustomerPortalSpec has configuration for integration with Red Hat Customer
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshard"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-redisshard"]
 ==== RedisShard 
 
 RedisShard is the Schema for the redisshards API
@@ -1155,19 +1155,19 @@ RedisShard is the Schema for the redisshards API
 | *`kind`* __string__ | `RedisShard`
 | *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
-| *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshardspec[$$RedisShardSpec$$]__ | 
-| *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshardstatus[$$RedisShardStatus$$]__ | 
+| *`spec`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-redisshardspec[$$RedisShardSpec$$]__ | 
+| *`status`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-redisshardstatus[$$RedisShardStatus$$]__ | 
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshardnodes"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-redisshardnodes"]
 ==== RedisShardNodes 
 
 
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshardstatus[$$RedisShardStatus$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-redisshardstatus[$$RedisShardStatus$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -1178,51 +1178,51 @@ RedisShard is the Schema for the redisshards API
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshardspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-redisshardspec"]
 ==== RedisShardSpec 
 
 RedisShardSpec defines the desired state of RedisShard
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshard[$$RedisShard$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-redisshard[$$RedisShard$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
+| *`image`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
 | *`masterIndex`* __integer__ | MasterIndex is the StatefulSet Pod index of the redis server with the master role. The other Pods are slaves of the master one.
 | *`slaveCount`* __integer__ | SlaveCount is the number of redis slaves
 | *`command`* __string__ | Command overrides the redis container command
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshardstatus"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-redisshardstatus"]
 ==== RedisShardStatus 
 
 RedisShardStatus defines the observed state of RedisShard
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshard[$$RedisShard$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-redisshard[$$RedisShard$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`shardNodes`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisshardnodes[$$RedisShardNodes$$]__ | ShardNodes describes the nodes in the redis shard
+| *`shardNodes`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-redisshardnodes[$$RedisShardNodes$$]__ | ShardNodes describes the nodes in the redis shard
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-redisspec"]
 ==== RedisSpec 
 
 RedisSpec holds redis configuration
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -1232,32 +1232,32 @@ RedisSpec holds redis configuration
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-resourcerequirementsspec"]
 ==== ResourceRequirementsSpec 
 
 ResourceRequirementsSpec defines the resource requirements for the component
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apispec[$$APISpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-cronspec[$$CronSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-quespec[$$QueSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelspec[$$SentinelSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemrailsconsolespec[$$SystemRailsConsoleSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsearchdspec[$$SystemSearchdSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemtektontaskspec[$$SystemTektonTaskSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyspec[$$TwemproxySpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncrailsconsolespec[$$ZyncRailsConsoleSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apispec[$$APISpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-cronspec[$$CronSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-quespec[$$QueSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-sentinelspec[$$SentinelSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemrailsconsolespec[$$SystemRailsConsoleSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemsearchdspec[$$SystemSearchdSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemtektontaskspec[$$SystemTektonTaskSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-twemproxyspec[$$TwemproxySpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-zyncrailsconsolespec[$$ZyncRailsConsoleSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -1269,14 +1269,14 @@ ResourceRequirementsSpec defines the resource requirements for the component
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-routeconfiguration"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-routeconfiguration"]
 ==== RouteConfiguration 
 
 RouteConfiguration contains options for an Envoy route_configuration protobuffer message
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -1286,14 +1286,14 @@ RouteConfiguration contains options for an Envoy route_configuration protobuffer
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-runtime"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-runtime"]
 ==== Runtime 
 
 Runtime contains options for an Envoy runtime protobuffer message
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -1303,14 +1303,14 @@ Runtime contains options for an Envoy runtime protobuffer message
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-s3options"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-s3options"]
 ==== S3Options 
 
 
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-shardedredisbackupspec[$$ShardedRedisBackupSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-shardedredisbackupspec[$$ShardedRedisBackupSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -1324,22 +1324,22 @@ Runtime contains options for an Envoy runtime protobuffer message
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-smtpspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-smtpspec"]
 ==== SMTPSpec 
 
 SMTPSpec has options to configure system's SMTP
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
 | *`address`* __string__ | Address
-| *`user`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | User
-| *`password`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Password
+| *`user`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | User
+| *`password`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Password
 | *`port`* __integer__ | Port
 | *`authProtocol`* __string__ | Authentication protocol
 | *`opensslVerifyMode`* __string__ | OpenSSL verify mode
@@ -1348,14 +1348,14 @@ SMTPSpec has options to configure system's SMTP
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sshoptions"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-sshoptions"]
 ==== SSHOptions 
 
 
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-shardedredisbackupspec[$$ShardedRedisBackupSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-shardedredisbackupspec[$$ShardedRedisBackupSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -1368,32 +1368,32 @@ SMTPSpec has options to configure system's SMTP
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-searchserverspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-searchserverspec"]
 ==== SearchServerSpec 
 
 
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`AddressSpec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-addressspec[$$AddressSpec$$]__ | 
+| *`AddressSpec`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-addressspec[$$AddressSpec$$]__ | 
 | *`batchSize`* __integer__ | Defines the batch size
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-searchdconfig"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-searchdconfig"]
 ==== SearchdConfig 
 
 SearchdConfig has configuration options for System's searchd
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsearchdspec[$$SystemSearchdSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemsearchdspec[$$SystemSearchdSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -1407,57 +1407,57 @@ SearchdConfig has configuration options for System's searchd
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference"]
 ==== SecretReference 
 
 SecretReference is a reference to a secret stored in some secrets engine
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-assetsspec[$$AssetsSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backendconfig[$$BackendConfig$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-bugsnagspec[$$BugsnagSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-corsproxyconfig[$$CORSProxyConfig$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-githubspec[$$GithubSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-mappingserviceconfig[$$MappingServiceConfig$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redhatcustomerportalspec[$$RedHatCustomerPortalSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-smtpspec[$$SMTPSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-segmentspec[$$SegmentSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systembackendspec[$$SystemBackendSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemrecaptchaspec[$$SystemRecaptchaSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemzyncspec[$$SystemZyncSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncconfig[$$ZyncConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-assetsspec[$$AssetsSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-backendconfig[$$BackendConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-bugsnagspec[$$BugsnagSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-corsproxyconfig[$$CORSProxyConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-githubspec[$$GithubSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-mappingserviceconfig[$$MappingServiceConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-redhatcustomerportalspec[$$RedHatCustomerPortalSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-smtpspec[$$SMTPSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-segmentspec[$$SegmentSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systembackendspec[$$SystemBackendSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemrecaptchaspec[$$SystemRecaptchaSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemzyncspec[$$SystemZyncSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-zyncconfig[$$ZyncConfig$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`fromVault`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-vaultsecretreference[$$VaultSecretReference$$]__ | VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
+| *`fromVault`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-vaultsecretreference[$$VaultSecretReference$$]__ | VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
 | *`override`* __string__ | Override allows to directly specify a string value.
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-segmentspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-segmentspec"]
 ==== SegmentSpec 
 
 SegmentSpec has configuration for Segment integration
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
 | *`deletionWorkspace`* __string__ | Deletion workspace
-| *`deletionToken`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Deletion token
-| *`writeKey`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Write key
+| *`deletionToken`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Deletion token
+| *`writeKey`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Write key
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinel"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-sentinel"]
 ==== Sentinel 
 
 Sentinel is the Schema for the sentinels API
@@ -1471,19 +1471,19 @@ Sentinel is the Schema for the sentinels API
 | *`kind`* __string__ | `Sentinel`
 | *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
-| *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelspec[$$SentinelSpec$$]__ | 
-| *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelstatus[$$SentinelStatus$$]__ | 
+| *`spec`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-sentinelspec[$$SentinelSpec$$]__ | 
+| *`status`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-sentinelstatus[$$SentinelStatus$$]__ | 
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelconfig"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-sentinelconfig"]
 ==== SentinelConfig 
 
 SentinelConfig defines configuration options for the component
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelspec[$$SentinelSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-sentinelspec[$$SentinelSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -1497,51 +1497,51 @@ SentinelConfig defines configuration options for the component
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-sentinelspec"]
 ==== SentinelSpec 
 
 SentinelSpec defines the desired state of Sentinel
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinel[$$Sentinel$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-sentinel[$$Sentinel$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
+| *`image`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
 | *`replicas`* __integer__ | Number of replicas (ignored if hpa is enabled) for the component
-| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
-| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
-| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
-| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
-| *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
+| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
+| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
+| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+| *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
-| *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelconfig[$$SentinelConfig$$]__ | Config configures the sentinel process
+| *`config`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-sentinelconfig[$$SentinelConfig$$]__ | Config configures the sentinel process
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinelstatus"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-sentinelstatus"]
 ==== SentinelStatus 
 
 SentinelStatus defines the observed state of Sentinel
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sentinel[$$Sentinel$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-sentinel[$$Sentinel$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
 | *`sentinels`* __string array__ | Addresses of the sentinel instances currently running
-| *`monitoredShards`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-monitoredshard[$$MonitoredShard$$] array__ | MonitoredShards is the list of shards that the Sentinel resource is currently monitoring
+| *`monitoredShards`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-monitoredshard[$$MonitoredShard$$] array__ | MonitoredShards is the list of shards that the Sentinel resource is currently monitoring
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-shardedredisbackup"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-shardedredisbackup"]
 ==== ShardedRedisBackup 
 
 ShardedRedisBackup is the Schema for the shardedredisbackups API
@@ -1555,19 +1555,19 @@ ShardedRedisBackup is the Schema for the shardedredisbackups API
 | *`kind`* __string__ | `ShardedRedisBackup`
 | *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
-| *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-shardedredisbackupspec[$$ShardedRedisBackupSpec$$]__ | 
-| *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-shardedredisbackupstatus[$$ShardedRedisBackupStatus$$]__ | 
+| *`spec`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-shardedredisbackupspec[$$ShardedRedisBackupSpec$$]__ | 
+| *`status`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-shardedredisbackupstatus[$$ShardedRedisBackupStatus$$]__ | 
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-shardedredisbackupspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-shardedredisbackupspec"]
 ==== ShardedRedisBackupSpec 
 
 ShardedRedisBackupSpec defines the desired state of ShardedRedisBackup
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-shardedredisbackup[$$ShardedRedisBackup$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-shardedredisbackup[$$ShardedRedisBackup$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -1576,8 +1576,8 @@ ShardedRedisBackupSpec defines the desired state of ShardedRedisBackup
 | *`sentinelRef`* __string__ | Reference to a sentinel instance
 | *`schedule`* __string__ | Cron-like schedule specification
 | *`dbFile`* __string__ | Name of the dbfile in the redis instances
-| *`sshOptions`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sshoptions[$$SSHOptions$$]__ | SSH connection options
-| *`s3Options`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-s3options[$$S3Options$$]__ | S3 storage options
+| *`sshOptions`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-sshoptions[$$SSHOptions$$]__ | SSH connection options
+| *`s3Options`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-s3options[$$S3Options$$]__ | S3 storage options
 | *`timeout`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#duration-v1-meta[$$Duration$$]__ | Max allowed time for a backup to complete
 | *`historyLimit`* __integer__ | Max number of backup history to keep
 | *`pollInterval`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#duration-v1-meta[$$Duration$$]__ | How frequently redis is polled for the BGSave status
@@ -1585,26 +1585,26 @@ ShardedRedisBackupSpec defines the desired state of ShardedRedisBackup
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-shardedredisbackupstatus"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-shardedredisbackupstatus"]
 ==== ShardedRedisBackupStatus 
 
 ShardedRedisBackupStatus defines the observed state of ShardedRedisBackup
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-shardedredisbackup[$$ShardedRedisBackup$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-shardedredisbackup[$$ShardedRedisBackup$$]
 ****
 
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-shardedredistopology"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-shardedredistopology"]
 ==== ShardedRedisTopology 
 
 
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyserverpool[$$TwemproxyServerPool$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-twemproxyserverpool[$$TwemproxyServerPool$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -1615,14 +1615,14 @@ ShardedRedisBackupStatus defines the observed state of ShardedRedisBackup
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sidecarport"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-sidecarport"]
 ==== SidecarPort 
 
 SidecarPort defines port for the Marin3r sidecar container
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -1633,14 +1633,14 @@ SidecarPort defines port for the Marin3r sidecar container
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sidekiqconfig"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-sidekiqconfig"]
 ==== SidekiqConfig 
 
 SidekiqConfig configures app behavior for System Sidekiq
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -1651,7 +1651,7 @@ SidekiqConfig configures app behavior for System Sidekiq
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-system"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-system"]
 ==== System 
 
 System is the Schema for the systems API
@@ -1665,46 +1665,46 @@ System is the Schema for the systems API
 | *`kind`* __string__ | `System`
 | *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
-| *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]__ | 
-| *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemstatus[$$SystemStatus$$]__ | 
+| *`spec`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]__ | 
+| *`status`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemstatus[$$SystemStatus$$]__ | 
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemappspec"]
 ==== SystemAppSpec 
 
 SystemAppSpec configures the App component of System
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`deploymentStrategy`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-deploymentstrategyspec[$$DeploymentStrategySpec$$]__ | The deployment strategy to use to replace existing pods with new ones.
-| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
-| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
+| *`deploymentStrategy`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-deploymentstrategyspec[$$DeploymentStrategySpec$$]__ | The deployment strategy to use to replace existing pods with new ones.
+| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
+| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
 | *`replicas`* __integer__ | Number of replicas (ignored if hpa is enabled) for the component
-| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
-| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
-| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
+| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
+| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
-| *`canary`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
+| *`canary`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
 | *`terminationGracePeriodSeconds`* __integer__ | Configures the TerminationGracePeriodSeconds
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systembackendspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systembackendspec"]
 ==== SystemBackendSpec 
 
 SystemBackendSpec has configuration options for backend
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -1712,83 +1712,83 @@ SystemBackendSpec has configuration options for backend
 | Field | Description
 | *`externalEndpoint`* __string__ | External endpoint
 | *`internalEndpoint`* __string__ | Internal endpoint
-| *`internalAPIUser`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Internal API user
-| *`internalAPIPassword`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Internal API password
+| *`internalAPIUser`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Internal API user
+| *`internalAPIPassword`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Internal API password
 | *`redisDSN`* __string__ | Redis data source name
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemconfig"]
 ==== SystemConfig 
 
 SystemConfig holds configuration for SystemApp component
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`rails`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemrailsspec[$$SystemRailsSpec$$]__ | Rails configuration options for system components
+| *`rails`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemrailsspec[$$SystemRailsSpec$$]__ | Rails configuration options for system components
 | *`sandboxProxyOpensslVerifyMode`* __string__ | OpenSSL verification mode for sandbox proxy
 | *`forceSSL`* __boolean__ | Enable (true) or disable (false) enforcing SSL
 | *`sslCertsDir`* __string__ | SSL certificates path
-| *`searchServer`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-searchserverspec[$$SearchServerSpec$$]__ | Search service options
+| *`searchServer`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-searchserverspec[$$SearchServerSpec$$]__ | Search service options
 | *`threescaleProviderPlan`* __string__ | 3scale provider plan
 | *`threescaleSuperdomain`* __string__ | 3scale superdomain
 | *`configFilesSecret`* __string__ | Secret containging system configuration files to be mounted in the pods
-| *`externalSecret`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-externalsecret[$$ExternalSecret$$]__ | External Secret common configuration
-| *`databaseDSN`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | DSN of system's main database
-| *`eventsSharedSecret`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | EventsSharedSecret
-| *`recaptcha`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemrecaptchaspec[$$SystemRecaptchaSpec$$]__ | Holds recaptcha configuration options
-| *`secretKeyBase`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | SecretKeyBase
-| *`accessCode`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | AccessCode to protect admin urls
-| *`segment`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-segmentspec[$$SegmentSpec$$]__ | Options for Segment integration
-| *`github`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-githubspec[$$GithubSpec$$]__ | Options for Github integration
-| *`redhatCustomerPortal`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redhatcustomerportalspec[$$RedHatCustomerPortalSpec$$]__ | Options for configuring RH Customer Portal integration
-| *`bugsnag`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-bugsnagspec[$$BugsnagSpec$$]__ | Options for configuring Bugsnag integration
-| *`databaseSecret`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Database secret
+| *`externalSecret`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-externalsecret[$$ExternalSecret$$]__ | External Secret common configuration
+| *`databaseDSN`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | DSN of system's main database
+| *`eventsSharedSecret`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | EventsSharedSecret
+| *`recaptcha`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemrecaptchaspec[$$SystemRecaptchaSpec$$]__ | Holds recaptcha configuration options
+| *`secretKeyBase`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | SecretKeyBase
+| *`accessCode`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | AccessCode to protect admin urls
+| *`segment`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-segmentspec[$$SegmentSpec$$]__ | Options for Segment integration
+| *`github`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-githubspec[$$GithubSpec$$]__ | Options for Github integration
+| *`redhatCustomerPortal`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-redhatcustomerportalspec[$$RedHatCustomerPortalSpec$$]__ | Options for configuring RH Customer Portal integration
+| *`bugsnag`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-bugsnagspec[$$BugsnagSpec$$]__ | Options for configuring Bugsnag integration
+| *`databaseSecret`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Database secret
 | *`memcachedServers`* __string__ | Memcached servers
-| *`redis`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-redisspec[$$RedisSpec$$]__ | Redis configuration options
-| *`smtp`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-smtpspec[$$SMTPSpec$$]__ | SMTP configuration options
-| *`mappingServiceAccessToken`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Mapping Service access token
-| *`zyncAuthToken`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Zync authentication token
-| *`zync`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemzyncspec[$$SystemZyncSpec$$]__ | Zync has configuration options for system to contact zync
-| *`backend`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systembackendspec[$$SystemBackendSpec$$]__ | Backend has configuration options for system to contact backend
-| *`assets`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-assetsspec[$$AssetsSpec$$]__ | Assets has configuration to access assets in AWS s3
+| *`redis`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-redisspec[$$RedisSpec$$]__ | Redis configuration options
+| *`smtp`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-smtpspec[$$SMTPSpec$$]__ | SMTP configuration options
+| *`mappingServiceAccessToken`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Mapping Service access token
+| *`zyncAuthToken`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Zync authentication token
+| *`zync`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemzyncspec[$$SystemZyncSpec$$]__ | Zync has configuration options for system to contact zync
+| *`backend`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systembackendspec[$$SystemBackendSpec$$]__ | Backend has configuration options for system to contact backend
+| *`assets`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-assetsspec[$$AssetsSpec$$]__ | Assets has configuration to access assets in AWS s3
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemrailsconsolespec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemrailsconsolespec"]
 ==== SystemRailsConsoleSpec 
 
 SystemRailsConsoleSpec configures the App component of System
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the Console component. Defaults to system image if not defined.
-| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
+| *`image`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the Console component. Defaults to system image if not defined.
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemrailsspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemrailsspec"]
 ==== SystemRailsSpec 
 
 SystemRailsSpec configures rails for system components
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -1800,120 +1800,120 @@ SystemRailsSpec configures rails for system components
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemrecaptchaspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemrecaptchaspec"]
 ==== SystemRecaptchaSpec 
 
 SystemRecaptchaSpec holds recaptcha configurations
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`publicKey`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Public key
-| *`privateKey`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Private key
+| *`publicKey`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Public key
+| *`privateKey`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Private key
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsearchdspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemsearchdspec"]
 ==== SystemSearchdSpec 
 
 SystemSearchdSpec configures the App component of System
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
 | *`enabled`* __boolean__ | Deploy searchd instance
-| *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the Searchd component. Defaults to system image if not defined.
-| *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-searchdconfig[$$SearchdConfig$$]__ | Configuration options for System's Searchd
-| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the Searchd component
-| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the Searchd component
-| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the Searchd component
+| *`image`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the Searchd component. Defaults to system image if not defined.
+| *`config`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-searchdconfig[$$SearchdConfig$$]__ | Configuration options for System's Searchd
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the Searchd component
+| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the Searchd component
+| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the Searchd component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the Searchd pod
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the Searchd pod's tolerations.
 | *`terminationGracePeriodSeconds`* __integer__ | Configures the TerminationGracePeriodSeconds for Searchd
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemsidekiqspec"]
 ==== SystemSidekiqSpec 
 
 SystemSidekiqSpec configures the Sidekiq component of System
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`deploymentStrategy`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-deploymentstrategyspec[$$DeploymentStrategySpec$$]__ | The deployment strategy to use to replace existing pods with new ones.
-| *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-sidekiqconfig[$$SidekiqConfig$$]__ | Sidekiq specific configuration options for the component element
-| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
-| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
+| *`deploymentStrategy`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-deploymentstrategyspec[$$DeploymentStrategySpec$$]__ | The deployment strategy to use to replace existing pods with new ones.
+| *`config`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-sidekiqconfig[$$SidekiqConfig$$]__ | Sidekiq specific configuration options for the component element
+| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
+| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
 | *`replicas`* __integer__ | Number of replicas (ignored if hpa is enabled) for the component
-| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
-| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
-| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
+| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
+| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
-| *`canary`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
+| *`canary`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
 | *`terminationGracePeriodSeconds`* __integer__ | Configures the TerminationGracePeriodSeconds
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemspec"]
 ==== SystemSpec 
 
 SystemSpec defines the desired state of System
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-system[$$System$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-system[$$System$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]__ | Application specific configuration options for System components
-| *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
-| *`app`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]__ | Application specific configuration options
-| *`sidekiqDefault`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]__ | Sidekiq Default specific configuration options
-| *`sidekiqBilling`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]__ | Sidekiq Billing specific configuration options
-| *`sidekiqLow`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]__ | Sidekiq Low specific configuration options
-| *`searchd`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemsearchdspec[$$SystemSearchdSpec$$]__ | Searchd specific configuration options
-| *`console`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemrailsconsolespec[$$SystemRailsConsoleSpec$$]__ | Console specific configuration options
-| *`tasks`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemtektontaskspec[$$SystemTektonTaskSpec$$] array__ | Configures the Tekton Tasks for the component
-| *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
-| *`twemproxy`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyspec[$$TwemproxySpec$$]__ | Configures twemproxy
+| *`config`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]__ | Application specific configuration options for System components
+| *`image`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
+| *`app`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]__ | Application specific configuration options
+| *`sidekiqDefault`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]__ | Sidekiq Default specific configuration options
+| *`sidekiqBilling`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]__ | Sidekiq Billing specific configuration options
+| *`sidekiqLow`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemsidekiqspec[$$SystemSidekiqSpec$$]__ | Sidekiq Low specific configuration options
+| *`searchd`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemsearchdspec[$$SystemSearchdSpec$$]__ | Searchd specific configuration options
+| *`console`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemrailsconsolespec[$$SystemRailsConsoleSpec$$]__ | Console specific configuration options
+| *`tasks`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemtektontaskspec[$$SystemTektonTaskSpec$$] array__ | Configures the Tekton Tasks for the component
+| *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
+| *`twemproxy`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-twemproxyspec[$$TwemproxySpec$$]__ | Configures twemproxy
 |===
 
 
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemtektontaskconfig"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemtektontaskconfig"]
 ==== SystemTektonTaskConfig 
 
 SystemTektonTaskConfig configures app behavior for System SystemTektonTask
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemtektontaskspec[$$SystemTektonTaskSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemtektontaskspec[$$SystemTektonTaskSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the Console component. Defaults to system image if not defined.
+| *`image`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the Console component. Defaults to system image if not defined.
 | *`command`* __string array__ | List of commands to be consumed by the task.
 | *`args`* __string array__ | List of args to be consumed by the task.
 | *`extraEnv`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#envvar-v1-core[$$EnvVar$$] array__ | List of extra evironment variables to be consumed by the task.
@@ -1921,14 +1921,14 @@ SystemTektonTaskConfig configures app behavior for System SystemTektonTask
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemtektontaskspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemtektontaskspec"]
 ==== SystemTektonTaskSpec 
 
 SystemTektonTaskSpec configures the Sidekiq component of System
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -1937,52 +1937,52 @@ SystemTektonTaskSpec configures the Sidekiq component of System
 | *`enabled`* __boolean__ | Deploy task instance
 | *`name`* __string__ | Name for the Tekton task and pipeline
 | *`description`* __string__ | Description for the Tekton task and pipeline
-| *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemtektontaskconfig[$$SystemTektonTaskConfig$$]__ | System Tekton Task specific configuration options for the component element
-| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Pod Disruption Budget for the component
+| *`config`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemtektontaskconfig[$$SystemTektonTaskConfig$$]__ | System Tekton Task specific configuration options for the component element
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Pod Disruption Budget for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 | *`terminationGracePeriodSeconds`* __integer__ | Configures the TerminationGracePeriodSeconds
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemzyncspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemzyncspec"]
 ==== SystemZyncSpec 
 
 SystemZyncSpec has configuration options for zync
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`authToken`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Zync authentication token
+| *`authToken`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Zync authentication token
 | *`endpoint`* __string__ | Zync endpoint
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-targetredisservers"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-targetredisservers"]
 ==== TargetRedisServers (string) 
 
 
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyserverpool[$$TwemproxyServerPool$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-twemproxyserverpool[$$TwemproxyServerPool$$]
 ****
 
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-targetserver"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-targetserver"]
 ==== TargetServer 
 
 Defines a server targeted by one of the TwemproxyConfig server pools
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfigstatus[$$TwemproxyConfigStatus$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-twemproxyconfigstatus[$$TwemproxyConfigStatus$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -1993,7 +1993,7 @@ Defines a server targeted by one of the TwemproxyConfig server pools
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfig"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-twemproxyconfig"]
 ==== TwemproxyConfig 
 
 TwemproxyConfig is the Schema for the twemproxyconfigs API
@@ -2007,56 +2007,56 @@ TwemproxyConfig is the Schema for the twemproxyconfigs API
 | *`kind`* __string__ | `TwemproxyConfig`
 | *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
-| *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfigspec[$$TwemproxyConfigSpec$$]__ | 
-| *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfigstatus[$$TwemproxyConfigStatus$$]__ | 
+| *`spec`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-twemproxyconfigspec[$$TwemproxyConfigSpec$$]__ | 
+| *`status`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-twemproxyconfigstatus[$$TwemproxyConfigStatus$$]__ | 
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfigspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-twemproxyconfigspec"]
 ==== TwemproxyConfigSpec 
 
 TwemproxyConfigSpec defines the desired state of TwemproxyConfig
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfig[$$TwemproxyConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-twemproxyconfig[$$TwemproxyConfig$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
 | *`sentinelURIs`* __string array__ | SentinelURI is the redis URI of sentinel. If not set, the controller will try to autodiscover Sentinel within the namespace. TODO: remove, unused
-| *`serverPools`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyserverpool[$$TwemproxyServerPool$$] array__ | ServerPools is the list of Twemproxy server pools WARNING: only 1 pool is supported at this time
+| *`serverPools`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-twemproxyserverpool[$$TwemproxyServerPool$$] array__ | ServerPools is the list of Twemproxy server pools WARNING: only 1 pool is supported at this time
 | *`reconcileServerPools`* __boolean__ | ReconcileServerPools is a flag that allows to deactivate the reconcile of the contents of the managed ConfigMap. This is useful in an emergency, to fix something manually. The re-sync logic will still work whenever the contents of the ConfigMap are changed, even if they are manually changed. This switch defaults to "true".
-| *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
+| *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfigstatus"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-twemproxyconfigstatus"]
 ==== TwemproxyConfigStatus 
 
 TwemproxyConfigStatus defines the observed state of TwemproxyConfig
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfig[$$TwemproxyConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-twemproxyconfig[$$TwemproxyConfig$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`targets`* __object (keys:string, values:xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-targetserver[$$TargetServer$$])__ | The list of serves currently targeted by this TwemproxyConfig
+| *`targets`* __object (keys:string, values:xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-targetserver[$$TargetServer$$])__ | The list of serves currently targeted by this TwemproxyConfig
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyoptions"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-twemproxyoptions"]
 ==== TwemproxyOptions 
 
 
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyspec[$$TwemproxySpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-twemproxyspec[$$TwemproxySpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -2068,60 +2068,60 @@ TwemproxyConfigStatus defines the observed state of TwemproxyConfig
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyserverpool"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-twemproxyserverpool"]
 ==== TwemproxyServerPool 
 
 
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyconfigspec[$$TwemproxyConfigSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-twemproxyconfigspec[$$TwemproxyConfigSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
 | *`name`* __string__ | The name of the server pool
-| *`topology`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-shardedredistopology[$$ShardedRedisTopology$$] array__ | The topology of the servers within the server pool. This field describes the association of logical shards to physical shards.
+| *`topology`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-shardedredistopology[$$ShardedRedisTopology$$] array__ | The topology of the servers within the server pool. This field describes the association of logical shards to physical shards.
 | *`bindAddress`* __string__ | The address to bind to. Format is ip:port
 | *`timeout`* __integer__ | Timeout to stablish connection with the servers in the server pool
 | *`tcpBacklog`* __integer__ | Max number of pending connections in the queue
 | *`preConnect`* __boolean__ | Connect to all servers in the pool during startup
-| *`target`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-targetredisservers[$$TargetRedisServers$$]__ | Target defines which are the servers that will be configured as backend redis servers for the Twemproxy configuration. The default is to target masters, but read-write slaves can be configured through this option. If read-write slaves are configured but there are none available, the config will fall back to masters. The masters never fall back to slaves though and will just wait for sentinel triggered failovers to solve the unavailability.
+| *`target`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-targetredisservers[$$TargetRedisServers$$]__ | Target defines which are the servers that will be configured as backend redis servers for the Twemproxy configuration. The default is to target masters, but read-write slaves can be configured through this option. If read-write slaves are configured but there are none available, the config will fall back to masters. The masters never fall back to slaves though and will just wait for sentinel triggered failovers to solve the unavailability.
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-twemproxyspec"]
 ==== TwemproxySpec 
 
 TwemproxySpec configures twemproxy sidecars to access a sharded redis
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backendspec[$$BackendSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-backendspec[$$BackendSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemspec[$$SystemSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
-| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
-| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
-| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+| *`image`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
+| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
+| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
 | *`twemproxyConfigRef`* __string__ | TwemproxyConfigRef is a reference to a TwemproxyConfig resource in the same Namespace
-| *`options`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-twemproxyoptions[$$TwemproxyOptions$$]__ | Options
+| *`options`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-twemproxyoptions[$$TwemproxyOptions$$]__ | Options
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-vaultsecretreference"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-vaultsecretreference"]
 ==== VaultSecretReference 
 
 VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -2132,14 +2132,14 @@ VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerconfig"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-workerconfig"]
 ==== WorkerConfig 
 
 WorkerConfig configures app behavior for Backend Worker
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-workerspec[$$WorkerSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -2150,33 +2150,33 @@ WorkerConfig configures app behavior for Backend Worker
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-workerspec"]
 ==== WorkerSpec 
 
 WorkerSpec is the configuration for Backend Worker
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-backendspec[$$BackendSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-backendspec[$$BackendSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-workerconfig[$$WorkerConfig$$]__ | Listener specific configuration options for the component element
-| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
-| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
+| *`config`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-workerconfig[$$WorkerConfig$$]__ | Listener specific configuration options for the component element
+| *`pdb`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-poddisruptionbudgetspec[$$PodDisruptionBudgetSpec$$]__ | Pod Disruption Budget for the component
+| *`hpa`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-horizontalpodautoscalerspec[$$HorizontalPodAutoscalerSpec$$]__ | Horizontal Pod Autoscaler for the component
 | *`replicas`* __integer__ | Number of replicas (ignored if hpa is enabled) for the component
-| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
-| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
-| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
+| *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
+| *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
-| *`canary`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
+| *`canary`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zync"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-zync"]
 ==== Zync 
 
 Zync is the Schema for the zyncs API
@@ -2190,62 +2190,62 @@ Zync is the Schema for the zyncs API
 | *`kind`* __string__ | `Zync`
 | *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
-| *`spec`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]__ | 
-| *`status`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncstatus[$$ZyncStatus$$]__ | 
+| *`spec`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]__ | 
+| *`status`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-zyncstatus[$$ZyncStatus$$]__ | 
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncconfig"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-zyncconfig"]
 ==== ZyncConfig 
 
 ZyncConfig configures app behavior for Zync
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`rails`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncrailsspec[$$ZyncRailsSpec$$]__ | Rails configuration options for zync components
-| *`externalSecret`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-externalsecret[$$ExternalSecret$$]__ | External Secret common configuration
-| *`databaseDSN`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the database DSN
-| *`secretKeyBase`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the secret-key-base
-| *`zyncAuthToken`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the zync authentication token
-| *`bugsnag`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-bugsnagspec[$$BugsnagSpec$$]__ | Options for configuring Bugsnag integration
+| *`rails`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-zyncrailsspec[$$ZyncRailsSpec$$]__ | Rails configuration options for zync components
+| *`externalSecret`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-externalsecret[$$ExternalSecret$$]__ | External Secret common configuration
+| *`databaseDSN`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the database DSN
+| *`secretKeyBase`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the secret-key-base
+| *`zyncAuthToken`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | A reference to the secret holding the zync authentication token
+| *`bugsnag`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-bugsnagspec[$$BugsnagSpec$$]__ | Options for configuring Bugsnag integration
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncrailsconsolespec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-zyncrailsconsolespec"]
 ==== ZyncRailsConsoleSpec 
 
 ZyncRailsConsoleSpec configures the Console component of Zync
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-zyncspec[$$ZyncSpec$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
 | *`enabled`* __boolean__ | Enables or disables the Zync Console statefulset
-| *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Defaults to zync image if not defined.
-| *`resources`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
+| *`image`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Defaults to zync image if not defined.
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncrailsspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-zyncrailsspec"]
 ==== ZyncRailsSpec 
 
 ZyncRailsSpec configures rails for system components
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncconfig[$$ZyncConfig$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-zyncconfig[$$ZyncConfig$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -2257,25 +2257,25 @@ ZyncRailsSpec configures rails for system components
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncspec"]
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-zyncspec"]
 ==== ZyncSpec 
 
 ZyncSpec defines the desired state of Zync
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zync[$$Zync$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-zync[$$Zync$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`image`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
-| *`config`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncconfig[$$ZyncConfig$$]__ | Application specific configuration options for the component
-| *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
-| *`api`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-apispec[$$APISpec$$]__ | Configures the main zync api component
-| *`que`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-quespec[$$QueSpec$$]__ | Configures the zync que component
-| *`console`* __xref:{anchor_prefix}-github-com-3scale-saas-operator-api-v1alpha1-zyncrailsconsolespec[$$ZyncRailsConsoleSpec$$]__ | Console specific configuration options
+| *`image`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-imagespec[$$ImageSpec$$]__ | Image specification for the component
+| *`config`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-zyncconfig[$$ZyncConfig$$]__ | Application specific configuration options for the component
+| *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
+| *`api`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apispec[$$APISpec$$]__ | Configures the main zync api component
+| *`que`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-quespec[$$QueSpec$$]__ | Configures the zync que component
+| *`console`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-zyncrailsconsolespec[$$ZyncRailsConsoleSpec$$]__ | Console specific configuration options
 |===
 
 
