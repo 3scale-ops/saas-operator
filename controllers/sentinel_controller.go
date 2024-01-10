@@ -31,11 +31,7 @@ import (
 	redis "github.com/3scale-ops/saas-operator/pkg/redis/server"
 	"github.com/3scale-ops/saas-operator/pkg/redis/sharded"
 	"github.com/go-logr/logr"
-	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	"golang.org/x/time/rate"
-	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
-	policyv1 "k8s.io/api/policy/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -207,21 +203,15 @@ func (r *SentinelReconciler) reconcileStatus(ctx context.Context, instance *saas
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *SentinelReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
-		For(&saasv1alpha1.Sentinel{}).
-		Owns(&appsv1.StatefulSet{}).
-		Owns(&corev1.Service{}).
-		Owns(&policyv1.PodDisruptionBudget{}).
-		Owns(&grafanav1alpha1.GrafanaDashboard{}).
-		Owns(&corev1.ConfigMap{}).
-		Watches(&source.Channel{Source: r.SentinelEvents.GetChannel()}, &handler.EnqueueRequestForObject{}).
-		WithOptions(controller.Options{
-			RateLimiter: AggressiveRateLimiter(),
-		}).
-		Complete(r)
+	return reconciler.SetupWithDynamicTypeWatches(r,
+		ctrl.NewControllerManagedBy(mgr).
+			For(&saasv1alpha1.Sentinel{}).
+			Watches(&source.Channel{Source: r.SentinelEvents.GetChannel()}, &handler.EnqueueRequestForObject{}).
+			WithOptions(controller.Options{RateLimiter: PermissiveRateLimiter()}),
+	)
 }
 
-func AggressiveRateLimiter() ratelimiter.RateLimiter {
+func PermissiveRateLimiter() ratelimiter.RateLimiter {
 	// return workqueue.DefaultControllerRateLimiter()
 	return workqueue.NewMaxOfRateLimiter(
 		// First retries are more spaced that default

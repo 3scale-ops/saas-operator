@@ -20,6 +20,7 @@ require (
 	github.com/google/go-cmp v0.5.9
 	github.com/goombaio/namegenerator v0.0.0-20181006234301-989e774b106e
 	github.com/grafana-operator/grafana-operator/v4 v4.10.0
+	github.com/huandu/go-clone v1.6.0 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/onsi/ginkgo/v2 v2.9.1
 	github.com/onsi/gomega v1.27.3
@@ -41,10 +42,9 @@ require (
 	sigs.k8s.io/yaml v1.3.0
 )
 
-require github.com/huandu/go-clone v1.6.0 // indirect
-
 // For local dev uncomment this and point it to the correct path in your system
 // replace github.com/3scale-ops/basereconciler => /home/roi/github.com/3scale/basereconciler
+replace github.com/3scale-ops/basereconciler v0.4.0 => github.com/3scale-ops/basereconciler v0.4.1-0.20240111150428-b7ad2be7e877
 
 require (
 	contrib.go.opencensus.io/exporter/ocagent v0.7.1-0.20200907061046-05415f1de66d // indirect

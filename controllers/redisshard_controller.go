@@ -29,7 +29,6 @@ import (
 	redis "github.com/3scale-ops/saas-operator/pkg/redis/server"
 	"github.com/3scale-ops/saas-operator/pkg/redis/sharded"
 	"github.com/go-logr/logr"
-	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/types"
@@ -83,12 +82,10 @@ func (r *RedisShardReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *RedisShardReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
-		For(&saasv1alpha1.RedisShard{}).
-		Owns(&appsv1.StatefulSet{}).
-		Owns(&corev1.Service{}).
-		Owns(&corev1.ConfigMap{}).
-		Complete(r)
+	return reconciler.SetupWithDynamicTypeWatches(r,
+		ctrl.NewControllerManagedBy(mgr).
+			For(&saasv1alpha1.RedisShard{}),
+	)
 }
 
 func (r *RedisShardReconciler) setRedisRoles(ctx context.Context, key types.NamespacedName,
