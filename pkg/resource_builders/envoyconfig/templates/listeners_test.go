@@ -93,6 +93,8 @@ func TestListenerHTTP_v1(t *testing.T) {
                             transport_api_version: V3
                           timeout: 0.010s
                       - name: envoy.filters.http.router
+                        typed_config:
+                          '@type': type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
                       http_protocol_options:
                         accept_http_10: true
                         default_host_for_http_10: example.com
@@ -125,7 +127,11 @@ func TestListenerHTTP_v1(t *testing.T) {
                           tls_minimum_protocol_version: TLSv1_2
                 listener_filters:
                 - name: envoy.filters.listener.tls_inspector
+                  typed_config:
+                    '@type': type.googleapis.com/envoy.extensions.filters.listener.tls_inspector.v3.TlsInspector
                 - name: envoy.filters.listener.proxy_protocol
+                  typed_config:
+                    '@type': type.googleapis.com/envoy.extensions.filters.listener.proxy_protocol.v3.ProxyProtocol
                 name: test
                 per_connection_buffer_limit_bytes: 32768
 			`),
@@ -197,6 +203,8 @@ func TestListenerHTTP_v1(t *testing.T) {
                             transport_api_version: V3
                           timeout: 0.010s
                       - name: envoy.filters.http.router
+                        typed_config:
+                          '@type': type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
                       http_protocol_options:
                         accept_http_10: true
                         default_host_for_http_10: example.com
@@ -215,6 +223,8 @@ func TestListenerHTTP_v1(t *testing.T) {
                       use_remote_address: true
                 listener_filters:
                 - name: envoy.filters.listener.proxy_protocol
+                  typed_config:
+                    '@type': type.googleapis.com/envoy.extensions.filters.listener.proxy_protocol.v3.ProxyProtocol
                 name: test
                 per_connection_buffer_limit_bytes: 32768
 			`),

@@ -134,6 +134,8 @@ func TestNew(t *testing.T) {
                                       max_connection_duration: 900s
                                     http_filters:
                                     - name: envoy.filters.http.router
+                                      typed_config:
+                                        '@type': type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
                                     http_protocol_options: {}
                                     http2_protocol_options:
                                       initial_connection_window_size: 1048576
@@ -164,7 +166,11 @@ func TestNew(t *testing.T) {
                                         tls_minimum_protocol_version: TLSv1_2
                               listener_filters:
                               - name: envoy.filters.listener.tls_inspector
+                                typed_config:
+                                  '@type': type.googleapis.com/envoy.extensions.filters.listener.tls_inspector.v3.TlsInspector
                               - name: envoy.filters.listener.proxy_protocol
+                                typed_config:
+                                  '@type': type.googleapis.com/envoy.extensions.filters.listener.proxy_protocol.v3.ProxyProtocol
                               name: my_listener
                               per_connection_buffer_limit_bytes: 32768
 							`),
