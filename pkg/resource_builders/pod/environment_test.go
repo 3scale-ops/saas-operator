@@ -526,3 +526,81 @@ func TestOptions_ListSecretResourceNames(t *testing.T) {
 		})
 	}
 }
+
+func TestUnion(t *testing.T) {
+	type args struct {
+		lists [][]*Option
+	}
+	tests := []struct {
+		name string
+		args args
+		want Options
+	}{
+		{
+			name: "",
+			args: args{
+				lists: [][]*Option{
+					{
+						{
+							value:       util.Pointer("value1"),
+							envVariable: "ENVVAR1",
+							set:         false,
+						},
+						{
+							value:       util.Pointer("value2"),
+							envVariable: "ENVVAR2",
+							set:         false,
+						},
+					},
+					{
+						{
+							value:       util.Pointer("value1"),
+							envVariable: "ENVVAR1",
+							set:         false,
+						},
+						{
+							value:       util.Pointer("value3"),
+							envVariable: "ENVVAR3",
+							set:         false,
+						},
+						{
+							value:       util.Pointer("value4"),
+							envVariable: "ENVVAR4",
+							set:         false,
+						},
+					},
+				},
+			},
+			want: []*Option{
+				{
+					value:       util.Pointer("value1"),
+					envVariable: "ENVVAR1",
+					set:         false,
+				},
+				{
+					value:       util.Pointer("value2"),
+					envVariable: "ENVVAR2",
+					set:         false,
+				},
+				{
+					value:       util.Pointer("value3"),
+					envVariable: "ENVVAR3",
+					set:         false,
+				},
+				{
+					value:       util.Pointer("value4"),
+					envVariable: "ENVVAR4",
+					set:         false,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Union(tt.args.lists...)
+			if diff := cmp.Diff(*got, tt.want, cmp.AllowUnexported(Option{})); len(diff) > 0 {
+				t.Errorf("Union() got diff %v", diff)
+			}
+		})
+	}
+}

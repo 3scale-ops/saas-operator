@@ -228,7 +228,7 @@ func (opts *Options) GenerateExternalSecrets(namespace string, labels map[string
 
 func Union(lists ...[]*Option) *Options {
 	all := operatorutil.ConcatSlices[*Option](lists...)
-	lo.UniqBy(all, func(item *Option) string {
+	all = lo.UniqBy(all, func(item *Option) string {
 		return item.envVariable
 	})
 	return util.Pointer[Options](all)
