@@ -67,7 +67,7 @@ func (options *Options) ListSecretResourceNames() []string {
 func (options *Options) GenerateRolloutTriggers(additionalSecrets ...string) []resource.TemplateMutationFunction {
 	secrets := options.ListSecretResourceNames()
 	triggers := make([]resource.TemplateMutationFunction, 0, len(secrets))
-	for _, secret := range secrets {
+	for _, secret := range append(secrets, additionalSecrets...) {
 		triggers = append(
 			triggers,
 			mutators.RolloutTrigger{Name: secret, SecretName: util.Pointer(secret)}.Add(),
