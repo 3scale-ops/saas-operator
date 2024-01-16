@@ -182,6 +182,12 @@ func TestOptions_BuildEnvironment(t *testing.T) {
 					Name:  "envvar3",
 					Value: "value3",
 				},
+				{
+					Name: "envvar4", ValueFrom: &corev1.EnvVarSource{FieldRef: &corev1.ObjectFieldSelector{
+						APIVersion: "v1",
+						FieldPath:  "metadata.name",
+					}},
+				},
 			}},
 			want: []corev1.EnvVar{
 				{
@@ -195,6 +201,12 @@ func TestOptions_BuildEnvironment(t *testing.T) {
 				{
 					Name:  "envvar3",
 					Value: "value3",
+				},
+				{
+					Name: "envvar4", ValueFrom: &corev1.EnvVarSource{FieldRef: &corev1.ObjectFieldSelector{
+						APIVersion: "v1",
+						FieldPath:  "metadata.name",
+					}},
 				},
 			},
 		},
@@ -407,15 +419,26 @@ func TestOptions_WithExtraEnv(t *testing.T) {
 	}{
 		{
 			name: "",
-			options: &Options{{
-				value:       util.Pointer("value1"),
-				envVariable: "envvar1",
-				set:         true,
-			}},
+			options: &Options{
+				{
+					value:       util.Pointer("value1"),
+					envVariable: "envvar1",
+					set:         true,
+				},
+				{
+					value:       util.Pointer("value2"),
+					envVariable: "envvar2",
+					set:         true,
+				},
+			},
 			args: args{
 				extra: []corev1.EnvVar{
 					{Name: "envvar1", Value: "aaaa"},
-					{Name: "envvar2", Value: "bbbb"},
+					{Name: "envvar3", Value: "bbbb"},
+					{Name: "envvar4", ValueFrom: &corev1.EnvVarSource{FieldRef: &corev1.ObjectFieldSelector{
+						APIVersion: "v1",
+						FieldPath:  "metadata.name",
+					}}},
 				},
 			},
 			want: &Options{
@@ -425,16 +448,33 @@ func TestOptions_WithExtraEnv(t *testing.T) {
 					set:         true,
 				},
 				{
+					value:       util.Pointer("value2"),
+					envVariable: "envvar2",
+					set:         true,
+				},
+				{
 					value:       util.Pointer("bbbb"),
+					envVariable: "envvar3",
+					set:         true,
+				},
+				{
+					rawValue:    &corev1.EnvVarSource{FieldRef: &corev1.ObjectFieldSelector{APIVersion: "v1", FieldPath: "metadata.name"}},
+					envVariable: "envvar4",
+					set:         true,
+				},
+			},
+			wantOld: &Options{
+				{
+					value:       util.Pointer("value1"),
+					envVariable: "envvar1",
+					set:         true,
+				},
+				{
+					value:       util.Pointer("value2"),
 					envVariable: "envvar2",
 					set:         true,
 				},
 			},
-			wantOld: &Options{{
-				value:       util.Pointer("value1"),
-				envVariable: "envvar1",
-				set:         true,
-			}},
 		},
 	}
 	for _, tt := range tests {

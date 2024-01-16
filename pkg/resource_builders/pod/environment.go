@@ -21,6 +21,7 @@ import (
 
 type Option struct {
 	value       *string
+	rawValue    *corev1.EnvVarSource
 	format      *string
 	secretValue *saasv1alpha1.SecretReference
 	envVariable string
@@ -124,17 +125,27 @@ func (options *Options) WithExtraEnv(extra []corev1.EnvVar) *Options {
 
 	out := options.DeepCopy()
 	for _, envvar := range extra {
-		v := envvar.Value
 		o, exists := lo.Find(*out, func(o *Option) bool {
 			return o.envVariable == envvar.Name
 		})
+
 		if exists {
-			o.value = &v
+			o.value = util.Pointer(envvar.Value)
+			o.rawValue = envvar.ValueFrom
 			o.secretValue = nil
 			o.set = true
 			o.secretName = ""
 		} else {
-			out.Unpack(v).IntoEnvvar(envvar.Name)
+			var v *string
+			if envvar.Value != "" {
+				v = util.Pointer(envvar.Value)
+			}
+			*out = append(*out, &Option{
+				value:       v,
+				rawValue:    envvar.ValueFrom,
+				envVariable: envvar.Name,
+				set:         true,
+			})
 		}
 	}
 	return out
@@ -165,6 +176,7 @@ func (opts *Options) BuildEnvironment() []corev1.EnvVar {
 								Name: opt.secretName,
 							},
 						}}})
+				continue
 			}
 		}
 
@@ -173,6 +185,15 @@ func (opts *Options) BuildEnvironment() []corev1.EnvVar {
 				Name:  opt.envVariable,
 				Value: *opt.value,
 			})
+			continue
+		}
+
+		if opt.rawValue != nil {
+			env = append(env, corev1.EnvVar{
+				Name:      opt.envVariable,
+				ValueFrom: opt.rawValue,
+			})
+			continue
 		}
 	}
 
