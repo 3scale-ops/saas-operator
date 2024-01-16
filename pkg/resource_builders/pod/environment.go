@@ -22,7 +22,6 @@ import (
 type Option struct {
 	value       *string
 	rawValue    *corev1.EnvVarSource
-	format      *string
 	secretValue *saasv1alpha1.SecretReference
 	envVariable string
 	secretName  string
