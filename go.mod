@@ -3,7 +3,7 @@ module github.com/3scale-ops/saas-operator
 go 1.20
 
 require (
-	github.com/3scale-ops/basereconciler v0.4.0
+	github.com/3scale-ops/basereconciler v0.5.0
 	github.com/3scale-ops/marin3r v0.12.2
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/aws/aws-sdk-go-v2 v1.21.0
@@ -44,7 +44,6 @@ require (
 
 // For local dev uncomment this and point it to the correct path in your system
 // replace github.com/3scale-ops/basereconciler => /home/roi/github.com/3scale/basereconciler
-replace github.com/3scale-ops/basereconciler v0.4.0 => github.com/3scale-ops/basereconciler v0.4.1-0.20240111150428-b7ad2be7e877
 
 require (
 	contrib.go.opencensus.io/exporter/ocagent v0.7.1-0.20200907061046-05415f1de66d // indirect
