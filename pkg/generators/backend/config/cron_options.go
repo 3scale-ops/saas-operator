@@ -5,35 +5,19 @@ import (
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 )
 
-// CronOptions holds configuration for the cron pods
-type CronOptions struct {
-	RackEnv                   pod.EnvVarValue `env:"RACK_ENV"`
-	ConfigRedisProxy          pod.EnvVarValue `env:"CONFIG_REDIS_PROXY"`
-	ConfigRedisSentinelHosts  pod.EnvVarValue `env:"CONFIG_REDIS_SENTINEL_HOSTS"`
-	ConfigRedisSentinelRole   pod.EnvVarValue `env:"CONFIG_REDIS_SENTINEL_ROLE"`
-	ConfigQueuesMasterName    pod.EnvVarValue `env:"CONFIG_QUEUES_MASTER_NAME"`
-	ConfigQueuesSentinelHosts pod.EnvVarValue `env:"CONFIG_QUEUES_SENTINEL_HOSTS"`
-	ConfigQueuesSentinelRole  pod.EnvVarValue `env:"CONFIG_QUEUES_SENTINEL_ROLE"`
-	ConfigHoptoadService      pod.EnvVarValue `env:"CONFIG_HOPTOAD_SERVICE" secret:"backend-error-monitoring"`
-	ConfigHoptoadAPIKey       pod.EnvVarValue `env:"CONFIG_HOPTOAD_API_KEY" secret:"backend-error-monitoring"`
-}
+// NewCronOptions returns cron options for the given saasv1alpha1.BackendSpec
+func NewCronOptions(spec saasv1alpha1.BackendSpec) pod.Options {
+	opts := pod.Options{}
 
-// NewCronOptions returns a CronOptions struct for the given saasv1alpha1.BackendSpec
-func NewCronOptions(spec saasv1alpha1.BackendSpec) CronOptions {
-	opts := CronOptions{
-		RackEnv:                   &pod.ClearTextValue{Value: *spec.Config.RackEnv},
-		ConfigRedisProxy:          &pod.ClearTextValue{Value: spec.Config.RedisStorageDSN},
-		ConfigRedisSentinelHosts:  &pod.ClearTextValue{Value: ""},
-		ConfigRedisSentinelRole:   &pod.ClearTextValue{Value: ""},
-		ConfigQueuesMasterName:    &pod.ClearTextValue{Value: spec.Config.RedisQueuesDSN},
-		ConfigQueuesSentinelHosts: &pod.ClearTextValue{Value: ""},
-		ConfigQueuesSentinelRole:  &pod.ClearTextValue{Value: ""},
-	}
-
-	if spec.Config.ErrorMonitoringService != nil && spec.Config.ErrorMonitoringKey != nil {
-		opts.ConfigHoptoadService = &pod.SecretValue{Value: *spec.Config.ErrorMonitoringService}
-		opts.ConfigHoptoadAPIKey = &pod.SecretValue{Value: *spec.Config.ErrorMonitoringKey}
-	}
+	opts.Unpack(spec.Config.RackEnv).IntoEnvvar("RACK_ENV")
+	opts.Unpack(spec.Config.RedisStorageDSN).IntoEnvvar("CONFIG_REDIS_PROXY")
+	opts.Unpack("").IntoEnvvar("CONFIG_REDIS_SENTINEL_HOSTS")
+	opts.Unpack("").IntoEnvvar("CONFIG_REDIS_SENTINEL_ROLE")
+	opts.Unpack(spec.Config.RedisQueuesDSN).IntoEnvvar("CONFIG_QUEUES_MASTER_NAME")
+	opts.Unpack("").IntoEnvvar("CONFIG_QUEUES_SENTINEL_HOSTS")
+	opts.Unpack("").IntoEnvvar("CONFIG_QUEUES_SENTINEL_ROLE")
+	opts.Unpack(spec.Config.ErrorMonitoringService).IntoEnvvar("CONFIG_HOPTOAD_SERVICE").AsSecretRef("backend-error-monitoring")
+	opts.Unpack(spec.Config.ErrorMonitoringKey).IntoEnvvar("CONFIG_HOPTOAD_API_KEY").AsSecretRef("backend-error-monitoring")
 
 	return opts
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/3scale-ops/saas-operator/pkg/generators"
 	"github.com/3scale-ops/saas-operator/pkg/generators/autossl/config"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/grafanadashboard"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/podmonitor"
 	operatorutil "github.com/3scale-ops/saas-operator/pkg/util"
 	deployment_workload "github.com/3scale-ops/saas-operator/pkg/workloads/deployment"
@@ -26,7 +27,7 @@ const (
 type Generator struct {
 	generators.BaseOptionsV2
 	Spec    saasv1alpha1.AutoSSLSpec
-	Options config.Options
+	Options pod.Options
 	Canary  *Generator
 	Traffic bool
 }

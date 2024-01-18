@@ -15,7 +15,6 @@ import (
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/podmonitor"
 	operatorutil "github.com/3scale-ops/saas-operator/pkg/util"
 	deployment_workload "github.com/3scale-ops/saas-operator/pkg/workloads/deployment"
-	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
 	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -112,23 +111,23 @@ func (gen *Generator) Resources() ([]resource.TemplateInterface, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	externalsecrets := pod.Union(gen.API.Options, gen.Que.Options).
+		GenerateExternalSecrets(gen.GetKey().Namespace, gen.GetLabels(),
+			*gen.Config.ExternalSecret.SecretStoreRef.Name, *gen.Config.ExternalSecret.SecretStoreRef.Kind, *gen.Config.ExternalSecret.RefreshInterval)
+
 	misc := []resource.TemplateInterface{
 		// GrafanaDashboard
 		resource.NewTemplate[*grafanav1alpha1.GrafanaDashboard](
 			grafanadashboard.New(gen.GetKey(), gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/zync.json.gtpl")).
 			WithEnabled(!gen.GrafanaDashboardSpec.IsDeactivated()),
-		// ExternalSecret
-		resource.NewTemplate[*externalsecretsv1beta1.ExternalSecret](
-			pod.GenerateExternalSecretFn("zync", gen.GetNamespace(),
-				*gen.Config.ExternalSecret.SecretStoreRef.Name, *gen.Config.ExternalSecret.SecretStoreRef.Kind,
-				*gen.Config.ExternalSecret.RefreshInterval, gen.GetLabels(), gen.API.Options),
-		),
 	}
 
 	return operatorutil.ConcatSlices(
 		app_resources,
 		que_resources,
 		gen.Console.StatefulSet(),
+		externalsecrets,
 		misc,
 	), nil
 }
@@ -139,7 +138,7 @@ type APIGenerator struct {
 	generators.BaseOptionsV2
 	Image   saasv1alpha1.ImageSpec
 	APISpec saasv1alpha1.APISpec
-	Options config.APIOptions
+	Options pod.Options
 	Traffic bool
 }
 
@@ -187,7 +186,7 @@ type QueGenerator struct {
 	generators.BaseOptionsV2
 	Image   saasv1alpha1.ImageSpec
 	QueSpec saasv1alpha1.QueSpec
-	Options config.QueOptions
+	Options pod.Options
 }
 
 // Validate that QueGenerator implements deployment_workload.DeploymentWorkload interface
@@ -215,7 +214,7 @@ type ConsoleGenerator struct {
 	generators.BaseOptionsV2
 	Image   saasv1alpha1.ImageSpec
 	Spec    saasv1alpha1.ZyncRailsConsoleSpec
-	Options config.APIOptions
+	Options pod.Options
 	Enabled bool
 }
 

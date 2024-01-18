@@ -61,7 +61,7 @@ spec:
                     description: System database connection string
                     properties:
                       fromVault:
-                        description: VaultSecretReference is a reference to a secret
+                        description: FromVault is a reference to a secret key/value
                           stored in a Hashicorp Vault
                         properties:
                           key:

@@ -36,16 +36,9 @@ func (gen *SidekiqGenerator) deployment() *appsv1.Deployment {
 								}
 								return args
 							}(gen.Spec.Config.Queues),
-							Env: func() []corev1.EnvVar {
-								envVars := pod.BuildEnvironment(gen.Options)
-								envVars = append(envVars,
-									corev1.EnvVar{
-										Name:  "RAILS_MAX_THREADS",
-										Value: fmt.Sprintf("%d", *gen.Spec.Config.MaxThreads),
-									},
-								)
-								return envVars
-							}(),
+							Env: gen.Options.
+								WithExtraEnv([]corev1.EnvVar{{Name: "RAILS_MAX_THREADS", Value: fmt.Sprintf("%d", *gen.Spec.Config.MaxThreads)}}).
+								BuildEnvironment(),
 							Ports: pod.ContainerPorts(
 								pod.ContainerPortTCP("metrics", 9394),
 							),

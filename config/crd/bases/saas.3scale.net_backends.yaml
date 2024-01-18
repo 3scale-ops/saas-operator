@@ -43,7 +43,7 @@ spec:
                       key
                     properties:
                       fromVault:
-                        description: VaultSecretReference is a reference to a secret
+                        description: FromVault is a reference to a secret key/value
                           stored in a Hashicorp Vault
                         properties:
                           key:
@@ -66,7 +66,7 @@ spec:
                       service
                     properties:
                       fromVault:
-                        description: VaultSecretReference is a reference to a secret
+                        description: FromVault is a reference to a secret key/value
                           stored in a Hashicorp Vault
                         properties:
                           key:
@@ -108,7 +108,7 @@ spec:
                       password
                     properties:
                       fromVault:
-                        description: VaultSecretReference is a reference to a secret
+                        description: FromVault is a reference to a secret key/value
                           stored in a Hashicorp Vault
                         properties:
                           key:
@@ -131,7 +131,7 @@ spec:
                       user
                     properties:
                       fromVault:
-                        description: VaultSecretReference is a reference to a secret
+                        description: FromVault is a reference to a secret key/value
                           stored in a Hashicorp Vault
                         properties:
                           key:
@@ -167,7 +167,7 @@ spec:
                       password
                     properties:
                       fromVault:
-                        description: VaultSecretReference is a reference to a secret
+                        description: FromVault is a reference to a secret key/value
                           stored in a Hashicorp Vault
                         properties:
                           key:
@@ -190,7 +190,7 @@ spec:
                       URL
                     properties:
                       fromVault:
-                        description: VaultSecretReference is a reference to a secret
+                        description: FromVault is a reference to a secret key/value
                           stored in a Hashicorp Vault
                         properties:
                           key:

@@ -89,7 +89,11 @@ var _ = Describe("System controller", func() {
 							ReleaseStage: util.Pointer("staging"),
 							APIKey:       saasv1alpha1.SecretReference{Override: util.Pointer("override")},
 						},
-						DatabaseSecret:   saasv1alpha1.SecretReference{Override: util.Pointer("override")},
+						// DatabaseSecret:   saasv1alpha1.SecretReference{Override: util.Pointer("override")},
+						DatabaseSecret: saasv1alpha1.SecretReference{FromVault: &saasv1alpha1.VaultSecretReference{
+							Path: "path",
+							Key:  "key",
+						}},
 						MemcachedServers: "value",
 						Redis: saasv1alpha1.RedisSpec{
 							QueuesDSN: "value",
@@ -104,7 +108,7 @@ var _ = Describe("System controller", func() {
 							STARTTLS:          util.Pointer(false),
 						},
 						MappingServiceAccessToken: saasv1alpha1.SecretReference{Override: util.Pointer("override")},
-						Zync: &saasv1alpha1.SystemZyncSpec{
+						Zync: saasv1alpha1.SystemZyncSpec{
 							AuthToken: saasv1alpha1.SecretReference{Override: util.Pointer("override")},
 							Endpoint:  "value",
 						},
@@ -310,13 +314,13 @@ var _ = Describe("System controller", func() {
 
 			for _, esn := range []string{
 				"system-database",
-				"system-recaptcha",
-				"system-events-hook",
-				"system-smtp",
-				"system-master-apicast",
-				"system-zync",
-				"system-backend",
-				"system-multitenant-assets-s3",
+				// "system-recaptcha",
+				// "system-events-hook",
+				// "system-smtp",
+				// "system-master-apicast",
+				// "system-zync",
+				// "system-backend",
+				// "system-multitenant-assets-s3",
 				"system-app",
 			} {
 				es := &externalsecretsv1beta1.ExternalSecret{}

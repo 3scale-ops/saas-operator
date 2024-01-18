@@ -21,16 +21,9 @@ import (
 
 	"github.com/3scale-ops/basereconciler/reconciler"
 	"github.com/3scale-ops/basereconciler/util"
-	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/pkg/generators/backend"
-	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
-	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
-	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
-	appsv1 "k8s.io/api/apps/v1"
-	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
-	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/source"
@@ -86,17 +79,10 @@ func (r *BackendReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *BackendReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
-		For(&saasv1alpha1.Backend{}).
-		Owns(&appsv1.Deployment{}).
-		Owns(&corev1.Service{}).
-		Owns(&policyv1.PodDisruptionBudget{}).
-		Owns(&autoscalingv2.HorizontalPodAutoscaler{}).
-		Owns(&monitoringv1.PodMonitor{}).
-		Owns(&externalsecretsv1beta1.ExternalSecret{}).
-		Owns(&grafanav1alpha1.GrafanaDashboard{}).
-		Owns(&marin3rv1alpha1.EnvoyConfig{}).
-		Watches(&source.Kind{Type: &corev1.Secret{TypeMeta: metav1.TypeMeta{Kind: "Secret"}}},
-			r.FilteredEventHandler(&saasv1alpha1.BackendList{}, nil, r.Log)).
-		Complete(r)
+	return reconciler.SetupWithDynamicTypeWatches(r,
+		ctrl.NewControllerManagedBy(mgr).
+			For(&saasv1alpha1.Backend{}).
+			Watches(&source.Kind{Type: &corev1.Secret{TypeMeta: metav1.TypeMeta{Kind: "Secret"}}},
+				r.FilteredEventHandler(&saasv1alpha1.BackendList{}, nil, r.Log)),
+	)
 }

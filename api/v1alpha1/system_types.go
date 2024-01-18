@@ -471,14 +471,9 @@ type SystemConfig struct {
 	// Mapping Service access token
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	MappingServiceAccessToken SecretReference `json:"mappingServiceAccessToken"`
-	// Zync authentication token
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	ZyncAuthToken *SecretReference `json:"zyncAuthToken,omitempty"`
 	// Zync has configuration options for system to contact zync
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	Zync *SystemZyncSpec `json:"zync,omitempty"`
+	Zync SystemZyncSpec `json:"zync,omitempty"`
 	// Backend has configuration options for system to contact backend
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Backend SystemBackendSpec `json:"backend"`

@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/3scale-ops/basereconciler/util"
-	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/twemproxy"
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	corev1 "k8s.io/api/core/v1"
@@ -43,26 +42,7 @@ func (gen *SystemTektonGenerator) task() *pipelinev1beta1.Task {
 			},
 			StepTemplate: &pipelinev1beta1.StepTemplate{
 				Image: "$(params.container-image):$(params.container-tag)",
-				Env: func(base, extra []corev1.EnvVar) []corev1.EnvVar {
-					if len(extra) == 0 {
-						return base
-					}
-					envVars := base
-					for _, extraEnvVar := range extra {
-						found := false
-						for ev, envVar := range envVars {
-							if extraEnvVar.Name == envVar.Name {
-								found = true
-								envVars[ev].Value = extraEnvVar.Value
-								envVars[ev].ValueFrom = extraEnvVar.ValueFrom
-							}
-						}
-						if !found {
-							envVars = append(envVars, extraEnvVar)
-						}
-					}
-					return envVars
-				}(pod.BuildEnvironment(gen.Options), gen.Spec.Config.ExtraEnv),
+				Env:   gen.Options.WithExtraEnv(gen.Spec.Config.ExtraEnv).BuildEnvironment(),
 			},
 			Steps: []pipelinev1beta1.Step{
 				{

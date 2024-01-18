@@ -262,7 +262,7 @@ func (r *TwemproxyConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&grafanav1alpha1.GrafanaDashboard{}).
 		Watches(&source.Channel{Source: r.SentinelEvents.GetChannel()}, &handler.EnqueueRequestForObject{}).
 		WithOptions(controller.Options{
-			RateLimiter: AggressiveRateLimiter(),
+			RateLimiter: PermissiveRateLimiter(),
 			// this allows for different resources to be reconciled in parallel
 			MaxConcurrentReconciles: 2,
 		}).

@@ -3,7 +3,7 @@ module github.com/3scale-ops/saas-operator
 go 1.20
 
 require (
-	github.com/3scale-ops/basereconciler v0.4.0
+	github.com/3scale-ops/basereconciler v0.5.0
 	github.com/3scale-ops/marin3r v0.12.2
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/aws/aws-sdk-go-v2 v1.21.0
@@ -20,6 +20,7 @@ require (
 	github.com/google/go-cmp v0.5.9
 	github.com/goombaio/namegenerator v0.0.0-20181006234301-989e774b106e
 	github.com/grafana-operator/grafana-operator/v4 v4.10.0
+	github.com/huandu/go-clone v1.6.0 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/onsi/ginkgo/v2 v2.9.1
 	github.com/onsi/gomega v1.27.3
@@ -91,6 +92,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
+	github.com/huandu/go-clone/generic v1.7.2
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect

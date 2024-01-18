@@ -33,7 +33,7 @@ func (gen *WorkerGenerator) deployment() *appsv1.Deployment {
 							Ports: pod.ContainerPorts(
 								pod.ContainerPortTCP("metrics", 9421),
 							),
-							Env:             pod.BuildEnvironment(gen.Options),
+							Env:             gen.Options.BuildEnvironment(),
 							Resources:       corev1.ResourceRequirements(*gen.WorkerSpec.Resources),
 							ImagePullPolicy: *gen.Image.PullPolicy,
 							LivenessProbe:   pod.HTTPProbe("/metrics", intstr.FromString("metrics"), corev1.URISchemeHTTP, *gen.WorkerSpec.LivenessProbe),

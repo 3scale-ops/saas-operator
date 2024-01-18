@@ -43,7 +43,7 @@ func (gen *ListenerGenerator) deployment() *appsv1.Deployment {
 								pod.ContainerPortTCP("http", 3000),
 								pod.ContainerPortTCP("metrics", 9394),
 							),
-							Env:             pod.BuildEnvironment(gen.Options),
+							Env:             gen.Options.BuildEnvironment(),
 							Resources:       corev1.ResourceRequirements(*gen.ListenerSpec.Resources),
 							ImagePullPolicy: *gen.Image.PullPolicy,
 							LivenessProbe:   pod.TCPProbe(intstr.FromString("http"), *gen.ListenerSpec.LivenessProbe),

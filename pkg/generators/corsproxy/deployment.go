@@ -37,7 +37,7 @@ func (gen *Generator) deployment() *appsv1.Deployment {
 								pod.ContainerPortTCP("http", 8080),
 								pod.ContainerPortTCP("metrics", 9145),
 							),
-							Env:             pod.BuildEnvironment(gen.Options),
+							Env:             gen.Options.BuildEnvironment(),
 							Resources:       corev1.ResourceRequirements(*gen.Spec.Resources),
 							ImagePullPolicy: *gen.Spec.Image.PullPolicy,
 							LivenessProbe:   pod.HTTPProbe("/healthz", intstr.FromString("metrics"), corev1.URISchemeHTTP, *gen.Spec.LivenessProbe),

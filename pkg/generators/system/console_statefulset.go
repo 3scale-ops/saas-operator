@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/3scale-ops/basereconciler/util"
-	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/twemproxy"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -45,7 +44,7 @@ func (gen *ConsoleGenerator) statefulset() *appsv1.StatefulSet {
 								"sleep",
 								"infinity",
 							},
-							Env:             pod.BuildEnvironment(gen.Options),
+							Env:             gen.Options.BuildEnvironment(),
 							Ports:           nil,
 							Resources:       corev1.ResourceRequirements(*gen.Spec.Resources),
 							ImagePullPolicy: *gen.Image.PullPolicy,

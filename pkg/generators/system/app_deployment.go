@@ -32,7 +32,7 @@ func (gen *AppGenerator) deployment() *appsv1.Deployment {
 							Args: []string{
 								"bundle", "exec", "rake", "k8s:deploy",
 							},
-							Env:             pod.BuildEnvironment(gen.Options),
+							Env:             gen.Options.BuildEnvironment(),
 							ImagePullPolicy: *gen.Image.PullPolicy,
 						},
 					},
@@ -50,7 +50,7 @@ func (gen *AppGenerator) deployment() *appsv1.Deployment {
 								"-c",
 								"config/unicorn.rb",
 							},
-							Env: pod.BuildEnvironment(gen.Options),
+							Env: gen.Options.BuildEnvironment(),
 							Ports: pod.ContainerPorts(
 								pod.ContainerPortTCP("ui-api", 3000),
 								pod.ContainerPortTCP("metrics", 9394),

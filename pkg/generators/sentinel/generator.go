@@ -11,9 +11,9 @@ import (
 	"github.com/3scale-ops/basereconciler/resource"
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/pkg/generators"
-	"github.com/3scale-ops/saas-operator/pkg/generators/sentinel/config"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/grafanadashboard"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pdb"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 	operatorutils "github.com/3scale-ops/saas-operator/pkg/util"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -26,7 +26,7 @@ const (
 type Generator struct {
 	generators.BaseOptionsV2
 	Spec    saasv1alpha1.SentinelSpec
-	Options config.Options
+	Options pod.Options
 }
 
 // NewGenerator returns a new Options struct
@@ -42,7 +42,7 @@ func NewGenerator(instance, namespace string, spec saasv1alpha1.SentinelSpec) Ge
 			},
 		},
 		Spec:    spec,
-		Options: config.NewOptions(spec),
+		Options: pod.Options{},
 	}
 }
 

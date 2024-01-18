@@ -580,8 +580,8 @@ spec:
                         description: API key
                         properties:
                           fromVault:
-                            description: VaultSecretReference is a reference to a
-                              secret stored in a Hashicorp Vault
+                            description: FromVault is a reference to a secret key/value
+                              stored in a Hashicorp Vault
                             properties:
                               key:
                                 description: The Vault key of the secret
@@ -608,7 +608,7 @@ spec:
                     description: A reference to the secret holding the database DSN
                     properties:
                       fromVault:
-                        description: VaultSecretReference is a reference to a secret
+                        description: FromVault is a reference to a secret key/value
                           stored in a Hashicorp Vault
                         properties:
                           key:
@@ -671,7 +671,7 @@ spec:
                     description: A reference to the secret holding the secret-key-base
                     properties:
                       fromVault:
-                        description: VaultSecretReference is a reference to a secret
+                        description: FromVault is a reference to a secret key/value
                           stored in a Hashicorp Vault
                         properties:
                           key:
@@ -694,7 +694,7 @@ spec:
                       token
                     properties:
                       fromVault:
-                        description: VaultSecretReference is a reference to a secret
+                        description: FromVault is a reference to a secret key/value
                           stored in a Hashicorp Vault
                         properties:
                           key:
