@@ -5,7 +5,6 @@ import (
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 )
 
-// cat <file> | grep secret: | sed -r 's/.*`env:"(\w*)"(\s*secret:"([0-9a-zA-Z\-]*)")?`/Unpack().IntoEnvvar("\1").AsSecretRef("\3"),/gm'
 func NewOptions(spec saasv1alpha1.SystemSpec) pod.Options {
 	opts := pod.Options{}
 
