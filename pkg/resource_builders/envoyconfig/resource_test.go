@@ -164,6 +164,7 @@ func TestNew(t *testing.T) {
                                           resource_api_version: V3
                                       tls_params:
                                         tls_minimum_protocol_version: TLSv1_2
+                                        tls_maximum_protocol_version: TLSv1_3
                               listener_filters:
                               - name: envoy.filters.listener.tls_inspector
                                 typed_config:
