@@ -1433,7 +1433,7 @@ SecretReference is a reference to a secret stored in some secrets engine
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`fromVault`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-vaultsecretreference[$$VaultSecretReference$$]__ | VaultSecretReference is a reference to a secret stored in a Hashicorp Vault
+| *`fromVault`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-vaultsecretreference[$$VaultSecretReference$$]__ | FromVault is a reference to a secret key/value stored in a Hashicorp Vault
 | *`override`* __string__ | Override allows to directly specify a string value.
 |===
 
@@ -1754,7 +1754,6 @@ SystemConfig holds configuration for SystemApp component
 | *`redis`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-redisspec[$$RedisSpec$$]__ | Redis configuration options
 | *`smtp`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-smtpspec[$$SMTPSpec$$]__ | SMTP configuration options
 | *`mappingServiceAccessToken`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Mapping Service access token
-| *`zyncAuthToken`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Zync authentication token
 | *`zync`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemzyncspec[$$SystemZyncSpec$$]__ | Zync has configuration options for system to contact zync
 | *`backend`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systembackendspec[$$SystemBackendSpec$$]__ | Backend has configuration options for system to contact backend
 | *`assets`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-assetsspec[$$AssetsSpec$$]__ | Assets has configuration to access assets in AWS s3
