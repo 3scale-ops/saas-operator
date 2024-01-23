@@ -53,7 +53,6 @@ func NewOptions(spec saasv1alpha1.SystemSpec) pod.Options {
 	opts.Unpack(spec.Config.Backend.RedisDSN).IntoEnvvar("BACKEND_REDIS_URL")
 	opts.Unpack("").IntoEnvvar("BACKEND_REDIS_SENTINEL_HOSTS")
 	opts.Unpack("").IntoEnvvar("BACKEND_REDIS_SENTINEL_ROLE")
-	opts.Unpack(spec.Config.Backend.InternalEndpoint).IntoEnvvar("BACKEND_ROUTE") // DEPRECATED
 	opts.Unpack(spec.Config.Backend.InternalEndpoint).IntoEnvvar("BACKEND_URL")
 	opts.Unpack(spec.Config.Backend.ExternalEndpoint).IntoEnvvar("BACKEND_PUBLIC_URL")
 	opts.Unpack(spec.Config.Backend.InternalAPIUser).IntoEnvvar("CONFIG_INTERNAL_API_USER").AsSecretRef("system-backend")
