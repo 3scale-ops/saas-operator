@@ -259,7 +259,6 @@ catalog-retag-latest:
 ##@ Kind Deployment
 
 kind-create: export KUBECONFIG = $(PWD)/kubeconfig
-# kind-create: KIND_EXPERIMENTAL_DOCKER_NETWORK=kind-saas-operator
 kind-create: kind ## Runs a k8s kind cluster
 	docker inspect kind-saas-operator > /dev/null || docker network create -d bridge --subnet 172.27.27.0/24 kind-saas-operator
 	KIND_EXPERIMENTAL_DOCKER_NETWORK=kind-saas-operator $(KIND) create cluster --wait 5m --image kindest/node:$(KIND_K8S_VERSION)
@@ -316,7 +315,7 @@ kind-deploy-saas: kind-load-redis-with-ssh ## Deploys a 3scale SaaS dev environm
 		USER_LOGIN=admin \
 		USER_PASSWORD=ppass \
 		ADMIN_ACCESS_TOKEN=ptoken \
-		USER_EMAIL="3scale-ops+dev-saas@redhat.com" \
+		USER_EMAIL="admin@localhost" \
 		DISABLE_DATABASE_ENVIRONMENT_CHECK=1 \
 		bundle exec rake db:setup'
 	kubectl get pods --no-headers -o name | grep system | xargs kubectl wait --for condition=ready --timeout=300s
