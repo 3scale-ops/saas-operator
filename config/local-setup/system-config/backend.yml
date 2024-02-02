@@ -1,5 +1,5 @@
 production:
-  url: "<%= ENV.fetch('BACKEND_ROUTE') %>"
+  url: "<%= ENV.fetch('BACKEND_URL') %>"
   public_url: "<%= ENV.fetch('BACKEND_PUBLIC_URL') %>"
   persistent: false
   timeout: 3
