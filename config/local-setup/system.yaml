@@ -101,16 +101,19 @@ spec:
       maxThreads: 5
     hpa: {}
     pdb: {}
+    resources: {}
     replicas: 1
   sidekiqDefault:
     config:
       maxThreads: 5
     hpa: {}
     pdb: {}
+    resources: {}
     replicas: 1
   sidekiqLow:
     config:
       maxThreads: 5
     hpa: {}
     pdb: {}
+    resources: {}
     replicas: 1
