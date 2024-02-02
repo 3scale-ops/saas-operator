@@ -49,11 +49,10 @@ endif
 IMG ?= $(IMAGE_TAG_BASE):v$(VERSION)
 
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-ENVTEST_K8S_VERSION = 1.24
+ENVTEST_K8S_VERSION = 1.27
 
 # KIND_K8S_VERSION refers to the version of the kind k8s cluster for e2e testing.
-# OCP 4.11 uses k8s 1.24
-KIND_K8S_VERSION = v1.24.0
+KIND_K8S_VERSION = v1.27.0
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
