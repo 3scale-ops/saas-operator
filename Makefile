@@ -314,7 +314,7 @@ kind-deploy-saas: kind-load-redis-with-ssh ## Deploys a 3scale SaaS dev environm
 		USER_LOGIN=admin \
 		USER_PASSWORD=ppass \
 		ADMIN_ACCESS_TOKEN=ptoken \
-		USER_EMAIL="admin@localhost" \
+		USER_EMAIL="admin@cluster.local" \
 		DISABLE_DATABASE_ENVIRONMENT_CHECK=1 \
 		bundle exec rake db:setup'
 	kubectl get pods --no-headers -o name | grep system | xargs kubectl wait --for condition=ready --timeout=300s

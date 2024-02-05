@@ -15,20 +15,20 @@ production:
   recaptcha_public_key: "<%= ENV.fetch('RECAPTCHA_PUBLIC_KEY') %>"
   recaptcha_private_key: "<%= ENV.fetch('RECAPTCHA_PRIVATE_KEY') %>"
   user_session_ttl: <%= ENV.fetch('USER_SESSION_TTL', 2.weeks) %>
-  noreply_email: "admin@localhost"
-  support_email: "admin@localhost"
-  sales_email: "admin@localhost"
-  notification_email: "admin@localhost"
+  noreply_email: "admin@cluster.local"
+  support_email: "admin@cluster.local"
+  sales_email: "admin@cluster.local"
+  notification_email: "admin@cluster.local"
   report_traffic: true
   db_secret: "<%= ENV.fetch('DB_SECRET') %>"
   janitor_worker_enabled: true
   billing_canaries: []
   email_sanitizer:
     enabled: true
-    to: "admin@localhost"
+    to: "admin@cluster.local"
   # access_code: "<%= ENV['ACCESS_CODE'] %>"
   zync_authentication_token: <%= ENV.fetch('ZYNC_AUTHENTICATION_TOKEN') %>
-  sysadmin_email: ""
+  sysadmin_email: "admin@cluster.local"
   impersonation_admin:
     username: saas_impersonation_admin
     domain: 3scale.redhat.com
