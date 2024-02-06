@@ -263,7 +263,7 @@ kind-create: kind ## Runs a k8s kind cluster
 	KIND_EXPERIMENTAL_DOCKER_NETWORK=kind-saas-operator $(KIND) create cluster --wait 5m --image kindest/node:$(KIND_K8S_VERSION)
 
 install-%: export KUBECONFIG = $(PWD)/kubeconfig
-install-%: kustomize yq
+install-%: kustomize yq helm
 	echo
 	KUSTOMIZE_BIN=$(KUSTOMIZE) YQ_BIN=$(YQ) BASE_PATH=config/dependencies hack/apply-kustomize.sh $*
 
@@ -276,7 +276,7 @@ kind-deploy-controller: export KUBECONFIG = $(PWD)/kubeconfig
 kind-deploy-controller: manifests kustomize docker-build $(foreach elem,$(CONTROLLER_DEPS),install-$(elem)) ## Deploy operator to the Kind K8s cluster
 	$(KIND) load docker-image $(IMG)
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
-	$(KUSTOMIZE) build config/test --enable-helm --load-restrictor LoadRestrictionsNone | kubectl apply -f -
+	$(KUSTOMIZE) build config/test --load-restrictor LoadRestrictionsNone | kubectl apply -f -
 
 kind-refresh-controller: export KUBECONFIG = ${PWD}/kubeconfig
 kind-refresh-controller: manifests kind docker-build ## Reloads the controller image into the K8s cluster and deletes the old Pod
@@ -337,6 +337,8 @@ LOCALBIN ?= $(shell pwd)/bin
 $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
 
+export PATH := $(LOCALBIN):$(PATH)
+
 ## Tool Binaries
 KUSTOMIZE ?= $(LOCALBIN)/kustomize
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
@@ -346,6 +348,7 @@ CRD_REFDOCS ?= $(LOCALBIN)/crd-ref-docs
 KIND ?= $(LOCALBIN)/kind
 GOBINDATA ?= $(LOCALBIN)/go-bindata
 YQ ?= $(LOCALBIN)/yq
+HELM ?= $(LOCALBIN)/helm
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v5.1.1
@@ -357,6 +360,7 @@ ENVTEST_VERSION ?= latest
 GOBINDATA_VERSION ?= latest
 TEKTON_VERSION ?= v0.49.0
 YQ_VERSION ?= v4.40.5
+HELM_VERSION ?= v3.14.0
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
@@ -396,6 +400,12 @@ $(GOBINDATA):
 yq: $(YQ)
 $(YQ):
 	test -s $(YQ) || GOBIN=$(LOCALBIN) go install github.com/mikefarah/yq/v4@$(YQ_VERSION)
+
+HELM_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3"
+.PHONY: helm
+helm: $(HELM)
+$(HELM):
+	curl -s $(HELM_INSTALL_SCRIPT) | HELM_INSTALL_DIR=$(LOCALBIN) bash -s -- --no-sudo --version $(HELM_VERSION)
 
 ##@ Other
 
