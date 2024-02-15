@@ -1,0 +1,70 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: system-mysql
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: system-mysql
+  replicas: 1
+  serviceName: system-mysql
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: system-mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:5.7
+          # FOR MYSQL 8.0 #
+          # image: mysql:8.0
+          # args:
+          #   - mysqld
+          #   - --default-authentication-plugin=mysql_native_password
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: password
+            - name: MYSQL_DATABASE
+              value: system_enterprise
+            - name: MYSQL_USER
+              value: app
+            - name: MYSQL_PASSWORD
+              value: password
+          ports:
+            - name: mysql
+              containerPort: 3306
+          readinessProbe:
+            tcpSocket:
+              port: 3306
+            initialDelaySeconds: 5
+            periodSeconds: 2
+            timeoutSeconds: 1
+          volumeMounts:
+            - name: system-mysql-storage
+              mountPath: /var/lib/mysql
+              subPath: data
+  volumeClaimTemplates:
+    - metadata:
+        name: system-mysql-storage
+      spec:
+        volumeMode: Filesystem
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: system-mysql
+spec:
+  ports:
+    - name: mysql
+      port: 3306
+      protocol: TCP
+      targetPort: 3306
+  selector:
+    app.kubernetes.io/name: system-mysql

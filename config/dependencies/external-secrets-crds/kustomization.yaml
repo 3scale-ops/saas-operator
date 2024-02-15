@@ -1,0 +1,2 @@
+resources:
+  - https://github.com/external-secrets/external-secrets/config/crds/bases/?ref=v0.9.11

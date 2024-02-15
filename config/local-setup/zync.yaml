@@ -1,0 +1,34 @@
+---
+apiVersion: saas.3scale.net/v1alpha1
+kind: Zync
+metadata:
+  name: zync
+spec:
+  image:
+      name: REPLACE
+      tag: REPLACE
+      pullSecretName: pull-secrets
+      pullPolicy: Always
+  config:
+    databaseDSN:
+      override: postgresql://app:password@zync-psql:5432/zync
+    rails:
+      environment: production
+      logLevel: info
+    secretKeyBase:
+      override: b0b7de6526e9ea4ad5fabea2d6ccb7d16759c4e07522ea0b7a605e5f84f14b5b45a0aac2418c45810d2fa1e7abeeb33870b0592fbea9aeaf5361ab590ee2600b
+    zyncAuthToken:
+      override: zync-auth-token
+  api:
+    hpa: {}
+    pdb: {}
+    replicas: 1
+    resources: {}
+  console:
+    enabled: true
+    resources: {}
+  que:
+    hpa: {}
+    pdb: {}
+    replicas: 1
+    resources: {}

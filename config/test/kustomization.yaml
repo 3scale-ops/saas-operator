@@ -3,13 +3,7 @@ kind: Kustomization
 namespace: default
 resources:
   - ../default
-  - external-apis/grafanadashboards.integreatly.org.yaml
-  - external-apis/podmonitors.monitoring.coreos.com.yaml
-  - external-apis/servicemonitors.monitoring.coreos.com.yaml
-  - external-apis/externalsecrets.external-secrets.io.yaml
-  - external-apis/envoyconfigs.marin3r.3scale.net.yaml
-  - external-apis/pipelines.tekton.dev.yaml
-  - external-apis/tasks.tekton.dev.yaml
+
 patches:
   - target:
       group: apps
@@ -51,3 +45,17 @@ patches:
         value: ClusterRole
       - op: remove
         path: /metadata/namespace
+
+# For redis backups testing
+generatorOptions:
+  disableNameSuffixHash: true
+
+secretGenerator:
+- name: redis-backup-ssh-private-key
+  type: kubernetes.io/ssh-auth
+  files:
+    - ssh-privatekey=../../test/assets/redis-with-ssh/test-ssh-key
+- name: aws-credentials
+  literals:
+    - AWS_ACCESS_KEY_ID=admin
+    - AWS_SECRET_ACCESS_KEY=admin123

@@ -1,0 +1,36 @@
+production:
+  superdomain: "<%= ENV.fetch('THREESCALE_SUPERDOMAIN') %>"
+  secure_cookie: true
+  tenant_mode: multitenant
+  force_ssl: true
+  active_docs_proxy_disabled: false
+  apicast_oauth: false
+  apicast_custom_url: false
+  daily_weekly_reports_pref: true
+  readonly_custom_domains_settings: true
+  asset_host: <%= ENV.fetch('RAILS_ASSET_HOST', nil) %>
+  bugsnag_api_key: "<%= ENV.fetch('BUGSNAG_API_KEY') %>"
+  bugsnag_release_stage: <%= ENV.fetch('BUGSNAG_RELEASE_STAGE', Rails.env) %>
+  events_shared_secret: "<%= ENV.fetch('EVENTS_SHARED_SECRET') %>"
+  recaptcha_public_key: "<%= ENV.fetch('RECAPTCHA_PUBLIC_KEY') %>"
+  recaptcha_private_key: "<%= ENV.fetch('RECAPTCHA_PRIVATE_KEY') %>"
+  user_session_ttl: <%= ENV.fetch('USER_SESSION_TTL', 2.weeks) %>
+  noreply_email: "admin@cluster.local"
+  support_email: "admin@cluster.local"
+  sales_email: "admin@cluster.local"
+  notification_email: "admin@cluster.local"
+  report_traffic: true
+  db_secret: "<%= ENV.fetch('DB_SECRET') %>"
+  janitor_worker_enabled: true
+  billing_canaries: []
+  email_sanitizer:
+    enabled: true
+    to: "admin@cluster.local"
+  # access_code: "<%= ENV['ACCESS_CODE'] %>"
+  zync_authentication_token: <%= ENV.fetch('ZYNC_AUTHENTICATION_TOKEN') %>
+  sysadmin_email: "admin@cluster.local"
+  impersonation_admin:
+    username: saas_impersonation_admin
+    domain: 3scale.redhat.com
+  active_merchant_mode: :test
+  bulk_indexing_queue: bulk_indexing

@@ -1,0 +1,25 @@
+namespace: minio
+resources:
+  - namespace.yaml
+helmCharts:
+  - name: minio
+    repo: https://charts.min.io
+    version: v5.0.13
+    releaseName: minio
+    namespace: minio
+    valuesInline:
+      mode: standalone
+      persistence:
+        enabled: false
+      resources:
+        requests:
+          memory: 1Mi
+      buckets:
+        - name: backups
+          purge: true
+          versioning: false
+        - name: system-assets
+          purge: true
+          versioning: false
+      rootUser: admin
+      rootPassword: admin123

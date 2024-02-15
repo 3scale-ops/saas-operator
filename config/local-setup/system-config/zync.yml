@@ -1,0 +1,8 @@
+production:
+  endpoint: <%= ENV.fetch('ZYNC_ENDPOINT', 'http://zync:8080') %>
+  authentication:
+    token: <%= ENV.fetch('ZYNC_AUTHENTICATION_TOKEN') %>
+  connect_timeout: 2
+  send_timeout: 2
+  receive_timeout: 10
+  skip_non_oidc_applications: true

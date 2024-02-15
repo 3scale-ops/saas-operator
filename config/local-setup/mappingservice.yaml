@@ -1,0 +1,18 @@
+apiVersion: saas.3scale.net/v1alpha1
+kind: MappingService
+metadata:
+  name: mapping-service
+spec:
+  config:
+    apiHost: https://multitenant-admin.system-172-27-27-105.nip.io
+    systemAdminToken:
+      override: apicast-mtoken
+  image:
+    name: REPLACE
+    tag: REPLACE
+    pullSecretName: pull-secrets
+    pullPolicy: Always
+  hpa: {}
+  pdb: {}
+  replicas: 1
+  resources: {}

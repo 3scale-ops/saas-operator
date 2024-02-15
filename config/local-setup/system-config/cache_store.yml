@@ -1,0 +1,3 @@
+production:
+  - :mem_cache_store
+  - <%= ENV.fetch('MEMCACHE_SERVERS') %>

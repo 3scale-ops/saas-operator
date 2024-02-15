@@ -1,0 +1,20 @@
+production:
+  account_deletion:
+    enabled: true
+    account_inactivity: 365
+    account_suspension: 90
+    contract_unpaid_time: 183
+    disabled_for_app_plans:
+    - "%enterprise%"
+  segment_deletion:
+    enabled: false
+    token: "<%= ENV.fetch('SEGMENT_DELETION_TOKEN') %>"
+    root_uri: https://platform.segmentapis.com/v1beta
+    workspace:  "<%= ENV.fetch('SEGMENT_DELETION_WORKSPACE') %>"
+    api: regulations
+    request_size: 1000
+    wait_time: 5
+  quickstarts:
+    enabled: true
+  email_configuration:
+    enabled: true

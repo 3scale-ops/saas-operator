@@ -1,0 +1,102 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: generic
+spec:
+  addresses:
+    - 172.27.27.150-172.27.27.200
+
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: backend
+spec:
+  addresses:
+    - 172.27.27.100/32
+  serviceAllocation:
+    priority: 1
+    serviceSelectors:
+      - matchLabels:
+          threescale_component: backend
+          threescale_component_element: listener
+
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: apicast-production
+spec:
+  addresses:
+    - 172.27.27.101/32
+  serviceAllocation:
+    priority: 1
+    serviceSelectors:
+      - matchLabels:
+          threescale_component: apicast-production
+          threescale_component_element: gateway
+
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: apicast-staging
+spec:
+  addresses:
+    - 172.27.27.102/32
+  serviceAllocation:
+    priority: 1
+    serviceSelectors:
+      - matchLabels:
+          threescale_component: apicast-staging
+          threescale_component_element: gateway
+
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: echo-api
+spec:
+  addresses:
+    - 172.27.27.103/32
+  serviceAllocation:
+    priority: 1
+    serviceSelectors:
+      - matchLabels:
+          app: echo-api
+          part-of: 3scale-saas
+
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: autossl
+spec:
+  addresses:
+    - 172.27.27.104/32
+  serviceAllocation:
+    priority: 1
+    serviceSelectors:
+      - matchLabels:
+          app: autossl
+          part-of: 3scale-saas
+
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: system
+spec:
+  addresses:
+    - 172.27.27.105/32
+  serviceAllocation:
+    priority: 1
+    serviceSelectors:
+      - matchLabels:
+          app: mt-ingress
+
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: empty

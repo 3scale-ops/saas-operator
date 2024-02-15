@@ -1,0 +1,94 @@
+---
+apiVersion: saas.3scale.net/v1alpha1
+kind: Backend
+metadata:
+  name: backend
+spec:
+  image:
+    name: REPLACE
+    tag: REPLACE
+    pullSecretName: pull-secrets
+    pullPolicy: Always
+  config:
+    masterServiceID: 1
+    internalAPIPassword:
+      override: backend-internal-api-password
+    internalAPIUser:
+      override: backend-internal-api-user
+    rackEnv: preview
+    redisQueuesDSN: "redis://backend-redis:6379/1"
+    redisStorageDSN: "redis://backend-redis:6379/0"
+    systemEventsHookPassword:
+      override: system-events-shared-secret
+    systemEventsHookURL:
+      override: "https://system-172-27-27-105.nip.io/master/events/import"
+  listener:
+    config:
+      listenerWorkers: 1
+      redisAsync: true
+    endpoint: {dns: []}
+    hpa: {}
+    marin3r:
+      dynamicConfigs:
+        backend_listener_cluster:
+          cluster:
+            host: 127.0.0.1
+            port: 3000
+        http:
+          listenerHttp:
+            proxyProtocol: false
+            port: 38080
+            routeConfigName: router_external
+        http_internal:
+          listenerHttp:
+            port: 38081
+            proxyProtocol: false
+            routeConfigName: router_internal
+        router_external:
+          routeConfiguration:
+            virtualHosts:
+              - domains: ["*"]
+                name: backend_listener
+                routes:
+                  - direct_response:
+                      status: "404"
+                    match:
+                      prefix: /internal
+                  - match:
+                      prefix: /
+                    route:
+                      cluster: backend_listener_cluster
+        router_internal:
+          routeConfiguration:
+            virtualHosts:
+              - domains: ["*"]
+                name: backend_listener
+                routes:
+                  - match:
+                      prefix: /
+                    route:
+                      cluster: backend_listener_cluster
+      envoyImage: REPLACE
+      nodeID: backend-listener
+      ports:
+        - name: backend-http
+          port: 38080
+        - name: http-internal
+          port: 38081
+        - name: backend-https
+          port: 38443
+        - name: envoy-metrics
+          port: 9901
+      resources: {}
+      shtdnmgrExtraLifecycleHooks:
+        - backend-listener
+    pdb: {}
+    replicas: 1
+    resources: {}
+  worker:
+    config:
+      redisAsync: true
+    hpa: {}
+    pdb: {}
+    replicas: 1
+    resources: {}

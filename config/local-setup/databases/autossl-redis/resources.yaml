@@ -1,0 +1,24 @@
+---
+apiVersion: saas.3scale.net/v1alpha1
+kind: RedisShard
+metadata:
+  name: autossl-redis
+spec:
+  slaveCount: 0
+  image:
+    tag: 6.2.13-alpine
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: autossl-redis
+spec:
+  ports:
+    - name: redis
+      port: 6379
+      protocol: TCP
+      targetPort: redis-server
+  selector:
+    redis-shard: autossl-redis
+  type: ClusterIP

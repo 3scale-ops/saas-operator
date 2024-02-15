@@ -1,0 +1,24 @@
+---
+apiVersion: saas.3scale.net/v1alpha1
+kind: RedisShard
+metadata:
+  name: backend-redis
+spec:
+  slaveCount: 0
+  image:
+    tag: 6.2.13-alpine
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-redis
+spec:
+  ports:
+    - name: redis
+      port: 6379
+      protocol: TCP
+      targetPort: redis-server
+  selector:
+    redis-shard: backend-redis
+  type: ClusterIP

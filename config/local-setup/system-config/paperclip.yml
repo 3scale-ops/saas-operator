@@ -1,0 +1,2 @@
+production:
+  storage: :s3

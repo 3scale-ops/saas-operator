@@ -24,8 +24,9 @@ import (
 const (
 	awsCredentials = "aws-credentials"
 	sshPrivateKey  = "redis-backup-ssh-private-key"
-	bucketName     = "my-bucket"
-	backupsPath    = "backups"
+	bucketName     = "backups"
+	backupsPath    = "redis"
+	minioNamespace = "minio"
 )
 
 var _ = Describe("shardedredisbackup e2e suite", func() {
@@ -167,7 +168,7 @@ var _ = Describe("shardedredisbackup e2e suite", func() {
 					CredentialsSecretRef: corev1.LocalObjectReference{
 						Name: "aws-credentials",
 					},
-					ServiceEndpoint: util.Pointer("http://minio.default.svc.cluster.local:9000"),
+					ServiceEndpoint: util.Pointer(fmt.Sprintf("http://minio.%s.svc.cluster.local:9000", minioNamespace)),
 				},
 				PollInterval: &metav1.Duration{Duration: 1 * time.Second},
 			},
@@ -243,7 +244,7 @@ var _ = Describe("shardedredisbackup e2e suite", func() {
 		ctx := context.Background()
 		list := &corev1.PodList{}
 		err := k8sClient.List(context.Background(), list,
-			client.InNamespace("default"),
+			client.InNamespace(minioNamespace),
 			client.MatchingLabels{"app": "minio"})
 		Expect(err).ToNot(HaveOccurred())
 		Expect(len(list.Items)).To(Equal(1))

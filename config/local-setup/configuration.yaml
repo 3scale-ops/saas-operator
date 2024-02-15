@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config
+data:
+  # APICAST CONFIGURATION
+  APICAST_IMAGE_NAME: quay.io/3scale/apicast-cloud-hosted
+  APICAST_IMAGE_TAG: apicast-3scale2.13-1.23.0-12-001
+
+  # MAPPINGSERVICE CONFIGURATION
+  MAPPINGSERVICE_IMAGE_NAME: quay.io/3scale/apicast-cloud-hosted
+  MAPPINGSERVICE_IMAGE_TAG: mapping-service-3scale2.13-1.23.0-12-001
+
+  # AUTOSSL CONFIGURATION
+  AUTOSSL_IMAGE_NAME: quay.io/3scale/autossl
+  AUTOSSL_IMAGE_TAG: v1.0.1
+
+  # BACKEND CONFIGURATION
+  BACKEND_IMAGE_NAME: brew.registry.redhat.io/rh-osbs/3scale-amp2-backend-rhel8
+  BACKEND_IMAGE_TAG: 3scale-amp-2-containers-candidate-89143-20221018113511
+
+  # CORSPROXY
+  CORSPROXY_IMAGE_NAME: quay.io/3scale/cors-proxy
+  CORSPROXY_IMAGE_TAG: v1.1.0
+
+  # ECHOAPI CONFIGURATION
+  ECHOAPI_IMAGE_NAME: quay.io/3scale/echoapi
+  ECHOAPI_IMAGE_TAG: v1.0.3
+
+  # SYSTEM CONFIGURATION
+  SYSTEM_IMAGE_NAME: brew.registry.redhat.io/rh-osbs/3scale-amp2-system-rhel7
+  SYSTEM_IMAGE_TAG: 1.17.0-355
+  SEARCHD_IMAGE_NAME: brew.registry.redhat.io/rh-osbs/3scale-amp2-3scale-manticore-search-rhel9
+  SEARCHD_IMAGE_TAG: 1.0.0-3
+
+  # ZYNC CONFIGURATION
+  ZYNC_IMAGE_NAME: brew.registry.redhat.io/rh-osbs/3scale-amp2-zync-rhel9
+  ZYNC_IMAGE_TAG: 1.15.0-136
+
+  # ENVOY CONFIGURATION
+  ENVOY_IMAGE: envoyproxy/envoy:v1.22.11
