@@ -1,2 +1,2 @@
 resources:
- - https://github.com/grafana/grafana-operator/config/crd/?ref=v4.10.1
+ - https://github.com/grafana/grafana-operator/config/crd/?ref=v5.8.0

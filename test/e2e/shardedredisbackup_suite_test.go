@@ -258,6 +258,6 @@ var _ = Describe("shardedredisbackup e2e suite", func() {
 			Key:    aws.String(strings.TrimPrefix(*backupResult.BackupFile, fmt.Sprintf("s3://%s/", bucketName))),
 		})
 		Expect(err).ToNot(HaveOccurred())
-		Expect(result.ContentLength).To(Equal(*backupResult.BackupSize))
+		Expect(*result.ContentLength).To(Equal(*backupResult.BackupSize))
 	})
 })

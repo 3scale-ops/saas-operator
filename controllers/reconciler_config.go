@@ -68,7 +68,6 @@ func init() {
 				"metadata.annotations",
 				"metadata.labels",
 				"spec.minReadySeconds",
-				"spec.persistentVolumeClaimRetentionPolicy",
 				"spec.podManagementPolicy",
 				"spec.replicas",
 				"spec.selector",

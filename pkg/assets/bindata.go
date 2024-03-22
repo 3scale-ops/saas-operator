@@ -241,7 +241,7 @@ func dashboardsSystemJsonGtpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "dashboards/system.json.gtpl", size: 80491, mode: os.FileMode(420), modTime: time.Unix(1704814439, 0)}
+	info := bindataFileInfo{name: "dashboards/system.json.gtpl", size: 80491, mode: os.FileMode(420), modTime: time.Unix(1704992097, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

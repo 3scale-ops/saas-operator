@@ -8,7 +8,7 @@ import (
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	testutil "github.com/3scale-ops/saas-operator/test/util"
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
-	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
+	grafanav1beta1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
@@ -127,7 +127,7 @@ var _ = Describe("CORSProxy controller", func() {
 				(&testutil.ExpectedResource{
 					Name:      "cors-proxy",
 					Namespace: namespace,
-				}).Assert(k8sClient, &grafanav1alpha1.GrafanaDashboard{}, timeout, poll))
+				}).Assert(k8sClient, &grafanav1beta1.GrafanaDashboard{}, timeout, poll))
 
 		})
 
@@ -219,7 +219,7 @@ var _ = Describe("CORSProxy controller", func() {
 						Name:      "cors-proxy",
 						Namespace: namespace,
 						Missing:   true,
-					}).Assert(k8sClient, &grafanav1alpha1.GrafanaDashboard{}, timeout, poll))
+					}).Assert(k8sClient, &grafanav1beta1.GrafanaDashboard{}, timeout, poll))
 
 			})
 

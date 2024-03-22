@@ -35,7 +35,7 @@ import (
 	"github.com/3scale-ops/basereconciler/util"
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
-	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
+	grafanav1beta1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	//+kubebuilder:scaffold:imports
 )
@@ -79,7 +79,7 @@ var _ = BeforeSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 	err = monitoringv1.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
-	err = grafanav1alpha1.AddToScheme(scheme.Scheme)
+	err = grafanav1beta1.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
 	err = externalsecretsv1beta1.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())

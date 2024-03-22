@@ -40,7 +40,10 @@ func (br *Runner) CheckBackup(ctx context.Context) error {
 		return err
 	}
 	// store backup size
-	br.status.BackupSize = latest.Size
+	// rvazquez: I'm not sure if this value can be nil
+	if latest.Size != nil {
+		br.status.BackupSize = *latest.Size
+	}
 
 	return nil
 }

@@ -15,7 +15,7 @@ import (
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/podmonitor"
 	operatorutil "github.com/3scale-ops/saas-operator/pkg/util"
 	deployment_workload "github.com/3scale-ops/saas-operator/pkg/workloads/deployment"
-	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
+	grafanav1beta1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -118,7 +118,7 @@ func (gen *Generator) Resources() ([]resource.TemplateInterface, error) {
 
 	misc := []resource.TemplateInterface{
 		// GrafanaDashboard
-		resource.NewTemplate[*grafanav1alpha1.GrafanaDashboard](
+		resource.NewTemplate[*grafanav1beta1.GrafanaDashboard](
 			grafanadashboard.New(gen.GetKey(), gen.GetLabels(), gen.GrafanaDashboardSpec, "dashboards/zync.json.gtpl")).
 			WithEnabled(!gen.GrafanaDashboardSpec.IsDeactivated()),
 	}

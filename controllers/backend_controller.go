@@ -24,9 +24,7 @@ import (
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/pkg/generators/backend"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 // BackendReconciler reconciles a Backend object
@@ -43,7 +41,7 @@ type BackendReconciler struct {
 // +kubebuilder:rbac:groups="monitoring.coreos.com",namespace=placeholder,resources=podmonitors,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="autoscaling",namespace=placeholder,resources=horizontalpodautoscalers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="policy",namespace=placeholder,resources=poddisruptionbudgets,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups="integreatly.org",namespace=placeholder,resources=grafanadashboards,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="grafana.integreatly.org",namespace=placeholder,resources=grafanadashboards,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="external-secrets.io",namespace=placeholder,resources=externalsecrets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="marin3r.3scale.net",namespace=placeholder,resources=envoyconfigs,verbs=get;list;watch;create;update;patch;delete
 
@@ -82,7 +80,6 @@ func (r *BackendReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return reconciler.SetupWithDynamicTypeWatches(r,
 		ctrl.NewControllerManagedBy(mgr).
 			For(&saasv1alpha1.Backend{}).
-			Watches(&source.Kind{Type: &corev1.Secret{TypeMeta: metav1.TypeMeta{Kind: "Secret"}}},
-				r.FilteredEventHandler(&saasv1alpha1.BackendList{}, nil, r.Log)),
+			Watches(&corev1.Secret{}, r.FilteredEventHandler(&saasv1alpha1.BackendList{}, nil, r.Log)),
 	)
 }
