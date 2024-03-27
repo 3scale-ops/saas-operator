@@ -35,7 +35,7 @@ func New(key types.NamespacedName, labels map[string]string, selector map[string
 // PodMetricsEndpoint returns a monitoringv1.PodMetricsEndpoint
 func PodMetricsEndpoint(path, port string, interval int32) monitoringv1.PodMetricsEndpoint {
 	return monitoringv1.PodMetricsEndpoint{
-		Interval: fmt.Sprintf("%ds", interval),
+		Interval: monitoringv1.Duration(fmt.Sprintf("%ds", interval)),
 		Path:     path,
 		Port:     port,
 		Scheme:   "http",

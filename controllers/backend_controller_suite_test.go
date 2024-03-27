@@ -10,7 +10,7 @@ import (
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	testutil "github.com/3scale-ops/saas-operator/test/util"
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
-	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
+	grafanav1beta1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
@@ -194,7 +194,7 @@ var _ = Describe("Backend controller", func() {
 
 		It("creates the required backend shared resources", func() {
 
-			gd := &grafanav1alpha1.GrafanaDashboard{}
+			gd := &grafanav1beta1.GrafanaDashboard{}
 			By("deploying the backend grafana dashboard",
 				(&testutil.ExpectedResource{Name: "backend", Namespace: namespace}).
 					Assert(k8sClient, gd, timeout, poll))

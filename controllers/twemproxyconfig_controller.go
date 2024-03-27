@@ -33,7 +33,7 @@ import (
 	redis "github.com/3scale-ops/saas-operator/pkg/redis/server"
 	operatorutils "github.com/3scale-ops/saas-operator/pkg/util"
 	"github.com/go-logr/logr"
-	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
+	grafanav1beta1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -57,7 +57,7 @@ type TwemproxyConfigReconciler struct {
 // +kubebuilder:rbac:groups=saas.3scale.net,namespace=placeholder,resources=twemproxyconfigs/finalizers,verbs=update
 // +kubebuilder:rbac:groups="core",namespace=placeholder,resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="core",namespace=placeholder,resources=pods,verbs=list;patch
-// +kubebuilder:rbac:groups="integreatly.org",namespace=placeholder,resources=grafanadashboards,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="grafana.integreatly.org",namespace=placeholder,resources=grafanadashboards,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -259,8 +259,8 @@ func (r *TwemproxyConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&saasv1alpha1.TwemproxyConfig{}).
 		Owns(&corev1.ConfigMap{}).
-		Owns(&grafanav1alpha1.GrafanaDashboard{}).
-		Watches(&source.Channel{Source: r.SentinelEvents.GetChannel()}, &handler.EnqueueRequestForObject{}).
+		Owns(&grafanav1beta1.GrafanaDashboard{}).
+		WatchesRawSource(&source.Channel{Source: r.SentinelEvents.GetChannel()}, &handler.EnqueueRequestForObject{}).
 		WithOptions(controller.Options{
 			RateLimiter: PermissiveRateLimiter(),
 			// this allows for different resources to be reconciled in parallel

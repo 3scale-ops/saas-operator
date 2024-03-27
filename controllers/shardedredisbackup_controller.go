@@ -290,6 +290,6 @@ func (r *ShardedRedisBackupReconciler) reconcileBackupList(ctx context.Context, 
 func (r *ShardedRedisBackupReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&saasv1alpha1.ShardedRedisBackup{}).
-		Watches(&source.Channel{Source: r.BackupRunner.GetChannel()}, &handler.EnqueueRequestForObject{}).
+		WatchesRawSource(&source.Channel{Source: r.BackupRunner.GetChannel()}, &handler.EnqueueRequestForObject{}).
 		Complete(r)
 }

@@ -15,7 +15,7 @@ import (
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/grafanadashboard"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/twemproxy"
 	"github.com/go-logr/logr"
-	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
+	grafanav1beta1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	"github.com/prometheus/client_golang/prometheus"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -220,7 +220,7 @@ func (gen *Generator) ConfigMap() *resource.Template[*corev1.ConfigMap] {
 	return resource.NewTemplateFromObjectFunction(func() *corev1.ConfigMap { return gen.configMap(true) })
 }
 
-func (gen *Generator) GrafanaDashboard() *resource.Template[*grafanav1alpha1.GrafanaDashboard] {
+func (gen *Generator) GrafanaDashboard() *resource.Template[*grafanav1beta1.GrafanaDashboard] {
 	return resource.NewTemplate(
 		grafanadashboard.New(types.NamespacedName{Name: fmt.Sprintf("%s-%s", gen.InstanceName, gen.Component), Namespace: gen.Namespace},
 			gen.GetLabels(), *gen.Spec.GrafanaDashboard, "dashboards/twemproxy.json.gtpl")).

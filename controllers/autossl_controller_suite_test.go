@@ -6,7 +6,7 @@ import (
 	"github.com/3scale-ops/basereconciler/util"
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	testutil "github.com/3scale-ops/saas-operator/test/util"
-	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
+	grafanav1beta1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
@@ -132,7 +132,7 @@ var _ = Describe("AutoSSL controller", func() {
 				(&testutil.ExpectedResource{
 					Name:      "autossl",
 					Namespace: namespace,
-				}).Assert(k8sClient, &grafanav1alpha1.GrafanaDashboard{}, timeout, poll))
+				}).Assert(k8sClient, &grafanav1beta1.GrafanaDashboard{}, timeout, poll))
 
 		})
 
@@ -192,7 +192,7 @@ var _ = Describe("AutoSSL controller", func() {
 						Name:      "autossl",
 						Namespace: namespace,
 						Missing:   true,
-					}).Assert(k8sClient, &grafanav1alpha1.GrafanaDashboard{}, timeout, poll))
+					}).Assert(k8sClient, &grafanav1beta1.GrafanaDashboard{}, timeout, poll))
 
 				dep := &appsv1.Deployment{}
 				By("updating the AutoSSL workload",

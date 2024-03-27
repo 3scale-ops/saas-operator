@@ -32,7 +32,7 @@ import (
 	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
 	operatorutils "github.com/3scale-ops/saas-operator/pkg/util"
 	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
-	grafanav1alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
+	grafanav1beta1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	apimachineryruntime "k8s.io/apimachinery/pkg/runtime"
@@ -41,6 +41,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/controllers"
@@ -68,7 +69,7 @@ func init() {
 
 	utilruntime.Must(saasv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(monitoringv1.AddToScheme(scheme))
-	utilruntime.Must(grafanav1alpha1.AddToScheme(scheme))
+	utilruntime.Must(grafanav1beta1.AddToScheme(scheme))
 	utilruntime.Must(externalsecretsv1beta1.AddToScheme(scheme))
 	utilruntime.Must(marin3rv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(pipelinev1beta1.AddToScheme(scheme))
@@ -102,23 +103,28 @@ func main() {
 	}
 
 	options := ctrl.Options{
-		Scheme:                 scheme,
-		MetricsBindAddress:     metricsAddr,
+		Scheme: scheme,
+		Metrics: metricsserver.Options{
+			BindAddress: metricsAddr,
+		},
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "256bc75b.3scale.net",
-		Namespace:              watchNamespace, // namespaced-scope when the value is not an empty string
 	}
 
 	if strings.Contains(watchNamespace, ",") {
 		setupLog.Info(fmt.Sprintf("manager in MultiNamespaced mode will be watching namespaces %q", watchNamespace))
-		options.NewCache = cache.MultiNamespacedCacheBuilder(strings.Split(watchNamespace, ","))
+		options.Cache = cache.Options{DefaultNamespaces: map[string]cache.Config{}}
+		for _, ns := range strings.Split(watchNamespace, ",") {
+			options.Cache.DefaultNamespaces[ns] = cache.Config{}
+		}
 	} else if watchNamespace != "" {
 		setupLog.Info(fmt.Sprintf("manager in Namespaced mode will be watching namespace %q", watchNamespace))
-		options.Namespace = watchNamespace
+		options.Cache = cache.Options{DefaultNamespaces: map[string]cache.Config{
+			watchNamespace: {},
+		}}
 	} else {
-		setupLog.Info("manager in cluster mode will be watching all namespaces")
-		options.Namespace = ""
+		setupLog.Info("manager in Cluster scope mode will be watching all namespaces")
 	}
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), options)

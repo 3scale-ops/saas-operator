@@ -56,7 +56,7 @@ type SentinelReconciler struct {
 // +kubebuilder:rbac:groups="apps",namespace=placeholder,resources=statefulsets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="monitoring.coreos.com",namespace=placeholder,resources=podmonitors,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="policy",namespace=placeholder,resources=poddisruptionbudgets,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups="integreatly.org",namespace=placeholder,resources=grafanadashboards,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="grafana.integreatly.org",namespace=placeholder,resources=grafanadashboards,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -206,7 +206,7 @@ func (r *SentinelReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return reconciler.SetupWithDynamicTypeWatches(r,
 		ctrl.NewControllerManagedBy(mgr).
 			For(&saasv1alpha1.Sentinel{}).
-			Watches(&source.Channel{Source: r.SentinelEvents.GetChannel()}, &handler.EnqueueRequestForObject{}).
+			WatchesRawSource(&source.Channel{Source: r.SentinelEvents.GetChannel()}, &handler.EnqueueRequestForObject{}).
 			WithOptions(controller.Options{RateLimiter: PermissiveRateLimiter()}),
 	)
 }
