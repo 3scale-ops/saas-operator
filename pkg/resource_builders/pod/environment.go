@@ -28,8 +28,15 @@ type Option struct {
 	set         bool
 }
 
-func (o *Option) IntoEnvvar(e string) *Option  { o.envVariable = e; return o }
-func (o *Option) AsSecretRef(s string) *Option { o.secretName = s; return o }
+func (o *Option) IntoEnvvar(e string) *Option { o.envVariable = e; return o }
+func (o *Option) AsSecretRef(s string) *Option {
+	if o.secretValue != nil && o.secretValue.FromSeed != nil {
+		o.secretName = saasv1alpha1.DefaultSeedSecret
+	} else {
+		o.secretName = s
+	}
+	return o
+}
 func (o *Option) EmptyIf(empty bool) *Option {
 	if empty {
 		o.secretValue = nil

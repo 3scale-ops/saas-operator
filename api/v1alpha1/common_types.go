@@ -37,6 +37,8 @@ const (
 	// AnnotationsDomain is a common prefix for all "rollout triggering"
 	// annotation keys
 	AnnotationsDomain string = "saas.3scale.net"
+	// The name for the default seed Secret
+	DefaultSeedSecret string = "saas-seed"
 )
 
 var (
@@ -567,6 +569,11 @@ type SecretReference struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Override *string `json:"override,omitempty"`
+	// FromSeed will try to retrieve the secret value from
+	// the default seed Secret.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	FromSeed *SeedSecretReference `json:"fromSeed,omitempty"`
 }
 
 // VaultSecretReference is a reference to a secret stored in
@@ -580,8 +587,12 @@ type VaultSecretReference struct {
 	Key string `json:"key"`
 }
 
-func (spec *VaultSecretReference) Default() {
-}
+func (spec *VaultSecretReference) Default() {}
+
+// SeedSecretReference represents options to
+// retrieve the secret value from the default seed Secret.
+// There are no configurable options at this point.
+type SeedSecretReference struct{}
 
 // ExternalSecretSecretStoreReferenceSpec is a reference to a secret store
 type ExternalSecretSecretStoreReferenceSpec struct {

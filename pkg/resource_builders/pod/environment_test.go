@@ -236,6 +236,33 @@ func TestOptions_BuildEnvironment(t *testing.T) {
 				Value: "100",
 			}},
 		},
+		{
+			name: "SecretReference from seed",
+			opts: func() *Options {
+				o := &Options{}
+				o.Unpack(saasv1alpha1.SecretReference{Override: util.Pointer("value1")}).IntoEnvvar("envvar1")
+				o.Unpack(saasv1alpha1.SecretReference{FromSeed: &saasv1alpha1.SeedSecretReference{}}).IntoEnvvar("envvar2").AsSecretRef("some-secret")
+				return o
+			}(),
+			args: args{extra: []corev1.EnvVar{}},
+			want: []corev1.EnvVar{
+				{
+					Name:  "envvar1",
+					Value: "value1",
+				},
+				{
+					Name: "envvar2",
+					ValueFrom: &corev1.EnvVarSource{
+						SecretKeyRef: &corev1.SecretKeySelector{
+							LocalObjectReference: corev1.LocalObjectReference{
+								Name: saasv1alpha1.DefaultSeedSecret,
+							},
+							Key: "envvar2",
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
