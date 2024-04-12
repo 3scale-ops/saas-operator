@@ -2,6 +2,7 @@ package config
 
 import (
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/generators/seed"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 )
 
@@ -21,10 +22,18 @@ func NewWorkerOptions(spec saasv1alpha1.BackendSpec) pod.Options {
 	opts.Unpack(spec.Worker.Config.LogFormat).IntoEnvvar("CONFIG_WORKERS_LOGGER_FORMATTER")
 	opts.Unpack("true").IntoEnvvar("CONFIG_WORKER_PROMETHEUS_METRICS_ENABLED")
 	opts.Unpack("9421").IntoEnvvar("CONFIG_WORKER_PROMETHEUS_METRICS_PORT")
-	opts.Unpack(spec.Config.SystemEventsHookURL).IntoEnvvar("CONFIG_EVENTS_HOOK").AsSecretRef("backend-system-events-hook")
-	opts.Unpack(spec.Config.SystemEventsHookPassword).IntoEnvvar("CONFIG_EVENTS_HOOK_SHARED_SECRET").AsSecretRef("backend-system-events-hook")
-	opts.Unpack(spec.Config.ErrorMonitoringService).IntoEnvvar("CONFIG_HOPTOAD_SERVICE").AsSecretRef("backend-error-monitoring")
-	opts.Unpack(spec.Config.ErrorMonitoringKey).IntoEnvvar("CONFIG_HOPTOAD_API_KEY").AsSecretRef("backend-error-monitoring")
+	opts.Unpack(spec.Config.SystemEventsHookURL).IntoEnvvar("CONFIG_EVENTS_HOOK").
+		AsSecretRef(BackendSystemEventsSecret).
+		WithSeedKey(seed.SystemEventsHookURL)
+	opts.Unpack(spec.Config.SystemEventsHookPassword).IntoEnvvar("CONFIG_EVENTS_HOOK_SHARED_SECRET").
+		AsSecretRef(BackendSystemEventsSecret).
+		WithSeedKey(seed.SystemEventsHookSharedSecret)
+	opts.Unpack(spec.Config.ErrorMonitoringService).IntoEnvvar("CONFIG_HOPTOAD_SERVICE").
+		AsSecretRef(BackendErrorMonitoringSecret).
+		WithSeedKey(seed.BackendErrorMonitoringService)
+	opts.Unpack(spec.Config.ErrorMonitoringKey).IntoEnvvar("CONFIG_HOPTOAD_API_KEY").
+		AsSecretRef(BackendErrorMonitoringSecret).
+		WithSeedKey(seed.BackendErrorMonitoringApiKey)
 
 	return opts
 }

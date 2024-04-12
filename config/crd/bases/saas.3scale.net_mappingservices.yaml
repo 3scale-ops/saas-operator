@@ -70,6 +70,10 @@ spec:
                     description: A reference to the secret holding the system admin
                       token
                     properties:
+                      fromSeed:
+                        description: FromSeed will try to retrieve the secret value
+                          from the default seed Secret.
+                        type: object
                       fromVault:
                         description: FromVault is a reference to a secret key/value
                           stored in a Hashicorp Vault

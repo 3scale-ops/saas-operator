@@ -2,6 +2,7 @@ package config
 
 import (
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
+	"github.com/3scale-ops/saas-operator/pkg/generators/seed"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 )
 
@@ -22,10 +23,18 @@ func NewListenerOptions(spec saasv1alpha1.BackendSpec) pod.Options {
 	opts.Unpack(spec.Listener.Config.ListenerWorkers).IntoEnvvar("LISTENER_WORKERS")
 	opts.Unpack(spec.Listener.Config.LegacyReferrerFilters).IntoEnvvar("CONFIG_LEGACY_REFERRER_FILTERS")
 	opts.Unpack("true").IntoEnvvar("CONFIG_LISTENER_PROMETHEUS_METRICS_ENABLED")
-	opts.Unpack(spec.Config.InternalAPIUser).IntoEnvvar("CONFIG_INTERNAL_API_USER").AsSecretRef("backend-internal-api")
-	opts.Unpack(spec.Config.InternalAPIPassword).IntoEnvvar("CONFIG_INTERNAL_API_PASSWORD").AsSecretRef("backend-internal-api")
-	opts.Unpack(spec.Config.ErrorMonitoringService).IntoEnvvar("CONFIG_HOPTOAD_SERVICE").AsSecretRef("backend-error-monitoring")
-	opts.Unpack(spec.Config.ErrorMonitoringKey).IntoEnvvar("CONFIG_HOPTOAD_API_KEY").AsSecretRef("backend-error-monitoring")
+	opts.Unpack(spec.Config.InternalAPIUser).IntoEnvvar("CONFIG_INTERNAL_API_USER").
+		AsSecretRef(BackendInternalApiSecret).
+		WithSeedKey(seed.BackendInternalApiUser)
+	opts.Unpack(spec.Config.InternalAPIPassword).IntoEnvvar("CONFIG_INTERNAL_API_PASSWORD").
+		AsSecretRef(BackendInternalApiSecret).
+		WithSeedKey(seed.BackendInternalApiPassword)
+	opts.Unpack(spec.Config.ErrorMonitoringService).IntoEnvvar("CONFIG_HOPTOAD_SERVICE").
+		AsSecretRef(BackendErrorMonitoringSecret).
+		WithSeedKey(seed.BackendErrorMonitoringService)
+	opts.Unpack(spec.Config.ErrorMonitoringKey).IntoEnvvar("CONFIG_HOPTOAD_API_KEY").
+		AsSecretRef(BackendErrorMonitoringSecret).
+		WithSeedKey(seed.BackendErrorMonitoringApiKey)
 
 	return opts
 }

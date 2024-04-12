@@ -579,6 +579,10 @@ spec:
                       apiKey:
                         description: API key
                         properties:
+                          fromSeed:
+                            description: FromSeed will try to retrieve the secret
+                              value from the default seed Secret.
+                            type: object
                           fromVault:
                             description: FromVault is a reference to a secret key/value
                               stored in a Hashicorp Vault
@@ -607,6 +611,10 @@ spec:
                   databaseDSN:
                     description: A reference to the secret holding the database DSN
                     properties:
+                      fromSeed:
+                        description: FromSeed will try to retrieve the secret value
+                          from the default seed Secret.
+                        type: object
                       fromVault:
                         description: FromVault is a reference to a secret key/value
                           stored in a Hashicorp Vault
@@ -670,6 +678,10 @@ spec:
                   secretKeyBase:
                     description: A reference to the secret holding the secret-key-base
                     properties:
+                      fromSeed:
+                        description: FromSeed will try to retrieve the secret value
+                          from the default seed Secret.
+                        type: object
                       fromVault:
                         description: FromVault is a reference to a secret key/value
                           stored in a Hashicorp Vault
@@ -693,6 +705,10 @@ spec:
                     description: A reference to the secret holding the zync authentication
                       token
                     properties:
+                      fromSeed:
+                        description: FromSeed will try to retrieve the secret value
+                          from the default seed Secret.
+                        type: object
                       fromVault:
                         description: FromVault is a reference to a secret key/value
                           stored in a Hashicorp Vault
