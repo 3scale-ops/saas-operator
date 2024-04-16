@@ -25,114 +25,97 @@ const (
 func NewOptions(spec saasv1alpha1.SystemSpec) pod.Options {
 	opts := pod.Options{}
 
-	opts.Unpack(spec.Config.ForceSSL).IntoEnvvar("FORCE_SSL")
-	opts.Unpack(spec.Config.ThreescaleProviderPlan).IntoEnvvar("PROVIDER_PLAN")
-	opts.Unpack(spec.Config.SSLCertsDir).IntoEnvvar("SSL_CERT_DIR")
-	opts.Unpack(spec.Config.SandboxProxyOpensslVerifyMode).IntoEnvvar("THREESCALE_SANDBOX_PROXY_OPENSSL_VERIFY_MODE")
-	opts.Unpack(spec.Config.ThreescaleSuperdomain).IntoEnvvar("THREESCALE_SUPERDOMAIN")
+	opts.AddEnvvar("FORCE_SSL").Unpack(spec.Config.ForceSSL)
+	opts.AddEnvvar("PROVIDER_PLAN").Unpack(spec.Config.ThreescaleProviderPlan)
+	opts.AddEnvvar("SSL_CERT_DIR").Unpack(spec.Config.SSLCertsDir)
+	opts.AddEnvvar("THREESCALE_SANDBOX_PROXY_OPENSSL_VERIFY_MODE").Unpack(spec.Config.SandboxProxyOpensslVerifyMode)
+	opts.AddEnvvar("THREESCALE_SUPERDOMAIN").Unpack(spec.Config.ThreescaleSuperdomain)
 
-	opts.Unpack(spec.Config.Rails.Environment).IntoEnvvar("RAILS_ENV")
-	opts.Unpack(spec.Config.Rails.LogLevel).IntoEnvvar("RAILS_LOG_LEVEL")
-	opts.Unpack("true").IntoEnvvar("RAILS_LOG_TO_STDOUT")
+	opts.AddEnvvar("RAILS_ENV").Unpack(spec.Config.Rails.Environment)
+	opts.AddEnvvar("RAILS_LOG_LEVEL").Unpack(spec.Config.Rails.LogLevel)
+	opts.AddEnvvar("RAILS_LOG_TO_STDOUT").Unpack("true")
 
-	opts.Unpack(spec.Config.SearchServer.Host).IntoEnvvar("THINKING_SPHINX_ADDRESS")
-	opts.Unpack(spec.Config.SearchServer.Port).IntoEnvvar("THINKING_SPHINX_PORT")
-	opts.Unpack(spec.Config.SearchServer.BatchSize).IntoEnvvar("THINKING_SPHINX_BATCH_SIZE")
+	opts.AddEnvvar("THINKING_SPHINX_ADDRESS").Unpack(spec.Config.SearchServer.Host)
+	opts.AddEnvvar("THINKING_SPHINX_PORT").Unpack(spec.Config.SearchServer.Port)
+	opts.AddEnvvar("THINKING_SPHINX_BATCH_SIZE").Unpack(spec.Config.SearchServer.BatchSize)
 
-	opts.Unpack(spec.Config.DatabaseDSN).IntoEnvvar("DATABASE_URL").AsSecretRef(SystemDatabaseSecret).WithSeedKey(seed.SystemDatabaseDsn)
+	opts.AddEnvvar("DATABASE_URL").AsSecretRef(SystemDatabaseSecret).WithSeedKey(seed.SystemDatabaseDsn).
+		Unpack(spec.Config.DatabaseDSN)
 
-	opts.Unpack(spec.Config.MemcachedServers).IntoEnvvar("MEMCACHE_SERVERS")
+	opts.AddEnvvar("MEMCACHE_SERVERS").Unpack(spec.Config.MemcachedServers)
 
-	opts.Unpack(spec.Config.Recaptcha.PublicKey).IntoEnvvar("RECAPTCHA_PUBLIC_KEY").AsSecretRef(SystemRecaptchaSecret).WithSeedKey(seed.SystemRecaptchaPublicKey)
-	opts.Unpack(spec.Config.Recaptcha.PrivateKey).IntoEnvvar("RECAPTCHA_PRIVATE_KEY").AsSecretRef(SystemRecaptchaSecret).WithSeedKey(seed.SystemRecaptchaPrivateKey)
+	opts.AddEnvvar("RECAPTCHA_PUBLIC_KEY").AsSecretRef(SystemRecaptchaSecret).WithSeedKey(seed.SystemRecaptchaPublicKey).
+		Unpack(spec.Config.Recaptcha.PublicKey)
+	opts.AddEnvvar("RECAPTCHA_PRIVATE_KEY").AsSecretRef(SystemRecaptchaSecret).WithSeedKey(seed.SystemRecaptchaPrivateKey).
+		Unpack(spec.Config.Recaptcha.PrivateKey)
 
-	opts.Unpack(spec.Config.EventsSharedSecret).IntoEnvvar("EVENTS_SHARED_SECRET").AsSecretRef(SystemEventsHookSecret).WithSeedKey(seed.SystemEventsHookSharedSecret)
+	opts.AddEnvvar("EVENTS_SHARED_SECRET").AsSecretRef(SystemEventsHookSecret).WithSeedKey(seed.SystemEventsHookSharedSecret).
+		Unpack(spec.Config.EventsSharedSecret)
 
-	opts.Unpack(spec.Config.Redis.QueuesDSN).IntoEnvvar("REDIS_URL")
-	opts.Unpack("").IntoEnvvar("REDIS_NAMESPACE")
-	opts.Unpack("").IntoEnvvar("REDIS_SENTINEL_HOSTS")
-	opts.Unpack("").IntoEnvvar("REDIS_SENTINEL_ROLE")
+	opts.AddEnvvar("REDIS_URL").Unpack(spec.Config.Redis.QueuesDSN)
+	opts.AddEnvvar("REDIS_NAMESPACE").Unpack("")
+	opts.AddEnvvar("REDIS_SENTINEL_HOSTS").Unpack("")
+	opts.AddEnvvar("REDIS_SENTINEL_ROLE").Unpack("")
 
-	opts.Unpack(spec.Config.SMTP.Address).IntoEnvvar("SMTP_ADDRESS")
-	opts.Unpack(spec.Config.SMTP.User).IntoEnvvar("SMTP_USER_NAME").
-		AsSecretRef(SystemSmptSecret).
-		WithSeedKey(seed.SystemSmtpUser)
-	opts.Unpack(spec.Config.SMTP.Password).IntoEnvvar("SMTP_PASSWORD").
-		AsSecretRef(SystemSmptSecret).
-		WithSeedKey(seed.SystemSmtpPassword)
-	opts.Unpack(spec.Config.SMTP.Port).IntoEnvvar("SMTP_PORT")
-	opts.Unpack(spec.Config.SMTP.AuthProtocol).IntoEnvvar("SMTP_AUTHENTICATION")
-	opts.Unpack(spec.Config.SMTP.OpenSSLVerifyMode).IntoEnvvar("SMTP_OPENSSL_VERIFY_MODE")
-	opts.Unpack(spec.Config.SMTP.STARTTLS).IntoEnvvar("SMTP_STARTTLS")
-	opts.Unpack(spec.Config.SMTP.STARTTLSAuto).IntoEnvvar("SMTP_STARTTLS_AUTO")
+	opts.AddEnvvar("SMTP_ADDRESS").Unpack(spec.Config.SMTP.Address)
+	opts.AddEnvvar("SMTP_USER_NAME").AsSecretRef(SystemSmptSecret).WithSeedKey(seed.SystemSmtpUser).
+		Unpack(spec.Config.SMTP.User)
+	opts.AddEnvvar("SMTP_PASSWORD").AsSecretRef(SystemSmptSecret).WithSeedKey(seed.SystemSmtpPassword).
+		Unpack(spec.Config.SMTP.Password)
+	opts.AddEnvvar("SMTP_PORT").Unpack(spec.Config.SMTP.Port)
+	opts.AddEnvvar("SMTP_AUTHENTICATION").Unpack(spec.Config.SMTP.AuthProtocol)
+	opts.AddEnvvar("SMTP_OPENSSL_VERIFY_MODE").Unpack(spec.Config.SMTP.OpenSSLVerifyMode)
+	opts.AddEnvvar("SMTP_STARTTLS").Unpack(spec.Config.SMTP.STARTTLS)
+	opts.AddEnvvar("SMTP_STARTTLS_AUTO").Unpack(spec.Config.SMTP.STARTTLSAuto)
 
-	opts.Unpack(spec.Config.MappingServiceAccessToken).IntoEnvvar("APICAST_ACCESS_TOKEN").
-		AsSecretRef(SystemMasterApicastSecret).
-		WithSeedKey(seed.SystemMasterAccessToken)
+	opts.AddEnvvar("APICAST_ACCESS_TOKEN").AsSecretRef(SystemMasterApicastSecret).WithSeedKey(seed.SystemMasterAccessToken).
+		Unpack(spec.Config.MappingServiceAccessToken)
 
-	opts.Unpack(spec.Config.Zync.Endpoint).IntoEnvvar("ZYNC_ENDPOINT")
-	opts.Unpack(spec.Config.Zync.AuthToken).IntoEnvvar("ZYNC_AUTHENTICATION_TOKEN").
-		AsSecretRef(SystemZyncSecret).
-		WithSeedKey(seed.ZyncAuthToken)
+	opts.AddEnvvar("ZYNC_ENDPOINT").Unpack(spec.Config.Zync.Endpoint)
+	opts.AddEnvvar("ZYNC_AUTHENTICATION_TOKEN").AsSecretRef(SystemZyncSecret).WithSeedKey(seed.ZyncAuthToken).
+		Unpack(spec.Config.Zync.AuthToken)
 
-	opts.Unpack(spec.Config.Backend.RedisDSN).IntoEnvvar("BACKEND_REDIS_URL")
-	opts.Unpack("").IntoEnvvar("BACKEND_REDIS_SENTINEL_HOSTS")
-	opts.Unpack("").IntoEnvvar("BACKEND_REDIS_SENTINEL_ROLE")
-	opts.Unpack(spec.Config.Backend.InternalEndpoint).IntoEnvvar("BACKEND_URL")
-	opts.Unpack(spec.Config.Backend.ExternalEndpoint).IntoEnvvar("BACKEND_PUBLIC_URL")
-	opts.Unpack(spec.Config.Backend.InternalAPIUser).IntoEnvvar("CONFIG_INTERNAL_API_USER").
-		AsSecretRef(SystemBackendSecret).
-		WithSeedKey(seed.BackendInternalApiUser)
-	opts.Unpack(spec.Config.Backend.InternalAPIPassword).IntoEnvvar("CONFIG_INTERNAL_API_PASSWORD").
-		AsSecretRef(SystemBackendSecret).
-		WithSeedKey(seed.BackendInternalApiPassword)
+	opts.AddEnvvar("BACKEND_REDIS_URL").Unpack(spec.Config.Backend.RedisDSN)
+	opts.AddEnvvar("BACKEND_REDIS_SENTINEL_HOSTS").Unpack("")
+	opts.AddEnvvar("BACKEND_REDIS_SENTINEL_ROLE").Unpack("")
+	opts.AddEnvvar("BACKEND_URL").Unpack(spec.Config.Backend.InternalEndpoint)
+	opts.AddEnvvar("BACKEND_PUBLIC_URL").Unpack(spec.Config.Backend.ExternalEndpoint)
+	opts.AddEnvvar("CONFIG_INTERNAL_API_USER").AsSecretRef(SystemBackendSecret).WithSeedKey(seed.BackendInternalApiUser).
+		Unpack(spec.Config.Backend.InternalAPIUser)
+	opts.AddEnvvar("CONFIG_INTERNAL_API_PASSWORD").AsSecretRef(SystemBackendSecret).WithSeedKey(seed.BackendInternalApiPassword).
+		Unpack(spec.Config.Backend.InternalAPIPassword)
 
-	opts.Unpack(spec.Config.Assets.AccessKey).IntoEnvvar("AWS_ACCESS_KEY_ID").
-		AsSecretRef(SystemMultitenantAssetsS3Secret).
-		WithSeedKey(seed.SystemAssetsS3AwsAccessKey)
-	opts.Unpack(spec.Config.Assets.SecretKey).IntoEnvvar("AWS_SECRET_ACCESS_KEY").
-		AsSecretRef(SystemMultitenantAssetsS3Secret).
-		WithSeedKey(seed.SystemAssetsS3AwsSecretKey)
-	opts.Unpack(spec.Config.Assets.Bucket).IntoEnvvar("AWS_BUCKET")
-	opts.Unpack(spec.Config.Assets.Region).IntoEnvvar("AWS_REGION")
-	opts.Unpack(spec.Config.Assets.Host).IntoEnvvar("RAILS_ASSET_HOST")
+	opts.AddEnvvar("AWS_ACCESS_KEY_ID").AsSecretRef(SystemMultitenantAssetsS3Secret).WithSeedKey(seed.SystemAssetsS3AwsAccessKey).
+		Unpack(spec.Config.Assets.AccessKey)
+	opts.AddEnvvar("AWS_SECRET_ACCESS_KEY").AsSecretRef(SystemMultitenantAssetsS3Secret).WithSeedKey(seed.SystemAssetsS3AwsSecretKey).
+		Unpack(spec.Config.Assets.SecretKey)
+	opts.AddEnvvar("AWS_BUCKET").Unpack(spec.Config.Assets.Bucket)
+	opts.AddEnvvar("AWS_REGION").Unpack(spec.Config.Assets.Region)
+	opts.AddEnvvar("RAILS_ASSET_HOST").Unpack(spec.Config.Assets.Host)
 
-	opts.Unpack(spec.Config.SecretKeyBase).IntoEnvvar("SECRET_KEY_BASE").
-		AsSecretRef(SystemAppSecret).
-		WithSeedKey(seed.SystemSecretKeyBase)
-	opts.Unpack(spec.Config.AccessCode).IntoEnvvar("ACCESS_CODE").
-		AsSecretRef(SystemAppSecret).
-		WithSeedKey(seed.SystemAccessCode)
-	opts.Unpack(spec.Config.Segment.DeletionToken).IntoEnvvar("SEGMENT_DELETION_TOKEN").
-		AsSecretRef(SystemAppSecret).
-		WithSeedKey(seed.SystemSegmentDeletionToken)
-	opts.Unpack(spec.Config.Segment.DeletionWorkspace).IntoEnvvar("SEGMENT_DELETION_WORKSPACE").
-		WithSeedKey(seed.SystemSegmentDeletionWorkspace)
-	opts.Unpack(spec.Config.Segment.WriteKey).IntoEnvvar("SEGMENT_WRITE_KEY").
-		AsSecretRef(SystemAppSecret).
-		WithSeedKey(seed.SystemSegmentWriteKey)
-	opts.Unpack(spec.Config.Github.ClientID).IntoEnvvar("GITHUB_CLIENT_ID").
-		AsSecretRef(SystemAppSecret).
-		WithSeedKey(seed.SystemGithubClientId)
-	opts.Unpack(spec.Config.Github.ClientSecret).IntoEnvvar("GITHUB_CLIENT_SECRET").
-		AsSecretRef(SystemAppSecret).
-		WithSeedKey(seed.SystemGithubClientSecret)
-	opts.Unpack(spec.Config.RedHatCustomerPortal.ClientID).IntoEnvvar("RH_CUSTOMER_PORTAL_CLIENT_ID").
-		AsSecretRef(SystemAppSecret).
-		WithSeedKey(seed.SystemRHCustomerPortalClientId)
-	opts.Unpack(spec.Config.RedHatCustomerPortal.ClientSecret).IntoEnvvar("RH_CUSTOMER_PORTAL_CLIENT_SECRET").
-		AsSecretRef(SystemAppSecret).
-		WithSeedKey(seed.SystemRHCustomerPortalClientSecret)
-	opts.Unpack(spec.Config.RedHatCustomerPortal.Realm).IntoEnvvar("RH_CUSTOMER_PORTAL_REALM").
-		WithSeedKey(seed.SystemRHCustomerPortalRealm)
-	opts.Unpack(spec.Config.Bugsnag.APIKey).IntoEnvvar("BUGSNAG_API_KEY").
-		AsSecretRef(SystemAppSecret).
-		WithSeedKey(seed.SystemBugsnagApiKey).
-		EmptyIf(!spec.Config.Bugsnag.Enabled())
-	opts.Unpack(spec.Config.Bugsnag.ReleaseStage).IntoEnvvar("BUGSNAG_RELEASE_STAGE")
-	opts.Unpack(spec.Config.DatabaseSecret).IntoEnvvar("DB_SECRET").
-		AsSecretRef(SystemAppSecret).
-		WithSeedKey(seed.SystemDatabaseSecret)
+	opts.AddEnvvar("SECRET_KEY_BASE").AsSecretRef(SystemAppSecret).WithSeedKey(seed.SystemSecretKeyBase).
+		Unpack(spec.Config.SecretKeyBase)
+	opts.AddEnvvar("ACCESS_CODE").AsSecretRef(SystemAppSecret).WithSeedKey(seed.SystemAccessCode).
+		Unpack(spec.Config.AccessCode)
+	opts.AddEnvvar("SEGMENT_DELETION_TOKEN").AsSecretRef(SystemAppSecret).WithSeedKey(seed.SystemSegmentDeletionToken).
+		Unpack(spec.Config.Segment.DeletionToken)
+	opts.AddEnvvar("SEGMENT_DELETION_WORKSPACE").Unpack(spec.Config.Segment.DeletionWorkspace)
+	opts.AddEnvvar("SEGMENT_WRITE_KEY").AsSecretRef(SystemAppSecret).WithSeedKey(seed.SystemSegmentWriteKey).
+		Unpack(spec.Config.Segment.WriteKey)
+	opts.AddEnvvar("GITHUB_CLIENT_ID").AsSecretRef(SystemAppSecret).WithSeedKey(seed.SystemGithubClientId).
+		Unpack(spec.Config.Github.ClientID)
+	opts.AddEnvvar("GITHUB_CLIENT_SECRET").AsSecretRef(SystemAppSecret).WithSeedKey(seed.SystemGithubClientSecret).
+		Unpack(spec.Config.Github.ClientSecret)
+	opts.AddEnvvar("RH_CUSTOMER_PORTAL_CLIENT_ID").AsSecretRef(SystemAppSecret).WithSeedKey(seed.SystemRHCustomerPortalClientId).
+		Unpack(spec.Config.RedHatCustomerPortal.ClientID)
+	opts.AddEnvvar("RH_CUSTOMER_PORTAL_CLIENT_SECRET").AsSecretRef(SystemAppSecret).WithSeedKey(seed.SystemRHCustomerPortalClientSecret).
+		Unpack(spec.Config.RedHatCustomerPortal.ClientSecret)
+	opts.AddEnvvar("RH_CUSTOMER_PORTAL_REALM").Unpack(spec.Config.RedHatCustomerPortal.Realm)
+	opts.AddEnvvar("BUGSNAG_API_KEY").AsSecretRef(SystemAppSecret).WithSeedKey(seed.SystemBugsnagApiKey).EmptyIf(!spec.Config.Bugsnag.Enabled()).
+		Unpack(spec.Config.Bugsnag.APIKey)
+	opts.AddEnvvar("BUGSNAG_RELEASE_STAGE").Unpack(spec.Config.Bugsnag.ReleaseStage)
+	opts.AddEnvvar("DB_SECRET").AsSecretRef(SystemAppSecret).WithSeedKey(seed.SystemDatabaseSecret).
+		Unpack(spec.Config.DatabaseSecret)
 
 	return opts
 }

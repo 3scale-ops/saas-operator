@@ -10,30 +10,26 @@ import (
 func NewWorkerOptions(spec saasv1alpha1.BackendSpec) pod.Options {
 	opts := pod.Options{}
 
-	opts.Unpack(spec.Config.RackEnv).IntoEnvvar("RACK_ENV")
-	opts.Unpack(spec.Config.RedisStorageDSN).IntoEnvvar("CONFIG_REDIS_PROXY")
-	opts.Unpack("").IntoEnvvar("CONFIG_REDIS_SENTINEL_HOSTS")
-	opts.Unpack("").IntoEnvvar("CONFIG_REDIS_SENTINEL_ROLE")
-	opts.Unpack(spec.Config.RedisQueuesDSN).IntoEnvvar("CONFIG_QUEUES_MASTER_NAME")
-	opts.Unpack("").IntoEnvvar("CONFIG_QUEUES_SENTINEL_HOSTS")
-	opts.Unpack("").IntoEnvvar("CONFIG_QUEUES_SENTINEL_ROLE")
-	opts.Unpack(spec.Config.MasterServiceID).IntoEnvvar("CONFIG_MASTER_SERVICE_ID")
-	opts.Unpack(spec.Worker.Config.RedisAsync).IntoEnvvar("CONFIG_REDIS_ASYNC")
-	opts.Unpack(spec.Worker.Config.LogFormat).IntoEnvvar("CONFIG_WORKERS_LOGGER_FORMATTER")
-	opts.Unpack("true").IntoEnvvar("CONFIG_WORKER_PROMETHEUS_METRICS_ENABLED")
-	opts.Unpack("9421").IntoEnvvar("CONFIG_WORKER_PROMETHEUS_METRICS_PORT")
-	opts.Unpack(spec.Config.SystemEventsHookURL).IntoEnvvar("CONFIG_EVENTS_HOOK").
-		AsSecretRef(BackendSystemEventsSecret).
-		WithSeedKey(seed.SystemEventsHookURL)
-	opts.Unpack(spec.Config.SystemEventsHookPassword).IntoEnvvar("CONFIG_EVENTS_HOOK_SHARED_SECRET").
-		AsSecretRef(BackendSystemEventsSecret).
-		WithSeedKey(seed.SystemEventsHookSharedSecret)
-	opts.Unpack(spec.Config.ErrorMonitoringService).IntoEnvvar("CONFIG_HOPTOAD_SERVICE").
-		AsSecretRef(BackendErrorMonitoringSecret).
-		WithSeedKey(seed.BackendErrorMonitoringService)
-	opts.Unpack(spec.Config.ErrorMonitoringKey).IntoEnvvar("CONFIG_HOPTOAD_API_KEY").
-		AsSecretRef(BackendErrorMonitoringSecret).
-		WithSeedKey(seed.BackendErrorMonitoringApiKey)
+	opts.AddEnvvar("RACK_ENV").Unpack(spec.Config.RackEnv)
+	opts.AddEnvvar("CONFIG_REDIS_PROXY").Unpack(spec.Config.RedisStorageDSN)
+	opts.AddEnvvar("CONFIG_REDIS_SENTINEL_HOSTS").Unpack("")
+	opts.AddEnvvar("CONFIG_REDIS_SENTINEL_ROLE").Unpack("")
+	opts.AddEnvvar("CONFIG_QUEUES_MASTER_NAME").Unpack(spec.Config.RedisQueuesDSN)
+	opts.AddEnvvar("CONFIG_QUEUES_SENTINEL_HOSTS").Unpack("")
+	opts.AddEnvvar("CONFIG_QUEUES_SENTINEL_ROLE").Unpack("")
+	opts.AddEnvvar("CONFIG_MASTER_SERVICE_ID").Unpack(spec.Config.MasterServiceID)
+	opts.AddEnvvar("CONFIG_REDIS_ASYNC").Unpack(spec.Worker.Config.RedisAsync)
+	opts.AddEnvvar("CONFIG_WORKERS_LOGGER_FORMATTER").Unpack(spec.Worker.Config.LogFormat)
+	opts.AddEnvvar("CONFIG_WORKER_PROMETHEUS_METRICS_ENABLED").Unpack("true")
+	opts.AddEnvvar("CONFIG_WORKER_PROMETHEUS_METRICS_PORT").Unpack("9421")
+	opts.AddEnvvar("CONFIG_EVENTS_HOOK").AsSecretRef(BackendSystemEventsSecret).WithSeedKey(seed.SystemEventsHookURL).
+		Unpack(spec.Config.SystemEventsHookURL)
+	opts.AddEnvvar("CONFIG_EVENTS_HOOK_SHARED_SECRET").AsSecretRef(BackendSystemEventsSecret).WithSeedKey(seed.SystemEventsHookSharedSecret).
+		Unpack(spec.Config.SystemEventsHookPassword)
+	opts.AddEnvvar("CONFIG_HOPTOAD_SERVICE").AsSecretRef(BackendErrorMonitoringSecret).WithSeedKey(seed.BackendErrorMonitoringService).
+		Unpack(spec.Config.ErrorMonitoringService)
+	opts.AddEnvvar("CONFIG_HOPTOAD_API_KEY").AsSecretRef(BackendErrorMonitoringSecret).WithSeedKey(seed.BackendErrorMonitoringApiKey).
+		Unpack(spec.Config.ErrorMonitoringKey)
 
 	return opts
 }

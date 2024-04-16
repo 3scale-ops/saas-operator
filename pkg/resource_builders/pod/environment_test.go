@@ -38,7 +38,7 @@ func TestOptions_BuildEnvironment(t *testing.T) {
 			name: "Text value",
 			opts: func() *Options {
 				o := NewOptions()
-				o.Unpack("value").IntoEnvvar("envvar")
+				o.AddEnvvar("envvar").Unpack("value")
 				return o
 			}(),
 			args: args{extra: []corev1.EnvVar{}},
@@ -51,7 +51,7 @@ func TestOptions_BuildEnvironment(t *testing.T) {
 			name: "Text value with custom format",
 			opts: func() *Options {
 				o := NewOptions()
-				o.Unpack(8080, ":%d").IntoEnvvar("envvar")
+				o.AddEnvvar("envvar").Unpack(8080, ":%d")
 				return o
 			}(),
 			args: args{extra: []corev1.EnvVar{}},
@@ -64,7 +64,7 @@ func TestOptions_BuildEnvironment(t *testing.T) {
 			name: "Pointer to text value",
 			opts: func() *Options {
 				o := NewOptions()
-				o.Unpack(util.Pointer("value")).IntoEnvvar("envvar")
+				o.AddEnvvar("envvar").Unpack(util.Pointer("value"))
 				return o
 			}(),
 			args: args{extra: []corev1.EnvVar{}},
@@ -78,7 +78,7 @@ func TestOptions_BuildEnvironment(t *testing.T) {
 			opts: func() *Options {
 				o := NewOptions()
 				var v *string
-				o.Unpack(v).IntoEnvvar("envvar")
+				o.AddEnvvar("envvar").Unpack(v)
 				return o
 			}(),
 			args: args{extra: []corev1.EnvVar{}},
@@ -88,10 +88,11 @@ func TestOptions_BuildEnvironment(t *testing.T) {
 			name: "SecretReference",
 			opts: func() *Options {
 				o := &Options{}
-				o.Unpack(saasv1alpha1.SecretReference{FromVault: &saasv1alpha1.VaultSecretReference{
-					Path: "path",
-					Key:  "key",
-				}}).IntoEnvvar("envvar").AsSecretRef(TSecret("secret"))
+				o.AddEnvvar("envvar").AsSecretRef(TSecret("secret")).
+					Unpack(saasv1alpha1.SecretReference{FromVault: &saasv1alpha1.VaultSecretReference{
+						Path: "path",
+						Key:  "key",
+					}})
 				return o
 			}(),
 			args: args{extra: []corev1.EnvVar{}},
@@ -111,10 +112,11 @@ func TestOptions_BuildEnvironment(t *testing.T) {
 			name: "Pointer to SecretReference",
 			opts: func() *Options {
 				o := &Options{}
-				o.Unpack(&saasv1alpha1.SecretReference{FromVault: &saasv1alpha1.VaultSecretReference{
-					Path: "path",
-					Key:  "key",
-				}}).IntoEnvvar("envvar").AsSecretRef(TSecret("secret"))
+				o.AddEnvvar("envvar").AsSecretRef(TSecret("secret")).
+					Unpack(&saasv1alpha1.SecretReference{FromVault: &saasv1alpha1.VaultSecretReference{
+						Path: "path",
+						Key:  "key",
+					}})
 				return o
 			}(),
 			args: args{extra: []corev1.EnvVar{}},
@@ -135,7 +137,7 @@ func TestOptions_BuildEnvironment(t *testing.T) {
 			opts: func() *Options {
 				o := &Options{}
 				var v *saasv1alpha1.SecretReference
-				o.Unpack(v).IntoEnvvar("envvar").AsSecretRef(TSecret("secret"))
+				o.AddEnvvar("envvar").AsSecretRef(TSecret("secret")).Unpack(v)
 				return o
 			}(),
 			args: args{extra: []corev1.EnvVar{}},
@@ -145,7 +147,8 @@ func TestOptions_BuildEnvironment(t *testing.T) {
 			name: "SecretReference with override",
 			opts: func() *Options {
 				o := &Options{}
-				o.Unpack(saasv1alpha1.SecretReference{Override: util.Pointer("value")}).IntoEnvvar("envvar")
+				o.AddEnvvar("envvar").
+					Unpack(saasv1alpha1.SecretReference{Override: util.Pointer("value")})
 				return o
 			}(),
 			args: args{extra: []corev1.EnvVar{}},
@@ -158,10 +161,11 @@ func TestOptions_BuildEnvironment(t *testing.T) {
 			name: "EmptyIf",
 			opts: func() *Options {
 				o := &Options{}
-				o.Unpack(&saasv1alpha1.SecretReference{FromVault: &saasv1alpha1.VaultSecretReference{
-					Path: "path",
-					Key:  "key",
-				}}).IntoEnvvar("envvar").AsSecretRef(TSecret("secret")).EmptyIf(true)
+				o.AddEnvvar("envvar").AsSecretRef(TSecret("secret")).EmptyIf(true).
+					Unpack(&saasv1alpha1.SecretReference{FromVault: &saasv1alpha1.VaultSecretReference{
+						Path: "path",
+						Key:  "key",
+					}})
 				return o
 			}(),
 			args: args{extra: []corev1.EnvVar{}},
@@ -174,11 +178,12 @@ func TestOptions_BuildEnvironment(t *testing.T) {
 			name: "Adds/overwrites extra envvars",
 			opts: func() *Options {
 				o := &Options{}
-				o.Unpack(&saasv1alpha1.SecretReference{FromVault: &saasv1alpha1.VaultSecretReference{
-					Path: "path",
-					Key:  "key",
-				}}).IntoEnvvar("envvar1").AsSecretRef(TSecret("secret")).EmptyIf(true)
-				o.Unpack("value2").IntoEnvvar("envvar2")
+				o.AddEnvvar("envvar1").AsSecretRef(TSecret("secret")).EmptyIf(true).
+					Unpack(&saasv1alpha1.SecretReference{FromVault: &saasv1alpha1.VaultSecretReference{
+						Path: "path",
+						Key:  "key",
+					}})
+				o.AddEnvvar("envvar2").Unpack("value2")
 				return o
 			}(),
 			args: args{extra: []corev1.EnvVar{
@@ -222,7 +227,7 @@ func TestOptions_BuildEnvironment(t *testing.T) {
 			name: "bool value",
 			opts: func() *Options {
 				o := NewOptions()
-				o.Unpack(true).IntoEnvvar("envvar")
+				o.AddEnvvar("envvar").Unpack(true)
 				return o
 			}(),
 			args: args{extra: []corev1.EnvVar{}},
@@ -235,7 +240,7 @@ func TestOptions_BuildEnvironment(t *testing.T) {
 			name: "Pointer to int value",
 			opts: func() *Options {
 				o := NewOptions()
-				o.Unpack(util.Pointer(100)).IntoEnvvar("envvar")
+				o.AddEnvvar("envvar").Unpack(util.Pointer(100))
 				return o
 			}(),
 			args: args{extra: []corev1.EnvVar{}},
@@ -248,10 +253,9 @@ func TestOptions_BuildEnvironment(t *testing.T) {
 			name: "SecretReference from seed",
 			opts: func() *Options {
 				o := &Options{}
-				o.Unpack(saasv1alpha1.SecretReference{Override: util.Pointer("value1")}).IntoEnvvar("envvar1")
-				o.Unpack(saasv1alpha1.SecretReference{FromSeed: &saasv1alpha1.SeedSecretReference{}}).IntoEnvvar("envvar2").
-					AsSecretRef(TSecret("some-secret")).
-					WithSeedKey(TSeedKey("seed-key"))
+				o.AddEnvvar("envvar1").Unpack(saasv1alpha1.SecretReference{Override: util.Pointer("value1")})
+				o.AddEnvvar("envvar2").AsSecretRef(TSecret("some-secret")).WithSeedKey(TSeedKey("seed-key")).
+					Unpack(saasv1alpha1.SecretReference{FromSeed: &saasv1alpha1.SeedSecretReference{}})
 				return o
 			}(),
 			args: args{extra: []corev1.EnvVar{}},
@@ -277,13 +281,12 @@ func TestOptions_BuildEnvironment(t *testing.T) {
 			name: "SecretReference from vault, but with seed configured",
 			opts: func() *Options {
 				o := &Options{}
-				o.Unpack(saasv1alpha1.SecretReference{Override: util.Pointer("value1")}).IntoEnvvar("envvar1")
-				o.Unpack(saasv1alpha1.SecretReference{FromVault: &saasv1alpha1.VaultSecretReference{
-					Path: "path",
-					Key:  "key",
-				}}).IntoEnvvar("envvar2").
-					AsSecretRef(TSecret("some-secret")).
-					WithSeedKey(TSeedKey("seed-key"))
+				o.AddEnvvar("envvar1").Unpack(saasv1alpha1.SecretReference{Override: util.Pointer("value1")})
+				o.AddEnvvar("envvar2").AsSecretRef(TSecret("some-secret")).WithSeedKey(TSeedKey("seed-key")).
+					Unpack(saasv1alpha1.SecretReference{FromVault: &saasv1alpha1.VaultSecretReference{
+						Path: "path",
+						Key:  "key",
+					}})
 				return o
 			}(),
 			args: args{extra: []corev1.EnvVar{}},
@@ -334,8 +337,8 @@ func TestOptions_GenerateExternalSecrets(t *testing.T) {
 			name: "Does not generate any external secret",
 			opts: func() *Options {
 				o := NewOptions()
-				o.Unpack("value1").IntoEnvvar("envvar1")
-				o.Unpack("value2").IntoEnvvar("envvar2")
+				o.AddEnvvar("envvar1").Unpack("value1")
+				o.AddEnvvar("envvar2").Unpack("value2")
 				return o
 			}(),
 			args: args{},
@@ -345,18 +348,21 @@ func TestOptions_GenerateExternalSecrets(t *testing.T) {
 			name: "Generates external secrets for the secret options",
 			opts: func() *Options {
 				o := NewOptions()
-				o.Unpack(&saasv1alpha1.SecretReference{FromVault: &saasv1alpha1.VaultSecretReference{
-					Path: "path1",
-					Key:  "key1",
-				}}).IntoEnvvar("envvar1").AsSecretRef(TSecret("secret1"))
-				o.Unpack(&saasv1alpha1.SecretReference{FromVault: &saasv1alpha1.VaultSecretReference{
-					Path: "path2",
-					Key:  "key2",
-				}}).IntoEnvvar("envvar2").AsSecretRef(TSecret("secret1"))
-				o.Unpack(&saasv1alpha1.SecretReference{FromVault: &saasv1alpha1.VaultSecretReference{
-					Path: "path3",
-					Key:  "key3",
-				}}).IntoEnvvar("envvar3").AsSecretRef(TSecret("secret2"))
+				o.AddEnvvar("envvar1").AsSecretRef(TSecret("secret1")).
+					Unpack(&saasv1alpha1.SecretReference{FromVault: &saasv1alpha1.VaultSecretReference{
+						Path: "path1",
+						Key:  "key1",
+					}})
+				o.AddEnvvar("envvar2").AsSecretRef(TSecret("secret1")).
+					Unpack(&saasv1alpha1.SecretReference{FromVault: &saasv1alpha1.VaultSecretReference{
+						Path: "path2",
+						Key:  "key2",
+					}})
+				o.AddEnvvar("envvar3").AsSecretRef(TSecret("secret2")).
+					Unpack(&saasv1alpha1.SecretReference{FromVault: &saasv1alpha1.VaultSecretReference{
+						Path: "path3",
+						Key:  "key3",
+					}})
 				return o
 			}(),
 			args: args{
@@ -442,7 +448,8 @@ func TestOptions_GenerateExternalSecrets(t *testing.T) {
 			name: "Skips secret options with override",
 			opts: func() *Options {
 				o := NewOptions()
-				o.Unpack(&saasv1alpha1.SecretReference{Override: util.Pointer("override")}).IntoEnvvar("envvar1").AsSecretRef(TSecret("secret"))
+				o.AddEnvvar("envvar1").AsSecretRef(TSecret("secret")).
+					Unpack(&saasv1alpha1.SecretReference{Override: util.Pointer("override")})
 				return o
 			}(),
 			args: args{},
@@ -453,7 +460,7 @@ func TestOptions_GenerateExternalSecrets(t *testing.T) {
 			opts: func() *Options {
 				o := NewOptions()
 				var v *saasv1alpha1.SecretReference
-				o.Unpack(v).IntoEnvvar("envvar1").AsSecretRef(TSecret("secret"))
+				o.AddEnvvar("envvar1").AsSecretRef(TSecret("secret")).Unpack(v)
 				return o
 			}(),
 			args: args{},
@@ -570,18 +577,22 @@ func TestOptions_ListSecretResourceNames(t *testing.T) {
 			options: func() *Options {
 				o := &Options{}
 				// ok
-				o.Unpack(&saasv1alpha1.SecretReference{FromVault: &saasv1alpha1.VaultSecretReference{}}).IntoEnvvar("envvar1").AsSecretRef(TSecret("secret1"))
+				o.AddEnvvar("envvar1").AsSecretRef(TSecret("secret1")).
+					Unpack(&saasv1alpha1.SecretReference{FromVault: &saasv1alpha1.VaultSecretReference{}})
 				// not ok: not a secret value
-				o.Unpack("value").IntoEnvvar("envvar2")
+				o.AddEnvvar("envvar2").Unpack("value")
 				// not ok: secret value with override
-				o.Unpack(&saasv1alpha1.SecretReference{Override: util.Pointer("value")}).IntoEnvvar("envvar3").AsSecretRef(TSecret("secret2"))
-				var v *saasv1alpha1.SecretReference
+				o.AddEnvvar("envvar3").AsSecretRef(TSecret("secret2")).
+					Unpack(&saasv1alpha1.SecretReference{Override: util.Pointer("value")})
 				// not ok: secret value is nil
-				o.Unpack(v).IntoEnvvar("envvar1").AsSecretRef(TSecret("secret3"))
+				var v *saasv1alpha1.SecretReference
+				o.AddEnvvar("envvar1").AsSecretRef(TSecret("secret3")).Unpack(v)
 				// ok
-				o.Unpack(&saasv1alpha1.SecretReference{FromVault: &saasv1alpha1.VaultSecretReference{}}).IntoEnvvar("envvar2").AsSecretRef(TSecret("secret1"))
+				o.AddEnvvar("envvar2").AsSecretRef(TSecret("secret1")).
+					Unpack(&saasv1alpha1.SecretReference{FromVault: &saasv1alpha1.VaultSecretReference{}})
 				// ok
-				o.Unpack(&saasv1alpha1.SecretReference{FromVault: &saasv1alpha1.VaultSecretReference{}}).IntoEnvvar("envvar3").AsSecretRef(TSecret("secret2"))
+				o.AddEnvvar("envvar3").AsSecretRef(TSecret("secret2")).
+					Unpack(&saasv1alpha1.SecretReference{FromVault: &saasv1alpha1.VaultSecretReference{}})
 				return o
 			}(),
 			want: []string{"secret1", "secret2"},

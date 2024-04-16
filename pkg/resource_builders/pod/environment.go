@@ -20,34 +20,115 @@ import (
 )
 
 type Option struct {
-	value       *string
-	valueFrom   *corev1.EnvVarSource
-	secretRef   *saasv1alpha1.SecretReference
+	value     *string
+	valueFrom *corev1.EnvVarSource
+	// secretRef   *saasv1alpha1.SecretReference
 	envVariable string
 	secretName  string
+	seedKey     string
+	vaultKey    string
+	vaultPath   string
 	isSet       bool
+	isEmpty     bool
 }
 
-func (o *Option) IntoEnvvar(e string) *Option        { o.envVariable = e; return o }
-func (o *Option) AsSecretRef(s fmt.Stringer) *Option { o.secretName = s.String(); return o }
-func (o *Option) WithSeedKey(key fmt.Stringer) *Option {
-	if o.secretRef != nil && o.secretRef.FromSeed != nil {
-		o.valueFrom = &corev1.EnvVarSource{
-			SecretKeyRef: &corev1.SecretKeySelector{
-				LocalObjectReference: corev1.LocalObjectReference{
-					Name: saasv1alpha1.DefaultSeedSecret,
-				},
-				Key: key.String(),
-			}}
+func (o *Option) IntoEnvvar(e string) *Option          { o.envVariable = e; return o }
+func (o *Option) AsSecretRef(s fmt.Stringer) *Option   { o.secretName = s.String(); return o }
+func (o *Option) WithSeedKey(key fmt.Stringer) *Option { o.seedKey = key.String(); return o }
+func (o *Option) EmptyIf(empty bool) *Option {
+	if empty {
+		o.isEmpty = true
 	}
 	return o
 }
-func (o *Option) EmptyIf(empty bool) *Option {
-	if empty {
-		o.secretRef = nil
-		o.value = util.Pointer("")
+
+// Unpack retrieves the value specified from the API and adds a matching option to the
+// list of options. It handles both values and pointers seamlessly.
+// Considers a nil value as an unset option.
+// It always unpacks into an string representation of the value so it can be stored as
+// an environment variable.
+// A parameter indicating the format (as in a call to fmt.Sprintf()) can be optionally passed.
+func (opt *Option) Unpack(o any, params ...string) *Option {
+	if len(params) > 1 {
+		panic(fmt.Errorf("too many params in call to Unpack"))
 	}
-	return o
+
+	if opt.isEmpty {
+		opt.isSet = true
+		opt.value = util.Pointer("")
+		return opt
+	}
+
+	var val any
+
+	if reflect.ValueOf(o).Kind() == reflect.Ptr {
+		if lo.IsNil(o) {
+			// underlying value is nil so option is unset
+			return &Option{isSet: false}
+		} else {
+			val = reflect.ValueOf(o).Elem().Interface()
+		}
+	} else {
+		val = o
+	}
+
+	switch v := val.(type) {
+
+	case saasv1alpha1.SecretReference:
+		if opt.envVariable == "" {
+			panic("AddEnvvar must be invoked to add a new option")
+		}
+		opt.isSet = true
+
+		// is a secret with override
+		if v.Override != nil {
+			opt.value = v.Override
+
+			// is a secret with value from vault
+		} else if v.FromVault != nil {
+			if opt.secretName == "" {
+				panic("AsSecretRef must be invoked when using 'SecretReference.FromVault'")
+			}
+			opt.vaultKey = v.FromVault.Key
+			opt.vaultPath = v.FromVault.Path
+			opt.valueFrom = &corev1.EnvVarSource{
+				SecretKeyRef: &corev1.SecretKeySelector{
+					Key: opt.envVariable,
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: opt.secretName,
+					},
+				}}
+
+			// is a secret retrieved ffom the default seed Secret
+		} else if v.FromSeed != nil {
+			if opt.seedKey == "" {
+				panic("WithSeedKey must be invoked when using 'SecretReference.FromSeed'")
+			}
+			opt.valueFrom = &corev1.EnvVarSource{
+				SecretKeyRef: &corev1.SecretKeySelector{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: saasv1alpha1.DefaultSeedSecret,
+					},
+					Key: opt.seedKey,
+				}}
+		}
+
+	default:
+		opt.isSet = true
+		opt.value = unpackValue(v, params...)
+	}
+
+	return opt
+}
+
+func unpackValue(o any, params ...string) *string {
+	var format string
+	if len(params) > 0 {
+		format = params[0]
+	} else {
+		format = "%v"
+	}
+	return util.Pointer(fmt.Sprintf(format, o))
 }
 
 type Options []*Option
@@ -63,7 +144,7 @@ func (options *Options) DeepCopy() *Options {
 // FilterSecretOptions returns a list of options that will generate a Secret resource
 func (options *Options) FilterSecretOptions() Options {
 	return lo.Filter[*Option](*options, func(item *Option, index int) bool {
-		return item.secretRef != nil && item.secretRef.Override == nil && item.secretName != ""
+		return item.valueFrom != nil && item.valueFrom.SecretKeyRef != nil
 	})
 }
 
@@ -87,46 +168,8 @@ func (options *Options) GenerateRolloutTriggers(additionalSecrets ...string) []r
 	return triggers
 }
 
-// Unpack retrieves the value specified from the API and adds a matching option to the
-// list of options. It handles both values and pointers seamlessly.
-// Considers a nil value as an unset option.
-// It always unpacks into an string representation of the value so it can be stored as
-// an environment variable.
-// A parameter indicating the format (as in a call to fmt.Sprintf()) can be optionally passed.
-func (options *Options) Unpack(o any, params ...string) *Option {
-	if len(params) > 1 {
-		panic(fmt.Errorf("too many params in call to Unpack"))
-	}
-
-	var opt *Option
-	var val any
-
-	if reflect.ValueOf(o).Kind() == reflect.Ptr {
-		if lo.IsNil(o) {
-			// underlying value is nil so option is unset
-			return &Option{isSet: false}
-		} else {
-			val = reflect.ValueOf(o).Elem().Interface()
-		}
-	} else {
-		val = o
-	}
-
-	switch v := val.(type) {
-
-	case saasv1alpha1.SecretReference:
-		opt = &Option{secretRef: &v, isSet: true}
-
-	default:
-		var format string
-		if len(params) > 0 {
-			format = params[0]
-		} else {
-			format = "%v"
-		}
-		opt = &Option{value: util.Pointer(fmt.Sprintf(format, v)), isSet: true}
-	}
-
+func (options *Options) AddEnvvar(e string) *Option {
+	opt := &Option{envVariable: e}
 	*options = append(*options, opt)
 	return opt
 }
@@ -143,7 +186,6 @@ func (options *Options) WithExtraEnv(extra []corev1.EnvVar) *Options {
 		if exists {
 			o.value = util.Pointer(envvar.Value)
 			o.valueFrom = envvar.ValueFrom
-			o.secretRef = nil
 			o.isSet = true
 			o.secretName = ""
 		} else {
@@ -172,27 +214,6 @@ func (opts *Options) BuildEnvironment() []corev1.EnvVar {
 		if !opt.isSet {
 			continue
 		}
-
-		// STEP1: process the option to produce a Value or a ValueFrom field
-
-		// is a secret with override
-		if opt.secretRef != nil && opt.secretRef.Override != nil {
-			opt.value = opt.secretRef.Override
-
-			// is a secret with value from vault
-		} else if opt.secretRef != nil && opt.secretRef.FromVault != nil {
-			opt.valueFrom = &corev1.EnvVarSource{
-				SecretKeyRef: &corev1.SecretKeySelector{
-					Key: opt.envVariable,
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: opt.secretName,
-					},
-				}}
-
-			// is a secret with value from vault
-		}
-
-		// STEP2: generate the envvar using the Value or ValueFrom
 
 		// Direct value (if both value and valueFrom are set, value takes precedence and
 		// valueFrom will be ignored)
@@ -229,8 +250,8 @@ func (opts *Options) GenerateExternalSecrets(namespace string, labels map[string
 			data = append(data, externalsecretsv1beta1.ExternalSecretData{
 				SecretKey: opt.envVariable,
 				RemoteRef: externalsecretsv1beta1.ExternalSecretDataRemoteRef{
-					Key:                strings.TrimPrefix(opt.secretRef.FromVault.Path, "secret/data/"),
-					Property:           opt.secretRef.FromVault.Key,
+					Key:                strings.TrimPrefix(opt.vaultPath, "secret/data/"),
+					Property:           opt.vaultKey,
 					ConversionStrategy: "Default",
 					DecodingStrategy:   "None",
 				},

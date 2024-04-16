@@ -10,6 +10,7 @@ const (
 	BackendInternalApiPassword    SeedKey = "backend-internal-api-password"
 	BackendErrorMonitoringService SeedKey = "backend-error-monitoring-service"
 	BackendErrorMonitoringApiKey  SeedKey = "backend-error-monitoring-api-key"
+
 	// System
 	SystemDatabaseDsn                  SeedKey = "system-database-dsn"
 	SystemRecaptchaPublicKey           SeedKey = "system-recaptcha-public-key"
@@ -30,9 +31,7 @@ const (
 	SystemGithubClientSecret           SeedKey = "system-github-client-secret"
 	SystemRHCustomerPortalClientId     SeedKey = "system-rh-customer-portal-client-id"
 	SystemRHCustomerPortalClientSecret SeedKey = "system-rh-customer-portal-client-secret"
-	SystemRHCustomerPortalRealm        SeedKey = "system-rh-customer-portal-realm"
 	SystemBugsnagApiKey                SeedKey = "system-bugsnag-api-key"
-	SystemBugsnagReleaseStage          SeedKey = "system-bugsnag-release-stage"
 	SystemDatabaseSecret               SeedKey = "system-database-secret"
 
 	// Zync

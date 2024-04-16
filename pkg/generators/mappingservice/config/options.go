@@ -18,13 +18,12 @@ const (
 func NewOptions(spec saasv1alpha1.MappingServiceSpec) pod.Options {
 	opts := pod.Options{}
 
-	opts.Unpack(spec.Config.SystemAdminToken).IntoEnvvar("MASTER_ACCESS_TOKEN").
-		AsSecretRef(MappingServiceSystemMasterAccessTokenSecret).
-		WithSeedKey(seed.SystemMasterAccessToken)
-	opts.Unpack(spec.Config.APIHost).IntoEnvvar("API_HOST")
-	opts.Unpack("lazy").IntoEnvvar("APICAST_CONFIGURATION_LOADER")
-	opts.Unpack(spec.Config.LogLevel).IntoEnvvar("APICAST_LOG_LEVEL")
-	opts.Unpack(spec.Config.PreviewBaseDomain).IntoEnvvar("PREVIEW_BASE_DOMAIN")
+	opts.AddEnvvar("MASTER_ACCESS_TOKEN").AsSecretRef(MappingServiceSystemMasterAccessTokenSecret).WithSeedKey(seed.SystemMasterAccessToken).
+		Unpack(spec.Config.SystemAdminToken)
+	opts.AddEnvvar("API_HOST").Unpack(spec.Config.APIHost)
+	opts.AddEnvvar("APICAST_CONFIGURATION_LOADER").Unpack("lazy")
+	opts.AddEnvvar("APICAST_LOG_LEVEL").Unpack(spec.Config.LogLevel)
+	opts.AddEnvvar("PREVIEW_BASE_DOMAIN").Unpack(spec.Config.PreviewBaseDomain)
 
 	return opts
 }

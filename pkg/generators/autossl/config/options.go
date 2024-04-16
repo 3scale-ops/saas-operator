@@ -14,21 +14,21 @@ const (
 func NewOptions(spec saasv1alpha1.AutoSSLSpec) pod.Options {
 	opts := pod.Options{}
 
-	opts.Unpack(func() string {
+	opts.AddEnvvar("ACME_STAGING").Unpack(func() string {
 		if *spec.Config.ACMEStaging {
 			return leACMEStagingEndpoint
 		}
 		return ""
-	}()).IntoEnvvar("ACME_STAGING")
-	opts.Unpack(spec.Config.ContactEmail).IntoEnvvar("CONTACT_EMAIL")
-	opts.Unpack(spec.Config.ProxyEndpoint).IntoEnvvar("PROXY_ENDPOINT")
-	opts.Unpack("redis").IntoEnvvar("STORAGE_ADAPTER")
-	opts.Unpack(spec.Config.RedisHost).IntoEnvvar("REDIS_HOST")
-	opts.Unpack(spec.Config.RedisPort).IntoEnvvar("REDIS_PORT")
-	opts.Unpack(spec.Config.VerificationEndpoint).IntoEnvvar("VERIFICATION_ENDPOINT")
-	opts.Unpack(spec.Config.LogLevel).IntoEnvvar("LOG_LEVEL")
-	opts.Unpack(strings.Join(spec.Config.DomainWhitelist, ",")).IntoEnvvar("DOMAIN_WHITELIST")
-	opts.Unpack(strings.Join(spec.Config.DomainBlacklist, ",")).IntoEnvvar("DOMAIN_BLACKLIST")
+	}())
+	opts.AddEnvvar("CONTACT_EMAIL").Unpack(spec.Config.ContactEmail)
+	opts.AddEnvvar("PROXY_ENDPOINT").Unpack(spec.Config.ProxyEndpoint)
+	opts.AddEnvvar("STORAGE_ADAPTER").Unpack("redis")
+	opts.AddEnvvar("REDIS_HOST").Unpack(spec.Config.RedisHost)
+	opts.AddEnvvar("REDIS_PORT").Unpack(spec.Config.RedisPort)
+	opts.AddEnvvar("VERIFICATION_ENDPOINT").Unpack(spec.Config.VerificationEndpoint)
+	opts.AddEnvvar("LOG_LEVEL").Unpack(spec.Config.LogLevel)
+	opts.AddEnvvar("DOMAIN_WHITELIST").Unpack(strings.Join(spec.Config.DomainWhitelist, ","))
+	opts.AddEnvvar("DOMAIN_BLACKLIST").Unpack(strings.Join(spec.Config.DomainBlacklist, ","))
 
 	return opts
 }
