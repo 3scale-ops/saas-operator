@@ -32,6 +32,7 @@ spec:
         override: admin
       secretKey:
         override: admin123
+      s3Endpoint: http://minio.minio.svc.cluster.local:9000
     databaseDSN:
       override: mysql2://app:password@system-mysql/system_enterprise
     databaseSecret:

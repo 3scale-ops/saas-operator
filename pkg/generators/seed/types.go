@@ -40,3 +40,21 @@ const (
 	ZyncAuthToken     SeedKey = "zync-auth-token"
 	ZyncBugsnagApiKey SeedKey = "zync-bugsnag-api-key"
 )
+
+// TODO: use this to generate a Secret from some input params
+// var AutoGen map[SeedKey]string = map[SeedKey]string{
+// 	BackendInternalApiUser:       "user",
+// 	BackendInternalApiPassword:   "<generate#backend-internal-api-password>",
+// 	SystemDatabaseDsn:            "mysql2://app:<generate#system-db-password>@<param#system-db-host>:3306/system_enterprise",
+// 	SystemEventsHookURL:          "https://<param#system-app-host>/master/events/import",
+// 	SystemEventsHookSharedSecret: "<generate#system-events-shared-secret>",
+// 	SystemMasterAccessToken:      "<generate#system-master-token>",
+// 	SystemAssetsS3AwsAccessKey:   "<param#s3-aws-access-key>",
+// 	SystemAssetsS3AwsSecretKey:   "<param#s3-aws-secret-key>",
+// 	SystemSecretKeyBase:          "<generate#system-key-base>",
+// 	SystemAccessCode:             "<generate#system-access-code>",
+// 	SystemDatabaseSecret:         "<generate#system-db-secret>",
+// 	ZyncDatabaseUrl:              "postgresql://app:<generate#zync-db-password>@<param#zync-db-host>:5432/zync",
+// 	ZyncSecretKeyBase:            "<generate#zync-secret-key-base>",
+// 	ZyncAuthToken:                "<generate#zync-auth-token>",
+// }

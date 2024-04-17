@@ -91,6 +91,7 @@ func NewOptions(spec saasv1alpha1.SystemSpec) pod.Options {
 		Unpack(spec.Config.Assets.SecretKey)
 	opts.AddEnvvar("AWS_BUCKET").Unpack(spec.Config.Assets.Bucket)
 	opts.AddEnvvar("AWS_REGION").Unpack(spec.Config.Assets.Region)
+	opts.AddEnvvar("AWS_S3_HOSTNAME").Unpack(spec.Config.Assets.S3Endpoint)
 	opts.AddEnvvar("RAILS_ASSET_HOST").Unpack(spec.Config.Assets.Host)
 
 	opts.AddEnvvar("SECRET_KEY_BASE").AsSecretRef(SystemAppSecret).WithSeedKey(seed.SystemSecretKeyBase).

@@ -719,6 +719,9 @@ spec:
                       region:
                         description: AWS S3 region
                         type: string
+                      s3Endpoint:
+                        description: Assets custom S3 endpoint
+                        type: string
                       secretKey:
                         description: AWS secret access key
                         properties:

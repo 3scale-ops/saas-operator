@@ -668,6 +668,10 @@ type AssetsSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Host *string `json:"host,omitempty"`
+	// Assets custom S3 endpoint
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	S3Endpoint *string `json:"s3Endpoint,omitempty"`
 }
 
 // SystemRailsSpec configures rails for system components
