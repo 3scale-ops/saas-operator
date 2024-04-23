@@ -18,27 +18,29 @@ function filter_resources() {
 function resource_names() {
     local RESFILE=${1}
     local FILTER=${2}
-    filter_resources ${RESFILE} "${FILTER}" | ${YQ_BIN} -N .metadata.name
+    filter_resources ${RESFILE} "${FILTER}" | ${YQ_BIN} -N '[.metadata.namespace,.metadata.name] | join("/")'
 }
 
 function deploy_crds() {
     local RESFILE=${1}
     local FILTER=".kind == \"CustomResourceDefinition\""
-    if [[ $(resource_names ${RESFILE} "${FILTER}") != "null" ]]; then
+    if [[ $(resource_names ${RESFILE} "${FILTER}") != "/" ]]; then
         echo; echo "#################### > Deploying CRDs for ${NAME}"
         filter_resources ${RESFILE} "${FILTER}" | kubectl apply -f -
-        resource_names ${RESFILE} "${FILTER}" | xargs kubectl wait --for condition=established --timeout=60s crd
+        resource_names ${RESFILE} "${FILTER}" | cut -f2 -d/ | xargs kubectl wait --for condition=established --timeout=60s crd
     fi
 }
 
 function wait_for() {
     local KIND=${1}
-    local NS=${2}
+    # local NS=${2}
     FILTER=".kind == \"${KIND}\""
-    if [[ $(resource_names ${RESFILE} "${FILTER}") != "null" ]]; then
+    if [[ $(resource_names ${RESFILE} "${FILTER}") != "/" ]]; then
         for ITEM in $(resource_names ${RESFILE} "${FILTER}"); do
-            echo; echo "#################### > Waiting for ${KIND} ${ITEM} in namespace ${NS}"
-            local SELECTOR=$(kubectl -n ${NS} describe ${KIND} ${ITEM} | awk '/Selector/{print $2}')
+            local NAME=${ITEM#*/}
+            local NS=${ITEM%/*}
+            echo; echo "#################### > Waiting for ${KIND} ${NAME} in namespace ${NS}"
+            local SELECTOR=$(kubectl -n ${NS} describe ${KIND} ${NAME} | awk '/Selector/{print $2}')
             kubectl -n ${NS} get pods -l ${SELECTOR} --no-headers -o name | xargs kubectl -n ${NS} wait --for condition=ready
         done
     fi
@@ -47,17 +49,17 @@ function wait_for() {
 function deploy_controller() {
     local RESFILE=${1}
     local FILTER=".kind != \"CustomResourceDefinition\" and .apiVersion != \"*${NAME}*\""
-    if [[ $(resource_names ${RESFILE} "${FILTER}") != "null" ]]; then
+    if [[ $(resource_names ${RESFILE} "${FILTER}") != "/" ]]; then
         echo; echo "#################### > Deploying controller for ${NAME}"
         filter_resources ${RESFILE} "${FILTER}" | kubectl apply -f -
-        for KIND in "Deployment" "StatefulSet"; do wait_for ${KIND} ${NAME}; done
+        for KIND in "Deployment" "StatefulSet"; do wait_for ${KIND}; done
     fi
 }
 
 function deploy_custom_resources() {
     local RESFILE=${1}
     local FILTER=".kind != \"CustomResourceDefinition\" and .apiVersion == \"*${NAME}*\""
-    if [[ $(resource_names ${RESFILE} "${FILTER}") != "null" ]]; then
+    if [[ $(resource_names ${RESFILE} "${FILTER}") != "/" ]]; then
         echo; echo "#################### > Deploying custom resources for ${NAME}"
         filter_resources ${RESFILE} "${FILTER}" | kubectl apply -f -
     fi
@@ -71,6 +73,7 @@ test -n "${BASE_PATH}" || (echo "BASE_PATH envvar must be set" && exit -1)
 KUSTOMIZE_OPTIONS="--enable-helm"
 NAME=${1}
 RESFILE=$(generate_resources ${BASE_PATH}/${NAME})
+# resource_names release.yaml ".kind == \"StatefulSet\""
 deploy_crds ${RESFILE}
 deploy_controller ${RESFILE}
 deploy_custom_resources ${RESFILE}

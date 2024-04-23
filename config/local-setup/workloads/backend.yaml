@@ -11,17 +11,13 @@ spec:
     pullPolicy: Always
   config:
     masterServiceID: 1
-    internalAPIPassword:
-      override: backend-internal-api-password
-    internalAPIUser:
-      override: backend-internal-api-user
+    internalAPIPassword: {fromSeed: {}}
+    internalAPIUser: {fromSeed: {}}
     rackEnv: preview
     redisQueuesDSN: "redis://backend-redis:6379/1"
     redisStorageDSN: "redis://backend-redis:6379/0"
-    systemEventsHookPassword:
-      override: system-events-shared-secret
-    systemEventsHookURL:
-      override: "https://system-172-27-27-105.nip.io/master/events/import"
+    systemEventsHookPassword: {}
+    systemEventsHookURL: {override: REPLACE }
   listener:
     config:
       listenerWorkers: 1

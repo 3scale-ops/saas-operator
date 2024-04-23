@@ -80,7 +80,7 @@ spec:
         router:
           routeConfiguration:
             virtualHosts:
-              - domains: [policies.staging-172-27-27-102.nip.io]
+              - domains: [REPLACE]
                 name: policies
                 routes:
                   - match:

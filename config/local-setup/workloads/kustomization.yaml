@@ -5,7 +5,6 @@ namespace: default
 resources:
   - discoveryservice.yaml
   - configuration.yaml
-  - secrets
   - apicast.yaml
   - mappingservice.yaml
   - autossl.yaml
@@ -52,3 +51,4 @@ secretGenerator:
 
 replacements:
   - path: replacements/images.yaml
+  - path: replacements/domains.yaml

@@ -1,0 +1,72 @@
+# APICAST
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.APICAST_POLICIES_ENDPOINT
+  targets:
+    - select:
+        kind: Apicast
+      fieldPaths:
+        - spec.staging.marin3r.dynamicConfigs.router.routeConfiguration.virtualHosts.0.domains.0
+
+# AUTOSSL
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.SYSTEM_ENDPOINT
+  targets:
+    - select:
+        kind: AutoSSL
+      fieldPaths:
+        - spec.config.proxyEndpoint
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.AUTOSSL_VERIFICATION_ENDPOINT
+  targets:
+    - select:
+        kind: AutoSSL
+      fieldPaths:
+        - spec.config.verificationEndpoint
+
+# BACKEND
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.SYSTEM_EVENTS_URL
+  targets:
+    - select:
+        kind: Backend
+      fieldPaths:
+        - spec.config.systemEventsHookURL.override
+
+# MAPPINGSERVICE
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.SYSTEM_ENDPOINT
+  targets:
+    - select:
+        kind: MappingService
+      fieldPaths:
+        - spec.config.apiHost
+
+# SYSTEM
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.SYSTEM_SUPERDOMAIN
+  targets:
+    - select:
+        kind: System
+      fieldPaths:
+        - spec.config.threescaleSuperdomain
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.BACKEND_EXTERNAL_ENDPOINT
+  targets:
+    - select:
+        kind: System
+      fieldPaths:
+        - spec.config.backend.externalEndpoint

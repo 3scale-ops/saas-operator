@@ -24,11 +24,20 @@ spec:
               containerPort: 5432
           env:
             - name: POSTGRES_USER
-              value: app
+              valueFrom:
+                secretKeyRef:
+                  name: saas-seed
+                  key: POSTGRES_USER
             - name: POSTGRES_PASSWORD
-              value: password
+              valueFrom:
+                secretKeyRef:
+                  name: saas-seed
+                  key: POSTGRES_PASSWORD
             - name: POSTGRES_DB
-              value: zync
+              valueFrom:
+                secretKeyRef:
+                  name: saas-seed
+                  key: POSTGRES_DB
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata
             - name: POD_IP

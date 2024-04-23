@@ -30,7 +30,7 @@ production:
   zync_authentication_token: <%= ENV.fetch('ZYNC_AUTHENTICATION_TOKEN') %>
   sysadmin_email: "admin@cluster.local"
   impersonation_admin:
-    username: saas_impersonation_admin
+    username: 3scaleadmin
     domain: 3scale.redhat.com
   active_merchant_mode: :test
   bulk_indexing_queue: bulk_indexing

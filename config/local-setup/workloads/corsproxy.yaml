@@ -9,8 +9,7 @@ spec:
     pullSecretName: pull-secrets
     pullPolicy: Always
   config:
-    systemDatabaseDSN:
-      override: mysql://app:password@system-mysql:3306/system_enterprise
+    systemDatabaseDSN: {fromSeed: {}}
   hpa: {}
   pdb: {}
   replicas: 1

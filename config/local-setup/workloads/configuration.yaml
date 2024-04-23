@@ -39,3 +39,12 @@ data:
 
   # ENVOY CONFIGURATION
   ENVOY_IMAGE: envoyproxy/envoy:v1.22.11
+
+  # DOMAIN CONFIGURATION
+  APICAST_POLICIES_ENDPOINT: policies.staging-172-27-27-102.nip.io
+  SYSTEM_ENDPOINT: https://multitenant-admin.system-172-27-27-105.nip.io
+  AUTOSSL_VERIFICATION_ENDPOINT: https://multitenant-admin.system-172-27-27-105.nip.io/swagger/spec.json
+  SYSTEM_EVENTS_URL: https://system-172-27-27-105.nip.io/master/events/import
+  SYSTEM_SUPERDOMAIN: system-172-27-27-105.nip.io
+  BACKEND_EXTERNAL_ENDPOINT: http://backend-172-27-27-100.nip.io
+

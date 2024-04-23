@@ -12,9 +12,9 @@ spec:
     contactEmail: 3scale-operations@redhat.com
     domainWhitelist: []
     logLevel: debug
-    proxyEndpoint: "https://multitenant-admin.system-172-27-27-105.nip.io"
+    proxyEndpoint: REPLACE
     redisHost: autossl-redis
-    verificationEndpoint: "https://multitenant-admin.system-172-27-27-105.nip.io/swagger/spec.json"
+    verificationEndpoint: REPLACE
   endpoint: {dns: []}
   hpa: {}
   pdb: {}
