@@ -18,7 +18,7 @@ const (
 func NewOptions(spec saasv1alpha1.MappingServiceSpec) pod.Options {
 	opts := pod.Options{}
 
-	opts.AddEnvvar("MASTER_ACCESS_TOKEN").AsSecretRef(MappingServiceSystemMasterAccessTokenSecret).WithSeedKey(seed.SystemMasterAccessToken).
+	opts.AddEnvvar("MASTER_ACCESS_TOKEN").AsSecretRef(MappingServiceSystemMasterAccessTokenSecret).WithSeedKey(seed.SystemApicastAccessToken).
 		Unpack(spec.Config.SystemAdminToken)
 	opts.AddEnvvar("API_HOST").Unpack(spec.Config.APIHost)
 	opts.AddEnvvar("APICAST_CONFIGURATION_LOADER").Unpack("lazy")

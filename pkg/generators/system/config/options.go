@@ -68,7 +68,7 @@ func NewOptions(spec saasv1alpha1.SystemSpec) pod.Options {
 	opts.AddEnvvar("SMTP_STARTTLS").Unpack(spec.Config.SMTP.STARTTLS)
 	opts.AddEnvvar("SMTP_STARTTLS_AUTO").Unpack(spec.Config.SMTP.STARTTLSAuto)
 
-	opts.AddEnvvar("APICAST_ACCESS_TOKEN").AsSecretRef(SystemMasterApicastSecret).WithSeedKey(seed.SystemMasterAccessToken).
+	opts.AddEnvvar("APICAST_ACCESS_TOKEN").AsSecretRef(SystemMasterApicastSecret).WithSeedKey(seed.SystemApicastAccessToken).
 		Unpack(spec.Config.MappingServiceAccessToken)
 
 	opts.AddEnvvar("ZYNC_ENDPOINT").Unpack(spec.Config.Zync.Endpoint)
