@@ -143,14 +143,14 @@ func (options *Options) DeepCopy() *Options {
 
 // FilterSecretOptions returns a list of options that will generate a Secret resource
 func (options *Options) FilterSecretOptions() Options {
-	return lo.Filter[*Option](*options, func(item *Option, index int) bool {
+	return lo.Filter(*options, func(item *Option, index int) bool {
 		return item.valueFrom != nil && item.valueFrom.SecretKeyRef != nil
 	})
 }
 
 func (options *Options) ListSecretResourceNames() []string {
 	list := lo.Reduce(options.FilterSecretOptions(), func(agg []string, item *Option, _ int) []string {
-		return append(agg, item.secretName)
+		return append(agg, item.valueFrom.SecretKeyRef.Name)
 	}, []string{})
 
 	return lo.Uniq(list)

@@ -593,9 +593,12 @@ func TestOptions_ListSecretResourceNames(t *testing.T) {
 				// ok
 				o.AddEnvvar("envvar3").AsSecretRef(TSecret("secret2")).
 					Unpack(&saasv1alpha1.SecretReference{FromVault: &saasv1alpha1.VaultSecretReference{}})
+				// ok: secret from seed
+				o.AddEnvvar("envvar4").AsSecretRef(TSecret("secret3")).WithSeedKey(TSeedKey("seed-key")).
+					Unpack(&saasv1alpha1.SecretReference{FromSeed: &saasv1alpha1.SeedSecretReference{}})
 				return o
 			}(),
-			want: []string{"secret1", "secret2"},
+			want: []string{"secret1", "secret2", "saas-seed"},
 		},
 	}
 	for _, tt := range tests {
