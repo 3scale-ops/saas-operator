@@ -482,6 +482,8 @@ type SystemConfig struct {
 	Backend SystemBackendSpec `json:"backend"`
 	// Assets has configuration to access assets in AWS s3
 	Assets AssetsSpec `json:"assets"`
+	// Apicast can be used to pass down apicast endpoints configuration
+	Apicast *SystemApicastEndpointsSpec `json:"apicast,omitempty"`
 }
 
 // Default applies default values to a SystemConfig struct
@@ -689,6 +691,18 @@ type SystemRailsSpec struct {
 	// +kubebuilder:validation:Enum=debug;info;warn;error;fatal;unknown
 	// +optional
 	LogLevel *string `json:"logLevel,omitempty"`
+}
+
+// ApicastSpec holds properties to configure Apicast endpoints
+type SystemApicastEndpointsSpec struct {
+	// Apicast Staging endpoint
+	StagingDomain string `json:"stagingDomain"`
+	// Apicast Production endpoint
+	ProductionDomain string `json:"productionDomain"`
+	// Policies registry URL for Apicast Cloud Hosteed
+	CloudHostedRegistryURL string `json:"cloudHostedRegistryURL"`
+	// Policies registry URL for Apicast Self Managed (on-prem)
+	SelfManagedRegistryURL string `json:"selfManagedRegistryURL"`
 }
 
 // Default applies defaults for SystemRailsSpec

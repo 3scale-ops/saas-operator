@@ -680,6 +680,29 @@ spec:
                           value.
                         type: string
                     type: object
+                  apicast:
+                    description: Apicast can be used to pass down apicast endpoints
+                      configuration
+                    properties:
+                      cloudHostedRegistryURL:
+                        description: Policies registry URL for Apicast Cloud Hosteed
+                        type: string
+                      productionDomain:
+                        description: Apicast Production endpoint
+                        type: string
+                      selfManagedRegistryURL:
+                        description: Policies registry URL for Apicast Self Managed
+                          (on-prem)
+                        type: string
+                      stagingDomain:
+                        description: Apicast Staging endpoint
+                        type: string
+                    required:
+                    - cloudHostedRegistryURL
+                    - productionDomain
+                    - selfManagedRegistryURL
+                    - stagingDomain
+                    type: object
                   assets:
                     description: Assets has configuration to access assets in AWS
                       s3

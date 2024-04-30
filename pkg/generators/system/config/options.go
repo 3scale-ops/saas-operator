@@ -118,5 +118,12 @@ func NewOptions(spec saasv1alpha1.SystemSpec) pod.Options {
 	opts.AddEnvvar("DB_SECRET").AsSecretRef(SystemAppSecret).WithSeedKey(seed.SystemDatabaseSecret).
 		Unpack(spec.Config.DatabaseSecret)
 
+	if spec.Config.Apicast != nil {
+		opts.AddEnvvar("APICAST_STAGING_DOMAIN").Unpack(spec.Config.Apicast.StagingDomain)
+		opts.AddEnvvar("APICAST_PRODUCTION_DOMAIN").Unpack(spec.Config.Apicast.ProductionDomain)
+		opts.AddEnvvar("APICAST_CLOUD_HOSTED_REGISTRY_URL").Unpack(spec.Config.Apicast.CloudHostedRegistryURL)
+		opts.AddEnvvar("APICAST_SELF_MANAGED_REGISTRY_URL").Unpack(spec.Config.Apicast.SelfManagedRegistryURL)
+	}
+
 	return opts
 }

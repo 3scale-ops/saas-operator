@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: config
   annotations:
-    config.kubernetes.io/local-config: 'true'
+    config.kubernetes.io/local-config: "true"
 data:
   # APICAST CONFIGURATION
   APICAST_IMAGE_NAME: quay.io/3scale/apicast-cloud-hosted
@@ -43,10 +43,12 @@ data:
   ENVOY_IMAGE: envoyproxy/envoy:v1.22.11
 
   # DOMAIN CONFIGURATION
-  APICAST_POLICIES_ENDPOINT: policies.staging-172-27-27-102.nip.io
   SYSTEM_ENDPOINT: https://multitenant-admin.system-172-27-27-105.nip.io
   AUTOSSL_VERIFICATION_ENDPOINT: https://multitenant-admin.system-172-27-27-105.nip.io/swagger/spec.json
   SYSTEM_EVENTS_URL: https://system-172-27-27-105.nip.io/master/events/import
   SYSTEM_SUPERDOMAIN: system-172-27-27-105.nip.io
   BACKEND_EXTERNAL_ENDPOINT: http://backend-172-27-27-100.nip.io
-
+  APICAST_STAGING_DOMAIN: staging-172-27-27-102.nip.io
+  APICAST_PRODUCTION_DOMAIN: production-172-27-27-101.nip.io
+  APICAST_CLOUD_HOSTED_REGISTRY_URL: http://apicast-staging-management:8090/policies
+  APICAST_SELF_MANAGED_REGISTRY_URL: http://policies.apicast.io/latest/policies.json

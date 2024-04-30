@@ -63,6 +63,11 @@ spec:
       deletionWorkspace: ""
       deletionToken: {fromSeed: {}}
       writeKey: {fromSeed: {}}
+    apicast:
+      stagingDomain: REPLACE
+      productionDomain: REPLACE
+      cloudHostedRegistryURL: REPLACE
+      selfManagedRegistryURL: REPLACE
   app:
     hpa: {}
     pdb: {}

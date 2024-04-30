@@ -84,13 +84,6 @@ spec:
         router:
           routeConfiguration:
             virtualHosts:
-              - domains: [REPLACE]
-                name: policies
-                routes:
-                  - match:
-                      prefix: /policies
-                    route:
-                      cluster: mgmt_cluster
               - domains: ["*"]
                 name: gateway
                 routes:

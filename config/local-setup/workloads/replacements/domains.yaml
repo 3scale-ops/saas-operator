@@ -1,14 +1,3 @@
-# APICAST
-- source:
-    kind: ConfigMap
-    name: config
-    fieldPath: data.APICAST_POLICIES_ENDPOINT
-  targets:
-    - select:
-        kind: Apicast
-      fieldPaths:
-        - spec.staging.marin3r.dynamicConfigs.router.routeConfiguration.virtualHosts.0.domains.0
-
 # AUTOSSL
 - source:
     kind: ConfigMap
@@ -70,3 +59,39 @@
         kind: System
       fieldPaths:
         - spec.config.backend.externalEndpoint
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.APICAST_STAGING_DOMAIN
+  targets:
+    - select:
+        kind: System
+      fieldPaths:
+        - spec.config.apicast.stagingDomain
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.APICAST_PRODUCTION_DOMAIN
+  targets:
+    - select:
+        kind: System
+      fieldPaths:
+        - spec.config.apicast.productionDomain
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.APICAST_CLOUD_HOSTED_REGISTRY_URL
+  targets:
+    - select:
+        kind: System
+      fieldPaths:
+        - spec.config.apicast.cloudHostedRegistryURL
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.APICAST_SELF_MANAGED_REGISTRY_URL
+  targets:
+    - select:
+        kind: System
+      fieldPaths:
+        - spec.config.apicast.selfManagedRegistryURL
