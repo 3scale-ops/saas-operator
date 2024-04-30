@@ -283,16 +283,16 @@ kind-refresh-controller: manifests kind docker-build ## Reloads the controller i
 	$(KIND) load docker-image $(IMG)
 	kubectl delete pod -l control-plane=controller-manager
 
-LOCAL_SETUP_SECRETS_PATH=config/local-setup/secrets
-$(LOCAL_SETUP_SECRETS_PATH)/seed-secret.yaml: $(LOCAL_SETUP_SECRETS_PATH)/seed.env
+LOCAL_SETUP_INPUTS_PATH=config/local-setup/env-inputs
+$(LOCAL_SETUP_INPUTS_PATH)/seed-secret.yaml: $(LOCAL_SETUP_INPUTS_PATH)/seed.env
 	source $(@D)/seed.env && envsubst < $@.envsubst > $@
 
-kind-deploy-saas-secrets: export KUBECONFIG = $(PWD)/kubeconfig
-kind-deploy-saas-secrets: $(LOCAL_SETUP_SECRETS_PATH)/seed-secret.yaml $(LOCAL_SETUP_SECRETS_PATH)/pull-secrets.json
-	$(KUSTOMIZE) build $(LOCAL_SETUP_SECRETS_PATH) | kubectl apply -f -
+kind-deploy-saas-inputs: export KUBECONFIG = $(PWD)/kubeconfig
+kind-deploy-saas-inputs: $(LOCAL_SETUP_INPUTS_PATH)/seed-secret.yaml $(LOCAL_SETUP_INPUTS_PATH)/pull-secrets.json
+	$(KUSTOMIZE) build $(LOCAL_SETUP_INPUTS_PATH) | kubectl apply -f -
 
 kind-deploy-databases: export KUBECONFIG = $(PWD)/kubeconfig
-kind-deploy-databases: kind-deploy-controller kind-deploy-saas-secrets
+kind-deploy-databases: kind-deploy-controller kind-deploy-saas-inputs
 	$(KUSTOMIZE) build config/local-setup/databases | kubectl apply -f -
 	sleep 10
 	kubectl wait --for condition=ready --timeout=300s pod --all
@@ -307,24 +307,24 @@ kind-load-redis-with-ssh:
 	$(KIND) load docker-image $(REDIS_WITH_SSH_IMG)
 
 kind-deploy-saas-workloads: export KUBECONFIG = ${PWD}/kubeconfig
-kind-deploy-saas-workloads: kind-deploy-controller kind-deploy-saas-secrets kind-load-redis-with-ssh ## Deploys the 3scale SaaS dev environment workloads
-	$(KUSTOMIZE) build config/local-setup/workloads | kubectl apply -f -
+kind-deploy-saas-workloads: kind-deploy-controller kind-deploy-saas-inputs kind-load-redis-with-ssh ## Deploys the 3scale SaaS dev environment workloads
+	$(KUSTOMIZE) build config/local-setup | $(YQ) 'select(.kind!="Zync")' | kubectl apply -f -
 	sleep 10
-	kubectl get pods --no-headers -o name | grep -v system | xargs kubectl wait --for condition=ready --timeout=300s
+	kubectl get pods --no-headers -o name xargs kubectl wait --for condition=ready --timeout=300s
+	$(KUSTOMIZE) build config/local-setup | $(YQ) 'select(.kind=="Zync")' | kubectl apply -f -
 
 kind-deploy-saas-run-db-setup:
 	 kubectl create -f config/local-setup/workloads/db-setup-pipelinerun.yaml
 
 kind-cleanup-saas: export KUBECONFIG = ${PWD}/kubeconfig
 kind-cleanup-saas:
-	-$(KUSTOMIZE) build config/local-setup/workloads | kubectl delete -f -
-	-$(KUSTOMIZE) build config/local-setup/databases | kubectl delete -f -
+	-$(KUSTOMIZE) build config/local-setup | kubectl delete -f -
 	-kubectl get pod --no-headers -o name | grep -v saas-operator | xargs kubectl delete --grace-period=0 --force
 	-kubectl get pvc --no-headers -o name | xargs kubectl delete
 
 LOCAL_SETUP_DEPS = metallb cert-manager marin3r prometheus-crds tekton grafana-crds external-secrets-crds minio
 kind-local-setup: export KUBECONFIG = ${PWD}/kubeconfig
-kind-local-setup: $(foreach elem,$(LOCAL_SETUP_DEPS),install-$(elem)) kind-deploy-controller kind-deploy-saas-secrets kind-deploy-databases kind-deploy-saas-workloads kind-deploy-saas-run-db-setup
+kind-local-setup: $(foreach elem,$(LOCAL_SETUP_DEPS),install-$(elem)) kind-deploy-controller kind-deploy-saas-workloads kind-deploy-saas-run-db-setup
 
 ##@ Build Dependencies
 

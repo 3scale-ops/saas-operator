@@ -1,0 +1,4 @@
+components:
+ - env-inputs
+ - databases
+ - workloads
