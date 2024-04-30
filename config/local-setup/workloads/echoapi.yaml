@@ -3,7 +3,7 @@ kind: EchoAPI
 metadata:
   name: echo-api
 spec:
-  endpoint: {dns: []}
+  endpoint: {dns: [REPLACE]}
   hpa: {}
   image:
       name: REPLACE

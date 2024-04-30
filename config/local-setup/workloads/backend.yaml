@@ -22,7 +22,7 @@ spec:
     config:
       listenerWorkers: 1
       redisAsync: true
-    endpoint: {dns: []}
+    endpoint: {dns: [REPLACE]}
     hpa: {}
     loadBalancer:
       proxyProtocol: false

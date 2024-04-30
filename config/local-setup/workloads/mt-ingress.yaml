@@ -3,7 +3,7 @@ kind: Certificate
 metadata:
   name: mt-ingress-cert
 spec:
-  dnsNames: ["*.system-172-27-27-105.nip.io"]
+  dnsNames: [REPLACE]
   issuerRef:
     kind: ClusterIssuer
     name: selfsigned-cluster-issuer
@@ -35,6 +35,15 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: REPLACE
+    service.beta.kubernetes.io/aws-load-balancer-connection-draining-enabled: "true"
+    service.beta.kubernetes.io/aws-load-balancer-connection-draining-timeout: "60"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-healthy-threshold: "2"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-interval: "5"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-timeout: "3"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-unhealthy-threshold: "2"
   labels:
     app: mt-ingress
   name: mt-ingress

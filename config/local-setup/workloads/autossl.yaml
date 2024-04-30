@@ -15,7 +15,7 @@ spec:
     proxyEndpoint: REPLACE
     redisHost: autossl-redis
     verificationEndpoint: REPLACE
-  endpoint: {dns: []}
+  endpoint: {dns: [REPLACE]}
   hpa: {}
   pdb: {}
   replicas: 1

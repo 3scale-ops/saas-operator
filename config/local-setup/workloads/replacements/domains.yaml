@@ -1,3 +1,23 @@
+# APICAST
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.APICAST_STAGING_DNS
+  targets:
+    - select:
+        kind: Apicast
+      fieldPaths:
+        - spec.staging.endpoint.dns.0
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.APICAST_PRODUCTION_DNS
+  targets:
+    - select:
+        kind: Apicast
+      fieldPaths:
+        - spec.production.endpoint.dns.0
+
 # AUTOSSL
 - source:
     kind: ConfigMap
@@ -17,6 +37,15 @@
         kind: AutoSSL
       fieldPaths:
         - spec.config.verificationEndpoint
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.AUTOSSL_DNS
+  targets:
+    - select:
+        kind: AutoSSL
+      fieldPaths:
+        - spec.endpoint.dns.0
 
 # BACKEND
 - source:
@@ -28,6 +57,26 @@
         kind: Backend
       fieldPaths:
         - spec.config.systemEventsHookURL.override
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.BACKEND_DNS
+  targets:
+    - select:
+        kind: Backend
+      fieldPaths:
+        - spec.listener.endpoint.dns.0
+
+# ECHOAPI
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.ECHOAPI_DNS
+  targets:
+    - select:
+        kind: EchoAPI
+      fieldPaths:
+        - spec.endpoint.dns.0
 
 # MAPPINGSERVICE
 - source:
@@ -95,3 +144,34 @@
         kind: System
       fieldPaths:
         - spec.config.apicast.selfManagedRegistryURL
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.SYSTEM_DNS
+  targets:
+    - select:
+        kind: Service
+        name: mt-ingress
+      fieldPaths:
+        - metadata.annotations.[external-dns.alpha.kubernetes.io/hostname]
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.SYSTEM_DNS
+  targets:
+    - select:
+        kind: Certificate
+        name: mt-ingress-cert
+      fieldPaths:
+        - spec.dnsNames.0
+
+# CERT-MANAGER
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.CERT_MANAGER_ISSUER
+  targets:
+    - select:
+        kind: Certificate
+      fieldPaths:
+        - spec.issuerRef.name
