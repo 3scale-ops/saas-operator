@@ -24,6 +24,8 @@ spec:
       redisAsync: true
     endpoint: {dns: []}
     hpa: {}
+    loadBalancer:
+      proxyProtocol: false
     marin3r:
       dynamicConfigs:
         backend_listener_cluster:

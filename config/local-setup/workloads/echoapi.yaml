@@ -10,6 +10,8 @@ spec:
       tag: REPLACE
       pullSecretName: pull-secrets
       pullPolicy: Always
+  loadBalancer:
+    proxyProtocol: false
   marin3r:
     dynamicConfigs:
       echo_api_cluster:

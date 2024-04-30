@@ -14,6 +14,8 @@ spec:
       threescalePortalEndpoint: "http://mapping-service/config"
     endpoint: {dns: []}
     hpa: {}
+    loadBalancer:
+      proxyProtocol: false
     marin3r:
       dynamicConfigs:
         gateway_cluster:
@@ -62,6 +64,8 @@ spec:
       threescalePortalEndpoint: "http://mapping-service/config"
     endpoint: {dns: []}
     hpa: {}
+    loadBalancer:
+      proxyProtocol: false
     marin3r:
       dynamicConfigs:
         gateway_cluster:
