@@ -466,6 +466,17 @@ func TestOptions_GenerateExternalSecrets(t *testing.T) {
 			args: args{},
 			want: []client.Object{},
 		},
+		{
+			name: "Skips 'fromSeed' secret options",
+			opts: func() *Options {
+				o := NewOptions()
+				o.AddEnvvar("envvar1").AsSecretRef(TSecret("secret")).WithSeedKey(TSeedKey("key")).
+					Unpack(&saasv1alpha1.SecretReference{FromSeed: &saasv1alpha1.SeedSecretReference{}})
+				return o
+			}(),
+			args: args{},
+			want: []client.Object{},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

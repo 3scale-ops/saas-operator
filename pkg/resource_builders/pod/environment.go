@@ -20,9 +20,8 @@ import (
 )
 
 type Option struct {
-	value     *string
-	valueFrom *corev1.EnvVarSource
-	// secretRef   *saasv1alpha1.SecretReference
+	value       *string
+	valueFrom   *corev1.EnvVarSource
 	envVariable string
 	secretName  string
 	seedKey     string
@@ -148,6 +147,14 @@ func (options *Options) FilterSecretOptions() Options {
 	})
 }
 
+// FilterSecretOptions returns a list of options that will generate a Secret resource
+// with a Vault secret store as its source (via an ExternalSecret)
+func (options *Options) FilterFromVaultOptions() Options {
+	return lo.Filter(*options, func(item *Option, index int) bool {
+		return item.vaultKey != "" && item.vaultPath != ""
+	})
+}
+
 func (options *Options) ListSecretResourceNames() []string {
 	list := lo.Reduce(options.FilterSecretOptions(), func(agg []string, item *Option, _ int) []string {
 		return append(agg, item.valueFrom.SecretKeyRef.Name)
@@ -243,7 +250,7 @@ func (opts *Options) BuildEnvironment() []corev1.EnvVar {
 func (opts *Options) GenerateExternalSecrets(namespace string, labels map[string]string, secretStoreName, secretStoreKind string, refreshInterval metav1.Duration) []resource.TemplateInterface {
 	list := []resource.TemplateInterface{}
 
-	for _, group := range lo.PartitionBy[*Option, string](opts.FilterSecretOptions(), func(item *Option) string { return item.secretName }) {
+	for _, group := range lo.PartitionBy(opts.FilterFromVaultOptions(), func(item *Option) string { return item.secretName }) {
 		data := []externalsecretsv1beta1.ExternalSecretData{}
 		name := group[0].secretName
 		for _, opt := range group {
@@ -266,7 +273,7 @@ func (opts *Options) GenerateExternalSecrets(namespace string, labels map[string
 }
 
 func Union(lists ...[]*Option) *Options {
-	all := operatorutil.ConcatSlices[*Option](lists...)
+	all := operatorutil.ConcatSlices(lists...)
 	all = lo.UniqBy(all, func(item *Option) string {
 		return item.envVariable
 	})
