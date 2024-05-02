@@ -18,7 +18,7 @@ spec:
     redis:
       queuesDSN: "redis://system-redis:6379"
     backend:
-      externalEndpoint: REPLACE
+      externalEndpoint: http://REPLACE
       internalAPIPassword: {fromSeed: {}}
       internalAPIUser: {fromSeed: {}}
       internalEndpoint: "http://backend-listener-internal"
@@ -66,8 +66,8 @@ spec:
     apicast:
       stagingDomain: REPLACE
       productionDomain: REPLACE
-      cloudHostedRegistryURL: REPLACE
-      selfManagedRegistryURL: REPLACE
+      cloudHostedRegistryURL: http://apicast-staging-management:8090/policies
+      selfManagedRegistryURL: https://policies.apicast.io/latest/policies.json
   app:
     hpa: {}
     pdb: {}

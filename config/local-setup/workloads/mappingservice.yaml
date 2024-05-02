@@ -4,7 +4,7 @@ metadata:
   name: mapping-service
 spec:
   config:
-    apiHost: REPLACE
+    apiHost: https://REPLACE
     systemAdminToken: {fromSeed: {}}
   image:
     name: REPLACE

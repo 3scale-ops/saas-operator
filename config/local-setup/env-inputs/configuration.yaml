@@ -43,23 +43,12 @@ data:
   ENVOY_IMAGE: envoyproxy/envoy:v1.22.11
 
   # DOMAIN CONFIGURATION
-  SYSTEM_ENDPOINT: https://multitenant-admin.system-172-27-27-105.nip.io
-  AUTOSSL_VERIFICATION_ENDPOINT: https://multitenant-admin.system-172-27-27-105.nip.io/swagger/spec.json
-  SYSTEM_EVENTS_URL: https://system-172-27-27-105.nip.io/master/events/import
-  SYSTEM_SUPERDOMAIN: system-172-27-27-105.nip.io
-  BACKEND_EXTERNAL_ENDPOINT: http://backend-172-27-27-100.nip.io
+  SYSTEM_ENDPOINT: multitenant-admin.system-172-27-27-105.nip.io
+  BACKEND_ENDPOINT: backend-172-27-27-100.nip.io
   APICAST_STAGING_DOMAIN: staging-172-27-27-102.nip.io
   APICAST_PRODUCTION_DOMAIN: production-172-27-27-101.nip.io
-  APICAST_CLOUD_HOSTED_REGISTRY_URL: http://apicast-staging-management:8090/policies
-  APICAST_SELF_MANAGED_REGISTRY_URL: http://policies.apicast.io/latest/policies.json
-
-  # DNS CONFIG
-  APICAST_STAGING_DNS: '*.staging-172-27-27-102.nip.io'
-  APICAST_PRODUCTION_DNS: '*.production-172-27-27-101.nip.io'
-  AUTOSSL_DNS: autossl-172-27-27-104.nip.io
-  BACKEND_DNS: backend-172-27-27-100.nip.io
-  ECHOAPI_DNS: echo-api-172-27-27-103.nip.io
-  SYSTEM_DNS: '*.system-172-27-27-105.nip.io'
+  AUTOSSL_ENDPOINT: autossl-172-27-27-104.nip.io
+  ECHOAPI_ENDPOINT: echo-api-172-27-27-103.nip.io
 
   # CERTIFICATE CONFIG
   CERT_MANAGER_ISSUER: selfsigned-cluster-issuer

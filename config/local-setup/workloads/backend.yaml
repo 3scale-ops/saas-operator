@@ -17,7 +17,7 @@ spec:
     redisQueuesDSN: "redis://backend-redis:6379/1"
     redisStorageDSN: "redis://backend-redis:6379/0"
     systemEventsHookPassword: {}
-    systemEventsHookURL: {override: REPLACE }
+    systemEventsHookURL: {override: https://REPLACE/master/events/import }
   listener:
     config:
       listenerWorkers: 1

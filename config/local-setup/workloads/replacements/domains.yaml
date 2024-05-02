@@ -1,118 +1,16 @@
-# APICAST
-- source:
-    kind: ConfigMap
-    name: config
-    fieldPath: data.APICAST_STAGING_DNS
-  targets:
-    - select:
-        kind: Apicast
-      fieldPaths:
-        - spec.staging.endpoint.dns.0
-- source:
-    kind: ConfigMap
-    name: config
-    fieldPath: data.APICAST_PRODUCTION_DNS
-  targets:
-    - select:
-        kind: Apicast
-      fieldPaths:
-        - spec.production.endpoint.dns.0
-
-# AUTOSSL
-- source:
-    kind: ConfigMap
-    name: config
-    fieldPath: data.SYSTEM_ENDPOINT
-  targets:
-    - select:
-        kind: AutoSSL
-      fieldPaths:
-        - spec.config.proxyEndpoint
-- source:
-    kind: ConfigMap
-    name: config
-    fieldPath: data.AUTOSSL_VERIFICATION_ENDPOINT
-  targets:
-    - select:
-        kind: AutoSSL
-      fieldPaths:
-        - spec.config.verificationEndpoint
-- source:
-    kind: ConfigMap
-    name: config
-    fieldPath: data.AUTOSSL_DNS
-  targets:
-    - select:
-        kind: AutoSSL
-      fieldPaths:
-        - spec.endpoint.dns.0
-
-# BACKEND
-- source:
-    kind: ConfigMap
-    name: config
-    fieldPath: data.SYSTEM_EVENTS_URL
-  targets:
-    - select:
-        kind: Backend
-      fieldPaths:
-        - spec.config.systemEventsHookURL.override
-- source:
-    kind: ConfigMap
-    name: config
-    fieldPath: data.BACKEND_DNS
-  targets:
-    - select:
-        kind: Backend
-      fieldPaths:
-        - spec.listener.endpoint.dns.0
-
-# ECHOAPI
-- source:
-    kind: ConfigMap
-    name: config
-    fieldPath: data.ECHOAPI_DNS
-  targets:
-    - select:
-        kind: EchoAPI
-      fieldPaths:
-        - spec.endpoint.dns.0
-
-# MAPPINGSERVICE
-- source:
-    kind: ConfigMap
-    name: config
-    fieldPath: data.SYSTEM_ENDPOINT
-  targets:
-    - select:
-        kind: MappingService
-      fieldPaths:
-        - spec.config.apiHost
-
-# SYSTEM
-- source:
-    kind: ConfigMap
-    name: config
-    fieldPath: data.SYSTEM_SUPERDOMAIN
-  targets:
-    - select:
-        kind: System
-      fieldPaths:
-        - spec.config.threescaleSuperdomain
-- source:
-    kind: ConfigMap
-    name: config
-    fieldPath: data.BACKEND_EXTERNAL_ENDPOINT
-  targets:
-    - select:
-        kind: System
-      fieldPaths:
-        - spec.config.backend.externalEndpoint
+# CONFIGURE APICAST ENDPOINTS
 - source:
     kind: ConfigMap
     name: config
     fieldPath: data.APICAST_STAGING_DOMAIN
   targets:
+    - select:
+        kind: Apicast
+      fieldPaths:
+        - spec.staging.endpoint.dns.0
+      options:
+        delimiter: "."
+        index: 1
     - select:
         kind: System
       fieldPaths:
@@ -123,47 +21,118 @@
     fieldPath: data.APICAST_PRODUCTION_DOMAIN
   targets:
     - select:
+        kind: Apicast
+      fieldPaths:
+        - spec.production.endpoint.dns.0
+      options:
+        delimiter: "."
+        index: 1
+    - select:
         kind: System
       fieldPaths:
         - spec.config.apicast.productionDomain
+
+# CONFIGURE AUTOSSL ENDPOINT
 - source:
     kind: ConfigMap
     name: config
-    fieldPath: data.APICAST_CLOUD_HOSTED_REGISTRY_URL
+    fieldPath: data.SYSTEM_ENDPOINT
+  targets:
+    - select:
+        kind: AutoSSL
+      fieldPaths:
+        - spec.config.proxyEndpoint
+        - spec.config.verificationEndpoint
+      options:
+        delimiter: "/"
+        index: 2
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.AUTOSSL_ENDPOINT
+  targets:
+    - select:
+        kind: AutoSSL
+      fieldPaths:
+        - spec.endpoint.dns.0
+
+# CONFIGURE ECHOAPI ENDPOINT
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.ECHOAPI_ENDPOINT
+  targets:
+    - select:
+        kind: EchoAPI
+      fieldPaths:
+        - spec.endpoint.dns.0
+
+# CONFIGURE BACKEND ENDPOINT
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.BACKEND_ENDPOINT
+  targets:
+    - select:
+        kind: Backend
+      fieldPaths:
+        - spec.listener.endpoint.dns.0
+    - select:
+        kind: System
+      fieldPaths:
+        - spec.config.backend.externalEndpoint
+      options:
+        delimiter: "/"
+        index: 2
+
+# CONFIGURE SYSTEM ENDPOINT
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.SYSTEM_ENDPOINT
+  targets:
+    - select:
+        kind: Backend
+      fieldPaths:
+        - spec.config.systemEventsHookURL.override
+      options:
+        delimiter: "/"
+        index: 2
+    - select:
+        kind: MappingService
+      fieldPaths:
+        - spec.config.apiHost
+      options:
+        delimiter: "/"
+        index: 2
+- source:
+    kind: ConfigMap
+    name: config
+    fieldPath: data.SYSTEM_ENDPOINT
+    options:
+      delimiter: "multitenant-admin."
+      index: 1
   targets:
     - select:
         kind: System
       fieldPaths:
-        - spec.config.apicast.cloudHostedRegistryURL
-- source:
-    kind: ConfigMap
-    name: config
-    fieldPath: data.APICAST_SELF_MANAGED_REGISTRY_URL
-  targets:
-    - select:
-        kind: System
-      fieldPaths:
-        - spec.config.apicast.selfManagedRegistryURL
-- source:
-    kind: ConfigMap
-    name: config
-    fieldPath: data.SYSTEM_DNS
-  targets:
+        - spec.config.threescaleSuperdomain
     - select:
         kind: Service
         name: mt-ingress
       fieldPaths:
         - metadata.annotations.[external-dns.alpha.kubernetes.io/hostname]
-- source:
-    kind: ConfigMap
-    name: config
-    fieldPath: data.SYSTEM_DNS
-  targets:
+      options:
+        delimiter: "."
+        index: 1
     - select:
         kind: Certificate
         name: mt-ingress-cert
       fieldPaths:
         - spec.dnsNames.0
+      options:
+        delimiter: "."
+        index: 1
 
 # CERT-MANAGER
 - source:

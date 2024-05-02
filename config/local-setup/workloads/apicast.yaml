@@ -12,7 +12,7 @@ spec:
     config:
       configurationCache: 300
       threescalePortalEndpoint: "http://mapping-service/config"
-    endpoint: {dns: [REPLACE]}
+    endpoint: {dns: ['*.REPLACE']}
     hpa: {}
     loadBalancer:
       proxyProtocol: false
@@ -62,7 +62,7 @@ spec:
     config:
       configurationCache: 60
       threescalePortalEndpoint: "http://mapping-service/config"
-    endpoint: {dns: [REPLACE]}
+    endpoint: {dns: ['*.REPLACE']}
     hpa: {}
     loadBalancer:
       proxyProtocol: false

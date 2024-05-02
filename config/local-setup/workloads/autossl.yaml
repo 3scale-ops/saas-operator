@@ -12,9 +12,9 @@ spec:
     contactEmail: 3scale-operations@redhat.com
     domainWhitelist: []
     logLevel: debug
-    proxyEndpoint: REPLACE
+    proxyEndpoint: https://REPLACE
     redisHost: autossl-redis
-    verificationEndpoint: REPLACE
+    verificationEndpoint: https://REPLACE/swagger/spec.json
   endpoint: {dns: [REPLACE]}
   hpa: {}
   pdb: {}
