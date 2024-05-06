@@ -1,0 +1,164 @@
+apiVersion: saas.3scale.net/v1alpha1
+kind: System
+metadata:
+  name: system
+spec:
+  image:
+    name: REPLACE
+    tag: REPLACE
+    pullSecretName: pull-secrets
+    pullPolicy: Always
+  config:
+    configFilesSecret: system-config
+    threescaleSuperdomain: REPLACE
+    rails:
+      console: true
+      environment: production
+      logLevel: info
+    redis:
+      queuesDSN: "redis://system-redis:6379"
+    backend:
+      externalEndpoint: http://REPLACE
+      internalAPIPassword: {fromSeed: {}}
+      internalAPIUser: {fromSeed: {}}
+      internalEndpoint: "http://backend-listener-internal"
+      redisDSN: "redis://backend-redis:6379/0"
+    assets:
+      bucket: system-assets # check config/amazon_s3.yml for the specific minio configuration (https://github.com/3scale/porta/blob/master/openshift/system/config/amazon_s3.yml)
+      region: us-east-1
+      accessKey: {fromSeed: {}}
+      secretKey: {fromSeed: {}}
+      s3Endpoint: http://minio.minio.svc.cluster.local:9000
+    databaseDSN: {fromSeed: {}}
+    databaseSecret: {fromSeed: {}}
+    secretKeyBase: {fromSeed: {}}
+    eventsSharedSecret: {fromSeed: {}}
+    searchServer:
+      host: system-searchd
+    zync:
+      authToken: {fromSeed: {}}
+      endpoint: "http://zync:8080"
+    smtp:
+      address: smtp.sendgrid.net
+      authProtocol: plain
+      opensslVerifyMode: peer
+      password: {fromSeed: {}}
+      user: {fromSeed: {}}
+      port: 587
+      starttls: true
+      starttlsAuto: false
+    github:
+      clientID: {fromSeed: {}}
+      clientSecret: {fromSeed: {}}
+    mappingServiceAccessToken: {fromSeed: {}}
+    memcachedServers: system-memcached:11211
+    recaptcha:
+      privateKey: {fromSeed: {}}
+      publicKey: {fromSeed: {}}
+    redhatCustomerPortal:
+      clientID: {fromSeed: {}}
+      clientSecret: {fromSeed: {}}
+      realm: ""
+    segment:
+      deletionWorkspace: ""
+      deletionToken: {fromSeed: {}}
+      writeKey: {fromSeed: {}}
+    apicast:
+      stagingDomain: REPLACE
+      productionDomain: REPLACE
+      cloudHostedRegistryURL: http://apicast-staging-management:8090/policies
+      selfManagedRegistryURL: https://policies.apicast.io/latest/policies.json
+  app:
+    hpa: {}
+    pdb: {}
+    replicas: 1
+    # the default cpu limit is low, so container
+    # startup is slower. Change the liveness to account
+    # for it.
+    livenessProbe:
+      initialDelaySeconds: 150
+      timeoutSeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+      failureThreshold: 3
+  console: {}
+  searchd:
+    enabled: true
+    image:
+      name: REPLACE
+      tag: REPLACE
+      pullSecretName: pull-secrets
+      pullPolicy: Always
+    config:
+      databaseStorageSize: 1Gi
+  sidekiqBilling:
+    config:
+      maxThreads: 5
+    hpa: {}
+    pdb: {}
+    resources: {}
+    replicas: 1
+  sidekiqDefault:
+    config:
+      maxThreads: 5
+    hpa: {}
+    pdb: {}
+    resources: {}
+    replicas: 1
+  sidekiqLow:
+    config:
+      maxThreads: 5
+    hpa: {}
+    pdb: {}
+    resources: {}
+    replicas: 1
+  tasks:
+    - name: system-db-setup
+      description: |-
+        Creates the database, loads the schema, and initializes with the
+        seed data (use system-db-drop to drop the database first). It drops
+        the current database if one exists.
+      config:
+        command: ["container-entrypoint"]
+        args: ["bundle", "exec", "rake", "db:drop", "db:setup"]
+        extraEnv:
+          - name: MASTER_DOMAIN
+            value: multitenant-admin
+          - name: MASTER_ACCESS_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: saas-seed
+                key: system-master-access-token
+          - name: MASTER_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: saas-seed
+                key: system-master-password
+          - name: MASTER_USER
+            valueFrom:
+              secretKeyRef:
+                name: saas-seed
+                key: system-master-user
+          - name: TENANT_NAME
+            value: provider
+          - name: PROVIDER_NAME
+            value: "3scale SaaS Dev Provider"
+          - name: USER_LOGIN
+            valueFrom:
+              secretKeyRef:
+                name: saas-seed
+                key: system-tenant-user
+          - name: USER_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: saas-seed
+                key: system-tenant-password
+          - name: ADMIN_ACCESS_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: saas-seed
+                key: system-tenant-token
+          - name: USER_EMAIL
+            value: "admin@cluster.local"
+          - name: DISABLE_DATABASE_ENVIRONMENT_CHECK
+            value: "1"

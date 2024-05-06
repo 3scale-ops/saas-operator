@@ -1,0 +1,12 @@
+production:
+  test_api_hosts:
+   - echo-api.3scale.net
+  ignore_test_failures: []
+  apicast_staging_endpoint: 'https://%{system_name}-%{account_id}.<%=ENV.fetch('APICAST_STAGING_DOMAIN')%>:%{port}'
+  apicast_production_endpoint: 'https://%{system_name}-%{account_id}.<%=ENV.fetch('APICAST_PRODUCTION_DOMAIN')%>:%{port}'
+  sandbox_endpoint: 'https://%{system_name}-%{account_id}.<%=ENV.fetch('APICAST_STAGING_DOMAIN')%>:%{port}'
+  hosted_proxy_endpoint: 'https://%{system_name}-%{account_id}.<%=ENV.fetch('APICAST_PRODUCTION_DOMAIN')%>:%{port}'
+  apicast_registry_url: <%= ENV.fetch('APICAST_CLOUD_HOSTED_REGISTRY_URL') %>
+  self_managed_apicast_registry_url: <%= ENV.fetch('APICAST_SELF_MANAGED_REGISTRY_URL') %>
+  backend_endpoint: <%= ENV.fetch('BACKEND_PUBLIC_URL') %>
+  verify_mode: <%= OpenSSL::SSL.const_get(ENV.fetch('THREESCALE_SANDBOX_PROXY_OPENSSL_VERIFY_MODE', 'VERIFY_NONE')) %>

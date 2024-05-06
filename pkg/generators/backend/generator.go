@@ -6,7 +6,6 @@ import (
 
 	"github.com/3scale-ops/basereconciler/mutators"
 	"github.com/3scale-ops/basereconciler/resource"
-	"github.com/3scale-ops/basereconciler/util"
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/pkg/generators"
 	"github.com/3scale-ops/saas-operator/pkg/generators/backend/config"
@@ -216,8 +215,7 @@ func (gen *ListenerGenerator) Labels() map[string]string {
 func (gen *ListenerGenerator) Deployment() *resource.Template[*appsv1.Deployment] {
 	return resource.NewTemplateFromObjectFunction(gen.deployment).
 		WithMutation(mutators.SetDeploymentReplicas(gen.ListenerSpec.HPA.IsDeactivated())).
-		WithMutation(mutators.RolloutTrigger{Name: "backend-internal-api", SecretName: util.Pointer("backend-internal-api")}.Add()).
-		WithMutation(mutators.RolloutTrigger{Name: "backend-error-monitoring", SecretName: util.Pointer("backend-error-monitoring")}.Add())
+		WithMutations(gen.Options.GenerateRolloutTriggers())
 }
 
 func (gen *ListenerGenerator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {
@@ -270,8 +268,7 @@ var _ deployment_workload.DeploymentWorkload = &WorkerGenerator{}
 func (gen *WorkerGenerator) Deployment() *resource.Template[*appsv1.Deployment] {
 	return resource.NewTemplateFromObjectFunction(gen.deployment).
 		WithMutation(mutators.SetDeploymentReplicas(gen.WorkerSpec.HPA.IsDeactivated())).
-		WithMutation(mutators.RolloutTrigger{Name: "backend-system-events-hook", SecretName: util.Pointer("backend-system-events-hook")}.Add()).
-		WithMutation(mutators.RolloutTrigger{Name: "backend-error-monitoring", SecretName: util.Pointer("backend-error-monitoring")}.Add())
+		WithMutations(gen.Options.GenerateRolloutTriggers())
 }
 func (gen *WorkerGenerator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {
 	return gen.WorkerSpec.HPA
@@ -303,7 +300,7 @@ var _ deployment_workload.DeploymentWorkload = &CronGenerator{}
 
 func (gen *CronGenerator) Deployment() *resource.Template[*appsv1.Deployment] {
 	return resource.NewTemplateFromObjectFunction(gen.deployment).
-		WithMutation(mutators.RolloutTrigger{Name: "backend-error-monitoring", SecretName: util.Pointer("backend-error-monitoring")}.Add())
+		WithMutations(gen.Options.GenerateRolloutTriggers())
 }
 func (gen *CronGenerator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {
 	return &saasv1alpha1.HorizontalPodAutoscalerSpec{}

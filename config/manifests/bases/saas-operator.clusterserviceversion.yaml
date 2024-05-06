@@ -849,6 +849,10 @@ spec:
           key
         displayName: Error Monitoring Key
         path: config.errorMonitoringKey
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.errorMonitoringKey.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -866,6 +870,10 @@ spec:
           service
         displayName: Error Monitoring Service
         path: config.errorMonitoringService
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.errorMonitoringService.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -899,6 +907,10 @@ spec:
       - description: A reference to the secret holding the backend-internal-api password
         displayName: Internal APIPassword
         path: config.internalAPIPassword
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.internalAPIPassword.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -915,6 +927,10 @@ spec:
       - description: A reference to the secret holding the backend-internal-api user
         displayName: Internal APIUser
         path: config.internalAPIUser
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.internalAPIUser.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -944,6 +960,10 @@ spec:
           password
         displayName: System Events Hook Password
         path: config.systemEventsHookPassword
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.systemEventsHookPassword.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -961,6 +981,10 @@ spec:
           URL
         displayName: System Events Hook URL
         path: config.systemEventsHookURL
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.systemEventsHookURL.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -1481,6 +1505,10 @@ spec:
       - description: System database connection string
         displayName: System Database DSN
         path: config.systemDatabaseDSN
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.systemDatabaseDSN.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -1834,6 +1862,10 @@ spec:
       - description: A reference to the secret holding the system admin token
         displayName: System Admin Token
         path: config.systemAdminToken
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.systemAdminToken.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -2335,6 +2367,10 @@ spec:
       - description: AccessCode to protect admin urls
         displayName: Access Code
         path: config.accessCode
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.accessCode.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -2351,6 +2387,10 @@ spec:
       - description: AWS access key
         displayName: Access Key
         path: config.assets.accessKey
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.assets.accessKey.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -2373,9 +2413,16 @@ spec:
       - description: AWS S3 region
         displayName: Region
         path: config.assets.region
+      - description: Assets custom S3 endpoint
+        displayName: S3 Endpoint
+        path: config.assets.s3Endpoint
       - description: AWS secret access key
         displayName: Secret Key
         path: config.assets.secretKey
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.assets.secretKey.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -2398,6 +2445,10 @@ spec:
       - description: Internal API password
         displayName: Internal APIPassword
         path: config.backend.internalAPIPassword
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.backend.internalAPIPassword.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -2414,6 +2465,10 @@ spec:
       - description: Internal API user
         displayName: Internal APIUser
         path: config.backend.internalAPIUser
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.backend.internalAPIUser.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -2439,6 +2494,10 @@ spec:
       - description: API key
         displayName: APIKey
         path: config.bugsnag.apiKey
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.bugsnag.apiKey.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -2462,6 +2521,10 @@ spec:
       - description: DSN of system's main database
         displayName: Database DSN
         path: config.databaseDSN
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.databaseDSN.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -2475,9 +2538,14 @@ spec:
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.databaseDSN.override
-      - description: Database secret
+      - description: DatabaseSecret is a site key stored off-database for improved
+          more secure password hashing See https://github.com/3scale/porta/blob/ae498814cef3d856613f60d29330882fa870271d/config/initializers/site_keys.rb#L2-L19
         displayName: Database Secret
         path: config.databaseSecret
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.databaseSecret.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -2491,9 +2559,14 @@ spec:
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.databaseSecret.override
-      - description: EventsSharedSecret
+      - description: EventsSharedSecret is a password that protects System's event
+          hooks endpoint.
         displayName: Events Shared Secret
         path: config.eventsSharedSecret
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.eventsSharedSecret.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -2533,6 +2606,10 @@ spec:
       - description: Client ID
         displayName: Client ID
         path: config.github.clientID
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.github.clientID.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -2549,6 +2626,10 @@ spec:
       - description: Client secret
         displayName: Client Secret
         path: config.github.clientSecret
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.github.clientSecret.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -2565,6 +2646,10 @@ spec:
       - description: Mapping Service access token
         displayName: Mapping Service Access Token
         path: config.mappingServiceAccessToken
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.mappingServiceAccessToken.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -2599,6 +2684,10 @@ spec:
       - description: Private key
         displayName: Private Key
         path: config.recaptcha.privateKey
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.recaptcha.privateKey.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -2615,6 +2704,10 @@ spec:
       - description: Public key
         displayName: Public Key
         path: config.recaptcha.publicKey
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.recaptcha.publicKey.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -2634,6 +2727,10 @@ spec:
       - description: Client ID
         displayName: Client ID
         path: config.redhatCustomerPortal.clientID
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.redhatCustomerPortal.clientID.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -2650,6 +2747,10 @@ spec:
       - description: Client secret
         displayName: Client Secret
         path: config.redhatCustomerPortal.clientSecret
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.redhatCustomerPortal.clientSecret.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -2687,9 +2788,14 @@ spec:
       - description: Defines the address port
         displayName: Port
         path: config.searchServer.port
-      - description: SecretKeyBase
+      - description: 'SecretKeyBase: https://api.rubyonrails.org/classes/Rails/Application.html#method-i-secret_key_base
+          You can generate one random key using ''bundle exec rake secret'''
         displayName: Secret Key Base
         path: config.secretKeyBase
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.secretKeyBase.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -2709,6 +2815,10 @@ spec:
       - description: Deletion token
         displayName: Deletion Token
         path: config.segment.deletionToken
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.segment.deletionToken.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -2728,6 +2838,10 @@ spec:
       - description: Write key
         displayName: Write Key
         path: config.segment.writeKey
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.segment.writeKey.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -2756,6 +2870,10 @@ spec:
       - description: Password
         displayName: Password
         path: config.smtp.password
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.smtp.password.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -2781,6 +2899,10 @@ spec:
       - description: User
         displayName: User
         path: config.smtp.user
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.smtp.user.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -2809,6 +2931,10 @@ spec:
       - description: Zync authentication token
         displayName: Auth Token
         path: config.zync.authToken
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.zync.authToken.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -3696,6 +3822,10 @@ spec:
       - description: API key
         displayName: APIKey
         path: config.bugsnag.apiKey
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.bugsnag.apiKey.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -3715,6 +3845,10 @@ spec:
       - description: A reference to the secret holding the database DSN
         displayName: Database DSN
         path: config.databaseDSN
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.databaseDSN.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -3760,6 +3894,10 @@ spec:
       - description: A reference to the secret holding the secret-key-base
         displayName: Secret Key Base
         path: config.secretKeyBase
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.secretKeyBase.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault
@@ -3776,6 +3914,10 @@ spec:
       - description: A reference to the secret holding the zync authentication token
         displayName: Zync Auth Token
         path: config.zyncAuthToken
+      - description: FromSeed will try to retrieve the secret value from the default
+          seed Secret.
+        displayName: From Seed
+        path: config.zyncAuthToken.fromSeed
       - description: FromVault is a reference to a secret key/value stored in a Hashicorp
           Vault
         displayName: From Vault

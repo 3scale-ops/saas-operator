@@ -12,8 +12,10 @@ spec:
     config:
       configurationCache: 300
       threescalePortalEndpoint: "http://mapping-service/config"
-    endpoint: {dns: []}
+    endpoint: {dns: ['*.REPLACE']}
     hpa: {}
+    loadBalancer:
+      proxyProtocol: false
     marin3r:
       dynamicConfigs:
         gateway_cluster:
@@ -60,8 +62,10 @@ spec:
     config:
       configurationCache: 60
       threescalePortalEndpoint: "http://mapping-service/config"
-    endpoint: {dns: []}
+    endpoint: {dns: ['*.REPLACE']}
     hpa: {}
+    loadBalancer:
+      proxyProtocol: false
     marin3r:
       dynamicConfigs:
         gateway_cluster:
@@ -80,13 +84,6 @@ spec:
         router:
           routeConfiguration:
             virtualHosts:
-              - domains: [policies.staging-172-27-27-102.nip.io]
-                name: policies
-                routes:
-                  - match:
-                      prefix: /policies
-                    route:
-                      cluster: mgmt_cluster
               - domains: ["*"]
                 name: gateway
                 routes:

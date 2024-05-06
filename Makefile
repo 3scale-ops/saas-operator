@@ -3,7 +3,7 @@
 # To re-generate a bundle for another specific version without changing the standard setup, you can:
 # - use the VERSION as arg of the bundle target (e.g make bundle VERSION=0.0.2)
 # - use environment variables to overwrite this value (e.g export VERSION=0.0.2)
-VERSION ?= 0.22.0
+VERSION ?= 0.23.0-alpha.9
 # CHANNELS define the bundle channels used in the bundle.
 # Add a new line here if you would like to change its default config. (E.g CHANNELS = "candidate,fast,stable")
 # To re-generate a bundle for other specific channels without changing the standard setup, you can:
@@ -283,8 +283,16 @@ kind-refresh-controller: manifests kind docker-build ## Reloads the controller i
 	$(KIND) load docker-image $(IMG)
 	kubectl delete pod -l control-plane=controller-manager
 
+LOCAL_SETUP_INPUTS_PATH=config/local-setup/env-inputs
+$(LOCAL_SETUP_INPUTS_PATH)/seed-secret.yaml: $(LOCAL_SETUP_INPUTS_PATH)/seed.env
+	source $(@D)/seed.env && envsubst < $@.envsubst > $@
+
+kind-deploy-saas-inputs: export KUBECONFIG = $(PWD)/kubeconfig
+kind-deploy-saas-inputs: $(LOCAL_SETUP_INPUTS_PATH)/seed-secret.yaml $(LOCAL_SETUP_INPUTS_PATH)/pull-secrets.json
+	$(KUSTOMIZE) build $(LOCAL_SETUP_INPUTS_PATH) | kubectl apply -f -
+
 kind-deploy-databases: export KUBECONFIG = $(PWD)/kubeconfig
-kind-deploy-databases: kind-deploy-controller
+kind-deploy-databases: kind-deploy-controller kind-deploy-saas-inputs
 	$(KUSTOMIZE) build config/local-setup/databases | kubectl apply -f -
 	sleep 10
 	kubectl wait --for condition=ready --timeout=300s pod --all
@@ -298,37 +306,27 @@ kind-load-redis-with-ssh:
 	docker build -t $(REDIS_WITH_SSH_IMG) test/assets/redis-with-ssh
 	$(KIND) load docker-image $(REDIS_WITH_SSH_IMG)
 
-kind-deploy-saas: export KUBECONFIG = ${PWD}/kubeconfig
-kind-deploy-saas: kind-load-redis-with-ssh ## Deploys a 3scale SaaS dev environment
-	$(KUSTOMIZE) build config/local-setup | kubectl apply -f -
-	sleep 5
-	kubectl wait --for condition=ready --timeout=300s pod system-console-0
+kind-deploy-saas-workloads: export KUBECONFIG = ${PWD}/kubeconfig
+kind-deploy-saas-workloads: kind-deploy-controller $(LOCAL_SETUP_INPUTS_PATH)/seed-secret.yaml $(LOCAL_SETUP_INPUTS_PATH)/pull-secrets.json kind-load-redis-with-ssh ## Deploys the 3scale SaaS dev environment workloads
+	$(KUSTOMIZE) build config/local-setup | $(YQ) 'select(.kind!="Zync")' | kubectl apply -f -
+	sleep 10
 	kubectl get pods --no-headers -o name | grep -v system | xargs kubectl wait --for condition=ready --timeout=300s
-	kubectl -ti exec system-console-0 -c system-console -- bash -c '\
-		MASTER_DOMAIN=multitenant-admin \
-		MASTER_ACCESS_TOKEN=mtoken \
-		MASTER_PASSWORD=mpass \
-		MASTER_USER=admin \
-		TENANT_NAME=provider \
-		PROVIDER_NAME="3scale SaaS Dev Provider" \
-		USER_LOGIN=admin \
-		USER_PASSWORD=ppass \
-		ADMIN_ACCESS_TOKEN=ptoken \
-		USER_EMAIL="admin@cluster.local" \
-		DISABLE_DATABASE_ENVIRONMENT_CHECK=1 \
-		bundle exec rake db:setup'
-	kubectl get pods --no-headers -o name | grep system | xargs kubectl wait --for condition=ready --timeout=300s
+	$(KUSTOMIZE) build config/local-setup | $(YQ) 'select(.kind=="Zync")' | kubectl apply -f -
+	kubectl get pods --no-headers -o name | grep -v system | xargs kubectl wait --for condition=ready --timeout=300s
+
+kind-deploy-saas-run-db-setup: export KUBECONFIG = ${PWD}/kubeconfig
+kind-deploy-saas-run-db-setup:
+	 kubectl create -f config/local-setup/workloads/db-setup-pipelinerun.yaml
 
 kind-cleanup-saas: export KUBECONFIG = ${PWD}/kubeconfig
 kind-cleanup-saas:
-	-$(KUSTOMIZE) build config/local-setup/databases | kubectl delete -f -
 	-$(KUSTOMIZE) build config/local-setup | kubectl delete -f -
 	-kubectl get pod --no-headers -o name | grep -v saas-operator | xargs kubectl delete --grace-period=0 --force
 	-kubectl get pvc --no-headers -o name | xargs kubectl delete
 
-LOCAL_SETUP_DEPS = metallb cert-manager marin3r prometheus-crds tekton-crds grafana-crds external-secrets-crds minio
+LOCAL_SETUP_DEPS = metallb cert-manager marin3r prometheus-crds tekton grafana-crds external-secrets-crds minio
 kind-local-setup: export KUBECONFIG = ${PWD}/kubeconfig
-kind-local-setup: $(foreach elem,$(LOCAL_SETUP_DEPS),install-$(elem)) kind-deploy-controller kind-deploy-databases kind-deploy-saas
+kind-local-setup: $(foreach elem,$(LOCAL_SETUP_DEPS),install-$(elem)) kind-deploy-controller kind-deploy-saas-workloads kind-deploy-saas-run-db-setup
 
 ##@ Build Dependencies
 

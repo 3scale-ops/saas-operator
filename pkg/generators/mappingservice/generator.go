@@ -5,7 +5,6 @@ import (
 
 	"github.com/3scale-ops/basereconciler/mutators"
 	"github.com/3scale-ops/basereconciler/resource"
-	"github.com/3scale-ops/basereconciler/util"
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/pkg/generators"
 	"github.com/3scale-ops/saas-operator/pkg/generators/mappingservice/config"
@@ -92,7 +91,7 @@ var _ deployment_workload.DeploymentWorkload = &Generator{}
 func (gen *Generator) Deployment() *resource.Template[*appsv1.Deployment] {
 	return resource.NewTemplateFromObjectFunction(gen.deployment).
 		WithMutation(mutators.SetDeploymentReplicas(gen.Spec.HPA.IsDeactivated())).
-		WithMutation(mutators.RolloutTrigger{Name: "mapping-service-system-master-access-token", SecretName: util.Pointer("mapping-service-system-master-access-token")}.Add())
+		WithMutations(gen.Options.GenerateRolloutTriggers())
 }
 
 func (gen *Generator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {

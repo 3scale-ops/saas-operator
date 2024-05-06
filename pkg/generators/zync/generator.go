@@ -6,7 +6,6 @@ import (
 
 	"github.com/3scale-ops/basereconciler/mutators"
 	"github.com/3scale-ops/basereconciler/resource"
-	"github.com/3scale-ops/basereconciler/util"
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/pkg/generators"
 	"github.com/3scale-ops/saas-operator/pkg/generators/zync/config"
@@ -154,7 +153,7 @@ func (gen *APIGenerator) Labels() map[string]string {
 func (gen *APIGenerator) Deployment() *resource.Template[*appsv1.Deployment] {
 	return resource.NewTemplateFromObjectFunction(gen.deployment).
 		WithMutation(mutators.SetDeploymentReplicas(gen.APISpec.HPA.IsDeactivated())).
-		WithMutation(mutators.RolloutTrigger{Name: "zync", SecretName: util.Pointer("zync")}.Add())
+		WithMutations(gen.Options.GenerateRolloutTriggers())
 }
 
 func (gen *APIGenerator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {
@@ -195,7 +194,7 @@ var _ deployment_workload.DeploymentWorkload = &QueGenerator{}
 func (gen *QueGenerator) Deployment() *resource.Template[*appsv1.Deployment] {
 	return resource.NewTemplateFromObjectFunction(gen.deployment).
 		WithMutation(mutators.SetDeploymentReplicas(gen.QueSpec.HPA.IsDeactivated())).
-		WithMutation(mutators.RolloutTrigger{Name: "zync", SecretName: util.Pointer("zync")}.Add())
+		WithMutations(gen.Options.GenerateRolloutTriggers())
 }
 func (gen *QueGenerator) HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec {
 	return gen.QueSpec.HPA
@@ -222,6 +221,6 @@ func (gen *ConsoleGenerator) StatefulSet() []resource.TemplateInterface {
 	return []resource.TemplateInterface{
 		resource.NewTemplateFromObjectFunction(gen.statefulset).
 			WithEnabled(gen.Enabled).
-			WithMutation(mutators.RolloutTrigger{Name: "zync", SecretName: util.Pointer("zync")}.Add()),
+			WithMutations(gen.Options.GenerateRolloutTriggers()),
 	}
 }

@@ -3,13 +3,15 @@ kind: EchoAPI
 metadata:
   name: echo-api
 spec:
-  endpoint: {dns: []}
+  endpoint: {dns: [REPLACE]}
   hpa: {}
   image:
       name: REPLACE
       tag: REPLACE
       pullSecretName: pull-secrets
       pullPolicy: Always
+  loadBalancer:
+    proxyProtocol: false
   marin3r:
     dynamicConfigs:
       echo_api_cluster:

@@ -657,6 +657,10 @@ spec:
                   accessCode:
                     description: AccessCode to protect admin urls
                     properties:
+                      fromSeed:
+                        description: FromSeed will try to retrieve the secret value
+                          from the default seed Secret.
+                        type: object
                       fromVault:
                         description: FromVault is a reference to a secret key/value
                           stored in a Hashicorp Vault
@@ -676,6 +680,29 @@ spec:
                           value.
                         type: string
                     type: object
+                  apicast:
+                    description: Apicast can be used to pass down apicast endpoints
+                      configuration
+                    properties:
+                      cloudHostedRegistryURL:
+                        description: Policies registry URL for Apicast Cloud Hosteed
+                        type: string
+                      productionDomain:
+                        description: Apicast Production endpoint
+                        type: string
+                      selfManagedRegistryURL:
+                        description: Policies registry URL for Apicast Self Managed
+                          (on-prem)
+                        type: string
+                      stagingDomain:
+                        description: Apicast Staging endpoint
+                        type: string
+                    required:
+                    - cloudHostedRegistryURL
+                    - productionDomain
+                    - selfManagedRegistryURL
+                    - stagingDomain
+                    type: object
                   assets:
                     description: Assets has configuration to access assets in AWS
                       s3
@@ -683,6 +710,10 @@ spec:
                       accessKey:
                         description: AWS access key
                         properties:
+                          fromSeed:
+                            description: FromSeed will try to retrieve the secret
+                              value from the default seed Secret.
+                            type: object
                           fromVault:
                             description: FromVault is a reference to a secret key/value
                               stored in a Hashicorp Vault
@@ -711,9 +742,16 @@ spec:
                       region:
                         description: AWS S3 region
                         type: string
+                      s3Endpoint:
+                        description: Assets custom S3 endpoint
+                        type: string
                       secretKey:
                         description: AWS secret access key
                         properties:
+                          fromSeed:
+                            description: FromSeed will try to retrieve the secret
+                              value from the default seed Secret.
+                            type: object
                           fromVault:
                             description: FromVault is a reference to a secret key/value
                               stored in a Hashicorp Vault
@@ -749,6 +787,10 @@ spec:
                       internalAPIPassword:
                         description: Internal API password
                         properties:
+                          fromSeed:
+                            description: FromSeed will try to retrieve the secret
+                              value from the default seed Secret.
+                            type: object
                           fromVault:
                             description: FromVault is a reference to a secret key/value
                               stored in a Hashicorp Vault
@@ -771,6 +813,10 @@ spec:
                       internalAPIUser:
                         description: Internal API user
                         properties:
+                          fromSeed:
+                            description: FromSeed will try to retrieve the secret
+                              value from the default seed Secret.
+                            type: object
                           fromVault:
                             description: FromVault is a reference to a secret key/value
                               stored in a Hashicorp Vault
@@ -809,6 +855,10 @@ spec:
                       apiKey:
                         description: API key
                         properties:
+                          fromSeed:
+                            description: FromSeed will try to retrieve the secret
+                              value from the default seed Secret.
+                            type: object
                           fromVault:
                             description: FromVault is a reference to a secret key/value
                               stored in a Hashicorp Vault
@@ -841,6 +891,10 @@ spec:
                   databaseDSN:
                     description: DSN of system's main database
                     properties:
+                      fromSeed:
+                        description: FromSeed will try to retrieve the secret value
+                          from the default seed Secret.
+                        type: object
                       fromVault:
                         description: FromVault is a reference to a secret key/value
                           stored in a Hashicorp Vault
@@ -864,6 +918,10 @@ spec:
                     description: DatabaseSecret is a site key stored off-database
                       for improved more secure password hashing See https://github.com/3scale/porta/blob/ae498814cef3d856613f60d29330882fa870271d/config/initializers/site_keys.rb#L2-L19
                     properties:
+                      fromSeed:
+                        description: FromSeed will try to retrieve the secret value
+                          from the default seed Secret.
+                        type: object
                       fromVault:
                         description: FromVault is a reference to a secret key/value
                           stored in a Hashicorp Vault
@@ -887,6 +945,10 @@ spec:
                     description: EventsSharedSecret is a password that protects System's
                       event hooks endpoint.
                     properties:
+                      fromSeed:
+                        description: FromSeed will try to retrieve the secret value
+                          from the default seed Secret.
+                        type: object
                       fromVault:
                         description: FromVault is a reference to a secret key/value
                           stored in a Hashicorp Vault
@@ -934,6 +996,10 @@ spec:
                       clientID:
                         description: Client ID
                         properties:
+                          fromSeed:
+                            description: FromSeed will try to retrieve the secret
+                              value from the default seed Secret.
+                            type: object
                           fromVault:
                             description: FromVault is a reference to a secret key/value
                               stored in a Hashicorp Vault
@@ -956,6 +1022,10 @@ spec:
                       clientSecret:
                         description: Client secret
                         properties:
+                          fromSeed:
+                            description: FromSeed will try to retrieve the secret
+                              value from the default seed Secret.
+                            type: object
                           fromVault:
                             description: FromVault is a reference to a secret key/value
                               stored in a Hashicorp Vault
@@ -982,6 +1052,10 @@ spec:
                   mappingServiceAccessToken:
                     description: Mapping Service access token
                     properties:
+                      fromSeed:
+                        description: FromSeed will try to retrieve the secret value
+                          from the default seed Secret.
+                        type: object
                       fromVault:
                         description: FromVault is a reference to a secret key/value
                           stored in a Hashicorp Vault
@@ -1031,6 +1105,10 @@ spec:
                       privateKey:
                         description: Private key
                         properties:
+                          fromSeed:
+                            description: FromSeed will try to retrieve the secret
+                              value from the default seed Secret.
+                            type: object
                           fromVault:
                             description: FromVault is a reference to a secret key/value
                               stored in a Hashicorp Vault
@@ -1053,6 +1131,10 @@ spec:
                       publicKey:
                         description: Public key
                         properties:
+                          fromSeed:
+                            description: FromSeed will try to retrieve the secret
+                              value from the default seed Secret.
+                            type: object
                           fromVault:
                             description: FromVault is a reference to a secret key/value
                               stored in a Hashicorp Vault
@@ -1082,6 +1164,10 @@ spec:
                       clientID:
                         description: Client ID
                         properties:
+                          fromSeed:
+                            description: FromSeed will try to retrieve the secret
+                              value from the default seed Secret.
+                            type: object
                           fromVault:
                             description: FromVault is a reference to a secret key/value
                               stored in a Hashicorp Vault
@@ -1104,6 +1190,10 @@ spec:
                       clientSecret:
                         description: Client secret
                         properties:
+                          fromSeed:
+                            description: FromSeed will try to retrieve the secret
+                              value from the default seed Secret.
+                            type: object
                           fromVault:
                             description: FromVault is a reference to a secret key/value
                               stored in a Hashicorp Vault
@@ -1161,6 +1251,10 @@ spec:
                     description: 'SecretKeyBase: https://api.rubyonrails.org/classes/Rails/Application.html#method-i-secret_key_base
                       You can generate one random key using ''bundle exec rake secret'''
                     properties:
+                      fromSeed:
+                        description: FromSeed will try to retrieve the secret value
+                          from the default seed Secret.
+                        type: object
                       fromVault:
                         description: FromVault is a reference to a secret key/value
                           stored in a Hashicorp Vault
@@ -1186,6 +1280,10 @@ spec:
                       deletionToken:
                         description: Deletion token
                         properties:
+                          fromSeed:
+                            description: FromSeed will try to retrieve the secret
+                              value from the default seed Secret.
+                            type: object
                           fromVault:
                             description: FromVault is a reference to a secret key/value
                               stored in a Hashicorp Vault
@@ -1211,6 +1309,10 @@ spec:
                       writeKey:
                         description: Write key
                         properties:
+                          fromSeed:
+                            description: FromSeed will try to retrieve the secret
+                              value from the default seed Secret.
+                            type: object
                           fromVault:
                             description: FromVault is a reference to a secret key/value
                               stored in a Hashicorp Vault
@@ -1250,6 +1352,10 @@ spec:
                       password:
                         description: Password
                         properties:
+                          fromSeed:
+                            description: FromSeed will try to retrieve the secret
+                              value from the default seed Secret.
+                            type: object
                           fromVault:
                             description: FromVault is a reference to a secret key/value
                               stored in a Hashicorp Vault
@@ -1282,6 +1388,10 @@ spec:
                       user:
                         description: User
                         properties:
+                          fromSeed:
+                            description: FromSeed will try to retrieve the secret
+                              value from the default seed Secret.
+                            type: object
                           fromVault:
                             description: FromVault is a reference to a secret key/value
                               stored in a Hashicorp Vault
@@ -1325,6 +1435,10 @@ spec:
                       authToken:
                         description: Zync authentication token
                         properties:
+                          fromSeed:
+                            description: FromSeed will try to retrieve the secret
+                              value from the default seed Secret.
+                            type: object
                           fromVault:
                             description: FromVault is a reference to a secret key/value
                               stored in a Hashicorp Vault

@@ -21,21 +21,113 @@ import (
 
 type Option struct {
 	value       *string
-	rawValue    *corev1.EnvVarSource
-	secretValue *saasv1alpha1.SecretReference
+	valueFrom   *corev1.EnvVarSource
 	envVariable string
 	secretName  string
-	set         bool
+	seedKey     string
+	vaultKey    string
+	vaultPath   string
+	isSet       bool
+	isEmpty     bool
 }
 
-func (o *Option) IntoEnvvar(e string) *Option  { o.envVariable = e; return o }
-func (o *Option) AsSecretRef(s string) *Option { o.secretName = s; return o }
+func (o *Option) IntoEnvvar(e string) *Option          { o.envVariable = e; return o }
+func (o *Option) AsSecretRef(s fmt.Stringer) *Option   { o.secretName = s.String(); return o }
+func (o *Option) WithSeedKey(key fmt.Stringer) *Option { o.seedKey = key.String(); return o }
 func (o *Option) EmptyIf(empty bool) *Option {
 	if empty {
-		o.secretValue = nil
-		o.value = util.Pointer("")
+		o.isEmpty = true
 	}
 	return o
+}
+
+// Unpack retrieves the value specified from the API and adds a matching option to the
+// list of options. It handles both values and pointers seamlessly.
+// Considers a nil value as an unset option.
+// It always unpacks into an string representation of the value so it can be stored as
+// an environment variable.
+// A parameter indicating the format (as in a call to fmt.Sprintf()) can be optionally passed.
+func (opt *Option) Unpack(o any, params ...string) *Option {
+	if len(params) > 1 {
+		panic(fmt.Errorf("too many params in call to Unpack"))
+	}
+
+	if opt.isEmpty {
+		opt.isSet = true
+		opt.value = util.Pointer("")
+		return opt
+	}
+
+	var val any
+
+	if reflect.ValueOf(o).Kind() == reflect.Ptr {
+		if lo.IsNil(o) {
+			// underlying value is nil so option is unset
+			return &Option{isSet: false}
+		} else {
+			val = reflect.ValueOf(o).Elem().Interface()
+		}
+	} else {
+		val = o
+	}
+
+	switch v := val.(type) {
+
+	case saasv1alpha1.SecretReference:
+		if opt.envVariable == "" {
+			panic("AddEnvvar must be invoked to add a new option")
+		}
+		opt.isSet = true
+
+		// is a secret with override
+		if v.Override != nil {
+			opt.value = v.Override
+
+			// is a secret with value from vault
+		} else if v.FromVault != nil {
+			if opt.secretName == "" {
+				panic("AsSecretRef must be invoked when using 'SecretReference.FromVault'")
+			}
+			opt.vaultKey = v.FromVault.Key
+			opt.vaultPath = v.FromVault.Path
+			opt.valueFrom = &corev1.EnvVarSource{
+				SecretKeyRef: &corev1.SecretKeySelector{
+					Key: opt.envVariable,
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: opt.secretName,
+					},
+				}}
+
+			// is a secret retrieved ffom the default seed Secret
+		} else if v.FromSeed != nil {
+			if opt.seedKey == "" {
+				panic("WithSeedKey must be invoked when using 'SecretReference.FromSeed'")
+			}
+			opt.valueFrom = &corev1.EnvVarSource{
+				SecretKeyRef: &corev1.SecretKeySelector{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: saasv1alpha1.DefaultSeedSecret,
+					},
+					Key: opt.seedKey,
+				}}
+		}
+
+	default:
+		opt.isSet = true
+		opt.value = unpackValue(v, params...)
+	}
+
+	return opt
+}
+
+func unpackValue(o any, params ...string) *string {
+	var format string
+	if len(params) > 0 {
+		format = params[0]
+	} else {
+		format = "%v"
+	}
+	return util.Pointer(fmt.Sprintf(format, o))
 }
 
 type Options []*Option
@@ -50,14 +142,22 @@ func (options *Options) DeepCopy() *Options {
 
 // FilterSecretOptions returns a list of options that will generate a Secret resource
 func (options *Options) FilterSecretOptions() Options {
-	return lo.Filter[*Option](*options, func(item *Option, index int) bool {
-		return item.secretValue != nil && item.secretValue.Override == nil && item.secretName != ""
+	return lo.Filter(*options, func(item *Option, index int) bool {
+		return item.valueFrom != nil && item.valueFrom.SecretKeyRef != nil
+	})
+}
+
+// FilterSecretOptions returns a list of options that will generate a Secret resource
+// with a Vault secret store as its source (via an ExternalSecret)
+func (options *Options) FilterFromVaultOptions() Options {
+	return lo.Filter(*options, func(item *Option, index int) bool {
+		return item.vaultKey != "" && item.vaultPath != ""
 	})
 }
 
 func (options *Options) ListSecretResourceNames() []string {
 	list := lo.Reduce(options.FilterSecretOptions(), func(agg []string, item *Option, _ int) []string {
-		return append(agg, item.secretName)
+		return append(agg, item.valueFrom.SecretKeyRef.Name)
 	}, []string{})
 
 	return lo.Uniq(list)
@@ -75,46 +175,8 @@ func (options *Options) GenerateRolloutTriggers(additionalSecrets ...string) []r
 	return triggers
 }
 
-// Unpack retrieves the value specified from the API and adds a matching option to the
-// list of options. It handles both values and pointers seamlessly.
-// Considers a nil value as an unset option.
-// It always unpacks into an string representation of the value so it can be stored as
-// an environment variable.
-// A parameter indicating the format (as in a call to fmt.Sprintf()) can be optionally passed.
-func (options *Options) Unpack(o any, params ...string) *Option {
-	if len(params) > 1 {
-		panic(fmt.Errorf("too many params in call to Unpack"))
-	}
-
-	var opt *Option
-	var val any
-
-	if reflect.ValueOf(o).Kind() == reflect.Ptr {
-		if lo.IsNil(o) {
-			// underlying value is nil so option is unset
-			return &Option{set: false}
-		} else {
-			val = reflect.ValueOf(o).Elem().Interface()
-		}
-	} else {
-		val = o
-	}
-
-	switch v := val.(type) {
-
-	case saasv1alpha1.SecretReference:
-		opt = &Option{secretValue: &v, set: true}
-
-	default:
-		var format string
-		if len(params) > 0 {
-			format = params[0]
-		} else {
-			format = "%v"
-		}
-		opt = &Option{value: util.Pointer(fmt.Sprintf(format, v)), set: true}
-	}
-
+func (options *Options) AddEnvvar(e string) *Option {
+	opt := &Option{envVariable: e}
 	*options = append(*options, opt)
 	return opt
 }
@@ -130,9 +192,8 @@ func (options *Options) WithExtraEnv(extra []corev1.EnvVar) *Options {
 
 		if exists {
 			o.value = util.Pointer(envvar.Value)
-			o.rawValue = envvar.ValueFrom
-			o.secretValue = nil
-			o.set = true
+			o.valueFrom = envvar.ValueFrom
+			o.isSet = true
 			o.secretName = ""
 		} else {
 			var v *string
@@ -141,9 +202,9 @@ func (options *Options) WithExtraEnv(extra []corev1.EnvVar) *Options {
 			}
 			*out = append(*out, &Option{
 				value:       v,
-				rawValue:    envvar.ValueFrom,
+				valueFrom:   envvar.ValueFrom,
 				envVariable: envvar.Name,
-				set:         true,
+				isSet:       true,
 			})
 		}
 	}
@@ -157,40 +218,26 @@ func (opts *Options) BuildEnvironment() []corev1.EnvVar {
 	env := []corev1.EnvVar{}
 	for _, opt := range *opts {
 
-		if !opt.set {
+		if !opt.isSet {
 			continue
 		}
 
-		if opt.secretValue != nil {
-
-			if opt.secretValue.Override != nil {
-				opt.value = opt.secretValue.Override
-			} else {
-				env = append(env, corev1.EnvVar{
-					Name: opt.envVariable,
-					ValueFrom: &corev1.EnvVarSource{
-						SecretKeyRef: &corev1.SecretKeySelector{
-							Key: opt.envVariable,
-							LocalObjectReference: corev1.LocalObjectReference{
-								Name: opt.secretName,
-							},
-						}}})
-				continue
-			}
-		}
-
+		// Direct value (if both value and valueFrom are set, value takes precedence and
+		// valueFrom will be ignored)
 		if opt.value != nil {
 			env = append(env, corev1.EnvVar{
 				Name:  opt.envVariable,
 				Value: *opt.value,
 			})
 			continue
+
 		}
 
-		if opt.rawValue != nil {
+		// ValueFrom
+		if opt.valueFrom != nil {
 			env = append(env, corev1.EnvVar{
 				Name:      opt.envVariable,
-				ValueFrom: opt.rawValue,
+				ValueFrom: opt.valueFrom,
 			})
 			continue
 		}
@@ -203,15 +250,15 @@ func (opts *Options) BuildEnvironment() []corev1.EnvVar {
 func (opts *Options) GenerateExternalSecrets(namespace string, labels map[string]string, secretStoreName, secretStoreKind string, refreshInterval metav1.Duration) []resource.TemplateInterface {
 	list := []resource.TemplateInterface{}
 
-	for _, group := range lo.PartitionBy[*Option, string](opts.FilterSecretOptions(), func(item *Option) string { return item.secretName }) {
+	for _, group := range lo.PartitionBy(opts.FilterFromVaultOptions(), func(item *Option) string { return item.secretName }) {
 		data := []externalsecretsv1beta1.ExternalSecretData{}
 		name := group[0].secretName
 		for _, opt := range group {
 			data = append(data, externalsecretsv1beta1.ExternalSecretData{
 				SecretKey: opt.envVariable,
 				RemoteRef: externalsecretsv1beta1.ExternalSecretDataRemoteRef{
-					Key:                strings.TrimPrefix(opt.secretValue.FromVault.Path, "secret/data/"),
-					Property:           opt.secretValue.FromVault.Key,
+					Key:                strings.TrimPrefix(opt.vaultPath, "secret/data/"),
+					Property:           opt.vaultKey,
 					ConversionStrategy: "Default",
 					DecodingStrategy:   "None",
 				},
@@ -226,7 +273,7 @@ func (opts *Options) GenerateExternalSecrets(namespace string, labels map[string
 }
 
 func Union(lists ...[]*Option) *Options {
-	all := operatorutil.ConcatSlices[*Option](lists...)
+	all := operatorutil.ConcatSlices(lists...)
 	all = lo.UniqBy(all, func(item *Option) string {
 		return item.envVariable
 	})

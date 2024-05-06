@@ -13,10 +13,10 @@ const (
 func NewOptions(spec saasv1alpha1.TwemproxySpec) *pod.Options {
 	opts := pod.NewOptions()
 
-	opts.Unpack(TwemproxyConfigFile).IntoEnvvar("TWEMPROXY_CONFIG_FILE")
-	opts.Unpack(spec.Options.MetricsPort, ":%d").IntoEnvvar("TWEMPROXY_METRICS_ADDRESS")
-	opts.Unpack(spec.Options.StatsInterval.Milliseconds()).IntoEnvvar("TWEMPROXY_STATS_INTERVAL")
-	opts.Unpack(spec.Options.LogLevel).IntoEnvvar("TWEMPROXY_LOG_LEVEL")
+	opts.AddEnvvar("TWEMPROXY_CONFIG_FILE").Unpack(TwemproxyConfigFile)
+	opts.AddEnvvar("TWEMPROXY_METRICS_ADDRESS").Unpack(spec.Options.MetricsPort, ":%d")
+	opts.AddEnvvar("TWEMPROXY_STATS_INTERVAL").Unpack(spec.Options.StatsInterval.Milliseconds())
+	opts.AddEnvvar("TWEMPROXY_LOG_LEVEL").Unpack(spec.Options.LogLevel)
 
 	return opts
 }

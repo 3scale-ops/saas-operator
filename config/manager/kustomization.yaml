@@ -13,4 +13,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: quay.io/3scale/saas-operator
-  newTag: v0.22.0
+  newTag: v0.23.0-alpha.9
