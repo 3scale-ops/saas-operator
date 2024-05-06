@@ -3,7 +3,7 @@
 # To re-generate a bundle for another specific version without changing the standard setup, you can:
 # - use the VERSION as arg of the bundle target (e.g make bundle VERSION=0.0.2)
 # - use environment variables to overwrite this value (e.g export VERSION=0.0.2)
-VERSION ?= 0.23.0-alpha.4
+VERSION ?= 0.23.0-alpha.9
 # CHANNELS define the bundle channels used in the bundle.
 # Add a new line here if you would like to change its default config. (E.g CHANNELS = "candidate,fast,stable")
 # To re-generate a bundle for other specific channels without changing the standard setup, you can:
@@ -307,12 +307,14 @@ kind-load-redis-with-ssh:
 	$(KIND) load docker-image $(REDIS_WITH_SSH_IMG)
 
 kind-deploy-saas-workloads: export KUBECONFIG = ${PWD}/kubeconfig
-kind-deploy-saas-workloads: kind-deploy-controller kind-deploy-saas-inputs kind-load-redis-with-ssh ## Deploys the 3scale SaaS dev environment workloads
+kind-deploy-saas-workloads: kind-deploy-controller $(LOCAL_SETUP_INPUTS_PATH)/seed-secret.yaml $(LOCAL_SETUP_INPUTS_PATH)/pull-secrets.json kind-load-redis-with-ssh ## Deploys the 3scale SaaS dev environment workloads
 	$(KUSTOMIZE) build config/local-setup | $(YQ) 'select(.kind!="Zync")' | kubectl apply -f -
 	sleep 10
-	kubectl get pods --no-headers -o name xargs kubectl wait --for condition=ready --timeout=300s
+	kubectl get pods --no-headers -o name | grep -v system | xargs kubectl wait --for condition=ready --timeout=300s
 	$(KUSTOMIZE) build config/local-setup | $(YQ) 'select(.kind=="Zync")' | kubectl apply -f -
+	kubectl get pods --no-headers -o name | grep -v system | xargs kubectl wait --for condition=ready --timeout=300s
 
+kind-deploy-saas-run-db-setup: export KUBECONFIG = ${PWD}/kubeconfig
 kind-deploy-saas-run-db-setup:
 	 kubectl create -f config/local-setup/workloads/db-setup-pipelinerun.yaml
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eux
+set -eu
 
 function generate_resources() {
     local KPATH=${1}
