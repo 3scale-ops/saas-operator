@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eu
+set -eux
 
 function generate_resources() {
     local KPATH=${1}
@@ -40,7 +40,7 @@ function wait_for() {
             local NAME=${ITEM#*/}
             local NS=${ITEM%/*}
             echo; echo "#################### > Waiting for ${KIND} ${NAME} in namespace ${NS}"
-            local SELECTOR=$(kubectl -n ${NS} describe ${KIND} ${NAME} | awk '/Selector/{print $2}')
+            local SELECTOR=$(kubectl -n ${NS} describe ${KIND} ${NAME} | awk '/^Selector:/{print $2}')
             kubectl -n ${NS} get pods -l ${SELECTOR} --no-headers -o name | xargs kubectl -n ${NS} wait --for condition=ready
         done
     fi
