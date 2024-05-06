@@ -33,7 +33,6 @@ function deploy_crds() {
 
 function wait_for() {
     local KIND=${1}
-    # local NS=${2}
     FILTER=".kind == \"${KIND}\""
     if [[ $(resource_names ${RESFILE} "${FILTER}") != "/" ]]; then
         for ITEM in $(resource_names ${RESFILE} "${FILTER}"); do
@@ -73,7 +72,6 @@ test -n "${BASE_PATH}" || (echo "BASE_PATH envvar must be set" && exit -1)
 KUSTOMIZE_OPTIONS="--enable-helm"
 NAME=${1}
 RESFILE=$(generate_resources ${BASE_PATH}/${NAME})
-# resource_names release.yaml ".kind == \"StatefulSet\""
 deploy_crds ${RESFILE}
 deploy_controller ${RESFILE}
 deploy_custom_resources ${RESFILE}
