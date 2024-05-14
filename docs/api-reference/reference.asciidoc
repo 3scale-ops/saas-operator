@@ -179,6 +179,7 @@ AssetsSpec has configuration to access assets in AWS s3
 | *`accessKey`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | AWS access key
 | *`secretKey`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | AWS secret access key
 | *`host`* __string__ | Assets host (CDN)
+| *`s3Endpoint`* __string__ | Assets custom S3 endpoint
 |===
 
 
@@ -1435,7 +1436,20 @@ SecretReference is a reference to a secret stored in some secrets engine
 | Field | Description
 | *`fromVault`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-vaultsecretreference[$$VaultSecretReference$$]__ | FromVault is a reference to a secret key/value stored in a Hashicorp Vault
 | *`override`* __string__ | Override allows to directly specify a string value.
+| *`fromSeed`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-seedsecretreference[$$SeedSecretReference$$]__ | FromSeed will try to retrieve the secret value from the default seed Secret.
 |===
+
+
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-seedsecretreference"]
+==== SeedSecretReference 
+
+SeedSecretReference represents options to retrieve the secret value from the default seed Secret. There are no configurable options at this point.
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]
+****
+
 
 
 [id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-segmentspec"]
@@ -1670,6 +1684,26 @@ System is the Schema for the systems API
 |===
 
 
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemapicastendpointsspec"]
+==== SystemApicastEndpointsSpec 
+
+ApicastSpec holds properties to configure Apicast endpoints
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemconfig[$$SystemConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`stagingDomain`* __string__ | Apicast Staging endpoint
+| *`productionDomain`* __string__ | Apicast Production endpoint
+| *`cloudHostedRegistryURL`* __string__ | Policies registry URL for Apicast Cloud Hosteed
+| *`selfManagedRegistryURL`* __string__ | Policies registry URL for Apicast Self Managed (on-prem)
+|===
+
+
 [id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemappspec"]
 ==== SystemAppSpec 
 
@@ -1741,15 +1775,15 @@ SystemConfig holds configuration for SystemApp component
 | *`configFilesSecret`* __string__ | Secret containging system configuration files to be mounted in the pods
 | *`externalSecret`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-externalsecret[$$ExternalSecret$$]__ | External Secret common configuration
 | *`databaseDSN`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | DSN of system's main database
-| *`eventsSharedSecret`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | EventsSharedSecret
+| *`eventsSharedSecret`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | EventsSharedSecret is a password that protects System's event hooks endpoint.
 | *`recaptcha`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemrecaptchaspec[$$SystemRecaptchaSpec$$]__ | Holds recaptcha configuration options
-| *`secretKeyBase`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | SecretKeyBase
+| *`secretKeyBase`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | SecretKeyBase: https://api.rubyonrails.org/classes/Rails/Application.html#method-i-secret_key_base You can generate one random key using 'bundle exec rake secret'
 | *`accessCode`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | AccessCode to protect admin urls
 | *`segment`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-segmentspec[$$SegmentSpec$$]__ | Options for Segment integration
 | *`github`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-githubspec[$$GithubSpec$$]__ | Options for Github integration
 | *`redhatCustomerPortal`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-redhatcustomerportalspec[$$RedHatCustomerPortalSpec$$]__ | Options for configuring RH Customer Portal integration
 | *`bugsnag`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-bugsnagspec[$$BugsnagSpec$$]__ | Options for configuring Bugsnag integration
-| *`databaseSecret`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | Database secret
+| *`databaseSecret`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-secretreference[$$SecretReference$$]__ | DatabaseSecret is a site key stored off-database for improved more secure password hashing See https://github.com/3scale/porta/blob/ae498814cef3d856613f60d29330882fa870271d/config/initializers/site_keys.rb#L2-L19
 | *`memcachedServers`* __string__ | Memcached servers
 | *`redis`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-redisspec[$$RedisSpec$$]__ | Redis configuration options
 | *`smtp`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-smtpspec[$$SMTPSpec$$]__ | SMTP configuration options
@@ -1757,6 +1791,7 @@ SystemConfig holds configuration for SystemApp component
 | *`zync`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemzyncspec[$$SystemZyncSpec$$]__ | Zync has configuration options for system to contact zync
 | *`backend`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systembackendspec[$$SystemBackendSpec$$]__ | Backend has configuration options for system to contact backend
 | *`assets`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-assetsspec[$$AssetsSpec$$]__ | Assets has configuration to access assets in AWS s3
+| *`apicast`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemapicastendpointsspec[$$SystemApicastEndpointsSpec$$]__ | Apicast can be used to pass down apicast endpoints configuration
 |===
 
 
