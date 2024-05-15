@@ -827,9 +827,15 @@ spec:
                         items:
                           type: string
                         type: array
+                      loadBalancerName:
+                        description: Optionally specify the load balancer name
+                        type: string
                       proxyProtocol:
                         description: Enables/disbles use of proxy protocol in the
                           load balancer
+                        type: boolean
+                      terminationProtection:
+                        description: Termination protection setting
                         type: boolean
                     type: object
                   marin3r:

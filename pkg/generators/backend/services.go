@@ -10,7 +10,7 @@ import (
 func (gen *ListenerGenerator) service() *corev1.Service {
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        gen.GetComponent(),
+			Name:        gen.GetComponent() + "-nlb",
 			Annotations: service.NLBServiceAnnotations(*gen.ListenerSpec.LoadBalancer, gen.ListenerSpec.Endpoint.DNS),
 		},
 		Spec: corev1.ServiceSpec{

@@ -1143,9 +1143,15 @@ spec:
       - description: The list of optional Elastic IPs allocations
         displayName: EIPAllocations
         path: listener.loadBalancer.eipAllocations
+      - description: Optionally specify the load balancer name
+        displayName: Load Balancer Name
+        path: listener.loadBalancer.loadBalancerName
       - description: Enables/disbles use of proxy protocol in the load balancer
         displayName: Proxy Protocol
         path: listener.loadBalancer.proxyProtocol
+      - description: Termination protection setting
+        displayName: Termination Protection
+        path: listener.loadBalancer.terminationProtection
       - description: Marin3r configures the Marin3r sidecars for the component
         displayName: Marin3r
         path: listener.marin3r
@@ -1720,9 +1726,15 @@ spec:
       - description: The list of optional Elastic IPs allocations
         displayName: EIPAllocations
         path: loadBalancer.eipAllocations
+      - description: Optionally specify the load balancer name
+        displayName: Load Balancer Name
+        path: loadBalancer.loadBalancerName
       - description: Enables/disbles use of proxy protocol in the load balancer
         displayName: Proxy Protocol
         path: loadBalancer.proxyProtocol
+      - description: Termination protection setting
+        displayName: Termination Protection
+        path: loadBalancer.terminationProtection
       - description: Marin3r configures the Marin3r sidecars for the component
         displayName: Marin3r
         path: marin3r

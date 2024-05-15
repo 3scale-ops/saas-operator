@@ -68,6 +68,7 @@ var (
 	echoapiDefaultNLBLoadBalancer defaultNLBLoadBalancerSpec = defaultNLBLoadBalancerSpec{
 		ProxyProtocol:                 util.Pointer(true),
 		CrossZoneLoadBalancingEnabled: util.Pointer(true),
+		TerminationProtection:         util.Pointer(false),
 	}
 )
 

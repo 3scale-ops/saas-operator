@@ -93,8 +93,8 @@ var _ = Describe("EchoAPI controller", func() {
 			Expect(dep.Spec.Template.Spec.Volumes).To(HaveLen(0))
 
 			svc := &corev1.Service{}
-			By("deploying an echo-api service",
-				(&testutil.ExpectedResource{Name: "echo-api", Namespace: namespace}).
+			By("deploying an echo-api-nlb service",
+				(&testutil.ExpectedResource{Name: "echo-api-nlb", Namespace: namespace}).
 					Assert(k8sClient, svc, timeout, poll))
 
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("echo-api"))

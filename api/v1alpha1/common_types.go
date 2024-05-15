@@ -247,17 +247,25 @@ type NLBLoadBalancerSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	EIPAllocations []string `json:"eipAllocations,omitempty"`
+	// Optionally specify the load balancer name
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	LoadBalancerName *string `json:"loadBalancerName,omitempty"`
+	// Termination protection setting
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	TerminationProtection *bool `json:"terminationProtection,omitempty"`
 }
 
 type defaultNLBLoadBalancerSpec struct {
-	CrossZoneLoadBalancingEnabled, ProxyProtocol *bool
-	EIPAllocations                               []string
+	CrossZoneLoadBalancingEnabled, ProxyProtocol, TerminationProtection *bool
 }
 
 // Default sets default values for any value not specifically set in the NLBLoadBalancerSpec struct
 func (spec *NLBLoadBalancerSpec) Default(def defaultNLBLoadBalancerSpec) {
 	spec.ProxyProtocol = boolOrDefault(spec.ProxyProtocol, def.ProxyProtocol)
 	spec.CrossZoneLoadBalancingEnabled = boolOrDefault(spec.CrossZoneLoadBalancingEnabled, def.CrossZoneLoadBalancingEnabled)
+	spec.TerminationProtection = boolOrDefault(spec.TerminationProtection, def.TerminationProtection)
 }
 
 // IsDeactivated true if the field is set with the deactivated value (empty struct)

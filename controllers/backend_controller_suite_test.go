@@ -142,9 +142,9 @@ var _ = Describe("Backend controller", func() {
 				}).Assert(k8sClient, dep, timeout, poll))
 
 			svc := &corev1.Service{}
-			By("deploying the backend-listener service",
+			By("deploying the backend-listener-nlb service",
 				(&testutil.ExpectedResource{
-					Name: "backend-listener", Namespace: namespace,
+					Name: "backend-listener-nlb", Namespace: namespace,
 				}).Assert(k8sClient, svc, timeout, poll))
 
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("backend-listener"))
@@ -290,8 +290,8 @@ var _ = Describe("Backend controller", func() {
 						return err
 					}
 
-					rvs["svc/backend-listener"] = testutil.GetResourceVersion(
-						k8sClient, &corev1.Service{}, "backend-listener", namespace, timeout, poll)
+					rvs["svc/backend-listener-nlb"] = testutil.GetResourceVersion(
+						k8sClient, &corev1.Service{}, "backend-listener-nlb", namespace, timeout, poll)
 					rvs["deployment/backend-listener"] = testutil.GetResourceVersion(
 						k8sClient, &appsv1.Deployment{}, "backend-listener", namespace, timeout, poll)
 					rvs["hpa/backend-worker"] = testutil.GetResourceVersion(
@@ -376,14 +376,15 @@ var _ = Describe("Backend controller", func() {
 					}).Assert(k8sClient, dep, timeout, poll))
 
 				svc := &corev1.Service{}
-				By("updating backend-listener service",
+				By("updating backend-listener-nlb service",
 					(&testutil.ExpectedResource{
-						Name: "backend-listener", Namespace: namespace,
-						LastVersion: rvs["svc/backend-listener"],
+						Name: "backend-listener-nlb", Namespace: namespace,
+						LastVersion: rvs["svc/backend-listener-nlb"],
 					}).Assert(k8sClient, svc, timeout, poll))
 
 				Expect(svc.Spec.Selector["deployment"]).To(Equal("backend-listener"))
-				Expect(svc.GetAnnotations()["service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled"]).To(Equal("false"))
+				Expect(svc.GetAnnotations()["service.beta.kubernetes.io/aws-load-balancer-attributes"]).
+					To(Equal("load_balancing.cross_zone.enabled=false,deletion_protection.enabled=false"))
 
 				hpa := &autoscalingv2.HorizontalPodAutoscaler{}
 				By("updating the backend-worker workload",
@@ -482,7 +483,7 @@ var _ = Describe("Backend controller", func() {
 					}
 
 					rvs["svc/backend-listener"] = testutil.GetResourceVersion(
-						k8sClient, &corev1.Service{}, "backend-listener", namespace, timeout, poll)
+						k8sClient, &corev1.Service{}, "backend-listener-nlb", namespace, timeout, poll)
 					rvs["deployment/backend-listener"] = testutil.GetResourceVersion(
 						k8sClient, &appsv1.Deployment{}, "backend-listener", namespace, timeout, poll)
 					rvs["deployment/backend-worker"] = testutil.GetResourceVersion(
@@ -541,9 +542,9 @@ var _ = Describe("Backend controller", func() {
 					}).Assert(k8sClient, dep, timeout, poll))
 
 				svc := &corev1.Service{}
-				By("keeps the backend-listener service deployment label selector",
+				By("keeps the backend-listener-nlb service deployment label selector",
 					(&testutil.ExpectedResource{
-						Name: "backend-listener", Namespace: namespace,
+						Name: "backend-listener-nlb", Namespace: namespace,
 					}).Assert(k8sClient, svc, timeout, poll))
 
 				Expect(svc.Spec.Selector["deployment"]).To(Equal("backend-listener"))
@@ -594,8 +595,8 @@ var _ = Describe("Backend controller", func() {
 
 						rvs["deployment/backend-listener-canary"] = testutil.GetResourceVersion(
 							k8sClient, &appsv1.Deployment{}, "backend-listener-canary", namespace, timeout, poll)
-						rvs["svc/backend-listener"] = testutil.GetResourceVersion(
-							k8sClient, &corev1.Service{}, "backend-listener", namespace, timeout, poll)
+						rvs["svc/backend-listener-nlb"] = testutil.GetResourceVersion(
+							k8sClient, &corev1.Service{}, "backend-listener-nlb", namespace, timeout, poll)
 						rvs["deployment/backend-worker-canary"] = testutil.GetResourceVersion(
 							k8sClient, &appsv1.Deployment{}, "backend-worker-canary", namespace, timeout, poll)
 
@@ -634,8 +635,8 @@ var _ = Describe("Backend controller", func() {
 					svc := &corev1.Service{}
 					By("removing the backend-listener service deployment label selector",
 						(&testutil.ExpectedResource{
-							Name: "backend-listener", Namespace: namespace,
-							LastVersion: rvs["svc/backend-listener"],
+							Name: "backend-listener-nlb", Namespace: namespace,
+							LastVersion: rvs["svc/backend-listener-nlb"],
 						}).Assert(k8sClient, svc, timeout, poll))
 
 					Expect(svc.Spec.Selector).ToNot(HaveKey("deployment"))
