@@ -33,8 +33,10 @@ func ELBServiceAnnotations(cfg saasv1alpha1.LoadBalancerSpec, hostnames []string
 // NLBServiceAnnotations returns annotations for services exposed through AWS Network LoadBalancers
 func NLBServiceAnnotations(cfg saasv1alpha1.NLBLoadBalancerSpec, hostnames []string) map[string]string {
 	annotations := map[string]string{
-		"external-dns.alpha.kubernetes.io/hostname":         strings.Join(hostnames, ","),
-		"service.beta.kubernetes.io/aws-load-balancer-type": "external",
+		"external-dns.alpha.kubernetes.io/hostname":                    strings.Join(hostnames, ","),
+		"service.beta.kubernetes.io/aws-load-balancer-type":            "external",
+		"service.beta.kubernetes.io/aws-load-balancer-nlb-target-type": "instance",
+		"service.beta.kubernetes.io/aws-load-balancer-scheme":          "internet-facing",
 	}
 	if *cfg.ProxyProtocol {
 		annotations["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"] = "*"
@@ -52,7 +54,7 @@ func NLBServiceAnnotations(cfg saasv1alpha1.NLBLoadBalancerSpec, hostnames []str
 	} else {
 		attributes = append(attributes, "load_balancing.cross_zone.enabled=false")
 	}
-	if *cfg.TerminationProtection {
+	if *cfg.DeletionProtection {
 		attributes = append(attributes, "deletion_protection.enabled=true")
 	} else {
 		attributes = append(attributes, "deletion_protection.enabled=false")

@@ -243,6 +243,9 @@ spec:
                   crossZoneLoadBalancingEnabled:
                     description: Enables/disables cross zone load balancing
                     type: boolean
+                  deletionProtection:
+                    description: Deletion protection setting
+                    type: boolean
                   eipAllocations:
                     description: The list of optional Elastic IPs allocations
                     items:
@@ -254,9 +257,6 @@ spec:
                   proxyProtocol:
                     description: Enables/disbles use of proxy protocol in the load
                       balancer
-                    type: boolean
-                  terminationProtection:
-                    description: Termination protection setting
                     type: boolean
                 type: object
               marin3r:

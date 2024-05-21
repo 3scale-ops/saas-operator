@@ -70,7 +70,7 @@ func (r *EchoAPIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			*instance.Spec.LoadBalancer.LoadBalancerName != nlbName {
 			patch := client.MergeFrom(instance.DeepCopy())
 			instance.Spec.LoadBalancer.LoadBalancerName = &nlbName
-			instance.Spec.LoadBalancer.TerminationProtection = util.Pointer(true)
+			instance.Spec.LoadBalancer.DeletionProtection = util.Pointer(true)
 			if err := r.Client.Patch(ctx, instance, patch); err != nil {
 				return ctrl.Result{}, err
 			}

@@ -1963,8 +1963,8 @@ func (in *NLBLoadBalancerSpec) DeepCopyInto(out *NLBLoadBalancerSpec) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.TerminationProtection != nil {
-		in, out := &in.TerminationProtection, &out.TerminationProtection
+	if in.DeletionProtection != nil {
+		in, out := &in.DeletionProtection, &out.DeletionProtection
 		*out = new(bool)
 		**out = **in
 	}

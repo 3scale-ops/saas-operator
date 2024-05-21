@@ -1140,6 +1140,9 @@ spec:
       - description: Enables/disables cross zone load balancing
         displayName: Cross Zone Load Balancing Enabled
         path: listener.loadBalancer.crossZoneLoadBalancingEnabled
+      - description: Deletion protection setting
+        displayName: Deletion Protection
+        path: listener.loadBalancer.deletionProtection
       - description: The list of optional Elastic IPs allocations
         displayName: EIPAllocations
         path: listener.loadBalancer.eipAllocations
@@ -1149,9 +1152,6 @@ spec:
       - description: Enables/disbles use of proxy protocol in the load balancer
         displayName: Proxy Protocol
         path: listener.loadBalancer.proxyProtocol
-      - description: Termination protection setting
-        displayName: Termination Protection
-        path: listener.loadBalancer.terminationProtection
       - description: Marin3r configures the Marin3r sidecars for the component
         displayName: Marin3r
         path: listener.marin3r
@@ -1723,6 +1723,9 @@ spec:
       - description: Enables/disables cross zone load balancing
         displayName: Cross Zone Load Balancing Enabled
         path: loadBalancer.crossZoneLoadBalancingEnabled
+      - description: Deletion protection setting
+        displayName: Deletion Protection
+        path: loadBalancer.deletionProtection
       - description: The list of optional Elastic IPs allocations
         displayName: EIPAllocations
         path: loadBalancer.eipAllocations
@@ -1732,9 +1735,6 @@ spec:
       - description: Enables/disbles use of proxy protocol in the load balancer
         displayName: Proxy Protocol
         path: loadBalancer.proxyProtocol
-      - description: Termination protection setting
-        displayName: Termination Protection
-        path: loadBalancer.terminationProtection
       - description: Marin3r configures the Marin3r sidecars for the component
         displayName: Marin3r
         path: marin3r
