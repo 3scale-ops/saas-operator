@@ -33,18 +33,33 @@ func ELBServiceAnnotations(cfg saasv1alpha1.LoadBalancerSpec, hostnames []string
 // NLBServiceAnnotations returns annotations for services exposed through AWS Network LoadBalancers
 func NLBServiceAnnotations(cfg saasv1alpha1.NLBLoadBalancerSpec, hostnames []string) map[string]string {
 	annotations := map[string]string{
-		"service.beta.kubernetes.io/aws-load-balancer-type":                              "nlb",
-		"external-dns.alpha.kubernetes.io/hostname":                                      strings.Join(hostnames, ","),
-		"service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled": fmt.Sprintf("%t", *cfg.CrossZoneLoadBalancingEnabled),
+		"external-dns.alpha.kubernetes.io/hostname":                    strings.Join(hostnames, ","),
+		"service.beta.kubernetes.io/aws-load-balancer-type":            "external",
+		"service.beta.kubernetes.io/aws-load-balancer-nlb-target-type": "instance",
+		"service.beta.kubernetes.io/aws-load-balancer-scheme":          "internet-facing",
 	}
-
 	if *cfg.ProxyProtocol {
-		annotations["aws-nlb-helper.3scale.net/enable-targetgroups-proxy-protocol"] = "true"
+		annotations["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"] = "*"
 	}
-
 	if len(cfg.EIPAllocations) != 0 {
 		annotations["service.beta.kubernetes.io/aws-load-balancer-eip-allocations"] = strings.Join(cfg.EIPAllocations, ",")
 	}
+	if cfg.LoadBalancerName != nil {
+		annotations["service.beta.kubernetes.io/aws-load-balancer-name"] = *cfg.LoadBalancerName
+	}
+
+	attributes := []string{}
+	if *cfg.CrossZoneLoadBalancingEnabled {
+		attributes = append(attributes, "load_balancing.cross_zone.enabled=true")
+	} else {
+		attributes = append(attributes, "load_balancing.cross_zone.enabled=false")
+	}
+	if *cfg.DeletionProtection {
+		attributes = append(attributes, "deletion_protection.enabled=true")
+	} else {
+		attributes = append(attributes, "deletion_protection.enabled=false")
+	}
+	annotations["service.beta.kubernetes.io/aws-load-balancer-attributes"] = strings.Join(attributes, ",")
 	return annotations
 
 }

@@ -48,6 +48,7 @@ var (
 	backendDefaultListenerNLBLoadBalancer defaultNLBLoadBalancerSpec = defaultNLBLoadBalancerSpec{
 		ProxyProtocol:                 util.Pointer(true),
 		CrossZoneLoadBalancingEnabled: util.Pointer(true),
+		DeletionProtection:            util.Pointer(false),
 	}
 	backendDefaultListenerReplicas  int32                           = 2
 	backendDefaultListenerResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{

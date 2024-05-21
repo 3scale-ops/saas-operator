@@ -598,7 +598,7 @@ metadata:
     capabilities: Basic Install
     categories: Integration & Delivery
     containerImage: quay.io/3scale/saas-operator
-    createdAt: "2024-05-09T16:19:20Z"
+    createdAt: "2024-05-21T10:17:51Z"
     description: |-
       The 3scale SaaS Operator creates and maintains a SaaS-ready deployment
       of the Red Hat 3scale API Management on OpenShift.
@@ -606,7 +606,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/3scale-ops/saas-operator
     support: Red Hat
-  name: saas-operator.v0.23.0
+  name: saas-operator.v0.24.0-alpha.1
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -1599,9 +1599,15 @@ spec:
       - description: Enables/disables cross zone load balancing
         displayName: Cross Zone Load Balancing Enabled
         path: listener.loadBalancer.crossZoneLoadBalancingEnabled
+      - description: Deletion protection setting
+        displayName: Deletion Protection
+        path: listener.loadBalancer.deletionProtection
       - description: The list of optional Elastic IPs allocations
         displayName: EIPAllocations
         path: listener.loadBalancer.eipAllocations
+      - description: Optionally specify the load balancer name
+        displayName: Load Balancer Name
+        path: listener.loadBalancer.loadBalancerName
       - description: Enables/disbles use of proxy protocol in the load balancer
         displayName: Proxy Protocol
         path: listener.loadBalancer.proxyProtocol
@@ -2176,9 +2182,15 @@ spec:
       - description: Enables/disables cross zone load balancing
         displayName: Cross Zone Load Balancing Enabled
         path: loadBalancer.crossZoneLoadBalancingEnabled
+      - description: Deletion protection setting
+        displayName: Deletion Protection
+        path: loadBalancer.deletionProtection
       - description: The list of optional Elastic IPs allocations
         displayName: EIPAllocations
         path: loadBalancer.eipAllocations
+      - description: Optionally specify the load balancer name
+        displayName: Load Balancer Name
+        path: loadBalancer.loadBalancerName
       - description: Enables/disbles use of proxy protocol in the load balancer
         displayName: Proxy Protocol
         path: loadBalancer.proxyProtocol
@@ -4610,7 +4622,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/3scale/saas-operator:v0.23.0
+                image: quay.io/3scale/saas-operator:v0.24.0-alpha.1
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -5174,4 +5186,4 @@ spec:
   provider:
     name: Red Hat
     url: https://www.3scale.net/
-  version: 0.23.0
+  version: 0.24.0-alpha.1

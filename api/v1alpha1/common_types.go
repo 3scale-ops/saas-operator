@@ -247,17 +247,25 @@ type NLBLoadBalancerSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	EIPAllocations []string `json:"eipAllocations,omitempty"`
+	// Optionally specify the load balancer name
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	LoadBalancerName *string `json:"loadBalancerName,omitempty"`
+	// Deletion protection setting
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	DeletionProtection *bool `json:"deletionProtection,omitempty"`
 }
 
 type defaultNLBLoadBalancerSpec struct {
-	CrossZoneLoadBalancingEnabled, ProxyProtocol *bool
-	EIPAllocations                               []string
+	CrossZoneLoadBalancingEnabled, ProxyProtocol, DeletionProtection *bool
 }
 
 // Default sets default values for any value not specifically set in the NLBLoadBalancerSpec struct
 func (spec *NLBLoadBalancerSpec) Default(def defaultNLBLoadBalancerSpec) {
 	spec.ProxyProtocol = boolOrDefault(spec.ProxyProtocol, def.ProxyProtocol)
 	spec.CrossZoneLoadBalancingEnabled = boolOrDefault(spec.CrossZoneLoadBalancingEnabled, def.CrossZoneLoadBalancingEnabled)
+	spec.DeletionProtection = boolOrDefault(spec.DeletionProtection, def.DeletionProtection)
 }
 
 // IsDeactivated true if the field is set with the deactivated value (empty struct)

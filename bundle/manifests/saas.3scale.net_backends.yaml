@@ -822,11 +822,17 @@ spec:
                       crossZoneLoadBalancingEnabled:
                         description: Enables/disables cross zone load balancing
                         type: boolean
+                      deletionProtection:
+                        description: Deletion protection setting
+                        type: boolean
                       eipAllocations:
                         description: The list of optional Elastic IPs allocations
                         items:
                           type: string
                         type: array
+                      loadBalancerName:
+                        description: Optionally specify the load balancer name
+                        type: string
                       proxyProtocol:
                         description: Enables/disbles use of proxy protocol in the
                           load balancer
