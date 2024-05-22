@@ -15,6 +15,14 @@
         kind: System
       fieldPaths:
         - spec.config.apicast.stagingDomain
+    - select:
+        kind: Certificate
+        name: apicast-staging-wildcard-cert
+      fieldPaths:
+        - spec.dnsNames.0
+      options:
+        delimiter: "."
+        index: 1
 - source:
     kind: ConfigMap
     name: config
@@ -31,6 +39,14 @@
         kind: System
       fieldPaths:
         - spec.config.apicast.productionDomain
+    - select:
+        kind: Certificate
+        name: apicast-production-wildcard-cert
+      fieldPaths:
+        - spec.dnsNames.0
+      options:
+        delimiter: "."
+        index: 1
 
 # CONFIGURE AUTOSSL ENDPOINT
 - source:
@@ -66,6 +82,11 @@
         kind: EchoAPI
       fieldPaths:
         - spec.endpoint.dns.0
+    - select:
+        kind: Certificate
+        name: echoapi-cert
+      fieldPaths:
+        - spec.dnsNames.0
 
 # CONFIGURE BACKEND ENDPOINT
 - source:
@@ -84,6 +105,11 @@
       options:
         delimiter: "/"
         index: 2
+    - select:
+        kind: Certificate
+        name: backend-cert
+      fieldPaths:
+        - spec.dnsNames.0
 
 # CONFIGURE SYSTEM ENDPOINT
 - source:

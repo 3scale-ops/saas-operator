@@ -1,3 +1,27 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: apicast-staging-wildcard-cert
+spec:
+  dnsNames: ["*.REPLACE"]
+  issuerRef:
+    kind: ClusterIssuer
+    name: selfsigned-cluster-issuer
+  secretName: apicast-staging-wildcard-cert
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: apicast-production-wildcard-cert
+spec:
+  dnsNames: ["*.REPLACE"]
+  issuerRef:
+    kind: ClusterIssuer
+    name: selfsigned-cluster-issuer
+  secretName: apicast-production-wildcard-cert
+
+---
 apiVersion: saas.3scale.net/v1alpha1
 kind: Apicast
 metadata:
@@ -12,7 +36,7 @@ spec:
     config:
       configurationCache: 300
       threescalePortalEndpoint: "http://mapping-service/config"
-    endpoint: {dns: ['*.REPLACE']}
+    endpoint: {dns: ["*.REPLACE"]}
     hpa: {}
     loadBalancer:
       proxyProtocol: false
@@ -26,6 +50,12 @@ spec:
           listenerHttp:
             proxyProtocol: false
             port: 38080
+            routeConfigName: router
+        https:
+          listenerHttp:
+            proxyProtocol: false
+            certificateSecretName: apicast-production-wildcard-cert
+            port: 38443
             routeConfigName: router
         router:
           routeConfiguration:
@@ -62,7 +92,7 @@ spec:
     config:
       configurationCache: 60
       threescalePortalEndpoint: "http://mapping-service/config"
-    endpoint: {dns: ['*.REPLACE']}
+    endpoint: {dns: ["*.REPLACE"]}
     hpa: {}
     loadBalancer:
       proxyProtocol: false
@@ -76,6 +106,12 @@ spec:
           listenerHttp:
             proxyProtocol: false
             port: 38080
+            routeConfigName: router
+        https:
+          listenerHttp:
+            proxyProtocol: false
+            certificateSecretName: apicast-staging-wildcard-cert
+            port: 38443
             routeConfigName: router
         mgmt_cluster:
           cluster:

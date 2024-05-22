@@ -1,3 +1,15 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: echoapi-cert
+spec:
+  dnsNames: ["REPLACE"]
+  issuerRef:
+    kind: ClusterIssuer
+    name: selfsigned-cluster-issuer
+  secretName: echoapi-cert
+
+---
 apiVersion: saas.3scale.net/v1alpha1
 kind: EchoAPI
 metadata:
@@ -32,6 +44,12 @@ spec:
         listenerHttp:
           proxyProtocol: false
           port: 38080
+          routeConfigName: echo_api_route
+      https:
+        listenerHttp:
+          proxyProtocol: false
+          certificateSecretName: echoapi-cert
+          port: 38443
           routeConfigName: echo_api_route
     envoyImage: REPLACE
     nodeID: echo-api
