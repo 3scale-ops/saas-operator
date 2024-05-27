@@ -975,6 +975,8 @@ NLBLoadBalancerSpec configures the AWS NLB load balancer for the component
 | *`proxyProtocol`* __boolean__ | Enables/disbles use of proxy protocol in the load balancer
 | *`crossZoneLoadBalancingEnabled`* __boolean__ | Enables/disables cross zone load balancing
 | *`eipAllocations`* __string array__ | The list of optional Elastic IPs allocations
+| *`loadBalancerName`* __string__ | Optionally specify the load balancer name
+| *`deletionProtection`* __boolean__ | Deletion protection setting
 |===
 
 
