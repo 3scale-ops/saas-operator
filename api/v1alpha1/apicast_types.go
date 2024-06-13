@@ -31,7 +31,7 @@ var (
 		Tag:        util.Pointer("latest"),
 		PullPolicy: (*corev1.PullPolicy)(util.Pointer(string(corev1.PullIfNotPresent))),
 	}
-	apicastDefaultLoadBalancer defaultLoadBalancerSpec = defaultLoadBalancerSpec{
+	apicastDefaultLoadBalancer DefaultLoadBalancerSpec = DefaultLoadBalancerSpec{
 		ProxyProtocol:                 util.Pointer(true),
 		CrossZoneLoadBalancingEnabled: util.Pointer(true),
 		ConnectionDrainingEnabled:     util.Pointer(true),
@@ -166,16 +166,23 @@ type ApicastEnvironmentSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Config ApicastConfig `json:"config"`
 	// The external endpoint/s for the component
+	// DEPRECATED
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	Endpoint Endpoint `json:"endpoint"`
+	Endpoint *Endpoint `json:"endpoint,omitempty"`
 	// Marin3r configures the Marin3r sidecars for the component
+	// DEPRECATED
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Marin3r *Marin3rSidecarSpec `json:"marin3r,omitempty"`
 	// Configures the AWS load balancer for the component
+	// DEPRECATED
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	LoadBalancer *LoadBalancerSpec `json:"loadBalancer,omitempty"`
+	// Describes how the services provided by this workload are exposed to its consumers
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	PublishingStrategies PublishingStrategies `json:"punlishingStrategies,omitempty"`
 	// Describes node affinity scheduling rules for the pod.
 	// +optional
 	NodeAffinity *corev1.NodeAffinity `json:"nodeAffinity,omitempty" protobuf:"bytes,1,opt,name=nodeAffinity"`

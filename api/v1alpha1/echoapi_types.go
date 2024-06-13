@@ -65,7 +65,7 @@ var (
 		FailureThreshold:    util.Pointer[int32](5),
 	}
 	echoapiDefaultMarin3rSpec     defaultMarin3rSidecarSpec  = defaultMarin3rSidecarSpec{}
-	echoapiDefaultNLBLoadBalancer defaultNLBLoadBalancerSpec = defaultNLBLoadBalancerSpec{
+	echoapiDefaultNLBLoadBalancer DefaultNLBLoadBalancerSpec = DefaultNLBLoadBalancerSpec{
 		ProxyProtocol:                 util.Pointer(true),
 		CrossZoneLoadBalancingEnabled: util.Pointer(true),
 		DeletionProtection:            util.Pointer(false),

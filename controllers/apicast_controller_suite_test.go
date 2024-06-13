@@ -58,7 +58,7 @@ var _ = Describe("Apicast controller", func() {
 								ConfigurationCache:       30,
 								ThreescalePortalEndpoint: "http://example/config",
 							},
-							Endpoint: saasv1alpha1.Endpoint{
+							Endpoint: &saasv1alpha1.Endpoint{
 								DNS: []string{"apicast-staging.example.com"},
 							},
 						},
@@ -67,7 +67,7 @@ var _ = Describe("Apicast controller", func() {
 								ConfigurationCache:       300,
 								ThreescalePortalEndpoint: "http://example/config",
 							},
-							Endpoint: saasv1alpha1.Endpoint{
+							Endpoint: &saasv1alpha1.Endpoint{
 								DNS: []string{"apicast-production.example.com"},
 							},
 						},
@@ -249,7 +249,7 @@ var _ = Describe("Apicast controller", func() {
 							ConfigurationCache:       42,
 							ThreescalePortalEndpoint: "http://updated-example/config",
 						},
-						Endpoint: saasv1alpha1.Endpoint{
+						Endpoint: &saasv1alpha1.Endpoint{
 							DNS: []string{"updated-apicast-production.example.com"},
 						},
 						HPA: &saasv1alpha1.HorizontalPodAutoscalerSpec{
@@ -274,7 +274,7 @@ var _ = Describe("Apicast controller", func() {
 							ConfigurationCache:       42,
 							ThreescalePortalEndpoint: "http://updated-example/config",
 						},
-						Endpoint: saasv1alpha1.Endpoint{
+						Endpoint: &saasv1alpha1.Endpoint{
 							DNS: []string{"updated-apicast-staging.example.com"},
 						},
 						HPA: &saasv1alpha1.HorizontalPodAutoscalerSpec{

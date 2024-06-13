@@ -4,23 +4,81 @@ import (
 	"reflect"
 	"sort"
 
+	"github.com/3scale-ops/basereconciler/util"
 	envoyconfig "github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
-// SidecarPort defines port for the Marin3r sidecar container
-type SidecarPort struct {
-	// Port name
+type PublishingStrategies []PublishingStrategy
+
+type Strategy string
+
+const (
+	SimpleStrategy     Strategy = "Simple"
+	Marin3rStrategy    Strategy = "Marin3rSidecar"
+	GatewayAPIStrategy Strategy = "GatewayAPI"
+)
+
+type PublishingStrategy struct {
+	// Strategy defines the type of publishing strategy
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	Name string `json:"name"`
-	// Port value
+	Strategy Strategy `json:"strategy"`
+	// EndpointName defines the endpoint affected by this publishing strategy
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	Port int32 `json:"port"`
+	EndpointName string `json:"endpoint"`
+	// Simple holds configuration for the Simple publishing strategy
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Simple *Simple `json:"simple,omitempty"`
+	// Marin3rSidecar holds configuration for the Marin3rSidecar publishing strategy
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Marin3rSidecar *Marin3rSidecarSpec `json:"marin3rSidecar,omitempty"`
+}
+
+type ServiceType string
+
+const (
+	ServiceTypeClusterIP ServiceType = "ClusterIP"
+	ServiceTypeNLB       ServiceType = "NLB"
+	ServiceTypeELB       ServiceType = "ELB"
+)
+
+type Simple struct {
+	// ServiceType defines the type of k8s Service to use for exposing
+	// the service to its consumers
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ServiceType *ServiceType `json:"serviceType,omitempty"`
+	// ExternalDnsHostnames defines the hostnames that ExternalDNS
+	// should configure records for external consumners to reach the service
+	// Only works with Services of type NLB/ELB
+	ExternalDnsHostnames []string `json:"externalDnsHostnames,omitempty"`
+	// ServiceNameOverride allows the user to override the generated
+	// Service name
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ServiceNameOverride *string `json:"serviceName,omitempty"`
+	// Classic LB configuration
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ElasticLoadBalancerConfig *LoadBalancerSpec `json:"classicLoadBalancerConfig,omitempty"`
+	// NLB configuration
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	NetworkLoadBalancerConfig *NLBLoadBalancerSpec `json:"networkLoadBalancerConfig,omitempty"`
+}
+
+func (s *Simple) Default() {
+	if s.ServiceType == nil {
+		s.ServiceType = util.Pointer(ServiceTypeClusterIP)
+	}
 }
 
 // Marin3rSidecarSpec defines the marin3r sidecar for the component
 type Marin3rSidecarSpec struct {
+	*Simple `json:",inline"`
 	// The NodeID that identifies the Envoy sidecar to the DiscoveryService
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -38,7 +96,7 @@ type Marin3rSidecarSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Ports []SidecarPort `json:"ports,omitempty"`
-	// Compute Resources required by this container.
+	// Compute Resources required by the sidecar container.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Resources *ResourceRequirementsSpec `json:"resources,omitempty"`
@@ -107,6 +165,16 @@ func InitializeMarin3rSidecarSpec(spec *Marin3rSidecarSpec, def defaultMarin3rSi
 		return copy
 	}
 	return spec
+}
+
+// SidecarPort defines port for the Marin3r sidecar container
+type SidecarPort struct {
+	// Port name
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	Name string `json:"name"`
+	// Port value
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	Port int32 `json:"port"`
 }
 
 type MapOfEnvoyDynamicConfig map[string]EnvoyDynamicConfig
@@ -304,3 +372,16 @@ type RawConfig struct {
 	// writting the custom resource to etcd.
 	Value runtime.RawExtension `json:"value"`
 }
+
+// publishingStrategy:
+//   - strategy: Simple
+//     endpoint: Management
+//     type: ClusterIP
+//   - type: marin3r
+//     endpoint: ApicastGateway
+//     loadBalancerType: NLB
+//     marin3r: [...]
+//     hostnames: [...]
+//   - type: GatewayAPI
+//     endpoint: ApicastGateway
+//     gateway: something

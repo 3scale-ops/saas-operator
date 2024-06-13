@@ -305,7 +305,7 @@ func TestLoadBalancerSpec_Default(t *testing.T) {
 		ConnectionHealthcheckTimeout            *int32
 	}
 	type args struct {
-		def defaultLoadBalancerSpec
+		def DefaultLoadBalancerSpec
 	}
 	tests := []struct {
 		name   string
@@ -316,7 +316,7 @@ func TestLoadBalancerSpec_Default(t *testing.T) {
 		{
 			name:   "Sets defaults",
 			fields: fields{},
-			args: args{def: defaultLoadBalancerSpec{
+			args: args{def: DefaultLoadBalancerSpec{
 				ProxyProtocol:                 util.Pointer(true),
 				CrossZoneLoadBalancingEnabled: util.Pointer(true),
 				ConnectionDrainingEnabled:     util.Pointer(true),
@@ -342,7 +342,7 @@ func TestLoadBalancerSpec_Default(t *testing.T) {
 			fields: fields{
 				ProxyProtocol: util.Pointer(false),
 			},
-			args: args{def: defaultLoadBalancerSpec{
+			args: args{def: DefaultLoadBalancerSpec{
 				ProxyProtocol:                 util.Pointer(true),
 				CrossZoneLoadBalancingEnabled: util.Pointer(true),
 				ConnectionDrainingEnabled:     util.Pointer(true),
@@ -405,7 +405,7 @@ func TestLoadBalancerSpec_IsDeactivated(t *testing.T) {
 func TestInitializeLoadBalancerSpec(t *testing.T) {
 	type args struct {
 		spec *LoadBalancerSpec
-		def  defaultLoadBalancerSpec
+		def  DefaultLoadBalancerSpec
 	}
 	tests := []struct {
 		name string
@@ -414,7 +414,7 @@ func TestInitializeLoadBalancerSpec(t *testing.T) {
 	}{
 		{
 			name: "Initializes the struct with appropriate defaults if nil",
-			args: args{nil, defaultLoadBalancerSpec{
+			args: args{nil, DefaultLoadBalancerSpec{
 				ProxyProtocol:                 util.Pointer(true),
 				CrossZoneLoadBalancingEnabled: util.Pointer(true),
 				ConnectionDrainingEnabled:     util.Pointer(true),
@@ -437,7 +437,7 @@ func TestInitializeLoadBalancerSpec(t *testing.T) {
 		},
 		{
 			name: "Initializes the struct with appropriate defaults if empty",
-			args: args{&LoadBalancerSpec{}, defaultLoadBalancerSpec{
+			args: args{&LoadBalancerSpec{}, DefaultLoadBalancerSpec{
 				ProxyProtocol:                 util.Pointer(true),
 				CrossZoneLoadBalancingEnabled: util.Pointer(true),
 				ConnectionDrainingEnabled:     util.Pointer(true),
@@ -474,7 +474,7 @@ func TestNLBLoadBalancerSpec_Default(t *testing.T) {
 		CrossZoneLoadBalancingEnabled *bool
 	}
 	type args struct {
-		def defaultNLBLoadBalancerSpec
+		def DefaultNLBLoadBalancerSpec
 	}
 	tests := []struct {
 		name   string
@@ -485,7 +485,7 @@ func TestNLBLoadBalancerSpec_Default(t *testing.T) {
 		{
 			name:   "Sets defaults",
 			fields: fields{},
-			args: args{def: defaultNLBLoadBalancerSpec{
+			args: args{def: DefaultNLBLoadBalancerSpec{
 				ProxyProtocol:                 util.Pointer(true),
 				CrossZoneLoadBalancingEnabled: util.Pointer(true),
 			}},
@@ -499,7 +499,7 @@ func TestNLBLoadBalancerSpec_Default(t *testing.T) {
 			fields: fields{
 				ProxyProtocol: util.Pointer(false),
 			},
-			args: args{def: defaultNLBLoadBalancerSpec{
+			args: args{def: DefaultNLBLoadBalancerSpec{
 				ProxyProtocol:                 util.Pointer(true),
 				CrossZoneLoadBalancingEnabled: util.Pointer(true),
 			}},
@@ -544,7 +544,7 @@ func TestNLBLoadBalancerSpec_IsDeactivated(t *testing.T) {
 func TestInitializeNLBLoadBalancerSpec(t *testing.T) {
 	type args struct {
 		spec *NLBLoadBalancerSpec
-		def  defaultNLBLoadBalancerSpec
+		def  DefaultNLBLoadBalancerSpec
 	}
 	tests := []struct {
 		name string
@@ -553,7 +553,7 @@ func TestInitializeNLBLoadBalancerSpec(t *testing.T) {
 	}{
 		{
 			name: "Initializes the struct with appropriate defaults if nil",
-			args: args{nil, defaultNLBLoadBalancerSpec{
+			args: args{nil, DefaultNLBLoadBalancerSpec{
 				ProxyProtocol:                 util.Pointer(true),
 				CrossZoneLoadBalancingEnabled: util.Pointer(true),
 			}},
@@ -564,7 +564,7 @@ func TestInitializeNLBLoadBalancerSpec(t *testing.T) {
 		},
 		{
 			name: "Initializes the struct with appropriate defaults if empty",
-			args: args{&NLBLoadBalancerSpec{}, defaultNLBLoadBalancerSpec{
+			args: args{&NLBLoadBalancerSpec{}, DefaultNLBLoadBalancerSpec{
 				ProxyProtocol:                 util.Pointer(true),
 				CrossZoneLoadBalancingEnabled: util.Pointer(true),
 			}},

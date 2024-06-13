@@ -31,7 +31,7 @@ var (
 		Tag:        util.Pointer("latest"),
 		PullPolicy: (*corev1.PullPolicy)(util.Pointer(string(corev1.PullIfNotPresent))),
 	}
-	autosslDefaultLoadBalancer defaultLoadBalancerSpec = defaultLoadBalancerSpec{
+	autosslDefaultLoadBalancer DefaultLoadBalancerSpec = DefaultLoadBalancerSpec{
 		ProxyProtocol:                 util.Pointer(true),
 		CrossZoneLoadBalancingEnabled: util.Pointer(true),
 		ConnectionDrainingEnabled:     util.Pointer(true),

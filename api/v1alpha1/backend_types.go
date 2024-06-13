@@ -45,7 +45,7 @@ var (
 	backendDefaultListenerPDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
 		MaxUnavailable: util.Pointer(intstr.FromInt(1)),
 	}
-	backendDefaultListenerNLBLoadBalancer defaultNLBLoadBalancerSpec = defaultNLBLoadBalancerSpec{
+	backendDefaultListenerNLBLoadBalancer DefaultNLBLoadBalancerSpec = DefaultNLBLoadBalancerSpec{
 		ProxyProtocol:                 util.Pointer(true),
 		CrossZoneLoadBalancingEnabled: util.Pointer(true),
 		DeletionProtection:            util.Pointer(false),

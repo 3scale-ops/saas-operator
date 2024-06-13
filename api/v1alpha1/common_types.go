@@ -197,14 +197,14 @@ type LoadBalancerSpec struct {
 	HealthcheckTimeout *int32 `json:"healthcheckTimeout,omitempty"`
 }
 
-type defaultLoadBalancerSpec struct {
+type DefaultLoadBalancerSpec struct {
 	ProxyProtocol, CrossZoneLoadBalancingEnabled, ConnectionDrainingEnabled               *bool
 	ConnectionDrainingTimeout, HealthcheckHealthyThreshold, HealthcheckUnhealthyThreshold *int32
 	HealthcheckInterval, HealthcheckTimeout                                               *int32
 }
 
 // Default sets default values for any value not specifically set in the LoadBalancerSpec struct
-func (spec *LoadBalancerSpec) Default(def defaultLoadBalancerSpec) {
+func (spec *LoadBalancerSpec) Default(def DefaultLoadBalancerSpec) {
 	spec.ProxyProtocol = boolOrDefault(spec.ProxyProtocol, def.ProxyProtocol)
 	spec.CrossZoneLoadBalancingEnabled = boolOrDefault(spec.CrossZoneLoadBalancingEnabled, def.CrossZoneLoadBalancingEnabled)
 	spec.ConnectionDrainingEnabled = boolOrDefault(spec.ConnectionDrainingEnabled, def.ConnectionDrainingEnabled)
@@ -219,7 +219,7 @@ func (spec *LoadBalancerSpec) Default(def defaultLoadBalancerSpec) {
 func (spec *LoadBalancerSpec) IsDeactivated() bool { return false }
 
 // InitializeLoadBalancerSpec initializes a LoadBalancerSpec struct
-func InitializeLoadBalancerSpec(spec *LoadBalancerSpec, def defaultLoadBalancerSpec) *LoadBalancerSpec {
+func InitializeLoadBalancerSpec(spec *LoadBalancerSpec, def DefaultLoadBalancerSpec) *LoadBalancerSpec {
 	if spec == nil {
 		new := &LoadBalancerSpec{}
 		new.Default(def)
@@ -257,12 +257,12 @@ type NLBLoadBalancerSpec struct {
 	DeletionProtection *bool `json:"deletionProtection,omitempty"`
 }
 
-type defaultNLBLoadBalancerSpec struct {
+type DefaultNLBLoadBalancerSpec struct {
 	CrossZoneLoadBalancingEnabled, ProxyProtocol, DeletionProtection *bool
 }
 
 // Default sets default values for any value not specifically set in the NLBLoadBalancerSpec struct
-func (spec *NLBLoadBalancerSpec) Default(def defaultNLBLoadBalancerSpec) {
+func (spec *NLBLoadBalancerSpec) Default(def DefaultNLBLoadBalancerSpec) {
 	spec.ProxyProtocol = boolOrDefault(spec.ProxyProtocol, def.ProxyProtocol)
 	spec.CrossZoneLoadBalancingEnabled = boolOrDefault(spec.CrossZoneLoadBalancingEnabled, def.CrossZoneLoadBalancingEnabled)
 	spec.DeletionProtection = boolOrDefault(spec.DeletionProtection, def.DeletionProtection)
@@ -272,7 +272,7 @@ func (spec *NLBLoadBalancerSpec) Default(def defaultNLBLoadBalancerSpec) {
 func (spec *NLBLoadBalancerSpec) IsDeactivated() bool { return false }
 
 // InitializeNLBLoadBalancerSpec initializes a NLBLoadBalancerSpec struct
-func InitializeNLBLoadBalancerSpec(spec *NLBLoadBalancerSpec, def defaultNLBLoadBalancerSpec) *NLBLoadBalancerSpec {
+func InitializeNLBLoadBalancerSpec(spec *NLBLoadBalancerSpec, def DefaultNLBLoadBalancerSpec) *NLBLoadBalancerSpec {
 	if spec == nil {
 		new := &NLBLoadBalancerSpec{}
 		new.Default(def)
@@ -285,6 +285,12 @@ func InitializeNLBLoadBalancerSpec(spec *NLBLoadBalancerSpec, def defaultNLBLoad
 	}
 	return spec
 }
+
+// ClusterIPServiceSpec configures a ClusterIP Service
+type ClusterIPServiceSpec struct{}
+
+// HeadlessServiceSpec configures a Headless Service
+type HeadlessServiceSpec struct{}
 
 // GrafanaDashboardSpec configures the Grafana Dashboard for the component
 type GrafanaDashboardSpec struct {
