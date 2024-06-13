@@ -1,9 +1,10 @@
-package delpoyment_workload
+package deployment
 
 import (
 	"github.com/3scale-ops/basereconciler/resource"
 	"github.com/3scale-ops/basereconciler/util"
 	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/factory"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/hpa"
@@ -31,6 +32,40 @@ func New(main DeploymentWorkload, canary DeploymentWorkload) ([]resource.Templat
 	// Generate services if the workload implements WithTraffic interface
 	if _, ok := main.(WithTraffic); ok {
 		for _, svct := range main.(WithTraffic).Services() {
+			resources = append(resources,
+				svct.Apply(meta[*corev1.Service](main)).
+					Apply(trafficSelectorToService(main.(WithTraffic), toWithTraffic(canary))),
+			)
+		}
+	}
+
+	// Generate resources to implement the desired publishing strategies
+	if _, ok := main.(WithPublishingStrategies); ok {
+
+		pss, err := main.(WithPublishingStrategies).PublishingStrategies()
+		if err != nil {
+			return nil, err
+		}
+
+		services := []*resource.Template[*corev1.Service]{}
+		for _, svcDescriptor := range pss {
+			switch svcDescriptor.Strategy {
+
+			case saasv1alpha1.SimpleStrategy:
+				// TODO: generate described services
+
+			case saasv1alpha1.Marin3rStrategy:
+				// TODO: generate described services
+				// TODO: generate functions to add sidecar to Deployment
+				// TODO: add https endpoint when needed
+
+				// case saasv1alpha1.GatewayStrategy:
+				// 	// TODO: generate described services
+				// 	// TODO: generate HTTPRoutes
+			}
+		}
+
+		for _, svct := range services {
 			resources = append(resources,
 				svct.Apply(meta[*corev1.Service](main)).
 					Apply(trafficSelectorToService(main.(WithTraffic), toWithTraffic(canary))),

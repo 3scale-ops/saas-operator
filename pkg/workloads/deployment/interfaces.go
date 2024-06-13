@@ -1,9 +1,10 @@
-package delpoyment_workload
+package deployment
 
 import (
 	"github.com/3scale-ops/basereconciler/resource"
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	descriptor "github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/service"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -63,4 +64,12 @@ type DeploymentWorkload interface {
 	WithHorizontalPodAutoscaler
 	WithPodDisruptionBadget
 	Deployment() *resource.Template[*appsv1.Deployment]
+}
+
+type WithPublishingStrategies interface {
+	WithWorkloadMeta
+	WithSelector
+	SendTraffic() bool
+	TrafficSelector() map[string]string
+	PublishingStrategies() ([]service.ServiceDescriptor, error)
 }

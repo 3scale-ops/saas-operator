@@ -1,4 +1,4 @@
-package delpoyment_workload
+package deployment
 
 import (
 	"context"
