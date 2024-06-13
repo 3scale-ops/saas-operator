@@ -18,7 +18,7 @@ spec:
     redis:
       queuesDSN: "redis://system-redis:6379"
     backend:
-      externalEndpoint: http://REPLACE
+      externalEndpoint: https://REPLACE
       internalAPIPassword: {fromSeed: {}}
       internalAPIUser: {fromSeed: {}}
       internalEndpoint: "http://backend-listener-internal"
