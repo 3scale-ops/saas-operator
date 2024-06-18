@@ -1,6 +1,7 @@
 package deployment
 
 import (
+	"github.com/3scale-ops/basereconciler/mutators"
 	"github.com/3scale-ops/basereconciler/resource"
 	"github.com/3scale-ops/basereconciler/util"
 	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
@@ -29,14 +30,17 @@ func New(main DeploymentWorkload, canary DeploymentWorkload) ([]resource.Templat
 		resources = append(resources, workloadResources(canary)...)
 	}
 
+	services := []*resource.Template[*corev1.Service]{}
+
 	// Generate services if the workload implements WithTraffic interface
 	if _, ok := main.(WithTraffic); ok {
-		for _, svct := range main.(WithTraffic).Services() {
-			resources = append(resources,
-				svct.Apply(meta[*corev1.Service](main)).
-					Apply(trafficSelectorToService(main.(WithTraffic), toWithTraffic(canary))),
-			)
-		}
+		services = append(services, main.(WithTraffic).Services()...)
+		// for _, svct := range main.(WithTraffic).Services() {
+		// 	resources = append(resources,
+		// 		svct.Apply(meta[*corev1.Service](main)).
+		// 			Apply(trafficSelectorToService(main.(WithCanary), toWithTraffic(canary))),
+		// 	)
+		// }
 	}
 
 	// Generate resources to implement the desired publishing strategies
@@ -47,14 +51,18 @@ func New(main DeploymentWorkload, canary DeploymentWorkload) ([]resource.Templat
 			return nil, err
 		}
 
-		services := []*resource.Template[*corev1.Service]{}
 		for _, svcDescriptor := range pss {
-			switch svcDescriptor.Strategy {
+			desc := svcDescriptor
+			desc.SetNamePrefix(main.GetKey().Name)
+			switch desc.Strategy {
 
 			case saasv1alpha1.SimpleStrategy:
-				// TODO: generate described services
+				services = append(services,
+					resource.NewTemplateFromObjectFunction(desc.Service).
+						WithMutation(mutators.SetServiceLiveValues()),
+				)
 
-			case saasv1alpha1.Marin3rStrategy:
+				// case saasv1alpha1.Marin3rStrategy:
 				// TODO: generate described services
 				// TODO: generate functions to add sidecar to Deployment
 				// TODO: add https endpoint when needed
@@ -64,13 +72,14 @@ func New(main DeploymentWorkload, canary DeploymentWorkload) ([]resource.Templat
 				// 	// TODO: generate HTTPRoutes
 			}
 		}
+	}
 
-		for _, svct := range services {
-			resources = append(resources,
-				svct.Apply(meta[*corev1.Service](main)).
-					Apply(trafficSelectorToService(main.(WithTraffic), toWithTraffic(canary))),
-			)
-		}
+	// Apply trffice logic (canary yes/no)
+	for _, svct := range services {
+		resources = append(resources,
+			svct.Apply(meta[*corev1.Service](main)).
+				Apply(trafficSelectorToService(main.(WithCanary), toWithTraffic(canary))),
+		)
 	}
 
 	return resources, nil
@@ -142,7 +151,7 @@ func meta[T client.Object](w WithWorkloadMeta) resource.TemplateBuilderFunction[
 	}
 }
 
-func trafficSelectorToService(main WithTraffic, canary WithTraffic) resource.TemplateBuilderFunction[*corev1.Service] {
+func trafficSelectorToService(main WithCanary, canary WithCanary) resource.TemplateBuilderFunction[*corev1.Service] {
 	return func(o client.Object) (*corev1.Service, error) {
 		svc := o.(*corev1.Service)
 		svc.Spec.Selector = trafficSwitcher(main, canary)
@@ -150,7 +159,7 @@ func trafficSelectorToService(main WithTraffic, canary WithTraffic) resource.Tem
 	}
 }
 
-func trafficSwitcher(main WithTraffic, canary WithTraffic) map[string]string {
+func trafficSwitcher(main WithCanary, canary WithCanary) map[string]string {
 
 	// NOTE: due to the fact that services do not yet support set-based selectors, only MatchLabels selectors
 	// can be used. This limits a lot what can be done in terms of deciding where to send traffic, as all
@@ -162,7 +171,7 @@ func trafficSwitcher(main WithTraffic, canary WithTraffic) map[string]string {
 	// There seems to be great demand for set-based selectors for Services but it is not yet implamented:
 	// https://github.com/kubernetes/kubernetes/issues/48528
 	enabledSelectors := []map[string]string{}
-	for _, workload := range []WithTraffic{main, canary} {
+	for _, workload := range []WithCanary{main, canary} {
 		if workload != nil && workload.SendTraffic() {
 			enabledSelectors = append(enabledSelectors, workload.GetSelector())
 		}

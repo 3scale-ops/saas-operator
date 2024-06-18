@@ -63,11 +63,11 @@ type Simple struct {
 	// Classic LB configuration
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	ElasticLoadBalancerConfig *LoadBalancerSpec `json:"classicLoadBalancerConfig,omitempty"`
+	ElasticLoadBalancerConfig *ElasticLoadBalancerSpec `json:"classicLoadBalancerConfig,omitempty"`
 	// NLB configuration
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	NetworkLoadBalancerConfig *NLBLoadBalancerSpec `json:"networkLoadBalancerConfig,omitempty"`
+	NetworkLoadBalancerConfig *NetworkLoadBalancerSpec `json:"networkLoadBalancerConfig,omitempty"`
 }
 
 func (s *Simple) Default() {

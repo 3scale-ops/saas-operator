@@ -16,7 +16,7 @@ func DefaultPublishingStrategy() []service.ServiceDescriptor {
 				EndpointName: "Gateway",
 				Simple: &saasv1alpha1.Simple{
 					ServiceType: util.Pointer(saasv1alpha1.ServiceTypeELB),
-					ElasticLoadBalancerConfig: &saasv1alpha1.LoadBalancerSpec{
+					ElasticLoadBalancerConfig: &saasv1alpha1.ElasticLoadBalancerSpec{
 						ProxyProtocol:                 util.Pointer(true),
 						CrossZoneLoadBalancingEnabled: util.Pointer(true),
 						ConnectionDrainingEnabled:     util.Pointer(true),

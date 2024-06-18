@@ -31,16 +31,6 @@ var (
 		Tag:        util.Pointer("latest"),
 		PullPolicy: (*corev1.PullPolicy)(util.Pointer(string(corev1.PullIfNotPresent))),
 	}
-	apicastDefaultLoadBalancer DefaultLoadBalancerSpec = DefaultLoadBalancerSpec{
-		ProxyProtocol:                 util.Pointer(true),
-		CrossZoneLoadBalancingEnabled: util.Pointer(true),
-		ConnectionDrainingEnabled:     util.Pointer(true),
-		ConnectionDrainingTimeout:     util.Pointer[int32](60),
-		HealthcheckHealthyThreshold:   util.Pointer[int32](2),
-		HealthcheckUnhealthyThreshold: util.Pointer[int32](2),
-		HealthcheckInterval:           util.Pointer[int32](5),
-		HealthcheckTimeout:            util.Pointer[int32](3),
-	}
 	apicastDefaultResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
 		Requests: corev1.ResourceList{
 			corev1.ResourceCPU:    resource.MustParse("500m"),
@@ -178,11 +168,11 @@ type ApicastEnvironmentSpec struct {
 	// DEPRECATED
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	LoadBalancer *LoadBalancerSpec `json:"loadBalancer,omitempty"`
+	LoadBalancer *ElasticLoadBalancerSpec `json:"loadBalancer,omitempty"`
 	// Describes how the services provided by this workload are exposed to its consumers
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	PublishingStrategies PublishingStrategies `json:"punlishingStrategies,omitempty"`
+	PublishingStrategies PublishingStrategies `json:"publishingStrategies,omitempty"`
 	// Describes node affinity scheduling rules for the pod.
 	// +optional
 	NodeAffinity *corev1.NodeAffinity `json:"nodeAffinity,omitempty" protobuf:"bytes,1,opt,name=nodeAffinity"`
@@ -206,7 +196,7 @@ func (spec *ApicastEnvironmentSpec) Default() {
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, apicastDefaultResources)
 	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, apicastDefaultLivenessProbe)
 	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, apicastDefaultReadinessProbe)
-	spec.LoadBalancer = InitializeLoadBalancerSpec(spec.LoadBalancer, apicastDefaultLoadBalancer)
+	spec.LoadBalancer = InitializeElasticLoadBalancerSpec(spec.LoadBalancer, DefaultElasticLoadBalancerSpec)
 	spec.Marin3r = InitializeMarin3rSidecarSpec(spec.Marin3r, apicastDefaultMarin3rSpec)
 	spec.Config.Default()
 }

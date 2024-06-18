@@ -34,7 +34,7 @@ type Generator struct {
 	CanaryStaging        *EnvGenerator
 	Production           EnvGenerator
 	CanaryProduction     *EnvGenerator
-	LoadBalancerSpec     saasv1alpha1.LoadBalancerSpec
+	LoadBalancerSpec     saasv1alpha1.ElasticLoadBalancerSpec
 	GrafanaDashboardSpec saasv1alpha1.GrafanaDashboardSpec
 }
 

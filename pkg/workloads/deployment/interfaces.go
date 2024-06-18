@@ -45,11 +45,17 @@ type WithHorizontalPodAutoscaler interface {
 	HPASpec() *saasv1alpha1.HorizontalPodAutoscalerSpec
 }
 
-type WithTraffic interface {
+type WithCanary interface {
 	WithWorkloadMeta
 	WithSelector
 	SendTraffic() bool
 	TrafficSelector() map[string]string
+}
+
+type WithTraffic interface {
+	WithWorkloadMeta
+	WithSelector
+	WithCanary
 	Services() []*resource.Template[*corev1.Service]
 }
 
@@ -58,18 +64,17 @@ type WithEnvoySidecar interface {
 	EnvoyDynamicConfigurations() []descriptor.EnvoyDynamicConfigDescriptor
 }
 
+type WithPublishingStrategies interface {
+	WithWorkloadMeta
+	WithSelector
+	WithCanary
+	PublishingStrategies() ([]service.ServiceDescriptor, error)
+}
+
 type DeploymentWorkload interface {
 	WithWorkloadMeta
 	WithMonitoring
 	WithHorizontalPodAutoscaler
 	WithPodDisruptionBadget
 	Deployment() *resource.Template[*appsv1.Deployment]
-}
-
-type WithPublishingStrategies interface {
-	WithWorkloadMeta
-	WithSelector
-	SendTraffic() bool
-	TrafficSelector() map[string]string
-	PublishingStrategies() ([]service.ServiceDescriptor, error)
 }

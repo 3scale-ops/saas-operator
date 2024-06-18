@@ -323,7 +323,7 @@ var _ = Describe("Backend controller", func() {
 					backend.Spec.Cron = &saasv1alpha1.CronSpec{
 						Replicas: util.Pointer[int32](3),
 					}
-					backend.Spec.Listener.LoadBalancer = &saasv1alpha1.NLBLoadBalancerSpec{
+					backend.Spec.Listener.LoadBalancer = &saasv1alpha1.NetworkLoadBalancerSpec{
 						CrossZoneLoadBalancingEnabled: util.Pointer(false),
 					}
 					backend.Spec.Config.ExternalSecret.RefreshInterval = &metav1.Duration{Duration: 1 * time.Second}

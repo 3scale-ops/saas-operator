@@ -31,16 +31,6 @@ var (
 		Tag:        util.Pointer("latest"),
 		PullPolicy: (*corev1.PullPolicy)(util.Pointer(string(corev1.PullIfNotPresent))),
 	}
-	autosslDefaultLoadBalancer DefaultLoadBalancerSpec = DefaultLoadBalancerSpec{
-		ProxyProtocol:                 util.Pointer(true),
-		CrossZoneLoadBalancingEnabled: util.Pointer(true),
-		ConnectionDrainingEnabled:     util.Pointer(true),
-		ConnectionDrainingTimeout:     util.Pointer[int32](60),
-		HealthcheckHealthyThreshold:   util.Pointer[int32](2),
-		HealthcheckUnhealthyThreshold: util.Pointer[int32](2),
-		HealthcheckInterval:           util.Pointer[int32](5),
-		HealthcheckTimeout:            util.Pointer[int32](3),
-	}
 	autosslDefaultResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
 		Requests: corev1.ResourceList{
 			corev1.ResourceCPU:    resource.MustParse("75m"),
@@ -110,7 +100,7 @@ type AutoSSLSpec struct {
 	// Configures the AWS load balancer for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	LoadBalancer *LoadBalancerSpec `json:"loadBalancer,omitempty"`
+	LoadBalancer *ElasticLoadBalancerSpec `json:"loadBalancer,omitempty"`
 	// Configures the Grafana Dashboard for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -144,7 +134,7 @@ func (spec *AutoSSLSpec) Default() {
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, autosslDefaultResources)
 	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, autosslDefaultProbe)
 	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, autosslDefaultProbe)
-	spec.LoadBalancer = InitializeLoadBalancerSpec(spec.LoadBalancer, autosslDefaultLoadBalancer)
+	spec.LoadBalancer = InitializeElasticLoadBalancerSpec(spec.LoadBalancer, DefaultElasticLoadBalancerSpec)
 	spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(spec.GrafanaDashboard, autosslDefaultGrafanaDashboard)
 	spec.Config.Default()
 }

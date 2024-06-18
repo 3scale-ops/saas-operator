@@ -45,11 +45,6 @@ var (
 	backendDefaultListenerPDB defaultPodDisruptionBudgetSpec = defaultPodDisruptionBudgetSpec{
 		MaxUnavailable: util.Pointer(intstr.FromInt(1)),
 	}
-	backendDefaultListenerNLBLoadBalancer DefaultNLBLoadBalancerSpec = DefaultNLBLoadBalancerSpec{
-		ProxyProtocol:                 util.Pointer(true),
-		CrossZoneLoadBalancingEnabled: util.Pointer(true),
-		DeletionProtection:            util.Pointer(false),
-	}
 	backendDefaultListenerReplicas  int32                           = 2
 	backendDefaultListenerResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
 		Requests: corev1.ResourceList{
@@ -243,7 +238,7 @@ type ListenerSpec struct {
 	// Configures the AWS Network load balancer for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	LoadBalancer *NLBLoadBalancerSpec `json:"loadBalancer,omitempty"`
+	LoadBalancer *NetworkLoadBalancerSpec `json:"loadBalancer,omitempty"`
 	// Describes node affinity scheduling rules for the pod.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -268,7 +263,7 @@ func (spec *ListenerSpec) Default() {
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, backendDefaultListenerResources)
 	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, backendDefaultListenerLivenessProbe)
 	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, backendDefaultListenerReadinessProbe)
-	spec.LoadBalancer = InitializeNLBLoadBalancerSpec(spec.LoadBalancer, backendDefaultListenerNLBLoadBalancer)
+	spec.LoadBalancer = InitializeNetworkLoadBalancerSpec(spec.LoadBalancer, DefaultNetworkLoadBalancerSpec)
 	spec.Marin3r = InitializeMarin3rSidecarSpec(spec.Marin3r, backendDefaultListenerMarin3rSpec)
 	if spec.Config == nil {
 		spec.Config = &ListenerConfig{}

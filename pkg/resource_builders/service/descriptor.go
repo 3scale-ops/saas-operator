@@ -2,83 +2,86 @@ package service
 
 import (
 	"fmt"
-	"reflect"
+	"strings"
 
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
-	"github.com/imdario/mergo"
-	"github.com/samber/lo"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type ServiceDescriptor struct {
-	saasv1alpha1.PublishingStrategy
 	PortDef corev1.ServicePort
+	saasv1alpha1.PublishingStrategy
+	namePrefix string
 }
 
-type nullTransformer struct {
+func (sd *ServiceDescriptor) SetNamePrefix(prefix string) {
+	sd.namePrefix = prefix
 }
 
-func (t *nullTransformer) Transformer(typ reflect.Type) func(dst, src reflect.Value) error {
-	if typ.Kind() == reflect.Ptr && typ.Elem().Kind() != reflect.Struct {
-		return func(dst, src reflect.Value) error {
-			// DEBUG:
-			// fmt.Printf("\nTYPE %s\n", typ.Elem().Kind())
-			// spew.Printf("\tSRC: %+v\n", src.Interface())
-			// spew.Printf("\tDST: %+v\n", dst.Interface())
-			if dst.CanSet() && !src.IsNil() {
-				// DEBUG:
-				// fmt.Printf(" ---> WRITE\n")
-				dst.Set(src)
-			}
-			return nil
+func (sd *ServiceDescriptor) Service() *corev1.Service {
+	opts := ServiceOptions{}
+
+	strategy := sd.PublishingStrategy.Strategy
+	if strategy == saasv1alpha1.SimpleStrategy || strategy == saasv1alpha1.Marin3rStrategy {
+		var simple *saasv1alpha1.Simple
+		if strategy == saasv1alpha1.SimpleStrategy {
+			simple = sd.PublishingStrategy.Simple
+		} else {
+			simple = sd.PublishingStrategy.Marin3rSidecar.Simple
 		}
+
+		// service name
+		if simple.ServiceNameOverride != nil {
+			opts.Name = *simple.ServiceNameOverride
+		} else {
+			opts.Name = fmt.Sprintf("%s-%s", sd.namePrefix, strings.ToLower(sd.EndpointName))
+		}
+		// service annotations
+		switch *simple.ServiceType {
+		case saasv1alpha1.ServiceTypeNLB:
+			simple.NetworkLoadBalancerConfig = saasv1alpha1.InitializeNetworkLoadBalancerSpec(simple.NetworkLoadBalancerConfig, saasv1alpha1.DefaultNetworkLoadBalancerSpec)
+			opts.Annotations = NLBServiceAnnotations(*simple.NetworkLoadBalancerConfig, simple.ExternalDnsHostnames)
+		case saasv1alpha1.ServiceTypeELB:
+			simple.ElasticLoadBalancerConfig = saasv1alpha1.InitializeElasticLoadBalancerSpec(simple.ElasticLoadBalancerConfig, saasv1alpha1.DefaultElasticLoadBalancerSpec)
+			opts.Annotations = ELBServiceAnnotations(*simple.ElasticLoadBalancerConfig, simple.ExternalDnsHostnames)
+		default:
+			opts.Annotations = map[string]string{}
+		}
+		// service type
+		switch *simple.ServiceType {
+		case saasv1alpha1.ServiceTypeNLB:
+			opts.Type = corev1.ServiceTypeLoadBalancer
+		case saasv1alpha1.ServiceTypeELB:
+			opts.Type = corev1.ServiceTypeLoadBalancer
+		default:
+			opts.Type = corev1.ServiceTypeClusterIP
+		}
+		// service ports
+		opts.Ports = []corev1.ServicePort{sd.PortDef}
 	}
-	return nil
+
+	return opts.Service()
 }
 
-func MergeWithDefaultPublishingStrategy(def []ServiceDescriptor, in saasv1alpha1.PublishingStrategies) ([]ServiceDescriptor, error) {
+type ServiceOptions struct {
+	Name        string
+	Namespace   string
+	Annotations map[string]string
+	Type        corev1.ServiceType
+	Ports       []corev1.ServicePort
+}
 
-	out := make([]ServiceDescriptor, 0, len(def))
-
-	for _, indesc := range in {
-		var defdesc ServiceDescriptor
-		var ok bool
-		var index int
-
-		if defdesc, index, ok = lo.FindIndexOf(def, func(i ServiceDescriptor) bool {
-			return indesc.EndpointName == i.EndpointName
-		}); !ok {
-			return nil, fmt.Errorf("workload has no endpoint named %s", indesc.EndpointName)
-		}
-
-		if err := mergo.Merge(&defdesc.PublishingStrategy, indesc, mergo.WithOverride, mergo.WithTransformers(&nullTransformer{})); err != nil {
-			return nil, err
-		}
-		def[index] = defdesc
+func (opts ServiceOptions) Service() *corev1.Service {
+	return &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        opts.Name,
+			Namespace:   opts.Namespace,
+			Annotations: opts.Annotations,
+		},
+		Spec: corev1.ServiceSpec{
+			Type:  opts.Type,
+			Ports: opts.Ports,
+		},
 	}
-
-	// cleanup collection after merging
-	lo.ForEach(def, func(i ServiceDescriptor, _ int) {
-		switch i.PublishingStrategy.Strategy {
-		case saasv1alpha1.SimpleStrategy:
-			i.Marin3rSidecar = nil
-		case saasv1alpha1.Marin3rStrategy:
-			i.Simple = nil
-		}
-		out = append(out, i)
-	})
-
-	return out, nil
 }
-
-// func (svc *ProvidedService) SvcPort() corev1.ServicePort {
-// 	if svc.Protocol != corev1.ProtocolTCP {
-// 		panic(fmt.Sprintf("unsupported Service protocol %s", svc.Protocol))
-// 	}
-// 	return corev1.ServicePort{
-// 		Name:       svc.Name,
-// 		Port:       svc.Port,
-// 		TargetPort: svc.TargetPort,
-// 		Protocol:   corev1.ProtocolTCP,
-// 	}
-// }

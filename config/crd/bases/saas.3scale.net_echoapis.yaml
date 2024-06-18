@@ -263,6 +263,40 @@ spec:
               marin3r:
                 description: Marin3r configures the Marin3r sidecars for the component
                 properties:
+                  classicLoadBalancerConfig:
+                    description: Classic LB configuration
+                    properties:
+                      connectionDrainingEnabled:
+                        description: Enables/disables connection draining
+                        type: boolean
+                      connectionDrainingTimeout:
+                        description: Sets the timeout for connection draining
+                        format: int32
+                        type: integer
+                      crossZoneLoadBalancingEnabled:
+                        description: Enables/disables cross zone load balancing
+                        type: boolean
+                      healthcheckHealthyThreshold:
+                        description: Sets the healthy threshold for the load balancer
+                        format: int32
+                        type: integer
+                      healthcheckInterval:
+                        description: Sets the interval between health checks
+                        format: int32
+                        type: integer
+                      healthcheckTimeout:
+                        description: Sets the timeout for the health check
+                        format: int32
+                        type: integer
+                      healthcheckUnhealthyThreshold:
+                        description: Sets the unhealthy threshold for the load balancer
+                        format: int32
+                        type: integer
+                      proxyProtocol:
+                        description: Enables/disbles use of proxy protocol in the
+                          load balancer
+                        type: boolean
+                    type: object
                   dynamicConfigs:
                     additionalProperties:
                       maxProperties: 2
@@ -428,11 +462,40 @@ spec:
                   envoyImage:
                     description: The Envoy iamge to use
                     type: string
+                  externalDnsHostnames:
+                    description: ExternalDnsHostnames defines the hostnames that ExternalDNS
+                      should configure records for external consumners to reach the
+                      service Only works with Services of type NLB/ELB
+                    items:
+                      type: string
+                    type: array
                   extraPodAnnotations:
                     additionalProperties:
                       type: string
                     description: Extra annotations to pass the Pod to further configure
                       the sidecar container.
+                    type: object
+                  networkLoadBalancerConfig:
+                    description: NLB configuration
+                    properties:
+                      crossZoneLoadBalancingEnabled:
+                        description: Enables/disables cross zone load balancing
+                        type: boolean
+                      deletionProtection:
+                        description: Deletion protection setting
+                        type: boolean
+                      eipAllocations:
+                        description: The list of optional Elastic IPs allocations
+                        items:
+                          type: string
+                        type: array
+                      loadBalancerName:
+                        description: Optionally specify the load balancer name
+                        type: string
+                      proxyProtocol:
+                        description: Enables/disbles use of proxy protocol in the
+                          load balancer
+                        type: boolean
                     type: object
                   nodeID:
                     description: The NodeID that identifies the Envoy sidecar to the
@@ -457,7 +520,7 @@ spec:
                       type: object
                     type: array
                   resources:
-                    description: Compute Resources required by this container.
+                    description: Compute Resources required by the sidecar container.
                     properties:
                       claims:
                         description: "Claims lists the names of resources, defined
@@ -503,6 +566,14 @@ spec:
                           to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                         type: object
                     type: object
+                  serviceName:
+                    description: ServiceNameOverride allows the user to override the
+                      generated Service name
+                    type: string
+                  serviceType:
+                    description: ServiceType defines the type of k8s Service to use
+                      for exposing the service to its consumers
+                    type: string
                   shtdnmgrExtraLifecycleHooks:
                     description: Extra containers to sync with the shutdown manager
                       upon pod termination

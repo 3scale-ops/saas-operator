@@ -64,12 +64,7 @@ var (
 		SuccessThreshold:    util.Pointer[int32](1),
 		FailureThreshold:    util.Pointer[int32](5),
 	}
-	echoapiDefaultMarin3rSpec     defaultMarin3rSidecarSpec  = defaultMarin3rSidecarSpec{}
-	echoapiDefaultNLBLoadBalancer DefaultNLBLoadBalancerSpec = DefaultNLBLoadBalancerSpec{
-		ProxyProtocol:                 util.Pointer(true),
-		CrossZoneLoadBalancingEnabled: util.Pointer(true),
-		DeletionProtection:            util.Pointer(false),
-	}
+	echoapiDefaultMarin3rSpec defaultMarin3rSidecarSpec = defaultMarin3rSidecarSpec{}
 )
 
 // EchoAPISpec defines the desired state of echoapi
@@ -109,7 +104,7 @@ type EchoAPISpec struct {
 	// Configures the AWS Network load balancer for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	LoadBalancer *NLBLoadBalancerSpec `json:"loadBalancer,omitempty"`
+	LoadBalancer *NetworkLoadBalancerSpec `json:"loadBalancer,omitempty"`
 	// The external endpoint/s for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Endpoint Endpoint `json:"endpoint"`
@@ -132,7 +127,7 @@ func (spec *EchoAPISpec) Default() {
 	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, echoapiDefaultLivenessProbe)
 	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, echoapiDefaultReadinessProbe)
 	spec.Marin3r = InitializeMarin3rSidecarSpec(spec.Marin3r, echoapiDefaultMarin3rSpec)
-	spec.LoadBalancer = InitializeNLBLoadBalancerSpec(spec.LoadBalancer, echoapiDefaultNLBLoadBalancer)
+	spec.LoadBalancer = InitializeNetworkLoadBalancerSpec(spec.LoadBalancer, DefaultNetworkLoadBalancerSpec)
 }
 
 // EchoAPIStatus defines the observed state of EchoAPI

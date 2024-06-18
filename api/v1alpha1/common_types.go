@@ -141,7 +141,6 @@ func (spec *ProbeSpec) Default(def defaultProbeSpec) {
 	spec.FailureThreshold = intOrDefault(spec.FailureThreshold, def.FailureThreshold)
 }
 
-// IsDeactivated true if the field is set with the deactivated value (empty struct)
 func (spec *ProbeSpec) IsDeactivated() bool {
 	return reflect.DeepEqual(spec, &ProbeSpec{})
 }
@@ -161,8 +160,8 @@ func InitializeProbeSpec(spec *ProbeSpec, def defaultProbeSpec) *ProbeSpec {
 	return spec
 }
 
-// LoadBalancerSpec configures the AWS load balancer for the component
-type LoadBalancerSpec struct {
+// ElasticLoadBalancerSpec configures the AWS load balancer for the component
+type ElasticLoadBalancerSpec struct {
 	// Enables/disbles use of proxy protocol in the load balancer
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -197,14 +196,19 @@ type LoadBalancerSpec struct {
 	HealthcheckTimeout *int32 `json:"healthcheckTimeout,omitempty"`
 }
 
-type DefaultLoadBalancerSpec struct {
-	ProxyProtocol, CrossZoneLoadBalancingEnabled, ConnectionDrainingEnabled               *bool
-	ConnectionDrainingTimeout, HealthcheckHealthyThreshold, HealthcheckUnhealthyThreshold *int32
-	HealthcheckInterval, HealthcheckTimeout                                               *int32
+var DefaultElasticLoadBalancerSpec ElasticLoadBalancerSpec = ElasticLoadBalancerSpec{
+	ProxyProtocol:                 util.Pointer(true),
+	CrossZoneLoadBalancingEnabled: util.Pointer(true),
+	ConnectionDrainingEnabled:     util.Pointer(true),
+	ConnectionDrainingTimeout:     util.Pointer[int32](60),
+	HealthcheckHealthyThreshold:   util.Pointer[int32](2),
+	HealthcheckUnhealthyThreshold: util.Pointer[int32](2),
+	HealthcheckInterval:           util.Pointer[int32](5),
+	HealthcheckTimeout:            util.Pointer[int32](3),
 }
 
 // Default sets default values for any value not specifically set in the LoadBalancerSpec struct
-func (spec *LoadBalancerSpec) Default(def DefaultLoadBalancerSpec) {
+func (spec *ElasticLoadBalancerSpec) Default(def ElasticLoadBalancerSpec) {
 	spec.ProxyProtocol = boolOrDefault(spec.ProxyProtocol, def.ProxyProtocol)
 	spec.CrossZoneLoadBalancingEnabled = boolOrDefault(spec.CrossZoneLoadBalancingEnabled, def.CrossZoneLoadBalancingEnabled)
 	spec.ConnectionDrainingEnabled = boolOrDefault(spec.ConnectionDrainingEnabled, def.ConnectionDrainingEnabled)
@@ -215,26 +219,22 @@ func (spec *LoadBalancerSpec) Default(def DefaultLoadBalancerSpec) {
 	spec.HealthcheckTimeout = intOrDefault(spec.HealthcheckTimeout, def.HealthcheckTimeout)
 }
 
-// IsDeactivated true if the field is set with the deactivated value (empty struct)
-func (spec *LoadBalancerSpec) IsDeactivated() bool { return false }
-
-// InitializeLoadBalancerSpec initializes a LoadBalancerSpec struct
-func InitializeLoadBalancerSpec(spec *LoadBalancerSpec, def DefaultLoadBalancerSpec) *LoadBalancerSpec {
+// InitializeElasticLoadBalancerSpec initializes a LoadBalancerSpec struct
+func InitializeElasticLoadBalancerSpec(spec *ElasticLoadBalancerSpec, def ElasticLoadBalancerSpec) *ElasticLoadBalancerSpec {
 	if spec == nil {
-		new := &LoadBalancerSpec{}
+		new := &ElasticLoadBalancerSpec{}
 		new.Default(def)
 		return new
-	}
-	if !spec.IsDeactivated() {
+
+	} else {
 		copy := spec.DeepCopy()
 		copy.Default(def)
 		return copy
 	}
-	return spec
 }
 
-// NLBLoadBalancerSpec configures the AWS NLB load balancer for the component
-type NLBLoadBalancerSpec struct {
+// NetworkLoadBalancerSpec configures the AWS NLB load balancer for the component
+type NetworkLoadBalancerSpec struct {
 	// Enables/disbles use of proxy protocol in the load balancer
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -257,33 +257,31 @@ type NLBLoadBalancerSpec struct {
 	DeletionProtection *bool `json:"deletionProtection,omitempty"`
 }
 
-type DefaultNLBLoadBalancerSpec struct {
-	CrossZoneLoadBalancingEnabled, ProxyProtocol, DeletionProtection *bool
+var DefaultNetworkLoadBalancerSpec NetworkLoadBalancerSpec = NetworkLoadBalancerSpec{
+	ProxyProtocol:                 util.Pointer(true),
+	CrossZoneLoadBalancingEnabled: util.Pointer(true),
+	DeletionProtection:            util.Pointer(false),
 }
 
 // Default sets default values for any value not specifically set in the NLBLoadBalancerSpec struct
-func (spec *NLBLoadBalancerSpec) Default(def DefaultNLBLoadBalancerSpec) {
+func (spec *NetworkLoadBalancerSpec) Default(def NetworkLoadBalancerSpec) {
 	spec.ProxyProtocol = boolOrDefault(spec.ProxyProtocol, def.ProxyProtocol)
 	spec.CrossZoneLoadBalancingEnabled = boolOrDefault(spec.CrossZoneLoadBalancingEnabled, def.CrossZoneLoadBalancingEnabled)
 	spec.DeletionProtection = boolOrDefault(spec.DeletionProtection, def.DeletionProtection)
 }
 
-// IsDeactivated true if the field is set with the deactivated value (empty struct)
-func (spec *NLBLoadBalancerSpec) IsDeactivated() bool { return false }
-
-// InitializeNLBLoadBalancerSpec initializes a NLBLoadBalancerSpec struct
-func InitializeNLBLoadBalancerSpec(spec *NLBLoadBalancerSpec, def DefaultNLBLoadBalancerSpec) *NLBLoadBalancerSpec {
+// InitializeNetworkLoadBalancerSpec initializes a NLBLoadBalancerSpec struct
+func InitializeNetworkLoadBalancerSpec(spec *NetworkLoadBalancerSpec, def NetworkLoadBalancerSpec) *NetworkLoadBalancerSpec {
 	if spec == nil {
-		new := &NLBLoadBalancerSpec{}
+		new := &NetworkLoadBalancerSpec{}
 		new.Default(def)
 		return new
-	}
-	if !spec.IsDeactivated() {
+
+	} else {
 		copy := spec.DeepCopy()
 		copy.Default(def)
 		return copy
 	}
-	return spec
 }
 
 // ClusterIPServiceSpec configures a ClusterIP Service
