@@ -23,7 +23,7 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Changes the publishing strategy",
+			name: "Merge: changes the publishing strategy",
 			args: args{
 				def: []ServiceDescriptor{
 					{
@@ -53,7 +53,8 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 					},
 				},
 				in: saasv1alpha1.PublishingStrategies{
-					{
+					Mode: util.Pointer(saasv1alpha1.PublishingStrategiesReconcileModeMerge),
+					Endpoints: []saasv1alpha1.PublishingStrategy{{
 						Strategy:     saasv1alpha1.Marin3rSidecarStrategy,
 						EndpointName: "Gateway",
 						Marin3rSidecar: &saasv1alpha1.Marin3rSidecarSpec{
@@ -72,7 +73,7 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 							},
 							NodeID: util.Pointer("test"),
 						},
-					},
+					}},
 				},
 			},
 			want: []ServiceDescriptor{
@@ -108,7 +109,7 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Modifies some parameters of the publishing strategy",
+			name: "Merge: modifies some parameters of the publishing strategy",
 			args: args{
 				def: []ServiceDescriptor{
 					{
@@ -138,7 +139,8 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 					},
 				},
 				in: saasv1alpha1.PublishingStrategies{
-					{
+					Mode: util.Pointer(saasv1alpha1.PublishingStrategiesReconcileModeMerge),
+					Endpoints: []saasv1alpha1.PublishingStrategy{{
 						Strategy:     saasv1alpha1.SimpleStrategy,
 						EndpointName: "Gateway",
 						Simple: &saasv1alpha1.Simple{
@@ -148,7 +150,7 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 								HealthcheckTimeout: util.Pointer[int32](10),
 							},
 						},
-					},
+					}},
 				},
 			},
 			want: []ServiceDescriptor{
@@ -181,12 +183,109 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Undefined endpoint error",
+			name: "Replace: replaces the whole list of endpoints",
+			args: args{
+				def: []ServiceDescriptor{
+					{
+						PublishingStrategy: saasv1alpha1.PublishingStrategy{
+							Strategy:     saasv1alpha1.SimpleStrategy,
+							EndpointName: "Gateway",
+							Simple: &saasv1alpha1.Simple{
+								ServiceType: util.Pointer(saasv1alpha1.ServiceTypeELB),
+								ElasticLoadBalancerConfig: &saasv1alpha1.ElasticLoadBalancerSpec{
+									ProxyProtocol:                 util.Pointer(true),
+									CrossZoneLoadBalancingEnabled: util.Pointer(true),
+									ConnectionDrainingEnabled:     util.Pointer(true),
+									ConnectionDrainingTimeout:     util.Pointer[int32](60),
+									HealthcheckHealthyThreshold:   util.Pointer[int32](2),
+									HealthcheckUnhealthyThreshold: util.Pointer[int32](2),
+									HealthcheckInterval:           util.Pointer[int32](5),
+									HealthcheckTimeout:            util.Pointer[int32](3),
+								},
+							},
+						},
+						PortDefinition: corev1.ServicePort{
+							Name:       "gateway",
+							Protocol:   corev1.ProtocolTCP,
+							Port:       80,
+							TargetPort: intstr.FromString("gateway"),
+						},
+					},
+				},
+				in: saasv1alpha1.PublishingStrategies{
+					Mode: util.Pointer(saasv1alpha1.PublishingStrategiesReconcileModeReplace),
+					Endpoints: []saasv1alpha1.PublishingStrategy{
+						{
+							Strategy:     saasv1alpha1.SimpleStrategy,
+							EndpointName: "Gateway",
+							Simple: &saasv1alpha1.Simple{
+								ServiceType: util.Pointer(saasv1alpha1.ServiceTypeELB),
+							},
+						},
+						{
+							Strategy:       saasv1alpha1.Marin3rSidecarStrategy,
+							EndpointName:   "Gateway",
+							Marin3rSidecar: &saasv1alpha1.Marin3rSidecarSpec{},
+						},
+					},
+				},
+			},
+			want: []ServiceDescriptor{
+				{
+					PublishingStrategy: saasv1alpha1.PublishingStrategy{
+						Strategy:     saasv1alpha1.SimpleStrategy,
+						EndpointName: "Gateway",
+						Simple: &saasv1alpha1.Simple{
+							ServiceType: util.Pointer(saasv1alpha1.ServiceTypeELB),
+						},
+					},
+					PortDefinition: corev1.ServicePort{
+						Name:       "gateway",
+						Protocol:   corev1.ProtocolTCP,
+						Port:       80,
+						TargetPort: intstr.FromString("gateway"),
+					},
+				},
+				{
+					PublishingStrategy: saasv1alpha1.PublishingStrategy{
+						Strategy:       saasv1alpha1.Marin3rSidecarStrategy,
+						EndpointName:   "Gateway",
+						Marin3rSidecar: &saasv1alpha1.Marin3rSidecarSpec{},
+					},
+					PortDefinition: corev1.ServicePort{
+						Name:       "gateway",
+						Protocol:   corev1.ProtocolTCP,
+						Port:       80,
+						TargetPort: intstr.FromString("gateway"),
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Merge: undefined endpoint error",
 			args: args{
 				def: []ServiceDescriptor{
 					{PublishingStrategy: saasv1alpha1.PublishingStrategy{EndpointName: "Gateway"}},
 				},
-				in: saasv1alpha1.PublishingStrategies{{EndpointName: "Other"}},
+				in: saasv1alpha1.PublishingStrategies{
+					Mode:      util.Pointer(saasv1alpha1.PublishingStrategiesReconcileModeMerge),
+					Endpoints: []saasv1alpha1.PublishingStrategy{{EndpointName: "Other"}},
+				},
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "Replace: undefined endpoint error",
+			args: args{
+				def: []ServiceDescriptor{
+					{PublishingStrategy: saasv1alpha1.PublishingStrategy{EndpointName: "Gateway"}},
+				},
+				in: saasv1alpha1.PublishingStrategies{
+					Mode:      util.Pointer(saasv1alpha1.PublishingStrategiesReconcileModeReplace),
+					Endpoints: []saasv1alpha1.PublishingStrategy{{EndpointName: "Other"}},
+				},
 			},
 			want:    nil,
 			wantErr: true,

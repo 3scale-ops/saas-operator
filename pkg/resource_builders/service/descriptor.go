@@ -12,14 +12,9 @@ import (
 type ServiceDescriptor struct {
 	PortDefinition corev1.ServicePort
 	saasv1alpha1.PublishingStrategy
-	namePrefix string
 }
 
-func (sd *ServiceDescriptor) SetNamePrefix(prefix string) {
-	sd.namePrefix = prefix
-}
-
-func (sd *ServiceDescriptor) Service() *corev1.Service {
+func (sd *ServiceDescriptor) Service(prefix, suffix string) *corev1.Service {
 	opts := ServiceOptions{}
 
 	strategy := sd.PublishingStrategy.Strategy
@@ -38,18 +33,18 @@ func (sd *ServiceDescriptor) Service() *corev1.Service {
 
 		case saasv1alpha1.ServiceTypeClusterIP:
 			opts.Type = corev1.ServiceTypeClusterIP
-			opts.Name = fmt.Sprintf("%s-%s-clusterip", sd.namePrefix, strings.ToLower(sd.EndpointName))
+			opts.Name = fmt.Sprintf("%s-%s-%s", prefix, strings.ToLower(sd.EndpointName), suffix)
 			opts.Annotations = map[string]string{}
 
 		case saasv1alpha1.ServiceTypeELB:
 			opts.Type = corev1.ServiceTypeLoadBalancer
-			opts.Name = fmt.Sprintf("%s-%s-elb", sd.namePrefix, strings.ToLower(sd.EndpointName))
+			opts.Name = fmt.Sprintf("%s-%s-%s-elb", prefix, strings.ToLower(sd.EndpointName), suffix)
 			spec.ElasticLoadBalancerConfig = saasv1alpha1.InitializeElasticLoadBalancerSpec(spec.ElasticLoadBalancerConfig, saasv1alpha1.DefaultElasticLoadBalancerSpec)
 			opts.Annotations = ELBServiceAnnotations(*spec.ElasticLoadBalancerConfig, spec.ExternalDnsHostnames)
 
 		case saasv1alpha1.ServiceTypeNLB:
 			opts.Type = corev1.ServiceTypeLoadBalancer
-			opts.Name = fmt.Sprintf("%s-%s-nlb", sd.namePrefix, strings.ToLower(sd.EndpointName))
+			opts.Name = fmt.Sprintf("%s-%s-%s-nlb", prefix, strings.ToLower(sd.EndpointName), suffix)
 			spec.NetworkLoadBalancerConfig = saasv1alpha1.InitializeNetworkLoadBalancerSpec(spec.NetworkLoadBalancerConfig, saasv1alpha1.DefaultNetworkLoadBalancerSpec)
 			opts.Annotations = NLBServiceAnnotations(*spec.NetworkLoadBalancerConfig, spec.ExternalDnsHostnames)
 		}

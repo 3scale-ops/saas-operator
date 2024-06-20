@@ -11,87 +11,94 @@ spec:
       threescalePortalEndpoint: "http://example.com"
       logLevel: "debug"
     publishingStrategies:
-      - endpoint: Gateway
-        strategy: Marin3rSidecar
-        marin3rSidecar:
-          externalDnsHostnames:
-            - staging.gw.example.com
-            - staging.apicast.example.com
-          serviceType: ELB
-          servicePorts:
-            - name: gateway-http
-              port: 80
-              targetPort: gateway-http
-            - name: gateway-https
-              port: 443
-              targetPort: gateway-https
-          ports:
-            - name: gateway-http
-              port: 38080
-            - name: gateway-https
-              port: 38443
-            - name: envoy-metrics
-              port: 9901
-          shtdnmgrExtraLifecycleHooks:
-            - apicast
-          shtdnmgrPort: 8091
-          dynamicConfigs:
-            gateway_cluster:
-              cluster:
-                host: 127.0.0.1
-                port: 8080
-            http:
-              listenerHttp:
+      mode: Replace
+      endpoints:
+        - name: Gateway
+          strategy: Simple
+          simple:
+            serviceName: apicast-staging
+            serviceType: NLB
+        - name: Gateway
+          strategy: Marin3rSidecar
+          marin3rSidecar:
+            externalDnsHostnames:
+              - staging.gw.example.com
+              - staging.apicast.example.com
+            serviceType: ELB
+            servicePorts:
+              - name: gateway-http
+                port: 80
+                targetPort: gateway-http
+              - name: gateway-https
+                port: 443
+                targetPort: gateway-https
+            ports:
+              - name: gateway-http
                 port: 38080
-                rateLimitOptions:
-                  domain: apicast_staging
-                  rateLimitCluster: limitador_cluster
-                  timeout: 10ms
-                routeConfigName: router
-            https:
-              listenerHttp:
-                certificateSecretName: stg-saas-wildcard-apicast-staging
+              - name: gateway-https
                 port: 38443
-                rateLimitOptions:
-                  domain: apicast_staging
-                  rateLimitCluster: limitador_cluster
-                  timeout: 10ms
-                routeConfigName: router
-            limitador_cluster:
-              cluster:
-                host: limitador-cluster.limitador.svc.cluster.local
-                isHttp2: true
-                port: 8081
-            router:
-              routeConfiguration:
-                virtualHosts:
-                  - domains:
-                      - "*"
-                    name: gateway
-                    rate_limits:
-                      - actions:
-                          - request_headers:
-                              descriptor_key: per_hostname_per_second_burst
-                              header_name: ":authority"
-                      - actions:
-                          - request_headers:
-                              descriptor_key: per_hostname_daily_total
-                              header_name: ":authority"
-                    routes:
-                      - match:
-                          prefix: /
-                        route:
-                          cluster: gateway_cluster
-                          timeout: 30s
-            runtime:
+              - name: envoy-metrics
+                port: 9901
+            shtdnmgrExtraLifecycleHooks:
+              - apicast
+            shtdnmgrPort: 8091
+            dynamicConfigs:
+              gateway_cluster:
+                cluster:
+                  host: 127.0.0.1
+                  port: 8080
+              http:
+                listenerHttp:
+                  port: 38080
+                  rateLimitOptions:
+                    domain: apicast_staging
+                    rateLimitCluster: limitador_cluster
+                    timeout: 10ms
+                  routeConfigName: router
+              https:
+                listenerHttp:
+                  certificateSecretName: stg-saas-wildcard-apicast-staging
+                  port: 38443
+                  rateLimitOptions:
+                    domain: apicast_staging
+                    rateLimitCluster: limitador_cluster
+                    timeout: 10ms
+                  routeConfigName: router
+              limitador_cluster:
+                cluster:
+                  host: limitador-cluster.limitador.svc.cluster.local
+                  isHttp2: true
+                  port: 8081
+              router:
+                routeConfiguration:
+                  virtualHosts:
+                    - domains:
+                        - "*"
+                      name: gateway
+                      rate_limits:
+                        - actions:
+                            - request_headers:
+                                descriptor_key: per_hostname_per_second_burst
+                                header_name: ":authority"
+                        - actions:
+                            - request_headers:
+                                descriptor_key: per_hostname_daily_total
+                                header_name: ":authority"
+                      routes:
+                        - match:
+                            prefix: /
+                          route:
+                            cluster: gateway_cluster
+                            timeout: 30s
               runtime:
-                listenerNames:
-                  - http
-                  - https
-      - endpoint: Management
-        strategy: Simple
-        simple:
-          serviceType: ClusterIP
+                runtime:
+                  listenerNames:
+                    - http
+                    - https
+        - name: Management
+          strategy: Simple
+          simple:
+            serviceType: ClusterIP
   production:
     image:
       tag: v0.1.0
@@ -100,84 +107,85 @@ spec:
       threescalePortalEndpoint: "http://example.com"
       logLevel: "debug"
     publishingStrategies:
-      - endpoint: Gateway
-        strategy: Marin3rSidecar
-        marin3rSidecar:
-          externalDnsHostnames:
-            - production.gw.example.com
-            - production.apicast.example.com
-          serviceType: ELB
-          servicePorts:
-            - name: gateway-http
-              port: 80
-              targetPort: gateway-http
-            - name: gateway-https
-              port: 443
-              targetPort: gateway-https
-          ports:
-            - name: gateway-http
-              port: 38080
-            - name: gateway-https
-              port: 38443
-            - name: envoy-metrics
-              port: 9901
-          shtdnmgrExtraLifecycleHooks:
-            - apicast
-          shtdnmgrPort: 8091
-          dynamicConfigs:
-            gateway_cluster:
-              cluster:
-                host: 127.0.0.1
-                port: 8080
-            http:
-              listenerHttp:
+      endpoints:
+        - name: Gateway
+          strategy: Marin3rSidecar
+          marin3rSidecar:
+            externalDnsHostnames:
+              - production.gw.example.com
+              - production.apicast.example.com
+            serviceType: ELB
+            servicePorts:
+              - name: gateway-http
+                port: 80
+                targetPort: gateway-http
+              - name: gateway-https
+                port: 443
+                targetPort: gateway-https
+            ports:
+              - name: gateway-http
                 port: 38080
-                rateLimitOptions:
-                  domain: apicast_production
-                  rateLimitCluster: limitador_cluster
-                  timeout: 10ms
-                routeConfigName: router
-            https:
-              listenerHttp:
-                certificateSecretName: stg-saas-wildcard-apicast-production
+              - name: gateway-https
                 port: 38443
-                rateLimitOptions:
-                  domain: apicast_production
-                  rateLimitCluster: limitador_cluster
-                  timeout: 10ms
-                routeConfigName: router
-            limitador_cluster:
-              cluster:
-                host: limitador-cluster.limitador.svc.cluster.local
-                isHttp2: true
-                port: 8081
-            router:
-              routeConfiguration:
-                virtualHosts:
-                  - domains:
-                      - "*"
-                    name: gateway
-                    rate_limits:
-                      - actions:
-                          - request_headers:
-                              descriptor_key: per_hostname_per_second_burst
-                              header_name: ":authority"
-                      - actions:
-                          - request_headers:
-                              descriptor_key: per_hostname_daily_total
-                              header_name: ":authority"
-                    routes:
-                      - match:
-                          prefix: /
-                        route:
-                          cluster: gateway_cluster
-                          timeout: 30s
-            runtime:
+              - name: envoy-metrics
+                port: 9901
+            shtdnmgrExtraLifecycleHooks:
+              - apicast
+            shtdnmgrPort: 8091
+            dynamicConfigs:
+              gateway_cluster:
+                cluster:
+                  host: 127.0.0.1
+                  port: 8080
+              http:
+                listenerHttp:
+                  port: 38080
+                  rateLimitOptions:
+                    domain: apicast_production
+                    rateLimitCluster: limitador_cluster
+                    timeout: 10ms
+                  routeConfigName: router
+              https:
+                listenerHttp:
+                  certificateSecretName: stg-saas-wildcard-apicast-production
+                  port: 38443
+                  rateLimitOptions:
+                    domain: apicast_production
+                    rateLimitCluster: limitador_cluster
+                    timeout: 10ms
+                  routeConfigName: router
+              limitador_cluster:
+                cluster:
+                  host: limitador-cluster.limitador.svc.cluster.local
+                  isHttp2: true
+                  port: 8081
+              router:
+                routeConfiguration:
+                  virtualHosts:
+                    - domains:
+                        - "*"
+                      name: gateway
+                      rate_limits:
+                        - actions:
+                            - request_headers:
+                                descriptor_key: per_hostname_per_second_burst
+                                header_name: ":authority"
+                        - actions:
+                            - request_headers:
+                                descriptor_key: per_hostname_daily_total
+                                header_name: ":authority"
+                      routes:
+                        - match:
+                            prefix: /
+                          route:
+                            cluster: gateway_cluster
+                            timeout: 30s
               runtime:
-                listenerNames:
-                  - http
-                  - https
-      - endpoint: Management
-        strategy: Simple
-        simple:
-          serviceType: ClusterIP
+                runtime:
+                  listenerNames:
+                    - http
+                    - https
+        - name: Management
+          strategy: Simple
+          simple:
+            serviceType: ClusterIP

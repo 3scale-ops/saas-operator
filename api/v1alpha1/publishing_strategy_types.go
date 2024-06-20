@@ -11,7 +11,26 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
-type PublishingStrategies []PublishingStrategy
+type PublishingStrategiesReconcileMode string
+
+var (
+	PublishingStrategiesReconcileModeMerge   PublishingStrategiesReconcileMode = "Merge"
+	PublishingStrategiesReconcileModeReplace PublishingStrategiesReconcileMode = "Replace"
+)
+
+type PublishingStrategies struct {
+	// PublishingStrategiesReconcileMode specifies if the list of strategies
+	// should be merged with the defautls or replace them entirely. Allowed values
+	// are "Merge" or "Replace". "Replace" strategy should be used to enable 2 strategies
+	// at the same time for a single endpoint.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Mode *PublishingStrategiesReconcileMode `json:"mode,omitempty"`
+	// Endpoints holds the list of publishing strategies for each workload endpoint.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Endpoints []PublishingStrategy `json:"endpoints,omitempty"`
+}
 
 type Strategy string
 
@@ -26,7 +45,7 @@ type PublishingStrategy struct {
 	Strategy Strategy `json:"strategy"`
 	// EndpointName defines the endpoint affected by this publishing strategy
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	EndpointName string `json:"endpoint"`
+	EndpointName string `json:"name"`
 	// Simple holds configuration for the Simple publishing strategy
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional

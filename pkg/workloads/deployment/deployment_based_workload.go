@@ -45,12 +45,11 @@ func New(main DeploymentWorkload, canary DeploymentWorkload) ([]resource.Templat
 
 		for _, svcDescriptor := range pss {
 			desc := svcDescriptor
-			desc.SetNamePrefix(main.GetKey().Name)
 			switch desc.Strategy {
 
 			case saasv1alpha1.SimpleStrategy:
 				services = append(services,
-					resource.NewTemplateFromObjectFunction(desc.Service).
+					resource.NewTemplateFromObjectFunction(func() *corev1.Service { return desc.Service(main.GetKey().Name, "svc") }).
 						WithMutation(mutators.SetServiceLiveValues()),
 				)
 
@@ -59,7 +58,7 @@ func New(main DeploymentWorkload, canary DeploymentWorkload) ([]resource.Templat
 					return nil, fmt.Errorf("Marin3rSidecarSpec is missing, can't implement strategy without it")
 				}
 				services = append(services,
-					resource.NewTemplateFromObjectFunction(desc.Service).
+					resource.NewTemplateFromObjectFunction(func() *corev1.Service { return desc.Service(main.GetKey().Name, "marin3r") }).
 						WithMutation(mutators.SetServiceLiveValues()),
 				)
 
