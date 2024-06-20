@@ -14,25 +14,13 @@ func DefaultPublishingStrategy() []service.ServiceDescriptor {
 			PublishingStrategy: saasv1alpha1.PublishingStrategy{
 				Strategy:     saasv1alpha1.SimpleStrategy,
 				EndpointName: "Gateway",
-				Simple: &saasv1alpha1.Simple{
-					ServiceType: util.Pointer(saasv1alpha1.ServiceTypeELB),
-					ElasticLoadBalancerConfig: &saasv1alpha1.ElasticLoadBalancerSpec{
-						ProxyProtocol:                 util.Pointer(true),
-						CrossZoneLoadBalancingEnabled: util.Pointer(true),
-						ConnectionDrainingEnabled:     util.Pointer(true),
-						ConnectionDrainingTimeout:     util.Pointer[int32](60),
-						HealthcheckHealthyThreshold:   util.Pointer[int32](2),
-						HealthcheckUnhealthyThreshold: util.Pointer[int32](2),
-						HealthcheckInterval:           util.Pointer[int32](5),
-						HealthcheckTimeout:            util.Pointer[int32](3),
-					},
-				},
+				Simple:       &saasv1alpha1.Simple{ServiceType: util.Pointer(saasv1alpha1.ServiceTypeELB)},
 			},
-			PortDef: corev1.ServicePort{
-				Name:       "gateway-http",
+			PortDefinition: corev1.ServicePort{
+				Name:       "gateway",
 				Protocol:   corev1.ProtocolTCP,
 				Port:       80,
-				TargetPort: intstr.FromString("gateway-http"),
+				TargetPort: intstr.FromString("gateway"),
 			},
 		},
 		{
@@ -43,7 +31,7 @@ func DefaultPublishingStrategy() []service.ServiceDescriptor {
 					ServiceType: util.Pointer(saasv1alpha1.ServiceTypeClusterIP),
 				},
 			},
-			PortDef: corev1.ServicePort{
+			PortDefinition: corev1.ServicePort{
 				Name:       "management",
 				Protocol:   corev1.ProtocolTCP,
 				Port:       80,

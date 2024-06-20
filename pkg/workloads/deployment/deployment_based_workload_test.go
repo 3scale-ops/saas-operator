@@ -13,6 +13,7 @@ import (
 	envoy_serializer "github.com/3scale-ops/marin3r/pkg/envoy/serializer"
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	descriptor "github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/service"
 	"github.com/google/go-cmp/cmp"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -38,7 +39,7 @@ type TestWorkloadGenerator struct {
 
 var _ DeploymentWorkload = &TestWorkloadGenerator{}
 var _ WithTraffic = &TestWorkloadGenerator{}
-var _ WithEnvoySidecar = &TestWorkloadGenerator{}
+var _ WithMarin3rSidecar = &TestWorkloadGenerator{}
 
 func (gen *TestWorkloadGenerator) Deployment() *resource.Template[*appsv1.Deployment] {
 	return &resource.Template[*appsv1.Deployment]{
@@ -581,7 +582,7 @@ func Test_trafficSwitcher(t *testing.T) {
 
 func Test_applyNodeIdToEnvoyConfig(t *testing.T) {
 	type args struct {
-		w WithWorkloadMeta
+		sd service.ServiceDescriptor
 	}
 	tests := []struct {
 		name     string
@@ -591,26 +592,49 @@ func Test_applyNodeIdToEnvoyConfig(t *testing.T) {
 	}{
 		{
 			name: "Adds the nodeID",
-			template: resource.NewTemplate[*marin3rv1alpha1.EnvoyConfig](
+			template: resource.NewTemplate(
 				func(client.Object) (*marin3rv1alpha1.EnvoyConfig, error) {
 					return &marin3rv1alpha1.EnvoyConfig{}, nil
 				},
 			),
 			args: args{
-				w: &TestWorkloadGenerator{
-					TName: "id",
+				sd: service.ServiceDescriptor{
+					PortDefinition: corev1.ServicePort{},
+					PublishingStrategy: saasv1alpha1.PublishingStrategy{
+						Marin3rSidecar: &saasv1alpha1.Marin3rSidecarSpec{
+							NodeID: util.Pointer("aaaa"),
+						},
+					},
 				},
 			},
 			want: &marin3rv1alpha1.EnvoyConfig{
-				Spec: marin3rv1alpha1.EnvoyConfigSpec{
-					NodeID: "id",
+				Spec: marin3rv1alpha1.EnvoyConfigSpec{NodeID: "aaaa"},
+			},
+		},
+		{
+			name: "Adds the resource name as the nodeID when unset",
+			template: resource.NewTemplate(
+				func(client.Object) (*marin3rv1alpha1.EnvoyConfig, error) {
+					return &marin3rv1alpha1.EnvoyConfig{ObjectMeta: metav1.ObjectMeta{Name: "bbbb"}}, nil
 				},
+			),
+			args: args{
+				sd: service.ServiceDescriptor{
+					PortDefinition: corev1.ServicePort{},
+					PublishingStrategy: saasv1alpha1.PublishingStrategy{
+						Marin3rSidecar: &saasv1alpha1.Marin3rSidecarSpec{},
+					},
+				},
+			},
+			want: &marin3rv1alpha1.EnvoyConfig{
+				ObjectMeta: metav1.ObjectMeta{Name: "bbbb"},
+				Spec:       marin3rv1alpha1.EnvoyConfigSpec{NodeID: "bbbb"},
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, _ := tt.template.Apply(nodeIdToEnvoyConfig(tt.args.w)).Build(context.TODO(), nil, nil)
+			got, _ := tt.template.Apply(nodeIdToEnvoyConfig(tt.args.sd)).Build(context.TODO(), nil, nil)
 			if diff := cmp.Diff(got, tt.want); len(diff) > 0 {
 				t.Errorf("applyNodeIdToEnvoyConfig() got diff %v", diff)
 			}
@@ -656,6 +680,73 @@ func Test_toWithTraffic(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := toWithTraffic(tt.args.w); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("toWithTraffic() = %+v, want %+v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_marin3rSidecarToDeployment(t *testing.T) {
+	type args struct {
+		sd service.ServiceDescriptor
+	}
+	tests := []struct {
+		name     string
+		template *resource.Template[*appsv1.Deployment]
+		args     args
+		want     *appsv1.Deployment
+	}{
+		{
+			name: "Adds the marin3r annotations for sidecar injection",
+			template: resource.NewTemplateFromObjectFunction(
+				func() *appsv1.Deployment {
+					return &appsv1.Deployment{
+						ObjectMeta: metav1.ObjectMeta{Name: "test"},
+						Spec: appsv1.DeploymentSpec{
+							Template: corev1.PodTemplateSpec{
+								ObjectMeta: metav1.ObjectMeta{},
+							},
+						},
+					}
+				},
+			),
+			args: args{
+				sd: service.ServiceDescriptor{
+					PublishingStrategy: saasv1alpha1.PublishingStrategy{
+						Strategy:     saasv1alpha1.Marin3rSidecarStrategy,
+						EndpointName: "Endpoint",
+						Marin3rSidecar: &saasv1alpha1.Marin3rSidecarSpec{
+							Ports:                              []saasv1alpha1.SidecarPort{{Name: "port", Port: 8888}},
+							ShutdownManagerExtraLifecycleHooks: []string{"container"},
+						},
+					},
+				},
+			},
+			want: &appsv1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{Name: "test"},
+				Spec: appsv1.DeploymentSpec{
+					Template: corev1.PodTemplateSpec{
+						ObjectMeta: metav1.ObjectMeta{
+							Labels: map[string]string{
+								"marin3r.3scale.net/status": "enabled",
+							},
+							Annotations: map[string]string{
+								"marin3r.3scale.net/node-id":                                "test",
+								"marin3r.3scale.net/ports":                                  "port:8888",
+								"marin3r.3scale.net/shutdown-manager.enabled":               "true",
+								"marin3r.3scale.net/shutdown-manager.extra-lifecycle-hooks": "container",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, _ := tt.template.Apply(marin3rSidecarToDeployment(tt.args.sd)).Build(context.TODO(), nil, nil)
+			if diff := cmp.Diff(got, tt.want); len(diff) > 0 {
+				t.Errorf("marin3rSidecarToDeployment() got diff %v", diff)
 			}
 		})
 	}

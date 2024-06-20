@@ -33,7 +33,7 @@ var _ deployment_workload.DeploymentWorkload = &Generator{}
 var _ deployment_workload.WithTraffic = &Generator{}
 
 // Validate that Generator implements deployment_workload.WithEnvoySidecar interface
-var _ deployment_workload.WithEnvoySidecar = &Generator{}
+var _ deployment_workload.WithMarin3rSidecar = &Generator{}
 
 // NewGenerator returns a new Options struct
 func NewGenerator(instance, namespace string, spec saasv1alpha1.EchoAPISpec) Generator {

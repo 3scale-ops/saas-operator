@@ -44,7 +44,7 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 								},
 							},
 						},
-						PortDef: corev1.ServicePort{
+						PortDefinition: corev1.ServicePort{
 							Name:       "gateway-http",
 							Protocol:   corev1.ProtocolTCP,
 							Port:       80,
@@ -54,7 +54,7 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 				},
 				in: saasv1alpha1.PublishingStrategies{
 					{
-						Strategy:     saasv1alpha1.Marin3rStrategy,
+						Strategy:     saasv1alpha1.Marin3rSidecarStrategy,
 						EndpointName: "Gateway",
 						Marin3rSidecar: &saasv1alpha1.Marin3rSidecarSpec{
 							Simple: &saasv1alpha1.Simple{
@@ -78,7 +78,7 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 			want: []ServiceDescriptor{
 				{
 					PublishingStrategy: saasv1alpha1.PublishingStrategy{
-						Strategy:     saasv1alpha1.Marin3rStrategy,
+						Strategy:     saasv1alpha1.Marin3rSidecarStrategy,
 						EndpointName: "Gateway",
 						Marin3rSidecar: &saasv1alpha1.Marin3rSidecarSpec{
 							Simple: &saasv1alpha1.Simple{
@@ -97,7 +97,7 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 							NodeID: util.Pointer("test"),
 						},
 					},
-					PortDef: corev1.ServicePort{
+					PortDefinition: corev1.ServicePort{
 						Name:       "gateway-http",
 						Protocol:   corev1.ProtocolTCP,
 						Port:       80,
@@ -129,7 +129,7 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 								},
 							},
 						},
-						PortDef: corev1.ServicePort{
+						PortDefinition: corev1.ServicePort{
 							Name:       "gateway-http",
 							Protocol:   corev1.ProtocolTCP,
 							Port:       80,
@@ -170,7 +170,7 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 							},
 						},
 					},
-					PortDef: corev1.ServicePort{
+					PortDefinition: corev1.ServicePort{
 						Name:       "gateway-http",
 						Protocol:   corev1.ProtocolTCP,
 						Port:       80,

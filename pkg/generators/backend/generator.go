@@ -207,7 +207,7 @@ var _ deployment_workload.DeploymentWorkload = &ListenerGenerator{}
 var _ deployment_workload.WithTraffic = &ListenerGenerator{}
 
 // Validate that ListenerGenerator implements deployment_workload.WithEnvoySidecar interface
-var _ deployment_workload.WithEnvoySidecar = &ListenerGenerator{}
+var _ deployment_workload.WithMarin3rSidecar = &ListenerGenerator{}
 
 func (gen *ListenerGenerator) Labels() map[string]string {
 	return gen.GetLabels()

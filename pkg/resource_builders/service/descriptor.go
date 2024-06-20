@@ -10,7 +10,7 @@ import (
 )
 
 type ServiceDescriptor struct {
-	PortDef corev1.ServicePort
+	PortDefinition corev1.ServicePort
 	saasv1alpha1.PublishingStrategy
 	namePrefix string
 }
@@ -23,42 +23,48 @@ func (sd *ServiceDescriptor) Service() *corev1.Service {
 	opts := ServiceOptions{}
 
 	strategy := sd.PublishingStrategy.Strategy
-	if strategy == saasv1alpha1.SimpleStrategy || strategy == saasv1alpha1.Marin3rStrategy {
-		var simple *saasv1alpha1.Simple
+
+	// generate Service resource
+	if strategy == saasv1alpha1.SimpleStrategy || strategy == saasv1alpha1.Marin3rSidecarStrategy {
+
+		var spec *saasv1alpha1.Simple
 		if strategy == saasv1alpha1.SimpleStrategy {
-			simple = sd.PublishingStrategy.Simple
+			spec = sd.PublishingStrategy.Simple
 		} else {
-			simple = sd.PublishingStrategy.Marin3rSidecar.Simple
+			spec = sd.PublishingStrategy.Marin3rSidecar.Simple
 		}
 
-		// service name
-		if simple.ServiceNameOverride != nil {
-			opts.Name = *simple.ServiceNameOverride
-		} else {
-			opts.Name = fmt.Sprintf("%s-%s", sd.namePrefix, strings.ToLower(sd.EndpointName))
-		}
-		// service annotations
-		switch *simple.ServiceType {
-		case saasv1alpha1.ServiceTypeNLB:
-			simple.NetworkLoadBalancerConfig = saasv1alpha1.InitializeNetworkLoadBalancerSpec(simple.NetworkLoadBalancerConfig, saasv1alpha1.DefaultNetworkLoadBalancerSpec)
-			opts.Annotations = NLBServiceAnnotations(*simple.NetworkLoadBalancerConfig, simple.ExternalDnsHostnames)
-		case saasv1alpha1.ServiceTypeELB:
-			simple.ElasticLoadBalancerConfig = saasv1alpha1.InitializeElasticLoadBalancerSpec(simple.ElasticLoadBalancerConfig, saasv1alpha1.DefaultElasticLoadBalancerSpec)
-			opts.Annotations = ELBServiceAnnotations(*simple.ElasticLoadBalancerConfig, simple.ExternalDnsHostnames)
-		default:
-			opts.Annotations = map[string]string{}
-		}
-		// service type
-		switch *simple.ServiceType {
-		case saasv1alpha1.ServiceTypeNLB:
-			opts.Type = corev1.ServiceTypeLoadBalancer
-		case saasv1alpha1.ServiceTypeELB:
-			opts.Type = corev1.ServiceTypeLoadBalancer
-		default:
+		switch *spec.ServiceType {
+
+		case saasv1alpha1.ServiceTypeClusterIP:
 			opts.Type = corev1.ServiceTypeClusterIP
+			opts.Name = fmt.Sprintf("%s-%s-clusterip", sd.namePrefix, strings.ToLower(sd.EndpointName))
+			opts.Annotations = map[string]string{}
+
+		case saasv1alpha1.ServiceTypeELB:
+			opts.Type = corev1.ServiceTypeLoadBalancer
+			opts.Name = fmt.Sprintf("%s-%s-elb", sd.namePrefix, strings.ToLower(sd.EndpointName))
+			spec.ElasticLoadBalancerConfig = saasv1alpha1.InitializeElasticLoadBalancerSpec(spec.ElasticLoadBalancerConfig, saasv1alpha1.DefaultElasticLoadBalancerSpec)
+			opts.Annotations = ELBServiceAnnotations(*spec.ElasticLoadBalancerConfig, spec.ExternalDnsHostnames)
+
+		case saasv1alpha1.ServiceTypeNLB:
+			opts.Type = corev1.ServiceTypeLoadBalancer
+			opts.Name = fmt.Sprintf("%s-%s-nlb", sd.namePrefix, strings.ToLower(sd.EndpointName))
+			spec.NetworkLoadBalancerConfig = saasv1alpha1.InitializeNetworkLoadBalancerSpec(spec.NetworkLoadBalancerConfig, saasv1alpha1.DefaultNetworkLoadBalancerSpec)
+			opts.Annotations = NLBServiceAnnotations(*spec.NetworkLoadBalancerConfig, spec.ExternalDnsHostnames)
 		}
-		// service ports
-		opts.Ports = []corev1.ServicePort{sd.PortDef}
+
+		// service name override
+		if spec.ServiceNameOverride != nil {
+			opts.Name = *spec.ServiceNameOverride
+		}
+
+		// Add service ports
+		if spec.ServicePortsOverride != nil {
+			opts.Ports = spec.ServicePortsOverride
+		} else {
+			opts.Ports = []corev1.ServicePort{sd.PortDefinition}
+		}
 	}
 
 	return opts.Service()

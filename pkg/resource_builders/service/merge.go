@@ -55,7 +55,7 @@ func MergeWithDefaultPublishingStrategy(def []ServiceDescriptor, in saasv1alpha1
 		switch i.PublishingStrategy.Strategy {
 		case saasv1alpha1.SimpleStrategy:
 			i.Marin3rSidecar = nil
-		case saasv1alpha1.Marin3rStrategy:
+		case saasv1alpha1.Marin3rSidecarStrategy:
 			i.Simple = nil
 		}
 		out = append(out, i)

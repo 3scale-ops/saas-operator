@@ -6,6 +6,7 @@ import (
 
 	"github.com/3scale-ops/basereconciler/util"
 	envoyconfig "github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
@@ -15,9 +16,8 @@ type PublishingStrategies []PublishingStrategy
 type Strategy string
 
 const (
-	SimpleStrategy     Strategy = "Simple"
-	Marin3rStrategy    Strategy = "Marin3rSidecar"
-	GatewayAPIStrategy Strategy = "GatewayAPI"
+	SimpleStrategy         Strategy = "Simple"
+	Marin3rSidecarStrategy Strategy = "Marin3rSidecar"
 )
 
 type PublishingStrategy struct {
@@ -60,6 +60,12 @@ type Simple struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	ServiceNameOverride *string `json:"serviceName,omitempty"`
+	// ServicePortsOverride allows the user to override the ports
+	// of a Service. It's a replace operation, so specify all the
+	// required ports.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ServicePortsOverride []corev1.ServicePort `json:"servicePorts,omitempty"`
 	// Classic LB configuration
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional

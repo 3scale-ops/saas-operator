@@ -59,7 +59,7 @@ type WithTraffic interface {
 	Services() []*resource.Template[*corev1.Service]
 }
 
-type WithEnvoySidecar interface {
+type WithMarin3rSidecar interface {
 	WithWorkloadMeta
 	EnvoyDynamicConfigurations() []descriptor.EnvoyDynamicConfigDescriptor
 }
