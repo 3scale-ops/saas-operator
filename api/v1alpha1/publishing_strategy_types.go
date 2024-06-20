@@ -32,6 +32,25 @@ type PublishingStrategies struct {
 	Endpoints []PublishingStrategy `json:"endpoints,omitempty"`
 }
 
+func (ps *PublishingStrategies) Default() {
+	if ps.Mode == nil {
+		ps.Mode = util.Pointer(PublishingStrategiesReconcileModeMerge)
+	}
+	if ps.Endpoints == nil {
+		ps.Endpoints = []PublishingStrategy{}
+	}
+}
+
+// InitializePublishingStrategies initializes a PublishingStrategies struct
+func InitializePublishingStrategies(spec *PublishingStrategies) *PublishingStrategies {
+	if spec == nil {
+		new := &PublishingStrategies{}
+		new.Default()
+		return new
+	}
+	return spec
+}
+
 type Strategy string
 
 const (
@@ -54,6 +73,12 @@ type PublishingStrategy struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Marin3rSidecar *Marin3rSidecarSpec `json:"marin3rSidecar,omitempty"`
+	// Create explicitely tells the controller that this is a new endpoint that
+	// should be added. Default is false, causing the controller to error when seeing
+	// an unknown endpoint.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Create *bool `json:"create,omitempty"`
 }
 
 type ServiceType string

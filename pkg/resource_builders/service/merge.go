@@ -32,30 +32,32 @@ func (t *nullTransformer) Transformer(typ reflect.Type) func(dst, src reflect.Va
 
 func MergeWithDefaultPublishingStrategy(def []ServiceDescriptor, in saasv1alpha1.PublishingStrategies) ([]ServiceDescriptor, error) {
 
-	var out []ServiceDescriptor
+	out := []ServiceDescriptor{}
 
-	// default mode is 'Merge'
-	mode := saasv1alpha1.PublishingStrategiesReconcileModeMerge
-	if in.Mode != nil {
-		mode = *in.Mode
-	}
-
-	switch mode {
+	// NOTE: the mode is always set to Merge by the API defaulter
+	// if the user leaves it unset
+	switch *in.Mode {
 
 	case saasv1alpha1.PublishingStrategiesReconcileModeReplace:
 		var merr util.MultiError
 
-		out = make([]ServiceDescriptor, 0, len(in.Endpoints))
 		lo.ForEach(in.Endpoints, func(item saasv1alpha1.PublishingStrategy, index int) {
 			indesc := ServiceDescriptor{
 				PublishingStrategy: item,
 			}
-			if defdesc, ok := lo.Find(def, func(i ServiceDescriptor) bool {
+
+			defdesc, found := lo.Find(def, func(i ServiceDescriptor) bool {
 				return indesc.EndpointName == i.EndpointName
-			}); ok {
+			})
+
+			if found {
 				indesc.PortDefinitions = defdesc.PortDefinitions
+
 			} else {
-				merr = append(merr, fmt.Errorf("workload has no endpoint named %s", indesc.EndpointName))
+				// If create is not explicitly set, it's an error
+				if indesc.Create == nil || !*indesc.Create {
+					merr = append(merr, fmt.Errorf("workload has no endpoint named %s, set 'create=true' if you want to add a new endpoint", indesc.EndpointName))
+				}
 			}
 			out = append(out, indesc)
 		})
@@ -66,33 +68,39 @@ func MergeWithDefaultPublishingStrategy(def []ServiceDescriptor, in saasv1alpha1
 
 	case saasv1alpha1.PublishingStrategiesReconcileModeMerge:
 
-		out = make([]ServiceDescriptor, 0, len(def))
 		for _, indesc := range in.Endpoints {
-			var defdesc ServiceDescriptor
-			var ok bool
-			var index int
 
-			if defdesc, index, ok = lo.FindIndexOf(def, func(i ServiceDescriptor) bool {
+			defdesc, found := lo.Find(def, func(i ServiceDescriptor) bool {
 				return indesc.EndpointName == i.EndpointName
-			}); !ok {
-				return nil, fmt.Errorf("workload has no endpoint named %s", indesc.EndpointName)
+			})
+
+			if found {
+				// merge with the publishing strategy
+				if err := mergo.Merge(&defdesc.PublishingStrategy, indesc, mergo.WithOverride, mergo.WithTransformers(&nullTransformer{})); err != nil {
+					return nil, err
+				}
+
+			} else {
+				// If create is not explicitly set, it's an error
+				if indesc.Create != nil && *indesc.Create {
+					defdesc = ServiceDescriptor{PublishingStrategy: indesc}
+				} else {
+					return nil, fmt.Errorf("workload has no endpoint named %s, set 'create=true' if you want to add a new endpoint", indesc.EndpointName)
+				}
 			}
 
-			if err := mergo.Merge(&defdesc.PublishingStrategy, indesc, mergo.WithOverride, mergo.WithTransformers(&nullTransformer{})); err != nil {
-				return nil, err
-			}
-			def[index] = defdesc
+			out = append(out, defdesc)
 		}
 
 		// cleanup collection after merging
-		lo.ForEach(def, func(i ServiceDescriptor, _ int) {
+		lo.ForEach(out, func(i ServiceDescriptor, index int) {
 			switch i.PublishingStrategy.Strategy {
 			case saasv1alpha1.SimpleStrategy:
 				i.Marin3rSidecar = nil
 			case saasv1alpha1.Marin3rSidecarStrategy:
 				i.Simple = nil
 			}
-			out = append(out, i)
+			out[index] = i
 		})
 	}
 

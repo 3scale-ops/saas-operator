@@ -290,6 +290,54 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 			want:    nil,
 			wantErr: true,
 		},
+		{
+			name: "Merge: create new endpoint",
+			args: args{
+				def: []ServiceDescriptor{
+					{PublishingStrategy: saasv1alpha1.PublishingStrategy{EndpointName: "Gateway"}},
+				},
+				in: saasv1alpha1.PublishingStrategies{
+					Mode: util.Pointer(saasv1alpha1.PublishingStrategiesReconcileModeMerge),
+					Endpoints: []saasv1alpha1.PublishingStrategy{{
+						Strategy:     saasv1alpha1.SimpleStrategy,
+						EndpointName: "Other",
+						Create:       util.Pointer(true),
+					}},
+				},
+			},
+			want: []ServiceDescriptor{{
+				PublishingStrategy: saasv1alpha1.PublishingStrategy{
+					Strategy:     saasv1alpha1.SimpleStrategy,
+					EndpointName: "Other",
+					Create:       util.Pointer(true),
+				},
+			}},
+			wantErr: false,
+		},
+		{
+			name: "Replace: create new endpoint",
+			args: args{
+				def: []ServiceDescriptor{
+					{PublishingStrategy: saasv1alpha1.PublishingStrategy{EndpointName: "Gateway"}},
+				},
+				in: saasv1alpha1.PublishingStrategies{
+					Mode: util.Pointer(saasv1alpha1.PublishingStrategiesReconcileModeReplace),
+					Endpoints: []saasv1alpha1.PublishingStrategy{{
+						Strategy:     saasv1alpha1.SimpleStrategy,
+						EndpointName: "Other",
+						Create:       util.Pointer(true),
+					}},
+				},
+			},
+			want: []ServiceDescriptor{{
+				PublishingStrategy: saasv1alpha1.PublishingStrategy{
+					Strategy:     saasv1alpha1.SimpleStrategy,
+					EndpointName: "Other",
+					Create:       util.Pointer(true),
+				},
+			}},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
