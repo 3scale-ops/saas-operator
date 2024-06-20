@@ -53,7 +53,7 @@ func MergeWithDefaultPublishingStrategy(def []ServiceDescriptor, in saasv1alpha1
 			if defdesc, ok := lo.Find(def, func(i ServiceDescriptor) bool {
 				return indesc.EndpointName == i.EndpointName
 			}); ok {
-				indesc.PortDefinition = defdesc.PortDefinition
+				indesc.PortDefinitions = defdesc.PortDefinitions
 			} else {
 				merr = append(merr, fmt.Errorf("workload has no endpoint named %s", indesc.EndpointName))
 			}

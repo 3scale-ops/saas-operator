@@ -16,12 +16,12 @@ func DefaultPublishingStrategy() []service.ServiceDescriptor {
 				EndpointName: "Gateway",
 				Simple:       &saasv1alpha1.Simple{ServiceType: util.Pointer(saasv1alpha1.ServiceTypeELB)},
 			},
-			PortDefinition: corev1.ServicePort{
+			PortDefinitions: []corev1.ServicePort{{
 				Name:       "gateway",
 				Protocol:   corev1.ProtocolTCP,
 				Port:       80,
 				TargetPort: intstr.FromString("gateway"),
-			},
+			}},
 		},
 		{
 			PublishingStrategy: saasv1alpha1.PublishingStrategy{
@@ -31,12 +31,12 @@ func DefaultPublishingStrategy() []service.ServiceDescriptor {
 					ServiceType: util.Pointer(saasv1alpha1.ServiceTypeClusterIP),
 				},
 			},
-			PortDefinition: corev1.ServicePort{
+			PortDefinitions: []corev1.ServicePort{{
 				Name:       "management",
 				Protocol:   corev1.ProtocolTCP,
 				Port:       80,
 				TargetPort: intstr.FromString("management"),
-			},
+			}},
 		},
 	}
 }

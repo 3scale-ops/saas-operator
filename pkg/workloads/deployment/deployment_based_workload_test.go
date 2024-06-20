@@ -599,7 +599,7 @@ func Test_applyNodeIdToEnvoyConfig(t *testing.T) {
 			),
 			args: args{
 				sd: service.ServiceDescriptor{
-					PortDefinition: corev1.ServicePort{},
+					PortDefinitions: corev1.ServicePort{},
 					PublishingStrategy: saasv1alpha1.PublishingStrategy{
 						Marin3rSidecar: &saasv1alpha1.Marin3rSidecarSpec{
 							NodeID: util.Pointer("aaaa"),
@@ -620,7 +620,7 @@ func Test_applyNodeIdToEnvoyConfig(t *testing.T) {
 			),
 			args: args{
 				sd: service.ServiceDescriptor{
-					PortDefinition: corev1.ServicePort{},
+					PortDefinitions: corev1.ServicePort{},
 					PublishingStrategy: saasv1alpha1.PublishingStrategy{
 						Marin3rSidecar: &saasv1alpha1.Marin3rSidecarSpec{},
 					},

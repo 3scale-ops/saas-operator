@@ -10,7 +10,7 @@ import (
 )
 
 type ServiceDescriptor struct {
-	PortDefinition corev1.ServicePort
+	PortDefinitions []corev1.ServicePort
 	saasv1alpha1.PublishingStrategy
 }
 
@@ -58,7 +58,7 @@ func (sd *ServiceDescriptor) Service(prefix, suffix string) *corev1.Service {
 		if spec.ServicePortsOverride != nil {
 			opts.Ports = spec.ServicePortsOverride
 		} else {
-			opts.Ports = []corev1.ServicePort{sd.PortDefinition}
+			opts.Ports = sd.PortDefinitions
 		}
 	}
 

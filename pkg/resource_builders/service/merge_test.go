@@ -44,12 +44,12 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 								},
 							},
 						},
-						PortDefinition: corev1.ServicePort{
+						PortDefinitions: []corev1.ServicePort{{
 							Name:       "gateway-http",
 							Protocol:   corev1.ProtocolTCP,
 							Port:       80,
 							TargetPort: intstr.FromString("gateway-http"),
-						},
+						}},
 					},
 				},
 				in: saasv1alpha1.PublishingStrategies{
@@ -98,12 +98,12 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 							NodeID: util.Pointer("test"),
 						},
 					},
-					PortDefinition: corev1.ServicePort{
+					PortDefinitions: []corev1.ServicePort{{
 						Name:       "gateway-http",
 						Protocol:   corev1.ProtocolTCP,
 						Port:       80,
 						TargetPort: intstr.FromString("gateway-http"),
-					},
+					}},
 				},
 			},
 			wantErr: false,
@@ -130,12 +130,12 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 								},
 							},
 						},
-						PortDefinition: corev1.ServicePort{
+						PortDefinitions: []corev1.ServicePort{{
 							Name:       "gateway-http",
 							Protocol:   corev1.ProtocolTCP,
 							Port:       80,
 							TargetPort: intstr.FromString("gateway-http"),
-						},
+						}},
 					},
 				},
 				in: saasv1alpha1.PublishingStrategies{
@@ -172,12 +172,12 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 							},
 						},
 					},
-					PortDefinition: corev1.ServicePort{
+					PortDefinitions: []corev1.ServicePort{{
 						Name:       "gateway-http",
 						Protocol:   corev1.ProtocolTCP,
 						Port:       80,
 						TargetPort: intstr.FromString("gateway-http"),
-					},
+					}},
 				},
 			},
 			wantErr: false,
@@ -204,12 +204,12 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 								},
 							},
 						},
-						PortDefinition: corev1.ServicePort{
+						PortDefinitions: []corev1.ServicePort{{
 							Name:       "gateway",
 							Protocol:   corev1.ProtocolTCP,
 							Port:       80,
 							TargetPort: intstr.FromString("gateway"),
-						},
+						}},
 					},
 				},
 				in: saasv1alpha1.PublishingStrategies{
@@ -239,12 +239,12 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 							ServiceType: util.Pointer(saasv1alpha1.ServiceTypeELB),
 						},
 					},
-					PortDefinition: corev1.ServicePort{
+					PortDefinitions: []corev1.ServicePort{{
 						Name:       "gateway",
 						Protocol:   corev1.ProtocolTCP,
 						Port:       80,
 						TargetPort: intstr.FromString("gateway"),
-					},
+					}},
 				},
 				{
 					PublishingStrategy: saasv1alpha1.PublishingStrategy{
@@ -252,12 +252,12 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 						EndpointName:   "Gateway",
 						Marin3rSidecar: &saasv1alpha1.Marin3rSidecarSpec{},
 					},
-					PortDefinition: corev1.ServicePort{
+					PortDefinitions: []corev1.ServicePort{{
 						Name:       "gateway",
 						Protocol:   corev1.ProtocolTCP,
 						Port:       80,
 						TargetPort: intstr.FromString("gateway"),
-					},
+					}},
 				},
 			},
 			wantErr: false,
