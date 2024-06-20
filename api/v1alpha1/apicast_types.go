@@ -155,6 +155,21 @@ type ApicastEnvironmentSpec struct {
 	// Application specific configuration options for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Config ApicastConfig `json:"config"`
+	// Describes node affinity scheduling rules for the pod.
+	// +optional
+	NodeAffinity *corev1.NodeAffinity `json:"nodeAffinity,omitempty" protobuf:"bytes,1,opt,name=nodeAffinity"`
+	// If specified, the pod's tolerations.
+	// +optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
+	// Canary defines spec changes for the canary Deployment. If
+	// left unset the canary Deployment wil not be created.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Canary *Canary `json:"canary,omitempty"`
+	// Describes how the services provided by this workload are exposed to its consumers
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	PublishingStrategies *PublishingStrategies `json:"publishingStrategies,omitempty"`
 	// The external endpoint/s for the component
 	// DEPRECATED
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
@@ -169,21 +184,6 @@ type ApicastEnvironmentSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	LoadBalancer *ElasticLoadBalancerSpec `json:"loadBalancer,omitempty"`
-	// Describes how the services provided by this workload are exposed to its consumers
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	PublishingStrategies PublishingStrategies `json:"publishingStrategies,omitempty"`
-	// Describes node affinity scheduling rules for the pod.
-	// +optional
-	NodeAffinity *corev1.NodeAffinity `json:"nodeAffinity,omitempty" protobuf:"bytes,1,opt,name=nodeAffinity"`
-	// If specified, the pod's tolerations.
-	// +optional
-	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
-	// Canary defines spec changes for the canary Deployment. If
-	// left unset the canary Deployment wil not be created.
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	Canary *Canary `json:"canary,omitempty"`
 }
 
 // Default implements defaulting for the each apicast environment
@@ -198,6 +198,7 @@ func (spec *ApicastEnvironmentSpec) Default() {
 	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, apicastDefaultReadinessProbe)
 	spec.LoadBalancer = InitializeElasticLoadBalancerSpec(spec.LoadBalancer, DefaultElasticLoadBalancerSpec)
 	spec.Marin3r = InitializeMarin3rSidecarSpec(spec.Marin3r, apicastDefaultMarin3rSpec)
+	spec.PublishingStrategies = InitializePublishingStrategies(spec.PublishingStrategies)
 	spec.Config.Default()
 }
 

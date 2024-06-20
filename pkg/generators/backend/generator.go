@@ -9,15 +9,14 @@ import (
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/pkg/generators"
 	"github.com/3scale-ops/saas-operator/pkg/generators/backend/config"
-	descriptor "github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/grafanadashboard"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/podmonitor"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/service"
 	operatorutil "github.com/3scale-ops/saas-operator/pkg/util"
 	deployment_workload "github.com/3scale-ops/saas-operator/pkg/workloads/deployment"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -203,11 +202,8 @@ type ListenerGenerator struct {
 // Validate that ListenerGenerator implements deployment_workload.DeploymentWorkloadWithTraffic interface
 var _ deployment_workload.DeploymentWorkload = &ListenerGenerator{}
 
-// Validate that ListenerGenerator implements deployment_workload.WithTraffic interface
-var _ deployment_workload.WithTraffic = &ListenerGenerator{}
-
-// Validate that ListenerGenerator implements deployment_workload.WithEnvoySidecar interface
-var _ deployment_workload.WithMarin3rSidecar = &ListenerGenerator{}
+// Validate that ListenerGenerator implements deployment_workload.WithPublishingStrategies interface
+var _ deployment_workload.WithPublishingStrategies = &ListenerGenerator{}
 
 func (gen *ListenerGenerator) Labels() map[string]string {
 	return gen.GetLabels()
@@ -234,12 +230,6 @@ func (gen *ListenerGenerator) MonitoredEndpoints() []monitoringv1.PodMetricsEndp
 	}
 	return pmes
 }
-func (gen *ListenerGenerator) Services() []*resource.Template[*corev1.Service] {
-	return []*resource.Template[*corev1.Service]{
-		resource.NewTemplateFromObjectFunction(gen.service).WithMutation(mutators.SetServiceLiveValues()),
-		resource.NewTemplateFromObjectFunction(gen.internalService).WithMutation(mutators.SetServiceLiveValues()),
-	}
-}
 func (gen *ListenerGenerator) SendTraffic() bool { return gen.Traffic }
 func (gen *ListenerGenerator) TrafficSelector() map[string]string {
 	return map[string]string{
@@ -248,8 +238,12 @@ func (gen *ListenerGenerator) TrafficSelector() map[string]string {
 		fmt.Sprintf("%s/traffic", saasv1alpha1.GroupVersion.Group): fmt.Sprintf("%s-%s", component, listener),
 	}
 }
-func (gen *ListenerGenerator) EnvoyDynamicConfigurations() []descriptor.EnvoyDynamicConfigDescriptor {
-	return gen.ListenerSpec.Marin3r.EnvoyDynamicConfig.AsList()
+func (gen *ListenerGenerator) PublishingStrategies() ([]service.ServiceDescriptor, error) {
+	if pss, err := service.MergeWithDefaultPublishingStrategy(config.DefaultListenerPublishingStrategy(), *gen.ListenerSpec.PublishingStrategies); err != nil {
+		return nil, err
+	} else {
+		return pss, nil
+	}
 }
 
 // WorkerGenerator has methods to generate resources for a

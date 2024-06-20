@@ -228,17 +228,6 @@ type ListenerSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	ReadinessProbe *ProbeSpec `json:"readinessProbe,omitempty"`
-	// The external endpoint/s for the component
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	Endpoint Endpoint `json:"endpoint"`
-	// Marin3r configures the Marin3r sidecars for the component
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	Marin3r *Marin3rSidecarSpec `json:"marin3r,omitempty"`
-	// Configures the AWS Network load balancer for the component
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	LoadBalancer *NetworkLoadBalancerSpec `json:"loadBalancer,omitempty"`
 	// Describes node affinity scheduling rules for the pod.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -252,6 +241,24 @@ type ListenerSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Canary *Canary `json:"canary,omitempty"`
+	// Describes how the services provided by this workload are exposed to its consumers
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	PublishingStrategies *PublishingStrategies `json:"publishingStrategies,omitempty"`
+	// The external endpoint/s for the component
+	// DEPRECATED
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	Endpoint *Endpoint `json:"endpoint,omitempty"`
+	// Marin3r configures the Marin3r sidecars for the component
+	// DEPRECATED
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Marin3r *Marin3rSidecarSpec `json:"marin3r,omitempty"`
+	// Configures the AWS load balancer for the component
+	// DEPRECATED
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	LoadBalancer *NetworkLoadBalancerSpec `json:"loadBalancer,omitempty"`
 }
 
 // Default implements defaulting for the each backend listener
@@ -265,6 +272,7 @@ func (spec *ListenerSpec) Default() {
 	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, backendDefaultListenerReadinessProbe)
 	spec.LoadBalancer = InitializeNetworkLoadBalancerSpec(spec.LoadBalancer, DefaultNetworkLoadBalancerSpec)
 	spec.Marin3r = InitializeMarin3rSidecarSpec(spec.Marin3r, backendDefaultListenerMarin3rSpec)
+	spec.PublishingStrategies = InitializePublishingStrategies(spec.PublishingStrategies)
 	if spec.Config == nil {
 		spec.Config = &ListenerConfig{}
 	}

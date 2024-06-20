@@ -204,22 +204,6 @@ func (in *ApicastEnvironmentSpec) DeepCopyInto(out *ApicastEnvironmentSpec) {
 		(*in).DeepCopyInto(*out)
 	}
 	in.Config.DeepCopyInto(&out.Config)
-	if in.Endpoint != nil {
-		in, out := &in.Endpoint, &out.Endpoint
-		*out = new(Endpoint)
-		(*in).DeepCopyInto(*out)
-	}
-	if in.Marin3r != nil {
-		in, out := &in.Marin3r, &out.Marin3r
-		*out = new(Marin3rSidecarSpec)
-		(*in).DeepCopyInto(*out)
-	}
-	if in.LoadBalancer != nil {
-		in, out := &in.LoadBalancer, &out.LoadBalancer
-		*out = new(ElasticLoadBalancerSpec)
-		(*in).DeepCopyInto(*out)
-	}
-	in.PublishingStrategies.DeepCopyInto(&out.PublishingStrategies)
 	if in.NodeAffinity != nil {
 		in, out := &in.NodeAffinity, &out.NodeAffinity
 		*out = new(v1.NodeAffinity)
@@ -235,6 +219,26 @@ func (in *ApicastEnvironmentSpec) DeepCopyInto(out *ApicastEnvironmentSpec) {
 	if in.Canary != nil {
 		in, out := &in.Canary, &out.Canary
 		*out = new(Canary)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.PublishingStrategies != nil {
+		in, out := &in.PublishingStrategies, &out.PublishingStrategies
+		*out = new(PublishingStrategies)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.Endpoint != nil {
+		in, out := &in.Endpoint, &out.Endpoint
+		*out = new(Endpoint)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.Marin3r != nil {
+		in, out := &in.Marin3r, &out.Marin3r
+		*out = new(Marin3rSidecarSpec)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.LoadBalancer != nil {
+		in, out := &in.LoadBalancer, &out.LoadBalancer
+		*out = new(ElasticLoadBalancerSpec)
 		(*in).DeepCopyInto(*out)
 	}
 }
@@ -482,18 +486,12 @@ func (in *AutoSSLSpec) DeepCopyInto(out *AutoSSLSpec) {
 		*out = new(ProbeSpec)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.LoadBalancer != nil {
-		in, out := &in.LoadBalancer, &out.LoadBalancer
-		*out = new(ElasticLoadBalancerSpec)
-		(*in).DeepCopyInto(*out)
-	}
 	if in.GrafanaDashboard != nil {
 		in, out := &in.GrafanaDashboard, &out.GrafanaDashboard
 		*out = new(GrafanaDashboardSpec)
 		(*in).DeepCopyInto(*out)
 	}
 	in.Config.DeepCopyInto(&out.Config)
-	in.Endpoint.DeepCopyInto(&out.Endpoint)
 	if in.NodeAffinity != nil {
 		in, out := &in.NodeAffinity, &out.NodeAffinity
 		*out = new(v1.NodeAffinity)
@@ -509,6 +507,17 @@ func (in *AutoSSLSpec) DeepCopyInto(out *AutoSSLSpec) {
 	if in.Canary != nil {
 		in, out := &in.Canary, &out.Canary
 		*out = new(Canary)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.PublishingStrategies != nil {
+		in, out := &in.PublishingStrategies, &out.PublishingStrategies
+		*out = new(PublishingStrategies)
+		(*in).DeepCopyInto(*out)
+	}
+	in.Endpoint.DeepCopyInto(&out.Endpoint)
+	if in.LoadBalancer != nil {
+		in, out := &in.LoadBalancer, &out.LoadBalancer
+		*out = new(ElasticLoadBalancerSpec)
 		(*in).DeepCopyInto(*out)
 	}
 }
@@ -1163,17 +1172,6 @@ func (in *EchoAPISpec) DeepCopyInto(out *EchoAPISpec) {
 		*out = new(ProbeSpec)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.Marin3r != nil {
-		in, out := &in.Marin3r, &out.Marin3r
-		*out = new(Marin3rSidecarSpec)
-		(*in).DeepCopyInto(*out)
-	}
-	if in.LoadBalancer != nil {
-		in, out := &in.LoadBalancer, &out.LoadBalancer
-		*out = new(NetworkLoadBalancerSpec)
-		(*in).DeepCopyInto(*out)
-	}
-	in.Endpoint.DeepCopyInto(&out.Endpoint)
 	if in.NodeAffinity != nil {
 		in, out := &in.NodeAffinity, &out.NodeAffinity
 		*out = new(v1.NodeAffinity)
@@ -1185,6 +1183,26 @@ func (in *EchoAPISpec) DeepCopyInto(out *EchoAPISpec) {
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
+	}
+	if in.PublishingStrategies != nil {
+		in, out := &in.PublishingStrategies, &out.PublishingStrategies
+		*out = new(PublishingStrategies)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.Endpoint != nil {
+		in, out := &in.Endpoint, &out.Endpoint
+		*out = new(Endpoint)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.Marin3r != nil {
+		in, out := &in.Marin3r, &out.Marin3r
+		*out = new(Marin3rSidecarSpec)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.LoadBalancer != nil {
+		in, out := &in.LoadBalancer, &out.LoadBalancer
+		*out = new(NetworkLoadBalancerSpec)
+		(*in).DeepCopyInto(*out)
 	}
 }
 
@@ -1638,17 +1656,6 @@ func (in *ListenerSpec) DeepCopyInto(out *ListenerSpec) {
 		*out = new(ProbeSpec)
 		(*in).DeepCopyInto(*out)
 	}
-	in.Endpoint.DeepCopyInto(&out.Endpoint)
-	if in.Marin3r != nil {
-		in, out := &in.Marin3r, &out.Marin3r
-		*out = new(Marin3rSidecarSpec)
-		(*in).DeepCopyInto(*out)
-	}
-	if in.LoadBalancer != nil {
-		in, out := &in.LoadBalancer, &out.LoadBalancer
-		*out = new(NetworkLoadBalancerSpec)
-		(*in).DeepCopyInto(*out)
-	}
 	if in.NodeAffinity != nil {
 		in, out := &in.NodeAffinity, &out.NodeAffinity
 		*out = new(v1.NodeAffinity)
@@ -1664,6 +1671,26 @@ func (in *ListenerSpec) DeepCopyInto(out *ListenerSpec) {
 	if in.Canary != nil {
 		in, out := &in.Canary, &out.Canary
 		*out = new(Canary)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.PublishingStrategies != nil {
+		in, out := &in.PublishingStrategies, &out.PublishingStrategies
+		*out = new(PublishingStrategies)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.Endpoint != nil {
+		in, out := &in.Endpoint, &out.Endpoint
+		*out = new(Endpoint)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.Marin3r != nil {
+		in, out := &in.Marin3r, &out.Marin3r
+		*out = new(Marin3rSidecarSpec)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.LoadBalancer != nil {
+		in, out := &in.LoadBalancer, &out.LoadBalancer
+		*out = new(NetworkLoadBalancerSpec)
 		(*in).DeepCopyInto(*out)
 	}
 }
@@ -2124,6 +2151,11 @@ func (in *PublishingStrategy) DeepCopyInto(out *PublishingStrategy) {
 		in, out := &in.Marin3rSidecar, &out.Marin3rSidecar
 		*out = new(Marin3rSidecarSpec)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.Create != nil {
+		in, out := &in.Create, &out.Create
+		*out = new(bool)
+		**out = **in
 	}
 }
 
@@ -3240,15 +3272,20 @@ func (in *SystemAppSpec) DeepCopyInto(out *SystemAppSpec) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
+	if in.TerminationGracePeriodSeconds != nil {
+		in, out := &in.TerminationGracePeriodSeconds, &out.TerminationGracePeriodSeconds
+		*out = new(int64)
+		**out = **in
+	}
 	if in.Canary != nil {
 		in, out := &in.Canary, &out.Canary
 		*out = new(Canary)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.TerminationGracePeriodSeconds != nil {
-		in, out := &in.TerminationGracePeriodSeconds, &out.TerminationGracePeriodSeconds
-		*out = new(int64)
-		**out = **in
+	if in.PublishingStrategies != nil {
+		in, out := &in.PublishingStrategies, &out.PublishingStrategies
+		*out = new(PublishingStrategies)
+		(*in).DeepCopyInto(*out)
 	}
 }
 

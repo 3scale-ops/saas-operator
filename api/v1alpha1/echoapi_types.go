@@ -97,23 +97,30 @@ type EchoAPISpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	ReadinessProbe *ProbeSpec `json:"readinessProbe,omitempty"`
-	// Marin3r configures the Marin3r sidecars for the component
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	Marin3r *Marin3rSidecarSpec `json:"marin3r,omitempty"`
-	// Configures the AWS Network load balancer for the component
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	LoadBalancer *NetworkLoadBalancerSpec `json:"loadBalancer,omitempty"`
-	// The external endpoint/s for the component
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	Endpoint Endpoint `json:"endpoint"`
 	// Describes node affinity scheduling rules for the pod.
 	// +optional
 	NodeAffinity *corev1.NodeAffinity `json:"nodeAffinity,omitempty" protobuf:"bytes,1,opt,name=nodeAffinity"`
 	// If specified, the pod's tolerations.
 	// +optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
+	// Describes how the services provided by this workload are exposed to its consumers
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	PublishingStrategies *PublishingStrategies `json:"publishingStrategies,omitempty"`
+	// The external endpoint/s for the component
+	// DEPRECATED
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	Endpoint *Endpoint `json:"endpoint,omitempty"`
+	// Marin3r configures the Marin3r sidecars for the component
+	// DEPRECATED
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Marin3r *Marin3rSidecarSpec `json:"marin3r,omitempty"`
+	// Configures the AWS load balancer for the component
+	// DEPRECATED
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	LoadBalancer *NetworkLoadBalancerSpec `json:"loadBalancer,omitempty"`
 }
 
 // Default implements defaulting for EchoAPI
@@ -128,6 +135,7 @@ func (spec *EchoAPISpec) Default() {
 	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, echoapiDefaultReadinessProbe)
 	spec.Marin3r = InitializeMarin3rSidecarSpec(spec.Marin3r, echoapiDefaultMarin3rSpec)
 	spec.LoadBalancer = InitializeNetworkLoadBalancerSpec(spec.LoadBalancer, DefaultNetworkLoadBalancerSpec)
+	spec.PublishingStrategies = InitializePublishingStrategies(spec.PublishingStrategies)
 }
 
 // EchoAPIStatus defines the observed state of EchoAPI

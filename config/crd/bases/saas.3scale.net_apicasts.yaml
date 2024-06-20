@@ -1004,6 +1004,12 @@ spec:
                           for each workload endpoint.
                         items:
                           properties:
+                            create:
+                              description: Create explicitely tells the controller
+                                that this is a new endpoint that should be added.
+                                Default is false, causing the controller to error
+                                when seeing an unknown endpoint.
+                              type: boolean
                             marin3rSidecar:
                               description: Marin3rSidecar holds configuration for
                                 the Marin3rSidecar publishing strategy
@@ -2716,6 +2722,12 @@ spec:
                           for each workload endpoint.
                         items:
                           properties:
+                            create:
+                              description: Create explicitely tells the controller
+                                that this is a new endpoint that should be added.
+                                Default is false, causing the controller to error
+                                when seeing an unknown endpoint.
+                              type: boolean
                             marin3rSidecar:
                               description: Marin3rSidecar holds configuration for
                                 the Marin3rSidecar publishing strategy

@@ -208,7 +208,7 @@ func (gen *EnvGenerator) TrafficSelector() map[string]string {
 }
 
 func (gen *EnvGenerator) PublishingStrategies() ([]service.ServiceDescriptor, error) {
-	if pss, err := service.MergeWithDefaultPublishingStrategy(config.DefaultPublishingStrategy(), gen.Spec.PublishingStrategies); err != nil {
+	if pss, err := service.MergeWithDefaultPublishingStrategy(config.DefaultPublishingStrategy(), *gen.Spec.PublishingStrategies); err != nil {
 		return nil, err
 	} else {
 		return pss, nil

@@ -57,7 +57,7 @@ var _ = Describe("Backend controller", func() {
 				},
 				Spec: saasv1alpha1.BackendSpec{
 					Listener: saasv1alpha1.ListenerSpec{
-						Endpoint: saasv1alpha1.Endpoint{
+						Endpoint: &saasv1alpha1.Endpoint{
 							DNS: []string{"backend-listener.example.com"},
 						},
 					},

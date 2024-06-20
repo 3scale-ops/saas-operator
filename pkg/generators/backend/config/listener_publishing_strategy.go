@@ -8,34 +8,19 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func DefaultPublishingStrategy() []service.ServiceDescriptor {
+func DefaultListenerPublishingStrategy() []service.ServiceDescriptor {
 	return []service.ServiceDescriptor{
 		{
 			PublishingStrategy: saasv1alpha1.PublishingStrategy{
 				Strategy:     saasv1alpha1.SimpleStrategy,
-				EndpointName: "Gateway",
+				EndpointName: "HTTP",
 				Simple:       &saasv1alpha1.Simple{ServiceType: util.Pointer(saasv1alpha1.ServiceTypeClusterIP)},
 			},
 			PortDefinitions: []corev1.ServicePort{{
-				Name:       "gateway",
+				Name:       "http",
 				Protocol:   corev1.ProtocolTCP,
 				Port:       80,
-				TargetPort: intstr.FromString("gateway"),
-			}},
-		},
-		{
-			PublishingStrategy: saasv1alpha1.PublishingStrategy{
-				Strategy:     saasv1alpha1.SimpleStrategy,
-				EndpointName: "Management",
-				Simple: &saasv1alpha1.Simple{
-					ServiceType: util.Pointer(saasv1alpha1.ServiceTypeClusterIP),
-				},
-			},
-			PortDefinitions: []corev1.ServicePort{{
-				Name:       "management",
-				Protocol:   corev1.ProtocolTCP,
-				Port:       80,
-				TargetPort: intstr.FromString("management"),
+				TargetPort: intstr.FromString("http"),
 			}},
 		},
 	}

@@ -12,12 +12,12 @@ import (
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/grafanadashboard"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/podmonitor"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/service"
 	operatorutil "github.com/3scale-ops/saas-operator/pkg/util"
 	deployment_workload "github.com/3scale-ops/saas-operator/pkg/workloads/deployment"
 	grafanav1beta1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -144,8 +144,8 @@ type APIGenerator struct {
 // Validate that APIGenerator implements deployment_workload.DeploymentWorkload interface
 var _ deployment_workload.DeploymentWorkload = &APIGenerator{}
 
-// Validate that APIGenerator implements deployment_workload.WithTraffic interface
-var _ deployment_workload.WithTraffic = &APIGenerator{}
+// Validate that APIGenerator implements deployment_workload.WithPublishingStrategies interface
+var _ deployment_workload.WithPublishingStrategies = &APIGenerator{}
 
 func (gen *APIGenerator) Labels() map[string]string {
 	return gen.GetLabels()
@@ -167,16 +167,16 @@ func (gen *APIGenerator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint 
 		podmonitor.PodMetricsEndpoint("/metrics", "metrics", 30),
 	}
 }
-func (gen *APIGenerator) Services() []*resource.Template[*corev1.Service] {
-	return []*resource.Template[*corev1.Service]{
-		resource.NewTemplateFromObjectFunction(gen.service).WithMutation(mutators.SetServiceLiveValues()),
-	}
-}
+
 func (gen *APIGenerator) SendTraffic() bool { return gen.Traffic }
 func (gen *APIGenerator) TrafficSelector() map[string]string {
 	return map[string]string{
 		fmt.Sprintf("%s/traffic", saasv1alpha1.GroupVersion.Group): component,
 	}
+}
+
+func (gen *APIGenerator) PublishingStrategies() ([]service.ServiceDescriptor, error) {
+	return config.DefaultApiPublishingStrategy(), nil
 }
 
 // QueGenerator has methods to generate resources for a
