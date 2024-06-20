@@ -174,12 +174,7 @@ type EnvGenerator struct {
 // Validate that EnvGenerator implements deployment_workload.DeploymentWorkload interface
 var _ deployment_workload.DeploymentWorkload = &EnvGenerator{}
 
-// // Validate that EnvGenerator implements deployment_workload.WithTraffic interface
-// var _ deployment_workload.WithTraffic = &EnvGenerator{}
-
-// // Validate that EnvGenerator implements deployment_workload.WithEnvoySidecar interface
-// var _ deployment_workload.WithEnvoySidecar = &EnvGenerator{}
-
+// Validate that EnvGenerator implements deployment_workload.WithPublishingStrategies interface
 var _ deployment_workload.WithPublishingStrategies = &EnvGenerator{}
 
 func (gen *EnvGenerator) Labels() map[string]string {
@@ -203,12 +198,6 @@ func (gen *EnvGenerator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint 
 	}
 }
 
-//	func (gen *EnvGenerator) Services() []*resource.Template[*corev1.Service] {
-//		return []*resource.Template[*corev1.Service]{
-//			resource.NewTemplateFromObjectFunction(gen.gatewayService).WithMutation(mutators.SetServiceLiveValues()),
-//			resource.NewTemplateFromObjectFunction(gen.mgmtService).WithMutation(mutators.SetServiceLiveValues()),
-//		}
-//	}
 func (gen *EnvGenerator) SendTraffic() bool { return gen.Traffic }
 func (gen *EnvGenerator) TrafficSelector() map[string]string {
 	return map[string]string{
@@ -217,10 +206,6 @@ func (gen *EnvGenerator) TrafficSelector() map[string]string {
 		fmt.Sprintf("%s/traffic", saasv1alpha1.GroupVersion.Group): gen.GetComponent(),
 	}
 }
-
-// func (gen *EnvGenerator) EnvoyDynamicConfigurations() []descriptor.EnvoyDynamicConfigDescriptor {
-// 	return gen.Spec.Marin3r.EnvoyDynamicConfig.AsList()
-// }
 
 func (gen *EnvGenerator) PublishingStrategies() ([]service.ServiceDescriptor, error) {
 	if pss, err := service.MergeWithDefaultPublishingStrategy(config.DefaultPublishingStrategy(), gen.Spec.PublishingStrategies); err != nil {
