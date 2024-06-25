@@ -305,13 +305,14 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 					}},
 				},
 			},
-			want: []ServiceDescriptor{{
-				PublishingStrategy: saasv1alpha1.PublishingStrategy{
+			want: []ServiceDescriptor{
+				{PublishingStrategy: saasv1alpha1.PublishingStrategy{EndpointName: "Gateway"}},
+				{PublishingStrategy: saasv1alpha1.PublishingStrategy{
 					Strategy:     saasv1alpha1.SimpleStrategy,
 					EndpointName: "Other",
 					Create:       util.Pointer(true),
-				},
-			}},
+				}},
+			},
 			wantErr: false,
 		},
 		{
@@ -336,6 +337,34 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 					Create:       util.Pointer(true),
 				},
 			}},
+			wantErr: false,
+		},
+		{
+			name: "Merge: no enpoint definintions in the API returns defaults",
+			args: args{
+				def: []ServiceDescriptor{
+					{PublishingStrategy: saasv1alpha1.PublishingStrategy{EndpointName: "Gateway"}},
+				},
+				in: saasv1alpha1.PublishingStrategies{
+					Mode: util.Pointer(saasv1alpha1.PublishingStrategiesReconcileModeMerge),
+				},
+			},
+			want: []ServiceDescriptor{{
+				PublishingStrategy: saasv1alpha1.PublishingStrategy{EndpointName: "Gateway"},
+			}},
+			wantErr: false,
+		},
+		{
+			name: "Replace: no enpoint definintions in the API returns empty list",
+			args: args{
+				def: []ServiceDescriptor{
+					{PublishingStrategy: saasv1alpha1.PublishingStrategy{EndpointName: "Gateway"}},
+				},
+				in: saasv1alpha1.PublishingStrategies{
+					Mode: util.Pointer(saasv1alpha1.PublishingStrategiesReconcileModeReplace),
+				},
+			},
+			want:    []ServiceDescriptor{},
 			wantErr: false,
 		},
 	}

@@ -30,7 +30,7 @@ func (t *nullTransformer) Transformer(typ reflect.Type) func(dst, src reflect.Va
 	return nil
 }
 
-func MergeWithDefaultPublishingStrategy(def []ServiceDescriptor, in saasv1alpha1.PublishingStrategies) ([]ServiceDescriptor, error) {
+func MergeWithDefaultPublishingStrategy(defaults []ServiceDescriptor, in saasv1alpha1.PublishingStrategies) ([]ServiceDescriptor, error) {
 
 	out := []ServiceDescriptor{}
 
@@ -46,7 +46,7 @@ func MergeWithDefaultPublishingStrategy(def []ServiceDescriptor, in saasv1alpha1
 				PublishingStrategy: item,
 			}
 
-			defdesc, found := lo.Find(def, func(i ServiceDescriptor) bool {
+			defdesc, found := lo.Find(defaults, func(i ServiceDescriptor) bool {
 				return indesc.EndpointName == i.EndpointName
 			})
 
@@ -67,10 +67,10 @@ func MergeWithDefaultPublishingStrategy(def []ServiceDescriptor, in saasv1alpha1
 		}
 
 	case saasv1alpha1.PublishingStrategiesReconcileModeMerge:
-
+		out = defaults
 		for _, indesc := range in.Endpoints {
 
-			defdesc, found := lo.Find(def, func(i ServiceDescriptor) bool {
+			defdesc, index, found := lo.FindIndexOf(defaults, func(i ServiceDescriptor) bool {
 				return indesc.EndpointName == i.EndpointName
 			})
 
@@ -79,6 +79,7 @@ func MergeWithDefaultPublishingStrategy(def []ServiceDescriptor, in saasv1alpha1
 				if err := mergo.Merge(&defdesc.PublishingStrategy, indesc, mergo.WithOverride, mergo.WithTransformers(&nullTransformer{})); err != nil {
 					return nil, err
 				}
+				out[index] = defdesc
 
 			} else {
 				// If create is not explicitly set, it's an error
@@ -87,9 +88,8 @@ func MergeWithDefaultPublishingStrategy(def []ServiceDescriptor, in saasv1alpha1
 				} else {
 					return nil, fmt.Errorf("workload has no endpoint named %s, set 'create=true' if you want to add a new endpoint", indesc.EndpointName)
 				}
+				out = append(out, defdesc)
 			}
-
-			out = append(out, defdesc)
 		}
 
 		// cleanup collection after merging
