@@ -97,7 +97,7 @@ var _ = Describe("CORSProxy controller", func() {
 			svc := &corev1.Service{}
 			By("deploying a CORSProxy service",
 				(&testutil.ExpectedResource{
-					Name:      "cors-proxy",
+					Name:      "cors-proxy-http-svc",
 					Namespace: namespace,
 				}).Assert(k8sClient, svc, timeout, poll))
 

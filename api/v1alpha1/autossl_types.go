@@ -122,7 +122,7 @@ type AutoSSLSpec struct {
 	// The external endpoint/s for the component
 	// DEPRECATED
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	Endpoint Endpoint `json:"endpoint"`
+	Endpoint *Endpoint `json:"endpoint,omitempty"`
 	// Configures the AWS load balancer for the component
 	// DEPRECATED
 	// +operator-sdk:csv:customresourcedefinitions:type=spec

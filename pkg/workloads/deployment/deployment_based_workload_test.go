@@ -29,16 +29,17 @@ import (
 
 // TEST GENERATORS
 type TestWorkloadGenerator struct {
-	TName            string
-	TNamespace       string
-	TTraffic         bool
-	TLabels          map[string]string
-	TSelector        map[string]string
-	TTrafficSelector map[string]string
+	TName               string
+	TNamespace          string
+	TTraffic            bool
+	TLabels             map[string]string
+	TSelector           map[string]string
+	TTrafficSelector    map[string]string
+	TPublishingStrategy []service.ServiceDescriptor
 }
 
 var _ DeploymentWorkload = &TestWorkloadGenerator{}
-var _ WithTraffic = &TestWorkloadGenerator{}
+var _ WithPublishingStrategies = &TestWorkloadGenerator{}
 var _ WithMarin3rSidecar = &TestWorkloadGenerator{}
 
 func (gen *TestWorkloadGenerator) Deployment() *resource.Template[*appsv1.Deployment] {
@@ -97,22 +98,8 @@ func (gen *TestWorkloadGenerator) PDBSpec() *saasv1alpha1.PodDisruptionBudgetSpe
 }
 func (gen *TestWorkloadGenerator) SendTraffic() bool { return gen.TTraffic }
 
-func (gen *TestWorkloadGenerator) Services() []*resource.Template[*corev1.Service] {
-	return []*resource.Template[*corev1.Service]{{
-		TemplateBuilder: func(client.Object) (*corev1.Service, error) {
-			return &corev1.Service{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "service",
-					Namespace: gen.TNamespace,
-				},
-				Spec: corev1.ServiceSpec{
-					Ports: []corev1.ServicePort{{
-						Name: "port", Port: 80, TargetPort: intstr.FromInt(80), Protocol: corev1.ProtocolTCP}},
-				},
-			}, nil
-		},
-		IsEnabled: true,
-	}}
+func (gen *TestWorkloadGenerator) PublishingStrategies() ([]service.ServiceDescriptor, error) {
+	return gen.TPublishingStrategy, nil
 }
 
 func (gen *TestWorkloadGenerator) TrafficSelector() map[string]string {
@@ -137,7 +124,7 @@ func TestWorkloadReconciler_NewDeploymentWorkload(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Generates the workload resources",
+			name: "Generates the workload resources using SimpleStrategy",
 			args: args{
 				main: &TestWorkloadGenerator{
 					TName:            "my-workload",
@@ -146,6 +133,21 @@ func TestWorkloadReconciler_NewDeploymentWorkload(t *testing.T) {
 					TLabels:          map[string]string{"l-key": "l-value"},
 					TSelector:        map[string]string{"sel-key": "sel-value"},
 					TTrafficSelector: map[string]string{"traffic": "yes"},
+					TPublishingStrategy: []service.ServiceDescriptor{{
+						PortDefinitions: []corev1.ServicePort{{
+							Name:       "http",
+							Port:       80,
+							Protocol:   corev1.ProtocolTCP,
+							TargetPort: intstr.FromInt(80),
+						}},
+						PublishingStrategy: saasv1alpha1.PublishingStrategy{
+							Strategy:     saasv1alpha1.SimpleStrategy,
+							EndpointName: "HTTP",
+							Simple: &saasv1alpha1.Simple{
+								ServiceType: util.Pointer(saasv1alpha1.ServiceTypeClusterIP),
+							},
+						},
+					}},
 				},
 				canary: nil,
 			},
@@ -165,7 +167,125 @@ func TestWorkloadReconciler_NewDeploymentWorkload(t *testing.T) {
 									"sel-key":  "sel-value",
 									"traffic":  "yes",
 								},
-								Annotations: map[string]string{"basereconciler.3cale.net/secret.secret-hash": ""},
+								Annotations: map[string]string{
+									"basereconciler.3cale.net/secret.secret-hash": "",
+								},
+							},
+							Spec: corev1.PodSpec{
+								Containers: []corev1.Container{{
+									Name:      "container",
+									Image:     "example.com:latest",
+									Resources: corev1.ResourceRequirements{},
+								}}}}}},
+				&policyv1.PodDisruptionBudget{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "my-workload", Namespace: "ns",
+						Labels: map[string]string{"l-key": "l-value"},
+					},
+					Spec: policyv1.PodDisruptionBudgetSpec{
+						Selector:       &metav1.LabelSelector{MatchLabels: map[string]string{"sel-key": "sel-value"}},
+						MaxUnavailable: util.Pointer(intstr.FromInt(1)),
+					}},
+				&autoscalingv2.HorizontalPodAutoscaler{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "my-workload", Namespace: "ns",
+						Labels: map[string]string{"l-key": "l-value"},
+					},
+					Spec: autoscalingv2.HorizontalPodAutoscalerSpec{
+						ScaleTargetRef: autoscalingv2.CrossVersionObjectReference{
+							APIVersion: appsv1.SchemeGroupVersion.String(),
+							Kind:       "Deployment",
+							Name:       "my-workload",
+						},
+						MinReplicas: util.Pointer[int32](1),
+						MaxReplicas: 2,
+						Metrics: []autoscalingv2.MetricSpec{{
+							Type: autoscalingv2.ResourceMetricSourceType,
+							Resource: &autoscalingv2.ResourceMetricSource{
+								Name: corev1.ResourceName("cpu"),
+								Target: autoscalingv2.MetricTarget{
+									Type:               autoscalingv2.UtilizationMetricType,
+									AverageUtilization: util.Pointer[int32](90),
+								}}}}}},
+				&monitoringv1.PodMonitor{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "my-workload", Namespace: "ns",
+						Labels: map[string]string{"l-key": "l-value"},
+					},
+					Spec: monitoringv1.PodMonitorSpec{
+						PodMetricsEndpoints: nil,
+						Selector: metav1.LabelSelector{
+							MatchLabels: map[string]string{"sel-key": "sel-value"},
+						},
+					}},
+				&corev1.Service{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "my-workload-http-svc", Namespace: "ns",
+						Labels:      map[string]string{"l-key": "l-value"},
+						Annotations: map[string]string{},
+					},
+					Spec: corev1.ServiceSpec{
+						Selector: map[string]string{"sel-key": "sel-value", "traffic": "yes"},
+						Ports: []corev1.ServicePort{{
+							Name: "http", Port: 80, TargetPort: intstr.FromInt(80), Protocol: corev1.ProtocolTCP}},
+						Type: corev1.ServiceTypeClusterIP,
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Generates the workload resources using Marin3rSidecarStrategy",
+			args: args{
+				main: &TestWorkloadGenerator{
+					TName:            "my-workload",
+					TNamespace:       "ns",
+					TTraffic:         true,
+					TLabels:          map[string]string{"l-key": "l-value"},
+					TSelector:        map[string]string{"sel-key": "sel-value"},
+					TTrafficSelector: map[string]string{"traffic": "yes"},
+					TPublishingStrategy: []service.ServiceDescriptor{{
+						PortDefinitions: []corev1.ServicePort{{
+							Name:       "http",
+							Port:       80,
+							Protocol:   corev1.ProtocolTCP,
+							TargetPort: intstr.FromInt(80),
+						}},
+						PublishingStrategy: saasv1alpha1.PublishingStrategy{
+							Strategy:     saasv1alpha1.Marin3rSidecarStrategy,
+							EndpointName: "HTTP",
+							Marin3rSidecar: &saasv1alpha1.Marin3rSidecarSpec{
+								Simple: &saasv1alpha1.Simple{
+									ServiceType: util.Pointer(saasv1alpha1.ServiceTypeClusterIP),
+								},
+							},
+						},
+					}},
+				},
+				canary: nil,
+			},
+			want: []client.Object{
+				&appsv1.Deployment{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "my-workload", Namespace: "ns",
+						Labels: map[string]string{"l-key": "l-value"}},
+					Spec: appsv1.DeploymentSpec{
+						Replicas: util.Pointer[int32](1),
+						Selector: &metav1.LabelSelector{MatchLabels: map[string]string{"sel-key": "sel-value"}},
+						Template: corev1.PodTemplateSpec{
+							ObjectMeta: metav1.ObjectMeta{
+								Labels: map[string]string{
+									"orig-key":                  "orig-value",
+									"l-key":                     "l-value",
+									"sel-key":                   "sel-value",
+									"traffic":                   "yes",
+									"marin3r.3scale.net/status": "enabled",
+								},
+								Annotations: map[string]string{
+									"basereconciler.3cale.net/secret.secret-hash": "",
+									"marin3r.3scale.net/node-id":                  "my-workload",
+									"marin3r.3scale.net/shutdown-manager.enabled": "true",
+								},
 							},
 							Spec: corev1.PodSpec{
 								Containers: []corev1.Container{{
@@ -232,13 +352,15 @@ func TestWorkloadReconciler_NewDeploymentWorkload(t *testing.T) {
 						}}},
 				&corev1.Service{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "service", Namespace: "ns",
-						Labels: map[string]string{"l-key": "l-value"},
+						Name: "my-workload-http-marin3r", Namespace: "ns",
+						Labels:      map[string]string{"l-key": "l-value"},
+						Annotations: map[string]string{},
 					},
 					Spec: corev1.ServiceSpec{
 						Selector: map[string]string{"sel-key": "sel-value", "traffic": "yes"},
 						Ports: []corev1.ServicePort{{
-							Name: "port", Port: 80, TargetPort: intstr.FromInt(80), Protocol: corev1.ProtocolTCP}},
+							Name: "http", Port: 80, TargetPort: intstr.FromInt(80), Protocol: corev1.ProtocolTCP}},
+						Type: corev1.ServiceTypeClusterIP,
 					},
 				},
 			},
@@ -460,8 +582,8 @@ func Test_applyMeta(t *testing.T) {
 
 func Test_applyTrafficSelectorToService(t *testing.T) {
 	type args struct {
-		main   WithTraffic
-		canary WithTraffic
+		main   WithCanary
+		canary WithCanary
 	}
 	tests := []struct {
 		name     string
@@ -642,49 +764,6 @@ func Test_applyNodeIdToEnvoyConfig(t *testing.T) {
 	}
 }
 
-func Test_toWithTraffic(t *testing.T) {
-	type args struct {
-		w DeploymentWorkload
-	}
-	tests := []struct {
-		name string
-		args args
-		want WithTraffic
-	}{
-		{
-			name: "Detects a nil value",
-			args: args{
-				w: nil,
-			},
-			want: nil,
-		},
-		{
-			name: "Detects interface containing nil value",
-			args: args{
-				w: func() DeploymentWorkload {
-					val := (*TestWorkloadGenerator)(nil)
-					return val
-				}(),
-			},
-			want: nil,
-		},
-		{
-			name: "Converts DeploymentWorkload to WithTraffic",
-			args: args{
-				w: &TestWorkloadGenerator{},
-			},
-			want: &TestWorkloadGenerator{},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := toWithTraffic(tt.args.w); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("toWithTraffic() = %+v, want %+v", got, tt.want)
-			}
-		})
-	}
-}
-
 func Test_marin3rSidecarToDeployment(t *testing.T) {
 	type args struct {
 		sd service.ServiceDescriptor
@@ -747,6 +826,49 @@ func Test_marin3rSidecarToDeployment(t *testing.T) {
 			got, _ := tt.template.Apply(marin3rSidecarToDeployment(tt.args.sd)).Build(context.TODO(), nil, nil)
 			if diff := cmp.Diff(got, tt.want); len(diff) > 0 {
 				t.Errorf("marin3rSidecarToDeployment() got diff %v", diff)
+			}
+		})
+	}
+}
+
+func Test_toWithCanaryOrNil(t *testing.T) {
+	type args struct {
+		w DeploymentWorkload
+	}
+	tests := []struct {
+		name string
+		args args
+		want WithCanary
+	}{
+		{
+			name: "Detects a nil value",
+			args: args{
+				w: nil,
+			},
+			want: nil,
+		},
+		{
+			name: "Detects interface containing nil value",
+			args: args{
+				w: func() DeploymentWorkload {
+					val := (*TestWorkloadGenerator)(nil)
+					return val
+				}(),
+			},
+			want: nil,
+		},
+		{
+			name: "Converts DeploymentWorkload to WithTraffic",
+			args: args{
+				w: &TestWorkloadGenerator{},
+			},
+			want: &TestWorkloadGenerator{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := toWithCanaryOrNil(tt.args.w); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("toWithCanaryOrNil() = %+v, want %+v", got, tt.want)
 			}
 		})
 	}

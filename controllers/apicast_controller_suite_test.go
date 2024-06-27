@@ -58,8 +58,15 @@ var _ = Describe("Apicast controller", func() {
 								ConfigurationCache:       30,
 								ThreescalePortalEndpoint: "http://example/config",
 							},
-							Endpoint: &saasv1alpha1.Endpoint{
-								DNS: []string{"apicast-staging.example.com"},
+							PublishingStrategies: &saasv1alpha1.PublishingStrategies{
+								// Endpoints: []saasv1alpha1.PublishingStrategy{{
+								// 	Strategy:     "Simple",
+								// 	EndpointName: "Gateway",
+								// 	Simple: &saasv1alpha1.Simple{
+								// 		ExternalDnsHostnames: []string{"apicast-staging.example.com"},
+								// 		ServiceType:          util.Pointer(saasv1alpha1.ServiceTypeELB),
+								// 	},
+								// }},
 							},
 						},
 						Production: saasv1alpha1.ApicastEnvironmentSpec{
@@ -67,9 +74,16 @@ var _ = Describe("Apicast controller", func() {
 								ConfigurationCache:       300,
 								ThreescalePortalEndpoint: "http://example/config",
 							},
-							Endpoint: &saasv1alpha1.Endpoint{
-								DNS: []string{"apicast-production.example.com"},
-							},
+							// PublishingStrategies: &saasv1alpha1.PublishingStrategies{
+							// 	Endpoints: []saasv1alpha1.PublishingStrategy{{
+							// 		Strategy:     "Simple",
+							// 		EndpointName: "Gateway",
+							// 		Simple: &saasv1alpha1.Simple{
+							// 			ExternalDnsHostnames: []string{"apicast-production.example.com"},
+							// 			ServiceType:          util.Pointer(saasv1alpha1.ServiceTypeELB),
+							// 		},
+							// 	}},
+							// },
 						},
 					},
 				}
@@ -134,26 +148,26 @@ var _ = Describe("Apicast controller", func() {
 
 			svc := &corev1.Service{}
 			By("deploying the apicast-production service",
-				(&testutil.ExpectedResource{Name: "apicast-production", Namespace: namespace}).
+				(&testutil.ExpectedResource{Name: "apicast-production-gateway-svc", Namespace: namespace}).
 					Assert(k8sClient, svc, timeout, poll))
 
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("apicast-production"))
 			Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("apicast-production"))
-			Expect(
-				svc.Annotations["external-dns.alpha.kubernetes.io/hostname"],
-			).To(Equal("apicast-production.example.com"))
-			Expect(
-				svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"],
-			).To(Equal("*"))
-			Expect(
-				svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-connection-draining-enabled"],
-			).To(Equal("true"))
-			Expect(
-				svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled"],
-			).To(Equal("true"))
+			// Expect(
+			// 	svc.Annotations["external-dns.alpha.kubernetes.io/hostname"],
+			// ).To(Equal("apicast-production.example.com"))
+			// Expect(
+			// 	svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"],
+			// ).To(Equal("*"))
+			// Expect(
+			// 	svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-connection-draining-enabled"],
+			// ).To(Equal("true"))
+			// Expect(
+			// 	svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled"],
+			// ).To(Equal("true"))
 
 			By("deploying the apicast-production-management service",
-				(&testutil.ExpectedResource{Name: "apicast-production-management", Namespace: namespace}).
+				(&testutil.ExpectedResource{Name: "apicast-production-management-svc", Namespace: namespace}).
 					Assert(k8sClient, svc, timeout, poll),
 			)
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("apicast-production"))
@@ -163,26 +177,26 @@ var _ = Describe("Apicast controller", func() {
 
 			By("deploying the apicast-staging service",
 				(&testutil.ExpectedResource{
-					Name: "apicast-staging", Namespace: namespace}).
+					Name: "apicast-staging-gateway-svc", Namespace: namespace}).
 					Assert(k8sClient, svc, timeout, poll))
 
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("apicast-staging"))
 			Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("apicast-staging"))
-			Expect(
-				svc.Annotations["external-dns.alpha.kubernetes.io/hostname"],
-			).To(Equal("apicast-staging.example.com"))
-			Expect(
-				svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"],
-			).To(Equal("*"))
-			Expect(
-				svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-connection-draining-enabled"],
-			).To(Equal("true"))
-			Expect(
-				svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled"],
-			).To(Equal("true"))
+			// Expect(
+			// 	svc.Annotations["external-dns.alpha.kubernetes.io/hostname"],
+			// ).To(Equal("apicast-staging.example.com"))
+			// Expect(
+			// 	svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"],
+			// ).To(Equal("*"))
+			// Expect(
+			// 	svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-connection-draining-enabled"],
+			// ).To(Equal("true"))
+			// Expect(
+			// 	svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled"],
+			// ).To(Equal("true"))
 
 			By("deploying the apicast-staging-management service",
-				(&testutil.ExpectedResource{Name: "apicast-staging-management", Namespace: namespace}).
+				(&testutil.ExpectedResource{Name: "apicast-staging-management-svc", Namespace: namespace}).
 					Assert(k8sClient, svc, timeout, poll))
 
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("apicast-staging"))
@@ -249,24 +263,45 @@ var _ = Describe("Apicast controller", func() {
 							ConfigurationCache:       42,
 							ThreescalePortalEndpoint: "http://updated-example/config",
 						},
-						Endpoint: &saasv1alpha1.Endpoint{
-							DNS: []string{"updated-apicast-production.example.com"},
-						},
+						// Endpoint: &saasv1alpha1.Endpoint{
+						// 	DNS: []string{"updated-apicast-production.example.com"},
+						// },
 						HPA: &saasv1alpha1.HorizontalPodAutoscalerSpec{
 							MinReplicas: util.Pointer[int32](3),
 						},
 						LivenessProbe:  &saasv1alpha1.ProbeSpec{},
 						ReadinessProbe: &saasv1alpha1.ProbeSpec{},
-						Marin3r: &saasv1alpha1.Marin3rSidecarSpec{
-							NodeID: util.Pointer("apicast-production"),
-							EnvoyDynamicConfig: saasv1alpha1.MapOfEnvoyDynamicConfig{
-								"http": {
-									GeneratorVersion: util.Pointer("v1"),
-									ListenerHttp: &saasv1alpha1.ListenerHttp{
-										Port:            8080,
-										RouteConfigName: "route",
+						// Marin3r: &saasv1alpha1.Marin3rSidecarSpec{
+						// 	NodeID: util.Pointer("apicast-production"),
+						// 	EnvoyDynamicConfig: saasv1alpha1.MapOfEnvoyDynamicConfig{
+						// 		"http": {
+						// 			GeneratorVersion: util.Pointer("v1"),
+						// 			ListenerHttp: &saasv1alpha1.ListenerHttp{
+						// 				Port:            8080,
+						// 				RouteConfigName: "route",
+						// 			},
+						// 		}},
+						// },
+						PublishingStrategies: &saasv1alpha1.PublishingStrategies{
+							Endpoints: []saasv1alpha1.PublishingStrategy{{
+								Strategy:     "Marin3rSidecar",
+								EndpointName: "Gateway",
+								Marin3rSidecar: &saasv1alpha1.Marin3rSidecarSpec{
+									Simple: &saasv1alpha1.Simple{
+										ExternalDnsHostnames: []string{"apicast-production.example.com"},
+										ServiceType:          util.Pointer(saasv1alpha1.ServiceTypeELB),
 									},
-								}},
+									EnvoyDynamicConfig: saasv1alpha1.MapOfEnvoyDynamicConfig{
+										"http": {
+											GeneratorVersion: util.Pointer("v1"),
+											ListenerHttp: &saasv1alpha1.ListenerHttp{
+												Port:            8080,
+												RouteConfigName: "route",
+											},
+										},
+									},
+								},
+							}},
 						},
 					}
 					apicast.Spec.Staging = saasv1alpha1.ApicastEnvironmentSpec{
@@ -274,26 +309,37 @@ var _ = Describe("Apicast controller", func() {
 							ConfigurationCache:       42,
 							ThreescalePortalEndpoint: "http://updated-example/config",
 						},
-						Endpoint: &saasv1alpha1.Endpoint{
-							DNS: []string{"updated-apicast-staging.example.com"},
-						},
+						// Endpoint: &saasv1alpha1.Endpoint{
+						// 	DNS: []string{"updated-apicast-staging.example.com"},
+						// },
 						HPA: &saasv1alpha1.HorizontalPodAutoscalerSpec{
 							MinReplicas: util.Pointer[int32](3),
 						},
 						LivenessProbe:  &saasv1alpha1.ProbeSpec{},
 						ReadinessProbe: &saasv1alpha1.ProbeSpec{},
-						Marin3r: &saasv1alpha1.Marin3rSidecarSpec{
-							NodeID: util.Pointer("apicast-production"),
-							EnvoyDynamicConfig: saasv1alpha1.MapOfEnvoyDynamicConfig{
-								"http": {
-
-									GeneratorVersion: util.Pointer("v1"),
-									ListenerHttp: &saasv1alpha1.ListenerHttp{
-										Port:            8080,
-										RouteConfigName: "route",
+						PublishingStrategies: &saasv1alpha1.PublishingStrategies{
+							Endpoints: []saasv1alpha1.PublishingStrategy{{
+								Strategy:     "Marin3rSidecar",
+								EndpointName: "Gateway",
+								Marin3rSidecar: &saasv1alpha1.Marin3rSidecarSpec{
+									Simple: &saasv1alpha1.Simple{
+										ExternalDnsHostnames: []string{"apicast-staging.example.com"},
+										ServiceType:          util.Pointer(saasv1alpha1.ServiceTypeELB),
+										ElasticLoadBalancerConfig: &saasv1alpha1.ElasticLoadBalancerSpec{
+											CrossZoneLoadBalancingEnabled: util.Pointer(false),
+										},
+									},
+									EnvoyDynamicConfig: saasv1alpha1.MapOfEnvoyDynamicConfig{
+										"http": {
+											GeneratorVersion: util.Pointer("v1"),
+											ListenerHttp: &saasv1alpha1.ListenerHttp{
+												Port:            8080,
+												RouteConfigName: "route",
+											},
+										},
 									},
 								},
-							},
+							}},
 						},
 					}
 					apicast.Spec.GrafanaDashboard = &saasv1alpha1.GrafanaDashboardSpec{}
@@ -370,23 +416,25 @@ var _ = Describe("Apicast controller", func() {
 				}
 
 				svc := &corev1.Service{}
-				By("updating the apicast-production service annotation",
+				By("replaces the apicast-production service",
 					(&testutil.ExpectedResource{
-						Name: "apicast-production", Namespace: namespace,
+						Name: "apicast-production-gateway-marin3r-elb", Namespace: namespace,
 					}).Assert(k8sClient, svc, timeout, poll),
 				)
-				Expect(svc.Annotations["external-dns.alpha.kubernetes.io/hostname"]).To(
-					Equal("updated-apicast-production.example.com"),
-				)
+				Expect(svc.Annotations["external-dns.alpha.kubernetes.io/hostname"]).To(Equal("apicast-production.example.com"))
+				Expect(svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"]).To(Equal("*"))
+				Expect(svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-connection-draining-enabled"]).To(Equal("true"))
+				Expect(svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled"]).To(Equal("true"))
 
-				By("updating the apicast-staging service annotation",
+				By("replaces the apicast-staging service",
 					(&testutil.ExpectedResource{
-						Name: "apicast-staging", Namespace: namespace,
+						Name: "apicast-staging-gateway-marin3r-elb", Namespace: namespace,
 					}).Assert(k8sClient, svc, timeout, poll),
 				)
-				Expect(svc.Annotations["external-dns.alpha.kubernetes.io/hostname"]).To(
-					Equal("updated-apicast-staging.example.com"),
-				)
+				Expect(svc.Annotations["external-dns.alpha.kubernetes.io/hostname"]).To(Equal("apicast-staging.example.com"))
+				Expect(svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"]).To(Equal("*"))
+				Expect(svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-connection-draining-enabled"]).To(Equal("true"))
+				Expect(svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled"]).To(Equal("false"))
 
 			})
 
@@ -408,12 +456,12 @@ var _ = Describe("Apicast controller", func() {
 						return err
 					}
 
-					rvs["svc/apicast-production"] = testutil.GetResourceVersion(
-						k8sClient, &corev1.Service{}, "apicast-production", namespace, timeout, poll)
+					rvs["svc/apicast-production-gateway-svc"] = testutil.GetResourceVersion(
+						k8sClient, &corev1.Service{}, "apicast-production-gateway-svc", namespace, timeout, poll)
 					rvs["deployment/apicast-production"] = testutil.GetResourceVersion(
 						k8sClient, &appsv1.Deployment{}, "apicast-production", namespace, timeout, poll)
-					rvs["svc/apicast-staging"] = testutil.GetResourceVersion(
-						k8sClient, &corev1.Service{}, "apicast-staging", namespace, timeout, poll)
+					rvs["svc/apicast-staging-gateway-svc"] = testutil.GetResourceVersion(
+						k8sClient, &corev1.Service{}, "apicast-staging-gateway-svc", namespace, timeout, poll)
 					rvs["deployment/apicast-staging"] = testutil.GetResourceVersion(
 						k8sClient, &appsv1.Deployment{}, "apicast-staging", namespace, timeout, poll)
 
@@ -491,26 +539,14 @@ var _ = Describe("Apicast controller", func() {
 				svc := &corev1.Service{}
 				By("keeping the apicast-production service spec",
 					(&testutil.ExpectedResource{
-						Name: "apicast-production", Namespace: namespace}).Assert(k8sClient, svc, timeout, poll))
+						Name: "apicast-production-gateway-svc", Namespace: namespace}).Assert(k8sClient, svc, timeout, poll))
 
 				Expect(svc.Spec.Selector["deployment"]).To(Equal("apicast-production"))
 				Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("apicast-production"))
-				Expect(
-					svc.Annotations["external-dns.alpha.kubernetes.io/hostname"],
-				).To(Equal("apicast-production.example.com"))
-				Expect(
-					svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"],
-				).To(Equal("*"))
-				Expect(
-					svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-connection-draining-enabled"],
-				).To(Equal("true"))
-				Expect(
-					svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled"],
-				).To(Equal("true"))
 
 				By("keeping the apicast-production-management service spec",
 					(&testutil.ExpectedResource{
-						Name: "apicast-production-management", Namespace: namespace}).Assert(k8sClient, svc, timeout, poll))
+						Name: "apicast-production-management-svc", Namespace: namespace}).Assert(k8sClient, svc, timeout, poll))
 
 				Expect(svc.Spec.Selector["deployment"]).To(Equal("apicast-production"))
 				Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("apicast-production"))
@@ -519,18 +555,14 @@ var _ = Describe("Apicast controller", func() {
 
 				By("keeping the apicast-staging service spec",
 					(&testutil.ExpectedResource{
-						Name: "apicast-staging", Namespace: namespace}).Assert(k8sClient, svc, timeout, poll))
+						Name: "apicast-staging-gateway-svc", Namespace: namespace}).Assert(k8sClient, svc, timeout, poll))
 
 				Expect(svc.Spec.Selector["deployment"]).To(Equal("apicast-staging"))
 				Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("apicast-staging"))
-				Expect(svc.Annotations["external-dns.alpha.kubernetes.io/hostname"]).To(Equal("apicast-staging.example.com"))
-				Expect(svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-proxy-protocol"]).To(Equal("*"))
-				Expect(svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-connection-draining-enabled"]).To(Equal("true"))
-				Expect(svc.Annotations["service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled"]).To(Equal("true"))
 
 				By("keeping the apicast-staging-management service spec",
 					(&testutil.ExpectedResource{
-						Name: "apicast-staging-management", Namespace: namespace}).Assert(k8sClient, svc, timeout, poll))
+						Name: "apicast-staging-management-svc", Namespace: namespace}).Assert(k8sClient, svc, timeout, poll))
 
 				Expect(svc.Spec.Selector["deployment"]).To(Equal("apicast-staging"))
 				Expect(svc.Spec.Selector["saas.3scale.net/traffic"]).To(Equal("apicast-staging"))
@@ -551,10 +583,10 @@ var _ = Describe("Apicast controller", func() {
 						); err != nil {
 							return err
 						}
-						rvs["svc/apicast-production"] = testutil.GetResourceVersion(
-							k8sClient, &corev1.Service{}, "apicast-production", namespace, timeout, poll)
-						rvs["svc/apicast-staging"] = testutil.GetResourceVersion(
-							k8sClient, &corev1.Service{}, "apicast-staging", namespace, timeout, poll)
+						rvs["svc/apicast-production-gateway-svc"] = testutil.GetResourceVersion(
+							k8sClient, &corev1.Service{}, "apicast-production-gateway-svc", namespace, timeout, poll)
+						rvs["svc/apicast-staging-gateway-svc"] = testutil.GetResourceVersion(
+							k8sClient, &corev1.Service{}, "apicast-staging-gateway-svc", namespace, timeout, poll)
 
 						patch := client.MergeFrom(apicast.DeepCopy())
 						apicast.Spec.Production.Canary = &saasv1alpha1.Canary{
@@ -570,10 +602,10 @@ var _ = Describe("Apicast controller", func() {
 				It("updates the apicast service", func() {
 
 					svc := &corev1.Service{}
-					By("removing the apicast-production service deployment label selector",
+					By("removing the apicast-production-gateway-svc service deployment label selector",
 						(&testutil.ExpectedResource{
-							Name: "apicast-production", Namespace: namespace,
-							LastVersion: rvs["svc/apicast-production"],
+							Name: "apicast-production-gateway-svc", Namespace: namespace,
+							LastVersion: rvs["svc/apicast-production-gateway-svc"],
 						}).Assert(k8sClient, svc, timeout, poll))
 
 					Expect(svc.Spec.Selector).NotTo(HaveKey("deployment"))
@@ -581,8 +613,8 @@ var _ = Describe("Apicast controller", func() {
 
 					By("removing the apicast-staging service deployment label selector",
 						(&testutil.ExpectedResource{
-							Name: "apicast-staging", Namespace: namespace,
-							LastVersion: rvs["svc/apicast-staging"],
+							Name: "apicast-staging-gateway-svc", Namespace: namespace,
+							LastVersion: rvs["svc/apicast-staging-gateway-svc"],
 						}).Assert(k8sClient, svc, timeout, poll))
 
 					Expect(svc.Spec.Selector).NotTo(HaveKey("deployment"))

@@ -514,7 +514,11 @@ func (in *AutoSSLSpec) DeepCopyInto(out *AutoSSLSpec) {
 		*out = new(PublishingStrategies)
 		(*in).DeepCopyInto(*out)
 	}
-	in.Endpoint.DeepCopyInto(&out.Endpoint)
+	if in.Endpoint != nil {
+		in, out := &in.Endpoint, &out.Endpoint
+		*out = new(Endpoint)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.LoadBalancer != nil {
 		in, out := &in.LoadBalancer, &out.LoadBalancer
 		*out = new(ElasticLoadBalancerSpec)

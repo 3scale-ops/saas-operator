@@ -1311,7 +1311,6 @@ spec:
                 type: array
             required:
             - config
-            - endpoint
             type: object
           status:
             description: AutoSSLStatus defines the observed state of AutoSSL

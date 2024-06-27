@@ -43,22 +43,23 @@ func New(main DeploymentWorkload, canary DeploymentWorkload) ([]resource.Templat
 			return nil, err
 		}
 
-		for _, svcDescriptor := range pss {
-			desc := svcDescriptor
+		for _, desc := range pss {
+			d := desc
+
 			switch desc.Strategy {
 
 			case saasv1alpha1.SimpleStrategy:
 				services = append(services,
-					resource.NewTemplateFromObjectFunction(func() *corev1.Service { return desc.Service(main.GetKey().Name, "svc") }).
+					resource.NewTemplateFromObjectFunction(func() *corev1.Service { return d.Service(main.GetKey().Name, "svc") }).
 						WithMutation(mutators.SetServiceLiveValues()),
 				)
 
 			case saasv1alpha1.Marin3rSidecarStrategy:
-				if svcDescriptor.Marin3rSidecar == nil {
+				if desc.Marin3rSidecar == nil {
 					return nil, fmt.Errorf("Marin3rSidecarSpec is missing, can't implement strategy without it")
 				}
 				services = append(services,
-					resource.NewTemplateFromObjectFunction(func() *corev1.Service { return desc.Service(main.GetKey().Name, "marin3r") }).
+					resource.NewTemplateFromObjectFunction(func() *corev1.Service { return d.Service(main.GetKey().Name, "marin3r") }).
 						WithMutation(mutators.SetServiceLiveValues()),
 				)
 
@@ -67,18 +68,18 @@ func New(main DeploymentWorkload, canary DeploymentWorkload) ([]resource.Templat
 				// TODO: a proper mechanism to identify resource templates should exists. Basereconciler
 				// should provide one.
 				if deployment, ok := resources[0].(*resource.Template[*appsv1.Deployment]); ok {
-					deployment.Apply(marin3rSidecarToDeployment(svcDescriptor))
+					deployment.Apply(marin3rSidecarToDeployment(desc))
 				} else {
 					return nil, fmt.Errorf("expected a Deployment but found something else")
 				}
 				// Add EnvoyConfig resource
-				dynamicConfigurations := svcDescriptor.Marin3rSidecar.EnvoyDynamicConfig.AsList()
+				dynamicConfigurations := desc.Marin3rSidecar.EnvoyDynamicConfig.AsList()
 				resources = append(resources,
 					resource.NewTemplate(
 						envoyconfig.New(EmptyKey, EmptyKey.Name, factory.Default(), dynamicConfigurations...)).
 						WithEnabled(len(dynamicConfigurations) > 0).
 						Apply(meta[*marin3rv1alpha1.EnvoyConfig](main)).
-						Apply(nodeIdToEnvoyConfig(svcDescriptor)),
+						Apply(nodeIdToEnvoyConfig(desc)),
 				)
 			}
 		}
@@ -88,7 +89,7 @@ func New(main DeploymentWorkload, canary DeploymentWorkload) ([]resource.Templat
 	for _, svct := range services {
 		resources = append(resources,
 			svct.Apply(meta[*corev1.Service](main)).
-				Apply(trafficSelectorToService(main.(WithCanary), toWithTraffic(canary))),
+				Apply(trafficSelectorToService(main.(WithCanary), toWithCanaryOrNil(canary))),
 		)
 	}
 
@@ -221,7 +222,7 @@ func selector[T client.Object](w DeploymentWorkload) resource.TemplateBuilderFun
 func trafficSelectorToDeployment(w DeploymentWorkload) resource.TemplateBuilderFunction[*appsv1.Deployment] {
 	return func(o client.Object) (*appsv1.Deployment, error) {
 		dep := o.(*appsv1.Deployment)
-		if w, ok := w.(WithTraffic); ok {
+		if w, ok := w.(WithCanary); ok {
 			dep.Spec.Template.ObjectMeta.Labels = util.MergeMaps(map[string]string{}, dep.Spec.Template.ObjectMeta.Labels, w.TrafficSelector())
 		}
 		return dep, nil
@@ -246,9 +247,9 @@ func nodeIdToEnvoyConfig(sd service.ServiceDescriptor) resource.TemplateBuilderF
 	}
 }
 
-func toWithTraffic(w DeploymentWorkload) WithTraffic {
+func toWithCanaryOrNil(w DeploymentWorkload) WithCanary {
 	if lo.IsNil(w) {
 		return nil
 	}
-	return w.(WithTraffic)
+	return w.(WithCanary)
 }

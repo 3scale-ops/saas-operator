@@ -47,8 +47,10 @@ func InitializePublishingStrategies(spec *PublishingStrategies) *PublishingStrat
 		new := &PublishingStrategies{}
 		new.Default()
 		return new
+	} else {
+		spec.Default()
+		return spec
 	}
-	return spec
 }
 
 type Strategy string

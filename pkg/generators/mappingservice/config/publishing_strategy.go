@@ -13,7 +13,7 @@ func DefaultPublishingStrategy() []service.ServiceDescriptor {
 		{
 			PublishingStrategy: saasv1alpha1.PublishingStrategy{
 				Strategy:     saasv1alpha1.SimpleStrategy,
-				EndpointName: "Mapping",
+				EndpointName: "HTTP",
 				Simple:       &saasv1alpha1.Simple{ServiceType: util.Pointer(saasv1alpha1.ServiceTypeClusterIP)},
 			},
 			PortDefinitions: []corev1.ServicePort{{
