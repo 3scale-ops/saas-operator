@@ -14,7 +14,7 @@ import (
 func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 	type args struct {
 		def []ServiceDescriptor
-		in  saasv1alpha1.PublishingStrategies
+		in  *saasv1alpha1.PublishingStrategies
 	}
 	tests := []struct {
 		name    string
@@ -52,7 +52,7 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 						}},
 					},
 				},
-				in: saasv1alpha1.PublishingStrategies{
+				in: &saasv1alpha1.PublishingStrategies{
 					Mode: util.Pointer(saasv1alpha1.PublishingStrategiesReconcileModeMerge),
 					Endpoints: []saasv1alpha1.PublishingStrategy{{
 						Strategy:     saasv1alpha1.Marin3rSidecarStrategy,
@@ -138,7 +138,7 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 						}},
 					},
 				},
-				in: saasv1alpha1.PublishingStrategies{
+				in: &saasv1alpha1.PublishingStrategies{
 					Mode: util.Pointer(saasv1alpha1.PublishingStrategiesReconcileModeMerge),
 					Endpoints: []saasv1alpha1.PublishingStrategy{{
 						Strategy:     saasv1alpha1.SimpleStrategy,
@@ -212,7 +212,7 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 						}},
 					},
 				},
-				in: saasv1alpha1.PublishingStrategies{
+				in: &saasv1alpha1.PublishingStrategies{
 					Mode: util.Pointer(saasv1alpha1.PublishingStrategiesReconcileModeReplace),
 					Endpoints: []saasv1alpha1.PublishingStrategy{
 						{
@@ -268,7 +268,7 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 				def: []ServiceDescriptor{
 					{PublishingStrategy: saasv1alpha1.PublishingStrategy{EndpointName: "Gateway"}},
 				},
-				in: saasv1alpha1.PublishingStrategies{
+				in: &saasv1alpha1.PublishingStrategies{
 					Mode:      util.Pointer(saasv1alpha1.PublishingStrategiesReconcileModeMerge),
 					Endpoints: []saasv1alpha1.PublishingStrategy{{EndpointName: "Other"}},
 				},
@@ -282,7 +282,7 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 				def: []ServiceDescriptor{
 					{PublishingStrategy: saasv1alpha1.PublishingStrategy{EndpointName: "Gateway"}},
 				},
-				in: saasv1alpha1.PublishingStrategies{
+				in: &saasv1alpha1.PublishingStrategies{
 					Mode:      util.Pointer(saasv1alpha1.PublishingStrategiesReconcileModeReplace),
 					Endpoints: []saasv1alpha1.PublishingStrategy{{EndpointName: "Other"}},
 				},
@@ -296,7 +296,7 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 				def: []ServiceDescriptor{
 					{PublishingStrategy: saasv1alpha1.PublishingStrategy{EndpointName: "Gateway"}},
 				},
-				in: saasv1alpha1.PublishingStrategies{
+				in: &saasv1alpha1.PublishingStrategies{
 					Mode: util.Pointer(saasv1alpha1.PublishingStrategiesReconcileModeMerge),
 					Endpoints: []saasv1alpha1.PublishingStrategy{{
 						Strategy:     saasv1alpha1.SimpleStrategy,
@@ -321,7 +321,7 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 				def: []ServiceDescriptor{
 					{PublishingStrategy: saasv1alpha1.PublishingStrategy{EndpointName: "Gateway"}},
 				},
-				in: saasv1alpha1.PublishingStrategies{
+				in: &saasv1alpha1.PublishingStrategies{
 					Mode: util.Pointer(saasv1alpha1.PublishingStrategiesReconcileModeReplace),
 					Endpoints: []saasv1alpha1.PublishingStrategy{{
 						Strategy:     saasv1alpha1.SimpleStrategy,
@@ -345,7 +345,7 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 				def: []ServiceDescriptor{
 					{PublishingStrategy: saasv1alpha1.PublishingStrategy{EndpointName: "Gateway"}},
 				},
-				in: saasv1alpha1.PublishingStrategies{
+				in: &saasv1alpha1.PublishingStrategies{
 					Mode: util.Pointer(saasv1alpha1.PublishingStrategiesReconcileModeMerge),
 				},
 			},
@@ -360,7 +360,7 @@ func TestMergeWithDefaultPublishingStrategy(t *testing.T) {
 				def: []ServiceDescriptor{
 					{PublishingStrategy: saasv1alpha1.PublishingStrategy{EndpointName: "Gateway"}},
 				},
-				in: saasv1alpha1.PublishingStrategies{
+				in: &saasv1alpha1.PublishingStrategies{
 					Mode: util.Pointer(saasv1alpha1.PublishingStrategiesReconcileModeReplace),
 				},
 			},

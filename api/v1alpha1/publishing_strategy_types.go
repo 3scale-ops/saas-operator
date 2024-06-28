@@ -1,19 +1,22 @@
 package v1alpha1
 
 import (
+	"context"
 	"reflect"
 	"sort"
 
 	"github.com/3scale-ops/basereconciler/util"
 	envoyconfig "github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type PublishingStrategiesReconcileMode string
 
-var (
+const (
 	PublishingStrategiesReconcileModeMerge   PublishingStrategiesReconcileMode = "Merge"
 	PublishingStrategiesReconcileModeReplace PublishingStrategiesReconcileMode = "Replace"
 )
@@ -428,92 +431,101 @@ type RawConfig struct {
 // UPGRADE CODE
 // TODO: delete after upgrade release
 
-func PublishingStrategyGenerator(bldrs ...WorkloadPublishingStrategyBuilder) *PublishingStrategies {
+func UpgradeCR2PublishingStrategies(ctx context.Context, cl client.Client, bldrs ...WorkloadPublishingStrategyUpgrader) (*PublishingStrategies, error) {
 	endpoints := []PublishingStrategy{}
 	for _, bldr := range bldrs {
-		if endpoint := bldr.Build(); endpoint != nil {
+		if endpoint, err := bldr.Build(ctx, cl); endpoint != nil && err == nil {
 			endpoints = append(endpoints, *endpoint)
+		} else if err != nil {
+			return nil, err
 		}
 	}
+
 	return &PublishingStrategies{
 		Mode:      util.Pointer(PublishingStrategiesReconcileModeMerge),
 		Endpoints: endpoints,
-	}
+	}, nil
 }
 
-type WorkloadPublishingStrategyBuilder struct {
-	Name                 string
-	ServiceNameOverride  *string
+type WorkloadPublishingStrategyUpgrader struct {
+	EndpointName         string
+	ServiceName          string
+	ServiceType          ServiceType
+	Namespace            string
 	Endpoint             *Endpoint
 	Marin3r              *Marin3rSidecarSpec
-	ELB                  *ElasticLoadBalancerSpec
-	NLB                  *NetworkLoadBalancerSpec
+	ELBSpec              *ElasticLoadBalancerSpec
+	NLBSpec              *NetworkLoadBalancerSpec
 	ServicePortOverrides []corev1.ServicePort
+	Create               bool
 }
 
-func (gen WorkloadPublishingStrategyBuilder) Build() *PublishingStrategy {
+func (gen WorkloadPublishingStrategyUpgrader) Build(ctx context.Context, cl client.Client) (*PublishingStrategy, error) {
 	var out *PublishingStrategy
+	var service *Simple
 
-	if gen.Marin3r != nil {
-		// generate a Marin3rSidecar strategy
-		out = &PublishingStrategy{
-			Strategy:       Marin3rSidecarStrategy,
-			EndpointName:   gen.Name,
-			Marin3rSidecar: gen.Marin3r,
+	// STEP1: check if Service already exists. In case it exists, keeps its original
+	// name and type (defaults for Service names and types have changed).
+	svc := &corev1.Service{ObjectMeta: metav1.ObjectMeta{Name: gen.ServiceName, Namespace: gen.Namespace}}
+	if err := cl.Get(ctx, util.ObjectKey(svc), svc); err != nil {
+		if errors.IsNotFound(err) {
+			service = &Simple{}
+			if gen.Create {
+				// this actually only applies to backend's internal listener
+				return nil, nil
+			}
+		} else {
+			return nil, err
 		}
-		gen.Marin3r.Simple = &Simple{}
-
-		if gen.Endpoint != nil && len(gen.Endpoint.DNS) > 0 {
-			out.Marin3rSidecar.Simple.ExternalDnsHostnames = gen.Endpoint.DNS
-		}
-
-		if gen.ServiceNameOverride != nil {
-			out.Marin3rSidecar.Simple.ServiceNameOverride = gen.ServiceNameOverride
-		}
-
-		if gen.ELB != nil {
-			out.Marin3rSidecar.ServiceType = util.Pointer(ServiceTypeELB)
-			out.Marin3rSidecar.Simple.ElasticLoadBalancerConfig = gen.ELB
-		}
-
-		if gen.NLB != nil {
-			out.Marin3rSidecar.Simple.ServiceType = util.Pointer(ServiceTypeNLB)
-			out.Marin3rSidecar.Simple.NetworkLoadBalancerConfig = gen.NLB
-		}
-
-		if len(gen.ServicePortOverrides) > 0 {
-			out.Marin3rSidecar.Simple.ServicePortsOverride = gen.ServicePortOverrides
-		}
-
 	} else {
-		// generate a Simple strategy
-		out = &PublishingStrategy{
-			Strategy:     SimpleStrategy,
-			EndpointName: gen.Name,
-			Simple: &Simple{
-				ServiceType: util.Pointer(ServiceTypeClusterIP),
-			},
+		service = &Simple{
+			ServiceNameOverride: &gen.ServiceName,
+			ServiceType:         &gen.ServiceType,
 		}
-
-		if gen.Endpoint != nil && len(gen.Endpoint.DNS) > 0 {
-			out.Simple.ExternalDnsHostnames = gen.Endpoint.DNS
-		}
-
-		if gen.ServiceNameOverride != nil {
-			out.Simple.ServiceNameOverride = gen.ServiceNameOverride
-		}
-
-		if gen.ELB != nil {
-			out.Simple.ServiceType = util.Pointer(ServiceTypeELB)
-			out.Simple.ElasticLoadBalancerConfig = gen.ELB
-		}
-
-		if gen.NLB != nil {
-			out.Simple.ServiceType = util.Pointer(ServiceTypeNLB)
-			out.Simple.NetworkLoadBalancerConfig = gen.NLB
-		}
-
 	}
 
-	return out
+	// STEP2: migrate deprecated API fields
+	if gen.Endpoint != nil && len(gen.Endpoint.DNS) > 0 {
+		service.ExternalDnsHostnames = gen.Endpoint.DNS
+	}
+
+	if gen.ELBSpec != nil {
+		service.ElasticLoadBalancerConfig = gen.ELBSpec
+	}
+
+	if gen.NLBSpec != nil {
+		service.NetworkLoadBalancerConfig = gen.NLBSpec
+	}
+
+	if len(gen.ServicePortOverrides) > 0 {
+		service.ServicePortsOverride = gen.ServicePortOverrides
+	}
+
+	// STEP3: create appropriate strategy if required
+	if gen.Marin3r != nil {
+		out = &PublishingStrategy{
+			Strategy:       Marin3rSidecarStrategy,
+			EndpointName:   gen.EndpointName,
+			Marin3rSidecar: gen.Marin3r,
+		}
+
+		out.Marin3rSidecar.Simple = service
+		if out.Marin3rSidecar.Simple.ServiceType == nil {
+			out.Marin3rSidecar.Simple.ServiceType = &gen.ServiceType
+		}
+
+	} else if !reflect.DeepEqual(service, &Simple{}) {
+
+		out = &PublishingStrategy{
+			Strategy:     SimpleStrategy,
+			EndpointName: gen.EndpointName,
+			Simple:       service,
+		}
+	}
+
+	if out != nil && gen.Create {
+		out.Create = &gen.Create
+	}
+
+	return out, nil
 }

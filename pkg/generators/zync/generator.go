@@ -176,7 +176,11 @@ func (gen *APIGenerator) TrafficSelector() map[string]string {
 }
 
 func (gen *APIGenerator) PublishingStrategies() ([]service.ServiceDescriptor, error) {
-	return config.DefaultApiPublishingStrategy(), nil
+	if pss, err := service.MergeWithDefaultPublishingStrategy(config.DefaultApiPublishingStrategy(), gen.APISpec.PublishingStrategies); err != nil {
+		return nil, err
+	} else {
+		return pss, nil
+	}
 }
 
 // QueGenerator has methods to generate resources for a

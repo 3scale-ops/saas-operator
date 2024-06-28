@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -9,6 +10,10 @@ import (
 	"github.com/google/go-cmp/cmp"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
 
 func TestMarin3rSidecarSpec_Default(t *testing.T) {
@@ -265,37 +270,229 @@ func TestMapOfEnvoyDynamicConfig_AsList(t *testing.T) {
 	}
 }
 
-func TestPublishingStrategyGenerator(t *testing.T) {
+func TestWorkloadPublishingStrategyBuilder_Build(t *testing.T) {
+	type fields struct {
+		EndpointName         string
+		ServiceName          string
+		ServiceType          ServiceType
+		Namespace            string
+		Endpoint             *Endpoint
+		Marin3r              *Marin3rSidecarSpec
+		ELBSpec              *ElasticLoadBalancerSpec
+		NLBSpec              *NetworkLoadBalancerSpec
+		ServicePortsOverride []corev1.ServicePort
+		Create               bool
+	}
 	type args struct {
-		bldrs []WorkloadPublishingStrategyBuilder
+		ctx context.Context
+		cl  client.Client
 	}
 	tests := []struct {
-		name string
-		args args
-		want *PublishingStrategies
+		name    string
+		fields  fields
+		args    args
+		want    *PublishingStrategy
+		wantErr bool
 	}{
 		{
-			name: "Generates the neww fields",
+			name: "Simple/No_Service: does not generate strategy",
+			fields: fields{
+				EndpointName: "HTTP",
+				ServiceName:  "service",
+				ServiceType:  "NLB",
+				Namespace:    "ns",
+			},
 			args: args{
-				bldrs: []WorkloadPublishingStrategyBuilder{
-					{
-						Name:                "HTTP",
-						ServiceNameOverride: util.Pointer("svc1"),
-					},
-					{
-						Name:                "Other",
-						ServiceNameOverride: util.Pointer("svc2"),
-					},
+				ctx: context.TODO(),
+				cl:  fake.NewClientBuilder().Build(),
+			},
+			want:    nil,
+			wantErr: false,
+		},
+		{
+			name: "Simple/No_Service: upgrades api",
+			fields: fields{
+				EndpointName: "HTTP",
+				ServiceName:  "service",
+				ServiceType:  "NLB",
+				Namespace:    "ns",
+				Endpoint:     &Endpoint{DNS: []string{"hostname"}},
+			},
+			args: args{
+				ctx: context.TODO(),
+				cl:  fake.NewClientBuilder().Build(),
+			},
+			want: &PublishingStrategy{
+				Strategy:     "Simple",
+				EndpointName: "HTTP",
+				Simple: &Simple{
+					ExternalDnsHostnames: []string{"hostname"},
 				},
 			},
-			want: &PublishingStrategies{},
+			wantErr: false,
+		},
+		{
+			name: "Simple/With_Service: keeps old service",
+			fields: fields{
+				EndpointName: "HTTP",
+				ServiceName:  "service",
+				ServiceType:  "NLB",
+				Namespace:    "ns",
+			},
+			args: args{
+				ctx: context.TODO(),
+				cl:  fake.NewClientBuilder().WithObjects(&corev1.Service{ObjectMeta: metav1.ObjectMeta{Name: "service", Namespace: "ns"}}).Build(),
+			},
+			want: &PublishingStrategy{
+				Strategy:     "Simple",
+				EndpointName: "HTTP",
+				Simple: &Simple{
+					ServiceType:         util.Pointer(ServiceTypeNLB),
+					ServiceNameOverride: util.Pointer("service"),
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Marin3r/No_Service: upgrades API",
+			fields: fields{
+				EndpointName: "HTTP",
+				ServiceName:  "service",
+				ServiceType:  "NLB",
+				Namespace:    "ns",
+				Marin3r: &Marin3rSidecarSpec{
+					Ports:              []SidecarPort{{Name: "port1", Port: 1111}, {Name: "port2", Port: 2222}},
+					EnvoyDynamicConfig: map[string]EnvoyDynamicConfig{},
+				},
+				ServicePortsOverride: []corev1.ServicePort{
+					{Name: "port1", Port: 1111, TargetPort: intstr.FromString("port1")},
+					{Name: "port1", Port: 2222, TargetPort: intstr.FromString("port2")},
+				},
+			},
+			args: args{
+				ctx: context.TODO(),
+				cl:  fake.NewClientBuilder().Build(),
+			},
+			want: &PublishingStrategy{
+				Strategy:     "Marin3rSidecar",
+				EndpointName: "HTTP",
+				Marin3rSidecar: &Marin3rSidecarSpec{
+					Simple: &Simple{
+						ServiceType: util.Pointer(ServiceTypeNLB),
+						ServicePortsOverride: []corev1.ServicePort{
+							{Name: "port1", Port: 1111, TargetPort: intstr.FromString("port1")},
+							{Name: "port1", Port: 2222, TargetPort: intstr.FromString("port2")},
+						},
+					},
+					Ports:              []SidecarPort{{Name: "port1", Port: 1111}, {Name: "port2", Port: 2222}},
+					EnvoyDynamicConfig: map[string]EnvoyDynamicConfig{},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Marin3r/With_Service: upgrades API and keeps old Service",
+			fields: fields{
+				EndpointName: "HTTP",
+				ServiceName:  "service",
+				ServiceType:  "NLB",
+				Namespace:    "ns",
+				Marin3r: &Marin3rSidecarSpec{
+					Ports:              []SidecarPort{{Name: "port1", Port: 1111}, {Name: "port2", Port: 2222}},
+					EnvoyDynamicConfig: map[string]EnvoyDynamicConfig{},
+				},
+				ServicePortsOverride: []corev1.ServicePort{
+					{Name: "port1", Port: 1111, TargetPort: intstr.FromString("port1")},
+					{Name: "port1", Port: 2222, TargetPort: intstr.FromString("port2")},
+				},
+			},
+			args: args{
+				ctx: context.TODO(),
+				cl:  fake.NewClientBuilder().WithObjects(&corev1.Service{ObjectMeta: metav1.ObjectMeta{Name: "service", Namespace: "ns"}}).Build(),
+			},
+			want: &PublishingStrategy{
+				Strategy:     "Marin3rSidecar",
+				EndpointName: "HTTP",
+				Marin3rSidecar: &Marin3rSidecarSpec{
+					Simple: &Simple{
+						ServiceNameOverride: util.Pointer("service"),
+						ServiceType:         util.Pointer(ServiceTypeNLB),
+						ServicePortsOverride: []corev1.ServicePort{
+							{Name: "port1", Port: 1111, TargetPort: intstr.FromString("port1")},
+							{Name: "port1", Port: 2222, TargetPort: intstr.FromString("port2")},
+						},
+					},
+					Ports:              []SidecarPort{{Name: "port1", Port: 1111}, {Name: "port2", Port: 2222}},
+					EnvoyDynamicConfig: map[string]EnvoyDynamicConfig{},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Appends new endpoint only if Service exists",
+			fields: fields{
+				EndpointName: "New",
+				ServiceName:  "service",
+				ServiceType:  "ClusterIP",
+				Namespace:    "ns",
+				Endpoint:     &Endpoint{DNS: []string{"hostname"}},
+				Create:       true,
+			},
+			args: args{
+				ctx: context.TODO(),
+				cl:  fake.NewClientBuilder().WithObjects(&corev1.Service{ObjectMeta: metav1.ObjectMeta{Name: "service", Namespace: "ns"}}).Build(),
+			},
+			want: &PublishingStrategy{
+				Strategy:     "Simple",
+				EndpointName: "New",
+				Simple: &Simple{
+					ServiceNameOverride:  util.Pointer("service"),
+					ServiceType:          util.Pointer(ServiceTypeClusterIP),
+					ExternalDnsHostnames: []string{"hostname"},
+				},
+				Create: util.Pointer(true),
+			},
+			wantErr: false,
+		},
+		{
+			name: "Don't add new endpoint only if Service doesn't exist",
+			fields: fields{
+				EndpointName: "New",
+				ServiceName:  "service",
+				ServiceType:  "ClusterIP",
+				Namespace:    "ns",
+				Endpoint:     &Endpoint{DNS: []string{"hostname"}},
+				Create:       true,
+			},
+			args: args{
+				ctx: context.TODO(),
+				cl:  fake.NewClientBuilder().Build(),
+			},
+			want:    nil,
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := PublishingStrategyGenerator(tt.args.bldrs...)
+			gen := WorkloadPublishingStrategyUpgrader{
+				EndpointName:         tt.fields.EndpointName,
+				ServiceName:          tt.fields.ServiceName,
+				ServiceType:          tt.fields.ServiceType,
+				Namespace:            tt.fields.Namespace,
+				Endpoint:             tt.fields.Endpoint,
+				Marin3r:              tt.fields.Marin3r,
+				ELBSpec:              tt.fields.ELBSpec,
+				NLBSpec:              tt.fields.NLBSpec,
+				ServicePortOverrides: tt.fields.ServicePortsOverride,
+				Create:               tt.fields.Create,
+			}
+			got, err := gen.Build(tt.args.ctx, tt.args.cl)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("WorkloadPublishingStrategyBuilder.Build() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 			if diff := cmp.Diff(got, tt.want); len(diff) > 0 {
-				t.Errorf("PublishingStrategyGenerator() = diff %v", diff)
+				t.Errorf("WorkloadPublishingStrategyBuilder.Build() = diff %v", diff)
 			}
 		})
 	}

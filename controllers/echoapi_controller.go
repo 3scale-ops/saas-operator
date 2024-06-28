@@ -23,7 +23,10 @@ import (
 	"github.com/3scale-ops/basereconciler/util"
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/pkg/generators/echoapi"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // EchoAPIReconciler reconciles a EchoAPI object
@@ -48,7 +51,8 @@ func (r *EchoAPIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	ctx, _ = r.Logger(ctx, "name", req.Name, "namespace", req.Namespace)
 	instance := &saasv1alpha1.EchoAPI{}
 	result := r.ManageResourceLifecycle(ctx, req, instance,
-		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)))
+		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)),
+		reconciler.WithInitializationFunc(EchoapiResourceUpgrader))
 	if result.ShouldReturn() {
 		return result.Values()
 	}
@@ -74,4 +78,49 @@ func (r *EchoAPIReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		ctrl.NewControllerManagedBy(mgr).
 			For(&saasv1alpha1.EchoAPI{}),
 	)
+}
+
+func EchoapiResourceUpgrader(ctx context.Context, cl client.Client, o client.Object) error {
+	instance := o.(*saasv1alpha1.EchoAPI)
+
+	if instance.Spec.PublishingStrategies == nil {
+		pss, err := saasv1alpha1.UpgradeCR2PublishingStrategies(ctx, cl,
+			saasv1alpha1.WorkloadPublishingStrategyUpgrader{
+				EndpointName: "HTTP",
+				ServiceName:  "echo-api-nlb",
+				Namespace:    instance.GetNamespace(),
+				ServiceType:  saasv1alpha1.ServiceTypeNLB,
+				Endpoint:     instance.Spec.Endpoint,
+				Marin3r:      instance.Spec.Marin3r,
+				NLBSpec:      instance.Spec.LoadBalancer,
+				ServicePortOverrides: []corev1.ServicePort{
+					{
+						Name:       "http",
+						Protocol:   corev1.ProtocolTCP,
+						Port:       80,
+						TargetPort: intstr.FromString("echo-api-http"),
+					},
+					{
+						Name:       "https",
+						Protocol:   corev1.ProtocolTCP,
+						Port:       443,
+						TargetPort: intstr.FromString("echo-api-https"),
+					},
+				},
+			},
+		)
+
+		if err != nil {
+			return err
+		}
+
+		if len(pss.Endpoints) > 0 {
+			instance.Spec.PublishingStrategies = pss
+			instance.Spec.Endpoint = nil
+			instance.Spec.LoadBalancer = nil
+			instance.Spec.Marin3r = nil
+		}
+	}
+
+	return nil
 }

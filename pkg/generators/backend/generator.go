@@ -239,9 +239,10 @@ func (gen *ListenerGenerator) TrafficSelector() map[string]string {
 	}
 }
 func (gen *ListenerGenerator) PublishingStrategies() ([]service.ServiceDescriptor, error) {
-	if pss, err := service.MergeWithDefaultPublishingStrategy(config.DefaultListenerPublishingStrategy(), *gen.ListenerSpec.PublishingStrategies); err != nil {
+	if pss, err := service.MergeWithDefaultPublishingStrategy(config.DefaultListenerPublishingStrategy(), gen.ListenerSpec.PublishingStrategies); err != nil {
 		return nil, err
 	} else {
+		// spew.Dump(pss)
 		return pss, nil
 	}
 }

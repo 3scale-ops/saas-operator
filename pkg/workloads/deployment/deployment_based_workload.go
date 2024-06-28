@@ -45,7 +45,6 @@ func New(main DeploymentWorkload, canary DeploymentWorkload) ([]resource.Templat
 
 		for _, desc := range pss {
 			d := desc
-
 			switch desc.Strategy {
 
 			case saasv1alpha1.SimpleStrategy:

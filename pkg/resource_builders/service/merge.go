@@ -30,7 +30,11 @@ func (t *nullTransformer) Transformer(typ reflect.Type) func(dst, src reflect.Va
 	return nil
 }
 
-func MergeWithDefaultPublishingStrategy(defaults []ServiceDescriptor, in saasv1alpha1.PublishingStrategies) ([]ServiceDescriptor, error) {
+func MergeWithDefaultPublishingStrategy(defaults []ServiceDescriptor, in *saasv1alpha1.PublishingStrategies) ([]ServiceDescriptor, error) {
+
+	if in == nil {
+		return defaults, nil
+	}
 
 	out := []ServiceDescriptor{}
 

@@ -26,6 +26,7 @@ import (
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // ZyncReconciler reconciles a Zync object
@@ -53,7 +54,8 @@ func (r *ZyncReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	ctx, _ = r.Logger(ctx, "name", req.Name, "namespace", req.Namespace)
 	instance := &saasv1alpha1.Zync{}
 	result := r.ManageResourceLifecycle(ctx, req, instance,
-		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)))
+		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)),
+		reconciler.WithInitializationFunc(ZyncResourceUpgrader))
 	if result.ShouldReturn() {
 		return result.Values()
 	}
@@ -79,4 +81,31 @@ func (r *ZyncReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			For(&saasv1alpha1.Zync{}).
 			Watches(&corev1.Secret{}, r.FilteredEventHandler(&saasv1alpha1.ZyncList{}, nil, r.Log)),
 	)
+}
+
+func ZyncResourceUpgrader(ctx context.Context, cl client.Client, o client.Object) error {
+	instance := o.(*saasv1alpha1.Zync)
+
+	if instance.Spec.API == nil || instance.Spec.API.PublishingStrategies == nil {
+		pss, err := saasv1alpha1.UpgradeCR2PublishingStrategies(ctx, cl,
+			saasv1alpha1.WorkloadPublishingStrategyUpgrader{
+				EndpointName: "HTTP",
+				ServiceName:  "zync",
+				Namespace:    instance.GetNamespace(),
+				ServiceType:  saasv1alpha1.ServiceTypeClusterIP,
+			},
+		)
+
+		if err != nil {
+			return err
+		}
+
+		if len(pss.Endpoints) > 0 {
+			if instance.Spec.API == nil {
+				instance.Spec.API = &saasv1alpha1.APISpec{}
+			}
+			instance.Spec.API.PublishingStrategies = pss
+		}
+	}
+	return nil
 }

@@ -23,7 +23,10 @@ import (
 	"github.com/3scale-ops/basereconciler/util"
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/pkg/generators/apicast"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // ApicastReconciler reconciles a Apicast object
@@ -49,7 +52,9 @@ func (r *ApicastReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	ctx, _ = r.Logger(ctx, "name", req.Name, "namespace", req.Namespace)
 	instance := &saasv1alpha1.Apicast{}
 	result := r.ManageResourceLifecycle(ctx, req, instance,
-		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)))
+		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)),
+		reconciler.WithInitializationFunc(ApicastResourceUpgrader),
+	)
 	if result.ShouldReturn() {
 		return result.Values()
 	}
@@ -77,4 +82,102 @@ func (r *ApicastReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		ctrl.NewControllerManagedBy(mgr).
 			For(&saasv1alpha1.Apicast{}),
 	)
+}
+
+func ApicastResourceUpgrader(ctx context.Context, cl client.Client, o client.Object) error {
+	instance := o.(*saasv1alpha1.Apicast)
+
+	if instance.Spec.Production.PublishingStrategies == nil {
+		pss, err := saasv1alpha1.UpgradeCR2PublishingStrategies(ctx, cl,
+			saasv1alpha1.WorkloadPublishingStrategyUpgrader{
+				EndpointName: "Gateway",
+				ServiceName:  "apicast-production",
+				Namespace:    instance.GetNamespace(),
+				ServiceType:  saasv1alpha1.ServiceTypeELB,
+				Endpoint:     instance.Spec.Production.Endpoint,
+				Marin3r:      instance.Spec.Production.Marin3r,
+				ELBSpec:      instance.Spec.Production.LoadBalancer,
+				NLBSpec:      nil,
+				ServicePortOverrides: []corev1.ServicePort{
+					{
+						Name:       "gateway-http",
+						Protocol:   corev1.ProtocolTCP,
+						Port:       80,
+						TargetPort: intstr.FromString("gateway-http"),
+					},
+					{
+						Name:       "gateway-https",
+						Protocol:   corev1.ProtocolTCP,
+						Port:       443,
+						TargetPort: intstr.FromString("gateway-https"),
+					},
+				},
+			},
+			saasv1alpha1.WorkloadPublishingStrategyUpgrader{
+				EndpointName: "Management",
+				ServiceName:  "apicast-production-management",
+				Namespace:    instance.GetNamespace(),
+				ServiceType:  saasv1alpha1.ServiceTypeClusterIP,
+			},
+		)
+
+		if err != nil {
+			return err
+		}
+
+		if len(pss.Endpoints) > 0 {
+			instance.Spec.Production.PublishingStrategies = pss
+			instance.Spec.Production.Endpoint = nil
+			instance.Spec.Production.Marin3r = nil
+			instance.Spec.Production.LoadBalancer = nil
+		}
+	}
+
+	if instance.Spec.Staging.PublishingStrategies == nil {
+		pss, err := saasv1alpha1.UpgradeCR2PublishingStrategies(ctx, cl,
+			saasv1alpha1.WorkloadPublishingStrategyUpgrader{
+				EndpointName: "Gateway",
+				ServiceName:  "apicast-staging",
+				Namespace:    instance.GetNamespace(),
+				ServiceType:  saasv1alpha1.ServiceTypeELB,
+				Endpoint:     instance.Spec.Staging.Endpoint,
+				Marin3r:      instance.Spec.Staging.Marin3r,
+				ELBSpec:      instance.Spec.Staging.LoadBalancer,
+				NLBSpec:      nil,
+				ServicePortOverrides: []corev1.ServicePort{
+					{
+						Name:       "gateway-http",
+						Protocol:   corev1.ProtocolTCP,
+						Port:       80,
+						TargetPort: intstr.FromString("gateway-http"),
+					},
+					{
+						Name:       "gateway-https",
+						Protocol:   corev1.ProtocolTCP,
+						Port:       443,
+						TargetPort: intstr.FromString("gateway-https"),
+					},
+				},
+			},
+			saasv1alpha1.WorkloadPublishingStrategyUpgrader{
+				EndpointName: "Management",
+				ServiceName:  "apicast-staging-management",
+				Namespace:    instance.GetNamespace(),
+				ServiceType:  saasv1alpha1.ServiceTypeClusterIP,
+			},
+		)
+
+		if err != nil {
+			return err
+		}
+
+		if len(pss.Endpoints) > 0 {
+			instance.Spec.Staging.PublishingStrategies = pss
+			instance.Spec.Staging.Endpoint = nil
+			instance.Spec.Staging.Marin3r = nil
+			instance.Spec.Staging.LoadBalancer = nil
+		}
+	}
+
+	return nil
 }

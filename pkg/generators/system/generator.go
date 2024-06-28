@@ -411,7 +411,7 @@ func (gen *AppGenerator) TrafficSelector() map[string]string {
 	}
 }
 func (gen *AppGenerator) PublishingStrategies() ([]service.ServiceDescriptor, error) {
-	if pss, err := service.MergeWithDefaultPublishingStrategy(config.DefaultAppPublishingStrategy(), *gen.Spec.PublishingStrategies); err != nil {
+	if pss, err := service.MergeWithDefaultPublishingStrategy(config.DefaultAppPublishingStrategy(), gen.Spec.PublishingStrategies); err != nil {
 		return nil, err
 	} else {
 		return pss, nil

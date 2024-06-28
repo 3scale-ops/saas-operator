@@ -49,7 +49,7 @@ var _ = Describe("Backend controller", func() {
 	When("deploying a defaulted Backend instance", func() {
 
 		BeforeEach(func() {
-			By("creating an Backend simple resource")
+			By("creating an Backend minimal resource")
 			backend = &saasv1alpha1.Backend{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "instance",
