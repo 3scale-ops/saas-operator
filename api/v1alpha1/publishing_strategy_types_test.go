@@ -4,7 +4,9 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/3scale-ops/basereconciler/util"
 	envoyconfig "github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
+	"github.com/google/go-cmp/cmp"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
@@ -258,6 +260,42 @@ func TestMapOfEnvoyDynamicConfig_AsList(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.mapofconfs.AsList(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MapOfEnvoyDynamicConfig.AsList() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPublishingStrategyGenerator(t *testing.T) {
+	type args struct {
+		bldrs []WorkloadPublishingStrategyBuilder
+	}
+	tests := []struct {
+		name string
+		args args
+		want *PublishingStrategies
+	}{
+		{
+			name: "Generates the neww fields",
+			args: args{
+				bldrs: []WorkloadPublishingStrategyBuilder{
+					{
+						Name:                "HTTP",
+						ServiceNameOverride: util.Pointer("svc1"),
+					},
+					{
+						Name:                "Other",
+						ServiceNameOverride: util.Pointer("svc2"),
+					},
+				},
+			},
+			want: &PublishingStrategies{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := PublishingStrategyGenerator(tt.args.bldrs...)
+			if diff := cmp.Diff(got, tt.want); len(diff) > 0 {
+				t.Errorf("PublishingStrategyGenerator() = diff %v", diff)
 			}
 		})
 	}

@@ -425,15 +425,95 @@ type RawConfig struct {
 	Value runtime.RawExtension `json:"value"`
 }
 
-// publishingStrategy:
-//   - strategy: Simple
-//     endpoint: Management
-//     type: ClusterIP
-//   - type: marin3r
-//     endpoint: ApicastGateway
-//     loadBalancerType: NLB
-//     marin3r: [...]
-//     hostnames: [...]
-//   - type: GatewayAPI
-//     endpoint: ApicastGateway
-//     gateway: something
+// UPGRADE CODE
+// TODO: delete after upgrade release
+
+func PublishingStrategyGenerator(bldrs ...WorkloadPublishingStrategyBuilder) *PublishingStrategies {
+	endpoints := []PublishingStrategy{}
+	for _, bldr := range bldrs {
+		if endpoint := bldr.Build(); endpoint != nil {
+			endpoints = append(endpoints, *endpoint)
+		}
+	}
+	return &PublishingStrategies{
+		Mode:      util.Pointer(PublishingStrategiesReconcileModeMerge),
+		Endpoints: endpoints,
+	}
+}
+
+type WorkloadPublishingStrategyBuilder struct {
+	Name                 string
+	ServiceNameOverride  *string
+	Endpoint             *Endpoint
+	Marin3r              *Marin3rSidecarSpec
+	ELB                  *ElasticLoadBalancerSpec
+	NLB                  *NetworkLoadBalancerSpec
+	ServicePortOverrides []corev1.ServicePort
+}
+
+func (gen WorkloadPublishingStrategyBuilder) Build() *PublishingStrategy {
+	var out *PublishingStrategy
+
+	if gen.Marin3r != nil {
+		// generate a Marin3rSidecar strategy
+		out = &PublishingStrategy{
+			Strategy:       Marin3rSidecarStrategy,
+			EndpointName:   gen.Name,
+			Marin3rSidecar: gen.Marin3r,
+		}
+		gen.Marin3r.Simple = &Simple{}
+
+		if gen.Endpoint != nil && len(gen.Endpoint.DNS) > 0 {
+			out.Marin3rSidecar.Simple.ExternalDnsHostnames = gen.Endpoint.DNS
+		}
+
+		if gen.ServiceNameOverride != nil {
+			out.Marin3rSidecar.Simple.ServiceNameOverride = gen.ServiceNameOverride
+		}
+
+		if gen.ELB != nil {
+			out.Marin3rSidecar.ServiceType = util.Pointer(ServiceTypeELB)
+			out.Marin3rSidecar.Simple.ElasticLoadBalancerConfig = gen.ELB
+		}
+
+		if gen.NLB != nil {
+			out.Marin3rSidecar.Simple.ServiceType = util.Pointer(ServiceTypeNLB)
+			out.Marin3rSidecar.Simple.NetworkLoadBalancerConfig = gen.NLB
+		}
+
+		if len(gen.ServicePortOverrides) > 0 {
+			out.Marin3rSidecar.Simple.ServicePortsOverride = gen.ServicePortOverrides
+		}
+
+	} else {
+		// generate a Simple strategy
+		out = &PublishingStrategy{
+			Strategy:     SimpleStrategy,
+			EndpointName: gen.Name,
+			Simple: &Simple{
+				ServiceType: util.Pointer(ServiceTypeClusterIP),
+			},
+		}
+
+		if gen.Endpoint != nil && len(gen.Endpoint.DNS) > 0 {
+			out.Simple.ExternalDnsHostnames = gen.Endpoint.DNS
+		}
+
+		if gen.ServiceNameOverride != nil {
+			out.Simple.ServiceNameOverride = gen.ServiceNameOverride
+		}
+
+		if gen.ELB != nil {
+			out.Simple.ServiceType = util.Pointer(ServiceTypeELB)
+			out.Simple.ElasticLoadBalancerConfig = gen.ELB
+		}
+
+		if gen.NLB != nil {
+			out.Simple.ServiceType = util.Pointer(ServiceTypeNLB)
+			out.Simple.NetworkLoadBalancerConfig = gen.NLB
+		}
+
+	}
+
+	return out
+}
