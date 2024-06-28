@@ -13,7 +13,7 @@ import (
 
 type PublishingStrategiesReconcileMode string
 
-var (
+const (
 	PublishingStrategiesReconcileModeMerge   PublishingStrategiesReconcileMode = "Merge"
 	PublishingStrategiesReconcileModeReplace PublishingStrategiesReconcileMode = "Replace"
 )

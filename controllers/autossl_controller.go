@@ -24,6 +24,7 @@ import (
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/pkg/generators/autossl"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // AutoSSLReconciler reconciles a AutoSSL object
@@ -48,7 +49,8 @@ func (r *AutoSSLReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	ctx, _ = r.Logger(ctx, "name", req.Name, "namespace", req.Namespace)
 	instance := &saasv1alpha1.AutoSSL{}
 	result := r.ManageResourceLifecycle(ctx, req, instance,
-		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)))
+		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)),
+		reconciler.WithInitializationFunc(AutosslResourceUpgrader))
 	if result.ShouldReturn() {
 		return result.Values()
 	}
@@ -76,4 +78,25 @@ func (r *AutoSSLReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		ctrl.NewControllerManagedBy(mgr).
 			For(&saasv1alpha1.AutoSSL{}),
 	)
+}
+
+func AutosslResourceUpgrader(ctx context.Context, cl client.Client, o client.Object) error {
+	instance := o.(*saasv1alpha1.AutoSSL)
+
+	if instance.Spec.PublishingStrategies == nil {
+		instance.Spec.PublishingStrategies = saasv1alpha1.PublishingStrategyGenerator(
+			saasv1alpha1.WorkloadPublishingStrategyBuilder{
+				Name:                "Proxy",
+				ServiceNameOverride: util.Pointer("autossl"),
+				Endpoint:            instance.Spec.Endpoint,
+				Marin3r:             nil,
+				ELB:                 instance.Spec.LoadBalancer,
+				NLB:                 nil,
+			},
+		)
+		instance.Spec.Endpoint = nil
+		instance.Spec.LoadBalancer = nil
+	}
+
+	return nil
 }

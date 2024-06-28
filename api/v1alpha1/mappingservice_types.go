@@ -115,6 +115,10 @@ type MappingServiceSpec struct {
 	// If specified, the pod's tolerations.
 	// +optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
+	// Describes how the services provided by this workload are exposed to its consumers
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	PublishingStrategies *PublishingStrategies `json:"publishingStrategies,omitempty"`
 }
 
 // Default implements defaulting for MappingServiceSpec

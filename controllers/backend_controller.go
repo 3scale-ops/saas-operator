@@ -24,7 +24,9 @@ import (
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/pkg/generators/backend"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // BackendReconciler reconciles a Backend object
@@ -52,7 +54,8 @@ func (r *BackendReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	ctx, _ = r.Logger(ctx, "name", req.Name, "namespace", req.Namespace)
 	instance := &saasv1alpha1.Backend{}
 	result := r.ManageResourceLifecycle(ctx, req, instance,
-		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)))
+		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)),
+		reconciler.WithInitializationFunc(BackendResourceUpgrader))
 	if result.ShouldReturn() {
 		return result.Values()
 	}
@@ -83,4 +86,52 @@ func (r *BackendReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			For(&saasv1alpha1.Backend{}).
 			Watches(&corev1.Secret{}, r.FilteredEventHandler(&saasv1alpha1.BackendList{}, nil, r.Log)),
 	)
+}
+
+func BackendResourceUpgrader(ctx context.Context, cl client.Client, o client.Object) error {
+	instance := o.(*saasv1alpha1.Backend)
+
+	if instance.Spec.Listener.PublishingStrategies == nil {
+		instance.Spec.Listener.PublishingStrategies = saasv1alpha1.PublishingStrategyGenerator(
+			saasv1alpha1.WorkloadPublishingStrategyBuilder{
+				Name:                "HTTP",
+				ServiceNameOverride: util.Pointer("backend-listener-nlb"),
+				Endpoint:            instance.Spec.Listener.Endpoint,
+				Marin3r:             instance.Spec.Listener.Marin3r,
+				NLB:                 instance.Spec.Listener.LoadBalancer,
+				ServicePortOverrides: []corev1.ServicePort{
+					{
+						Name:       "http",
+						Protocol:   corev1.ProtocolTCP,
+						Port:       80,
+						TargetPort: intstr.FromString("backend-http"),
+					},
+					{
+						Name:       "https",
+						Protocol:   corev1.ProtocolTCP,
+						Port:       443,
+						TargetPort: intstr.FromString("backend-https"),
+					},
+				},
+			},
+			saasv1alpha1.WorkloadPublishingStrategyBuilder{
+				Name:                "Internal",
+				ServiceNameOverride: util.Pointer("backend-listener-internal"),
+				ServicePortOverrides: []corev1.ServicePort{{
+					Name:       "http",
+					Protocol:   corev1.ProtocolTCP,
+					Port:       80,
+					TargetPort: intstr.FromString("http-internal"),
+				}},
+			},
+		)
+		instance.Spec.Listener.Marin3r = nil
+		instance.Spec.Listener.Endpoint = nil
+		instance.Spec.Listener.LoadBalancer = nil
+
+		// Use Replace mode to add the internal endpoint
+		instance.Spec.Listener.PublishingStrategies.Mode = util.Pointer(saasv1alpha1.PublishingStrategiesReconcileModeReplace)
+	}
+
+	return nil
 }
