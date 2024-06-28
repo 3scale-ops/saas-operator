@@ -843,41 +843,6 @@ spec:
                     description: Marin3r configures the Marin3r sidecars for the component
                       DEPRECATED
                     properties:
-                      classicLoadBalancerConfig:
-                        description: Classic LB configuration
-                        properties:
-                          connectionDrainingEnabled:
-                            description: Enables/disables connection draining
-                            type: boolean
-                          connectionDrainingTimeout:
-                            description: Sets the timeout for connection draining
-                            format: int32
-                            type: integer
-                          crossZoneLoadBalancingEnabled:
-                            description: Enables/disables cross zone load balancing
-                            type: boolean
-                          healthcheckHealthyThreshold:
-                            description: Sets the healthy threshold for the load balancer
-                            format: int32
-                            type: integer
-                          healthcheckInterval:
-                            description: Sets the interval between health checks
-                            format: int32
-                            type: integer
-                          healthcheckTimeout:
-                            description: Sets the timeout for the health check
-                            format: int32
-                            type: integer
-                          healthcheckUnhealthyThreshold:
-                            description: Sets the unhealthy threshold for the load
-                              balancer
-                            format: int32
-                            type: integer
-                          proxyProtocol:
-                            description: Enables/disbles use of proxy protocol in
-                              the load balancer
-                            type: boolean
-                        type: object
                       dynamicConfigs:
                         additionalProperties:
                           maxProperties: 2
@@ -1036,6 +1001,41 @@ spec:
                         description: Envoy dynamic configuration. Populating this
                           field causes the operator to create a Marin3r EnvoyConfig
                           resource, so Marin3r must be installed in the cluster.
+                        type: object
+                      elasticLoadBalancerConfig:
+                        description: Classic LB configuration
+                        properties:
+                          connectionDrainingEnabled:
+                            description: Enables/disables connection draining
+                            type: boolean
+                          connectionDrainingTimeout:
+                            description: Sets the timeout for connection draining
+                            format: int32
+                            type: integer
+                          crossZoneLoadBalancingEnabled:
+                            description: Enables/disables cross zone load balancing
+                            type: boolean
+                          healthcheckHealthyThreshold:
+                            description: Sets the healthy threshold for the load balancer
+                            format: int32
+                            type: integer
+                          healthcheckInterval:
+                            description: Sets the interval between health checks
+                            format: int32
+                            type: integer
+                          healthcheckTimeout:
+                            description: Sets the timeout for the health check
+                            format: int32
+                            type: integer
+                          healthcheckUnhealthyThreshold:
+                            description: Sets the unhealthy threshold for the load
+                              balancer
+                            format: int32
+                            type: integer
+                          proxyProtocol:
+                            description: Enables/disbles use of proxy protocol in
+                              the load balancer
+                            type: boolean
                         type: object
                       envoyAPIVersion:
                         description: The Envoy API version to use
@@ -1494,46 +1494,6 @@ spec:
                               description: Marin3rSidecar holds configuration for
                                 the Marin3rSidecar publishing strategy
                               properties:
-                                classicLoadBalancerConfig:
-                                  description: Classic LB configuration
-                                  properties:
-                                    connectionDrainingEnabled:
-                                      description: Enables/disables connection draining
-                                      type: boolean
-                                    connectionDrainingTimeout:
-                                      description: Sets the timeout for connection
-                                        draining
-                                      format: int32
-                                      type: integer
-                                    crossZoneLoadBalancingEnabled:
-                                      description: Enables/disables cross zone load
-                                        balancing
-                                      type: boolean
-                                    healthcheckHealthyThreshold:
-                                      description: Sets the healthy threshold for
-                                        the load balancer
-                                      format: int32
-                                      type: integer
-                                    healthcheckInterval:
-                                      description: Sets the interval between health
-                                        checks
-                                      format: int32
-                                      type: integer
-                                    healthcheckTimeout:
-                                      description: Sets the timeout for the health
-                                        check
-                                      format: int32
-                                      type: integer
-                                    healthcheckUnhealthyThreshold:
-                                      description: Sets the unhealthy threshold for
-                                        the load balancer
-                                      format: int32
-                                      type: integer
-                                    proxyProtocol:
-                                      description: Enables/disbles use of proxy protocol
-                                        in the load balancer
-                                      type: boolean
-                                  type: object
                                 dynamicConfigs:
                                   additionalProperties:
                                     maxProperties: 2
@@ -1701,6 +1661,46 @@ spec:
                                     this field causes the operator to create a Marin3r
                                     EnvoyConfig resource, so Marin3r must be installed
                                     in the cluster.
+                                  type: object
+                                elasticLoadBalancerConfig:
+                                  description: Classic LB configuration
+                                  properties:
+                                    connectionDrainingEnabled:
+                                      description: Enables/disables connection draining
+                                      type: boolean
+                                    connectionDrainingTimeout:
+                                      description: Sets the timeout for connection
+                                        draining
+                                      format: int32
+                                      type: integer
+                                    crossZoneLoadBalancingEnabled:
+                                      description: Enables/disables cross zone load
+                                        balancing
+                                      type: boolean
+                                    healthcheckHealthyThreshold:
+                                      description: Sets the healthy threshold for
+                                        the load balancer
+                                      format: int32
+                                      type: integer
+                                    healthcheckInterval:
+                                      description: Sets the interval between health
+                                        checks
+                                      format: int32
+                                      type: integer
+                                    healthcheckTimeout:
+                                      description: Sets the timeout for the health
+                                        check
+                                      format: int32
+                                      type: integer
+                                    healthcheckUnhealthyThreshold:
+                                      description: Sets the unhealthy threshold for
+                                        the load balancer
+                                      format: int32
+                                      type: integer
+                                    proxyProtocol:
+                                      description: Enables/disbles use of proxy protocol
+                                        in the load balancer
+                                      type: boolean
                                   type: object
                                 envoyAPIVersion:
                                   description: The Envoy API version to use
@@ -1937,7 +1937,7 @@ spec:
                               description: Simple holds configuration for the Simple
                                 publishing strategy
                               properties:
-                                classicLoadBalancerConfig:
+                                elasticLoadBalancerConfig:
                                   description: Classic LB configuration
                                   properties:
                                     connectionDrainingEnabled:

@@ -115,7 +115,7 @@ type Simple struct {
 	// Classic LB configuration
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	ElasticLoadBalancerConfig *ElasticLoadBalancerSpec `json:"classicLoadBalancerConfig,omitempty"`
+	ElasticLoadBalancerConfig *ElasticLoadBalancerSpec `json:"elasticLoadBalancerConfig,omitempty"`
 	// NLB configuration
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
