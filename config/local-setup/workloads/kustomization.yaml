@@ -3,10 +3,10 @@ kind: Component
 namespace: default
 
 resources:
-  # - discoveryservice.yaml
+  - discoveryservice.yaml
   - apicast.yaml
   # - mappingservice.yaml
-  # - autossl.yaml
+  - autossl.yaml
   # - backend.yaml
   # - corsproxy.yaml
   # - echoapi.yaml

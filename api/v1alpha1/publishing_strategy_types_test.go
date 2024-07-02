@@ -275,7 +275,7 @@ func TestPublishingStrategyGenerator(t *testing.T) {
 		want *PublishingStrategies
 	}{
 		{
-			name: "Generates the neww fields",
+			name: "Generates the new fields",
 			args: args{
 				bldrs: []WorkloadPublishingStrategyBuilder{
 					{
@@ -288,7 +288,27 @@ func TestPublishingStrategyGenerator(t *testing.T) {
 					},
 				},
 			},
-			want: &PublishingStrategies{},
+			want: &PublishingStrategies{
+				Mode: util.Pointer(PublishingStrategiesReconcileModeMerge),
+				Endpoints: []PublishingStrategy{
+					{
+						Strategy:     SimpleStrategy,
+						EndpointName: "HTTP",
+						Simple: &Simple{
+							ServiceType:         util.Pointer(ServiceTypeClusterIP),
+							ServiceNameOverride: util.Pointer("svc1"),
+						},
+					},
+					{
+						Strategy:     SimpleStrategy,
+						EndpointName: "Other",
+						Simple: &Simple{
+							ServiceType:         util.Pointer(ServiceTypeClusterIP),
+							ServiceNameOverride: util.Pointer("svc2"),
+						},
+					},
+				},
+			},
 		},
 	}
 	for _, tt := range tests {

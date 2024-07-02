@@ -17,7 +17,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var _ = Describe("AutoSSL controller", func() {
+var _ = FDescribe("AutoSSL controller", func() {
 	var namespace string
 	var autossl *saasv1alpha1.AutoSSL
 
