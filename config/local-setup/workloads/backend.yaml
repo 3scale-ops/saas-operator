@@ -28,78 +28,116 @@ spec:
     redisQueuesDSN: "redis://backend-redis:6379/1"
     redisStorageDSN: "redis://backend-redis:6379/0"
     systemEventsHookPassword: {}
-    systemEventsHookURL: {override: https://REPLACE/master/events/import }
+    systemEventsHookURL: {override: https://REPLACE/master/events/import}
   listener:
     config:
       listenerWorkers: 1
       redisAsync: true
-    endpoint: {dns: [REPLACE]}
     hpa: {}
-    loadBalancer:
-      proxyProtocol: false
-    marin3r:
-      dynamicConfigs:
-        backend_listener_cluster:
-          cluster:
-            host: 127.0.0.1
-            port: 3000
-        http:
-          listenerHttp:
-            proxyProtocol: false
-            port: 38080
-            routeConfigName: router_external
-        http_internal:
-          listenerHttp:
-            port: 38081
-            proxyProtocol: false
-            routeConfigName: router_internal
-        https:
-          listenerHttp:
-            proxyProtocol: false
-            certificateSecretName: backend-cert
-            port: 38443
-            routeConfigName: router_external
-        router_external:
-          routeConfiguration:
-            virtualHosts:
-              - domains: ["*"]
-                name: backend_listener
-                routes:
-                  - direct_response:
-                      status: "404"
-                    match:
-                      prefix: /internal
-                  - match:
-                      prefix: /
-                    route:
-                      cluster: backend_listener_cluster
-        router_internal:
-          routeConfiguration:
-            virtualHosts:
-              - domains: ["*"]
-                name: backend_listener
-                routes:
-                  - match:
-                      prefix: /
-                    route:
-                      cluster: backend_listener_cluster
-      envoyImage: REPLACE
-      nodeID: backend-listener
-      ports:
-        - name: backend-http
-          port: 38080
-        - name: http-internal
-          port: 38081
-        - name: backend-https
-          port: 38443
-        - name: envoy-metrics
-          port: 9901
-      resources: {}
-      shtdnmgrExtraLifecycleHooks:
-        - backend-listener
     pdb: {}
-    replicas: 1
     resources: {}
+    replicas: 1
+    publishingStrategies:
+      endpoints:
+        - name: HTTP
+          strategy: Marin3rSidecar
+          marin3rSidecar:
+            dynamicConfigs:
+              backend_listener_cluster:
+                cluster:
+                  host: 127.0.0.1
+                  isHttp2: false
+                  port: 3000
+                generatorVersion: v1
+              http:
+                generatorVersion: v1
+                listenerHttp:
+                  allowHeadersWithUnderscores: true
+                  enableHttp2: false
+                  port: 38080
+                  proxyProtocol: false
+                  routeConfigName: router_external
+              http_internal:
+                generatorVersion: v1
+                listenerHttp:
+                  allowHeadersWithUnderscores: true
+                  enableHttp2: false
+                  port: 38081
+                  proxyProtocol: false
+                  routeConfigName: router_internal
+              https:
+                generatorVersion: v1
+                listenerHttp:
+                  allowHeadersWithUnderscores: true
+                  certificateSecretName: backend-cert
+                  enableHttp2: false
+                  port: 38443
+                  proxyProtocol: false
+                  routeConfigName: router_external
+              router_external:
+                generatorVersion: v1
+                routeConfiguration:
+                  virtualHosts:
+                    - domains:
+                        - "*"
+                      name: backend_listener
+                      routes:
+                        - direct_response:
+                            status: "404"
+                          match:
+                            prefix: /internal
+                        - match:
+                            prefix: /
+                          route:
+                            cluster: backend_listener_cluster
+              router_internal:
+                generatorVersion: v1
+                routeConfiguration:
+                  virtualHosts:
+                    - domains:
+                        - "*"
+                      name: backend_listener
+                      routes:
+                        - match:
+                            prefix: /
+                          route:
+                            cluster: backend_listener_cluster
+            envoyImage: REPLACE
+            externalDnsHostnames: [REPLACE]
+            networkLoadBalancerConfig:
+              proxyProtocol: false
+            ports:
+              - name: backend-http
+                port: 38080
+              - name: http-internal
+                port: 38081
+              - name: backend-https
+                port: 38443
+              - name: envoy-metrics
+                port: 9901
+            resources: {}
+            servicePorts:
+              - name: http
+                port: 80
+                protocol: TCP
+                targetPort: backend-http
+              - name: https
+                port: 443
+                protocol: TCP
+                targetPort: backend-https
+            serviceType: NLB
+            shtdnmgrExtraLifecycleHooks:
+              - backend-listener
+        - name: Internal
+          strategy: Simple
+          create: true
+          simple:
+            serviceType: ClusterIP
+            servicePorts:
+              - name: http
+                port: 80
+                protocol: TCP
+                targetPort: http-internal
   worker:
     config:
       redisAsync: true

@@ -21,7 +21,7 @@ spec:
       externalEndpoint: https://REPLACE
       internalAPIPassword: {fromSeed: {}}
       internalAPIUser: {fromSeed: {}}
-      internalEndpoint: "http://backend-listener-internal"
+      internalEndpoint: "http://backend-listener-internal-svc"
       redisDSN: "redis://backend-redis:6379/0"
     assets:
       bucket: system-assets # check config/amazon_s3.yml for the specific minio configuration (https://github.com/3scale/porta/blob/master/openshift/system/config/amazon_s3.yml)
@@ -37,7 +37,7 @@ spec:
       host: system-searchd
     zync:
       authToken: {fromSeed: {}}
-      endpoint: "http://zync:8080"
+      endpoint: "http://zync-http-svc:8080"
     smtp:
       address: smtp.sendgrid.net
       authProtocol: plain
@@ -66,7 +66,7 @@ spec:
     apicast:
       stagingDomain: REPLACE
       productionDomain: REPLACE
-      cloudHostedRegistryURL: http://apicast-staging-management:8090/policies
+      cloudHostedRegistryURL: http://apicast-staging-management-svc:8090/policies
       selfManagedRegistryURL: https://policies.apicast.io/latest/policies.json
   app:
     hpa: {}

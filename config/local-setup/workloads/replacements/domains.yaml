@@ -7,7 +7,7 @@
     - select:
         kind: Apicast
       fieldPaths:
-        - spec.staging.endpoint.dns.0
+        - spec.staging.publishingStrategies.endpoints.0.marin3rSidecar.externalDnsHostnames.0
       options:
         delimiter: "."
         index: 1
@@ -31,7 +31,7 @@
     - select:
         kind: Apicast
       fieldPaths:
-        - spec.production.endpoint.dns.0
+        - spec.production.publishingStrategies.endpoints.0.marin3rSidecar.externalDnsHostnames.0
       options:
         delimiter: "."
         index: 1
@@ -70,7 +70,7 @@
     - select:
         kind: AutoSSL
       fieldPaths:
-        - spec.endpoint.dns.0
+        - spec.publishingStrategies.endpoints.0.simple.externalDnsHostnames.0
 
 # CONFIGURE ECHOAPI ENDPOINT
 - source:
@@ -81,7 +81,7 @@
     - select:
         kind: EchoAPI
       fieldPaths:
-        - spec.endpoint.dns.0
+        - spec.publishingStrategies.endpoints.0.marin3rSidecar.externalDnsHostnames.0
     - select:
         kind: Certificate
         name: echoapi-cert
@@ -97,7 +97,7 @@
     - select:
         kind: Backend
       fieldPaths:
-        - spec.listener.endpoint.dns.0
+        - spec.listener.publishingStrategies.endpoints.0.marin3rSidecar.externalDnsHostnames.0
     - select:
         kind: System
       fieldPaths:
