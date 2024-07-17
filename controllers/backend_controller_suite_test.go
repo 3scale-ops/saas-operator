@@ -328,7 +328,6 @@ var _ = Describe("Backend controller", func() {
 							Marin3rSidecar: &saasv1alpha1.Marin3rSidecarSpec{
 								Simple: &saasv1alpha1.Simple{
 									ServiceType: util.Pointer(saasv1alpha1.ServiceTypeNLB),
-									// ExternalDnsHostnames:      []string{},
 									NetworkLoadBalancerConfig: &saasv1alpha1.NetworkLoadBalancerSpec{
 										CrossZoneLoadBalancingEnabled: util.Pointer(false),
 									},

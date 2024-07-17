@@ -51,9 +51,6 @@ var _ = Describe("EchoAPI controller", func() {
 					Namespace: namespace,
 				},
 				Spec: saasv1alpha1.EchoAPISpec{
-					// Endpoint: &saasv1alpha1.Endpoint{
-					// 	DNS: []string{"echo-api.example.com"},
-					// },
 					HPA: &saasv1alpha1.HorizontalPodAutoscalerSpec{
 						Behavior: &autoscalingv2.HorizontalPodAutoscalerBehavior{
 							ScaleUp: &autoscalingv2.HPAScalingRules{

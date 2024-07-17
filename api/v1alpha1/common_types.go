@@ -284,12 +284,6 @@ func InitializeNetworkLoadBalancerSpec(spec *NetworkLoadBalancerSpec, def Networ
 	}
 }
 
-// ClusterIPServiceSpec configures a ClusterIP Service
-type ClusterIPServiceSpec struct{}
-
-// HeadlessServiceSpec configures a Headless Service
-type HeadlessServiceSpec struct{}
-
 // GrafanaDashboardSpec configures the Grafana Dashboard for the component
 type GrafanaDashboardSpec struct {
 	// Label key used by grafana-operator for dashboard discovery
