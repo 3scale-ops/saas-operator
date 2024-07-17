@@ -270,7 +270,7 @@ func TestMapOfEnvoyDynamicConfig_AsList(t *testing.T) {
 	}
 }
 
-func TestWorkloadPublishingStrategyBuilder_Build(t *testing.T) {
+func TestWorkloadPublishingStrategyUpgrader_Build(t *testing.T) {
 	type fields struct {
 		EndpointName         string
 		ServiceName          string
@@ -379,10 +379,6 @@ func TestWorkloadPublishingStrategyBuilder_Build(t *testing.T) {
 				Marin3rSidecar: &Marin3rSidecarSpec{
 					Simple: &Simple{
 						ServiceType: util.Pointer(ServiceTypeNLB),
-						ServicePortsOverride: []corev1.ServicePort{
-							{Name: "port1", Port: 1111, TargetPort: intstr.FromString("port1")},
-							{Name: "port1", Port: 2222, TargetPort: intstr.FromString("port2")},
-						},
 					},
 					Ports:              []SidecarPort{{Name: "port1", Port: 1111}, {Name: "port2", Port: 2222}},
 					EnvoyDynamicConfig: map[string]EnvoyDynamicConfig{},
@@ -488,11 +484,11 @@ func TestWorkloadPublishingStrategyBuilder_Build(t *testing.T) {
 			}
 			got, err := gen.Build(tt.args.ctx, tt.args.cl)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("WorkloadPublishingStrategyBuilder.Build() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("WorkloadPublishingStrategyUpgrader.Build() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if diff := cmp.Diff(got, tt.want); len(diff) > 0 {
-				t.Errorf("WorkloadPublishingStrategyBuilder.Build() = diff %v", diff)
+				t.Errorf("WorkloadPublishingStrategyUpgrader.Build() = diff %v", diff)
 			}
 		})
 	}

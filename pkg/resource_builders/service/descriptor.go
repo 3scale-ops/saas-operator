@@ -55,7 +55,7 @@ func (sd *ServiceDescriptor) Service(prefix, suffix string) *corev1.Service {
 		}
 
 		// Add service ports
-		if spec.ServicePortsOverride != nil {
+		if len(spec.ServicePortsOverride) > 0 {
 			opts.Ports = spec.ServicePortsOverride
 		} else {
 			opts.Ports = sd.PortDefinitions

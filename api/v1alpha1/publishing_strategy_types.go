@@ -479,8 +479,9 @@ func (gen WorkloadPublishingStrategyUpgrader) Build(ctx context.Context, cl clie
 		}
 	} else {
 		service = &Simple{
-			ServiceNameOverride: &gen.ServiceName,
-			ServiceType:         &gen.ServiceType,
+			ServiceNameOverride:  &gen.ServiceName,
+			ServiceType:          &gen.ServiceType,
+			ServicePortsOverride: gen.ServicePortOverrides,
 		}
 	}
 
@@ -495,10 +496,6 @@ func (gen WorkloadPublishingStrategyUpgrader) Build(ctx context.Context, cl clie
 
 	if gen.NLBSpec != nil {
 		service.NetworkLoadBalancerConfig = gen.NLBSpec
-	}
-
-	if len(gen.ServicePortOverrides) > 0 {
-		service.ServicePortsOverride = gen.ServicePortOverrides
 	}
 
 	// STEP3: create appropriate strategy if required

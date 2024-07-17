@@ -481,8 +481,11 @@ type SystemConfig struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Backend SystemBackendSpec `json:"backend"`
 	// Assets has configuration to access assets in AWS s3
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Assets AssetsSpec `json:"assets"`
 	// Apicast can be used to pass down apicast endpoints configuration
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
 	Apicast *SystemApicastEndpointsSpec `json:"apicast,omitempty"`
 }
 

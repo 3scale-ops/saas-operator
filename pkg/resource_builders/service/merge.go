@@ -38,9 +38,13 @@ func MergeWithDefaultPublishingStrategy(defaults []ServiceDescriptor, in *saasv1
 
 	out := []ServiceDescriptor{}
 
-	// NOTE: the mode is always set to Merge by the API defaulter
-	// if the user leaves it unset
-	switch *in.Mode {
+	var mode saasv1alpha1.PublishingStrategiesReconcileMode
+	if in.Mode != nil {
+		mode = *in.Mode
+	} else {
+		mode = saasv1alpha1.PublishingStrategiesReconcileModeMerge
+	}
+	switch mode {
 
 	case saasv1alpha1.PublishingStrategiesReconcileModeReplace:
 		var merr util.MultiError

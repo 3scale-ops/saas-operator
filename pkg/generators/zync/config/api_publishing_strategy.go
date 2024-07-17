@@ -19,7 +19,7 @@ func DefaultApiPublishingStrategy() []service.ServiceDescriptor {
 			PortDefinitions: []corev1.ServicePort{{
 				Name:       "http",
 				Protocol:   corev1.ProtocolTCP,
-				Port:       80,
+				Port:       8080,
 				TargetPort: intstr.FromString("http"),
 			}},
 		},

@@ -248,6 +248,7 @@ type ListenerSpec struct {
 	// The external endpoint/s for the component
 	// DEPRECATED
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
 	Endpoint *Endpoint `json:"endpoint,omitempty"`
 	// Marin3r configures the Marin3r sidecars for the component
 	// DEPRECATED

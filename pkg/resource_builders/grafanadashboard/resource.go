@@ -34,7 +34,8 @@ func New(key types.NamespacedName, labels map[string]string, cfg saasv1alpha1.Gr
 						"dashboards": "grafana",
 					},
 				},
-				Json: assets.TemplateAsset(template, key),
+				ResyncPeriod: "5m",
+				Json:         assets.TemplateAsset(template, key),
 			},
 		}, nil
 	}
