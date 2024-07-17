@@ -205,7 +205,7 @@ spec:
       - description: Endpoint to request proxy configurations to
         displayName: Threescale Portal Endpoint
         path: production.config.threescalePortalEndpoint
-      - description: The external endpoint/s for the component
+      - description: The external endpoint/s for the component DEPRECATED
         displayName: Endpoint
         path: production.endpoint
       - description: The list of dns records that will point to the component
@@ -269,7 +269,7 @@ spec:
       - description: Number of seconds after which the probe times out
         displayName: Timeout Seconds
         path: production.livenessProbe.timeoutSeconds
-      - description: Configures the AWS load balancer for the component
+      - description: Configures the AWS load balancer for the component DEPRECATED
         displayName: Load Balancer
         path: production.loadBalancer
       - description: Enables/disables connection draining
@@ -296,7 +296,7 @@ spec:
       - description: Enables/disbles use of proxy protocol in the load balancer
         displayName: Proxy Protocol
         path: production.loadBalancer.proxyProtocol
-      - description: Marin3r configures the Marin3r sidecars for the component
+      - description: Marin3r configures the Marin3r sidecars for the component DEPRECATED
         displayName: Marin3r
         path: production.marin3r
       - description: Envoy dynamic configuration. Populating this field causes the
@@ -304,6 +304,33 @@ spec:
           in the cluster.
         displayName: Envoy Dynamic Config
         path: production.marin3r.dynamicConfigs
+      - description: Classic LB configuration
+        displayName: Elastic Load Balancer Config
+        path: production.marin3r.elasticLoadBalancerConfig
+      - description: Enables/disables connection draining
+        displayName: Connection Draining Enabled
+        path: production.marin3r.elasticLoadBalancerConfig.connectionDrainingEnabled
+      - description: Sets the timeout for connection draining
+        displayName: Connection Draining Timeout
+        path: production.marin3r.elasticLoadBalancerConfig.connectionDrainingTimeout
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: production.marin3r.elasticLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Sets the healthy threshold for the load balancer
+        displayName: Healthcheck Healthy Threshold
+        path: production.marin3r.elasticLoadBalancerConfig.healthcheckHealthyThreshold
+      - description: Sets the interval between health checks
+        displayName: Healthcheck Interval
+        path: production.marin3r.elasticLoadBalancerConfig.healthcheckInterval
+      - description: Sets the timeout for the health check
+        displayName: Healthcheck Timeout
+        path: production.marin3r.elasticLoadBalancerConfig.healthcheckTimeout
+      - description: Sets the unhealthy threshold for the load balancer
+        displayName: Healthcheck Unhealthy Threshold
+        path: production.marin3r.elasticLoadBalancerConfig.healthcheckUnhealthyThreshold
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: production.marin3r.elasticLoadBalancerConfig.proxyProtocol
       - description: The Envoy API version to use
         displayName: Envoy APIVersion
         path: production.marin3r.envoyAPIVersion
@@ -314,6 +341,24 @@ spec:
           container.
         displayName: Extra Pod Annotations
         path: production.marin3r.extraPodAnnotations
+      - description: NLB configuration
+        displayName: Network Load Balancer Config
+        path: production.marin3r.networkLoadBalancerConfig
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: production.marin3r.networkLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Deletion protection setting
+        displayName: Deletion Protection
+        path: production.marin3r.networkLoadBalancerConfig.deletionProtection
+      - description: The list of optional Elastic IPs allocations
+        displayName: EIPAllocations
+        path: production.marin3r.networkLoadBalancerConfig.eipAllocations
+      - description: Optionally specify the load balancer name
+        displayName: Load Balancer Name
+        path: production.marin3r.networkLoadBalancerConfig.loadBalancerName
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: production.marin3r.networkLoadBalancerConfig.proxyProtocol
       - description: The NodeID that identifies the Envoy sidecar to the DiscoveryService
         displayName: Node ID
         path: production.marin3r.nodeID
@@ -326,7 +371,7 @@ spec:
       - description: Port value
         displayName: Port
         path: production.marin3r.ports[0].port
-      - description: Compute Resources required by this container.
+      - description: Compute Resources required by the sidecar container.
         displayName: Resources
         path: production.marin3r.resources
       - description: 'Limits describes the maximum amount of compute resources allowed.
@@ -339,6 +384,18 @@ spec:
           info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
         displayName: Requests
         path: production.marin3r.resources.requests
+      - description: ServiceNameOverride allows the user to override the generated
+          Service name
+        displayName: Service Name Override
+        path: production.marin3r.serviceName
+      - description: ServicePortsOverride allows the user to override the ports of
+          a Service. It's a replace operation, so specify all the required ports.
+        displayName: Service Ports Override
+        path: production.marin3r.servicePorts
+      - description: ServiceType defines the type of k8s Service to use for exposing
+          the service to its consumers
+        displayName: Service Type
+        path: production.marin3r.serviceType
       - description: Extra containers to sync with the shutdown manager upon pod termination
         displayName: Shutdown Manager Extra Lifecycle Hooks
         path: production.marin3r.shtdnmgrExtraLifecycleHooks
@@ -360,6 +417,199 @@ spec:
           evictions by specifying "100%".
         displayName: Min Available
         path: production.pdb.minAvailable
+      - description: Describes how the services provided by this workload are exposed
+          to its consumers
+        displayName: Publishing Strategies
+        path: production.publishingStrategies
+      - description: Endpoints holds the list of publishing strategies for each workload
+          endpoint.
+        displayName: Endpoints
+        path: production.publishingStrategies.endpoints
+      - description: Create explicitely tells the controller that this is a new endpoint
+          that should be added. Default is false, causing the controller to error
+          when seeing an unknown endpoint.
+        displayName: Create
+        path: production.publishingStrategies.endpoints[0].create
+      - description: Marin3rSidecar holds configuration for the Marin3rSidecar publishing
+          strategy
+        displayName: Marin3r Sidecar
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar
+      - description: Envoy dynamic configuration. Populating this field causes the
+          operator to create a Marin3r EnvoyConfig resource, so Marin3r must be installed
+          in the cluster.
+        displayName: Envoy Dynamic Config
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.dynamicConfigs
+      - description: Classic LB configuration
+        displayName: Elastic Load Balancer Config
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig
+      - description: Enables/disables connection draining
+        displayName: Connection Draining Enabled
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.connectionDrainingEnabled
+      - description: Sets the timeout for connection draining
+        displayName: Connection Draining Timeout
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.connectionDrainingTimeout
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Sets the healthy threshold for the load balancer
+        displayName: Healthcheck Healthy Threshold
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckHealthyThreshold
+      - description: Sets the interval between health checks
+        displayName: Healthcheck Interval
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckInterval
+      - description: Sets the timeout for the health check
+        displayName: Healthcheck Timeout
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckTimeout
+      - description: Sets the unhealthy threshold for the load balancer
+        displayName: Healthcheck Unhealthy Threshold
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckUnhealthyThreshold
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.proxyProtocol
+      - description: The Envoy API version to use
+        displayName: Envoy APIVersion
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.envoyAPIVersion
+      - description: The Envoy iamge to use
+        displayName: Envoy Image
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.envoyImage
+      - description: Extra annotations to pass the Pod to further configure the sidecar
+          container.
+        displayName: Extra Pod Annotations
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.extraPodAnnotations
+      - description: NLB configuration
+        displayName: Network Load Balancer Config
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Deletion protection setting
+        displayName: Deletion Protection
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.deletionProtection
+      - description: The list of optional Elastic IPs allocations
+        displayName: EIPAllocations
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.eipAllocations
+      - description: Optionally specify the load balancer name
+        displayName: Load Balancer Name
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.loadBalancerName
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.proxyProtocol
+      - description: The NodeID that identifies the Envoy sidecar to the DiscoveryService
+        displayName: Node ID
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.nodeID
+      - description: The ports that the sidecar exposes
+        displayName: Ports
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.ports
+      - description: Port name
+        displayName: Name
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.ports[0].name
+      - description: Port value
+        displayName: Port
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.ports[0].port
+      - description: Compute Resources required by the sidecar container.
+        displayName: Resources
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.resources
+      - description: 'Limits describes the maximum amount of compute resources allowed.
+          More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Limits
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.resources.limits
+      - description: 'Requests describes the minimum amount of compute resources required.
+          If Requests is omitted for a container, it defaults to Limits if that is
+          explicitly specified, otherwise to an implementation-defined value. More
+          info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Requests
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.resources.requests
+      - description: ServiceNameOverride allows the user to override the generated
+          Service name
+        displayName: Service Name Override
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.serviceName
+      - description: ServicePortsOverride allows the user to override the ports of
+          a Service. It's a replace operation, so specify all the required ports.
+        displayName: Service Ports Override
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.servicePorts
+      - description: ServiceType defines the type of k8s Service to use for exposing
+          the service to its consumers
+        displayName: Service Type
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.serviceType
+      - description: Extra containers to sync with the shutdown manager upon pod termination
+        displayName: Shutdown Manager Extra Lifecycle Hooks
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.shtdnmgrExtraLifecycleHooks
+      - description: The port where Marin3r's shutdown manager listens
+        displayName: Shutdown Manager Port
+        path: production.publishingStrategies.endpoints[0].marin3rSidecar.shtdnmgrPort
+      - description: EndpointName defines the endpoint affected by this publishing
+          strategy
+        displayName: Endpoint Name
+        path: production.publishingStrategies.endpoints[0].name
+      - description: Simple holds configuration for the Simple publishing strategy
+        displayName: Simple
+        path: production.publishingStrategies.endpoints[0].simple
+      - description: Classic LB configuration
+        displayName: Elastic Load Balancer Config
+        path: production.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig
+      - description: Enables/disables connection draining
+        displayName: Connection Draining Enabled
+        path: production.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.connectionDrainingEnabled
+      - description: Sets the timeout for connection draining
+        displayName: Connection Draining Timeout
+        path: production.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.connectionDrainingTimeout
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: production.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Sets the healthy threshold for the load balancer
+        displayName: Healthcheck Healthy Threshold
+        path: production.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckHealthyThreshold
+      - description: Sets the interval between health checks
+        displayName: Healthcheck Interval
+        path: production.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckInterval
+      - description: Sets the timeout for the health check
+        displayName: Healthcheck Timeout
+        path: production.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckTimeout
+      - description: Sets the unhealthy threshold for the load balancer
+        displayName: Healthcheck Unhealthy Threshold
+        path: production.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckUnhealthyThreshold
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: production.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.proxyProtocol
+      - description: NLB configuration
+        displayName: Network Load Balancer Config
+        path: production.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: production.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Deletion protection setting
+        displayName: Deletion Protection
+        path: production.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.deletionProtection
+      - description: The list of optional Elastic IPs allocations
+        displayName: EIPAllocations
+        path: production.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.eipAllocations
+      - description: Optionally specify the load balancer name
+        displayName: Load Balancer Name
+        path: production.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.loadBalancerName
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: production.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.proxyProtocol
+      - description: ServiceNameOverride allows the user to override the generated
+          Service name
+        displayName: Service Name Override
+        path: production.publishingStrategies.endpoints[0].simple.serviceName
+      - description: ServicePortsOverride allows the user to override the ports of
+          a Service. It's a replace operation, so specify all the required ports.
+        displayName: Service Ports Override
+        path: production.publishingStrategies.endpoints[0].simple.servicePorts
+      - description: ServiceType defines the type of k8s Service to use for exposing
+          the service to its consumers
+        displayName: Service Type
+        path: production.publishingStrategies.endpoints[0].simple.serviceType
+      - description: Strategy defines the type of publishing strategy
+        displayName: Strategy
+        path: production.publishingStrategies.endpoints[0].strategy
+      - description: PublishingStrategiesReconcileMode specifies if the list of strategies
+          should be merged with the defautls or replace them entirely. Allowed values
+          are "Merge" or "Replace". "Replace" strategy should be used to enable 2
+          strategies at the same time for a single endpoint.
+        displayName: Mode
+        path: production.publishingStrategies.mode
       - description: Readiness probe for the component
         displayName: Readiness Probe
         path: production.readinessProbe
@@ -435,7 +685,7 @@ spec:
       - description: Endpoint to request proxy configurations to
         displayName: Threescale Portal Endpoint
         path: staging.config.threescalePortalEndpoint
-      - description: The external endpoint/s for the component
+      - description: The external endpoint/s for the component DEPRECATED
         displayName: Endpoint
         path: staging.endpoint
       - description: The list of dns records that will point to the component
@@ -499,7 +749,7 @@ spec:
       - description: Number of seconds after which the probe times out
         displayName: Timeout Seconds
         path: staging.livenessProbe.timeoutSeconds
-      - description: Configures the AWS load balancer for the component
+      - description: Configures the AWS load balancer for the component DEPRECATED
         displayName: Load Balancer
         path: staging.loadBalancer
       - description: Enables/disables connection draining
@@ -526,7 +776,7 @@ spec:
       - description: Enables/disbles use of proxy protocol in the load balancer
         displayName: Proxy Protocol
         path: staging.loadBalancer.proxyProtocol
-      - description: Marin3r configures the Marin3r sidecars for the component
+      - description: Marin3r configures the Marin3r sidecars for the component DEPRECATED
         displayName: Marin3r
         path: staging.marin3r
       - description: Envoy dynamic configuration. Populating this field causes the
@@ -534,6 +784,33 @@ spec:
           in the cluster.
         displayName: Envoy Dynamic Config
         path: staging.marin3r.dynamicConfigs
+      - description: Classic LB configuration
+        displayName: Elastic Load Balancer Config
+        path: staging.marin3r.elasticLoadBalancerConfig
+      - description: Enables/disables connection draining
+        displayName: Connection Draining Enabled
+        path: staging.marin3r.elasticLoadBalancerConfig.connectionDrainingEnabled
+      - description: Sets the timeout for connection draining
+        displayName: Connection Draining Timeout
+        path: staging.marin3r.elasticLoadBalancerConfig.connectionDrainingTimeout
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: staging.marin3r.elasticLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Sets the healthy threshold for the load balancer
+        displayName: Healthcheck Healthy Threshold
+        path: staging.marin3r.elasticLoadBalancerConfig.healthcheckHealthyThreshold
+      - description: Sets the interval between health checks
+        displayName: Healthcheck Interval
+        path: staging.marin3r.elasticLoadBalancerConfig.healthcheckInterval
+      - description: Sets the timeout for the health check
+        displayName: Healthcheck Timeout
+        path: staging.marin3r.elasticLoadBalancerConfig.healthcheckTimeout
+      - description: Sets the unhealthy threshold for the load balancer
+        displayName: Healthcheck Unhealthy Threshold
+        path: staging.marin3r.elasticLoadBalancerConfig.healthcheckUnhealthyThreshold
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: staging.marin3r.elasticLoadBalancerConfig.proxyProtocol
       - description: The Envoy API version to use
         displayName: Envoy APIVersion
         path: staging.marin3r.envoyAPIVersion
@@ -544,6 +821,24 @@ spec:
           container.
         displayName: Extra Pod Annotations
         path: staging.marin3r.extraPodAnnotations
+      - description: NLB configuration
+        displayName: Network Load Balancer Config
+        path: staging.marin3r.networkLoadBalancerConfig
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: staging.marin3r.networkLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Deletion protection setting
+        displayName: Deletion Protection
+        path: staging.marin3r.networkLoadBalancerConfig.deletionProtection
+      - description: The list of optional Elastic IPs allocations
+        displayName: EIPAllocations
+        path: staging.marin3r.networkLoadBalancerConfig.eipAllocations
+      - description: Optionally specify the load balancer name
+        displayName: Load Balancer Name
+        path: staging.marin3r.networkLoadBalancerConfig.loadBalancerName
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: staging.marin3r.networkLoadBalancerConfig.proxyProtocol
       - description: The NodeID that identifies the Envoy sidecar to the DiscoveryService
         displayName: Node ID
         path: staging.marin3r.nodeID
@@ -556,7 +851,7 @@ spec:
       - description: Port value
         displayName: Port
         path: staging.marin3r.ports[0].port
-      - description: Compute Resources required by this container.
+      - description: Compute Resources required by the sidecar container.
         displayName: Resources
         path: staging.marin3r.resources
       - description: 'Limits describes the maximum amount of compute resources allowed.
@@ -569,6 +864,18 @@ spec:
           info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
         displayName: Requests
         path: staging.marin3r.resources.requests
+      - description: ServiceNameOverride allows the user to override the generated
+          Service name
+        displayName: Service Name Override
+        path: staging.marin3r.serviceName
+      - description: ServicePortsOverride allows the user to override the ports of
+          a Service. It's a replace operation, so specify all the required ports.
+        displayName: Service Ports Override
+        path: staging.marin3r.servicePorts
+      - description: ServiceType defines the type of k8s Service to use for exposing
+          the service to its consumers
+        displayName: Service Type
+        path: staging.marin3r.serviceType
       - description: Extra containers to sync with the shutdown manager upon pod termination
         displayName: Shutdown Manager Extra Lifecycle Hooks
         path: staging.marin3r.shtdnmgrExtraLifecycleHooks
@@ -590,6 +897,199 @@ spec:
           evictions by specifying "100%".
         displayName: Min Available
         path: staging.pdb.minAvailable
+      - description: Describes how the services provided by this workload are exposed
+          to its consumers
+        displayName: Publishing Strategies
+        path: staging.publishingStrategies
+      - description: Endpoints holds the list of publishing strategies for each workload
+          endpoint.
+        displayName: Endpoints
+        path: staging.publishingStrategies.endpoints
+      - description: Create explicitely tells the controller that this is a new endpoint
+          that should be added. Default is false, causing the controller to error
+          when seeing an unknown endpoint.
+        displayName: Create
+        path: staging.publishingStrategies.endpoints[0].create
+      - description: Marin3rSidecar holds configuration for the Marin3rSidecar publishing
+          strategy
+        displayName: Marin3r Sidecar
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar
+      - description: Envoy dynamic configuration. Populating this field causes the
+          operator to create a Marin3r EnvoyConfig resource, so Marin3r must be installed
+          in the cluster.
+        displayName: Envoy Dynamic Config
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.dynamicConfigs
+      - description: Classic LB configuration
+        displayName: Elastic Load Balancer Config
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig
+      - description: Enables/disables connection draining
+        displayName: Connection Draining Enabled
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.connectionDrainingEnabled
+      - description: Sets the timeout for connection draining
+        displayName: Connection Draining Timeout
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.connectionDrainingTimeout
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Sets the healthy threshold for the load balancer
+        displayName: Healthcheck Healthy Threshold
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckHealthyThreshold
+      - description: Sets the interval between health checks
+        displayName: Healthcheck Interval
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckInterval
+      - description: Sets the timeout for the health check
+        displayName: Healthcheck Timeout
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckTimeout
+      - description: Sets the unhealthy threshold for the load balancer
+        displayName: Healthcheck Unhealthy Threshold
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckUnhealthyThreshold
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.proxyProtocol
+      - description: The Envoy API version to use
+        displayName: Envoy APIVersion
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.envoyAPIVersion
+      - description: The Envoy iamge to use
+        displayName: Envoy Image
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.envoyImage
+      - description: Extra annotations to pass the Pod to further configure the sidecar
+          container.
+        displayName: Extra Pod Annotations
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.extraPodAnnotations
+      - description: NLB configuration
+        displayName: Network Load Balancer Config
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Deletion protection setting
+        displayName: Deletion Protection
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.deletionProtection
+      - description: The list of optional Elastic IPs allocations
+        displayName: EIPAllocations
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.eipAllocations
+      - description: Optionally specify the load balancer name
+        displayName: Load Balancer Name
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.loadBalancerName
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.proxyProtocol
+      - description: The NodeID that identifies the Envoy sidecar to the DiscoveryService
+        displayName: Node ID
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.nodeID
+      - description: The ports that the sidecar exposes
+        displayName: Ports
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.ports
+      - description: Port name
+        displayName: Name
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.ports[0].name
+      - description: Port value
+        displayName: Port
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.ports[0].port
+      - description: Compute Resources required by the sidecar container.
+        displayName: Resources
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.resources
+      - description: 'Limits describes the maximum amount of compute resources allowed.
+          More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Limits
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.resources.limits
+      - description: 'Requests describes the minimum amount of compute resources required.
+          If Requests is omitted for a container, it defaults to Limits if that is
+          explicitly specified, otherwise to an implementation-defined value. More
+          info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Requests
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.resources.requests
+      - description: ServiceNameOverride allows the user to override the generated
+          Service name
+        displayName: Service Name Override
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.serviceName
+      - description: ServicePortsOverride allows the user to override the ports of
+          a Service. It's a replace operation, so specify all the required ports.
+        displayName: Service Ports Override
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.servicePorts
+      - description: ServiceType defines the type of k8s Service to use for exposing
+          the service to its consumers
+        displayName: Service Type
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.serviceType
+      - description: Extra containers to sync with the shutdown manager upon pod termination
+        displayName: Shutdown Manager Extra Lifecycle Hooks
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.shtdnmgrExtraLifecycleHooks
+      - description: The port where Marin3r's shutdown manager listens
+        displayName: Shutdown Manager Port
+        path: staging.publishingStrategies.endpoints[0].marin3rSidecar.shtdnmgrPort
+      - description: EndpointName defines the endpoint affected by this publishing
+          strategy
+        displayName: Endpoint Name
+        path: staging.publishingStrategies.endpoints[0].name
+      - description: Simple holds configuration for the Simple publishing strategy
+        displayName: Simple
+        path: staging.publishingStrategies.endpoints[0].simple
+      - description: Classic LB configuration
+        displayName: Elastic Load Balancer Config
+        path: staging.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig
+      - description: Enables/disables connection draining
+        displayName: Connection Draining Enabled
+        path: staging.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.connectionDrainingEnabled
+      - description: Sets the timeout for connection draining
+        displayName: Connection Draining Timeout
+        path: staging.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.connectionDrainingTimeout
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: staging.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Sets the healthy threshold for the load balancer
+        displayName: Healthcheck Healthy Threshold
+        path: staging.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckHealthyThreshold
+      - description: Sets the interval between health checks
+        displayName: Healthcheck Interval
+        path: staging.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckInterval
+      - description: Sets the timeout for the health check
+        displayName: Healthcheck Timeout
+        path: staging.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckTimeout
+      - description: Sets the unhealthy threshold for the load balancer
+        displayName: Healthcheck Unhealthy Threshold
+        path: staging.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckUnhealthyThreshold
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: staging.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.proxyProtocol
+      - description: NLB configuration
+        displayName: Network Load Balancer Config
+        path: staging.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: staging.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Deletion protection setting
+        displayName: Deletion Protection
+        path: staging.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.deletionProtection
+      - description: The list of optional Elastic IPs allocations
+        displayName: EIPAllocations
+        path: staging.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.eipAllocations
+      - description: Optionally specify the load balancer name
+        displayName: Load Balancer Name
+        path: staging.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.loadBalancerName
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: staging.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.proxyProtocol
+      - description: ServiceNameOverride allows the user to override the generated
+          Service name
+        displayName: Service Name Override
+        path: staging.publishingStrategies.endpoints[0].simple.serviceName
+      - description: ServicePortsOverride allows the user to override the ports of
+          a Service. It's a replace operation, so specify all the required ports.
+        displayName: Service Ports Override
+        path: staging.publishingStrategies.endpoints[0].simple.servicePorts
+      - description: ServiceType defines the type of k8s Service to use for exposing
+          the service to its consumers
+        displayName: Service Type
+        path: staging.publishingStrategies.endpoints[0].simple.serviceType
+      - description: Strategy defines the type of publishing strategy
+        displayName: Strategy
+        path: staging.publishingStrategies.endpoints[0].strategy
+      - description: PublishingStrategiesReconcileMode specifies if the list of strategies
+          should be merged with the defautls or replace them entirely. Allowed values
+          are "Merge" or "Replace". "Replace" strategy should be used to enable 2
+          strategies at the same time for a single endpoint.
+        displayName: Mode
+        path: staging.publishingStrategies.mode
       - description: Readiness probe for the component
         displayName: Readiness Probe
         path: staging.readinessProbe
@@ -684,7 +1184,7 @@ spec:
           for the domain
         displayName: Verification Endpoint
         path: config.verificationEndpoint
-      - description: The external endpoint/s for the component
+      - description: The external endpoint/s for the component DEPRECATED
         displayName: Endpoint
         path: endpoint
       - description: The list of dns records that will point to the component
@@ -757,7 +1257,7 @@ spec:
       - description: Number of seconds after which the probe times out
         displayName: Timeout Seconds
         path: livenessProbe.timeoutSeconds
-      - description: Configures the AWS load balancer for the component
+      - description: Configures the AWS load balancer for the component DEPRECATED
         displayName: Load Balancer
         path: loadBalancer
       - description: Enables/disables connection draining
@@ -799,6 +1299,199 @@ spec:
           evictions by specifying "100%".
         displayName: Min Available
         path: pdb.minAvailable
+      - description: Describes how the services provided by this workload are exposed
+          to its consumers
+        displayName: Publishing Strategies
+        path: publishingStrategies
+      - description: Endpoints holds the list of publishing strategies for each workload
+          endpoint.
+        displayName: Endpoints
+        path: publishingStrategies.endpoints
+      - description: Create explicitely tells the controller that this is a new endpoint
+          that should be added. Default is false, causing the controller to error
+          when seeing an unknown endpoint.
+        displayName: Create
+        path: publishingStrategies.endpoints[0].create
+      - description: Marin3rSidecar holds configuration for the Marin3rSidecar publishing
+          strategy
+        displayName: Marin3r Sidecar
+        path: publishingStrategies.endpoints[0].marin3rSidecar
+      - description: Envoy dynamic configuration. Populating this field causes the
+          operator to create a Marin3r EnvoyConfig resource, so Marin3r must be installed
+          in the cluster.
+        displayName: Envoy Dynamic Config
+        path: publishingStrategies.endpoints[0].marin3rSidecar.dynamicConfigs
+      - description: Classic LB configuration
+        displayName: Elastic Load Balancer Config
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig
+      - description: Enables/disables connection draining
+        displayName: Connection Draining Enabled
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.connectionDrainingEnabled
+      - description: Sets the timeout for connection draining
+        displayName: Connection Draining Timeout
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.connectionDrainingTimeout
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Sets the healthy threshold for the load balancer
+        displayName: Healthcheck Healthy Threshold
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckHealthyThreshold
+      - description: Sets the interval between health checks
+        displayName: Healthcheck Interval
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckInterval
+      - description: Sets the timeout for the health check
+        displayName: Healthcheck Timeout
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckTimeout
+      - description: Sets the unhealthy threshold for the load balancer
+        displayName: Healthcheck Unhealthy Threshold
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckUnhealthyThreshold
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.proxyProtocol
+      - description: The Envoy API version to use
+        displayName: Envoy APIVersion
+        path: publishingStrategies.endpoints[0].marin3rSidecar.envoyAPIVersion
+      - description: The Envoy iamge to use
+        displayName: Envoy Image
+        path: publishingStrategies.endpoints[0].marin3rSidecar.envoyImage
+      - description: Extra annotations to pass the Pod to further configure the sidecar
+          container.
+        displayName: Extra Pod Annotations
+        path: publishingStrategies.endpoints[0].marin3rSidecar.extraPodAnnotations
+      - description: NLB configuration
+        displayName: Network Load Balancer Config
+        path: publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Deletion protection setting
+        displayName: Deletion Protection
+        path: publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.deletionProtection
+      - description: The list of optional Elastic IPs allocations
+        displayName: EIPAllocations
+        path: publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.eipAllocations
+      - description: Optionally specify the load balancer name
+        displayName: Load Balancer Name
+        path: publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.loadBalancerName
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.proxyProtocol
+      - description: The NodeID that identifies the Envoy sidecar to the DiscoveryService
+        displayName: Node ID
+        path: publishingStrategies.endpoints[0].marin3rSidecar.nodeID
+      - description: The ports that the sidecar exposes
+        displayName: Ports
+        path: publishingStrategies.endpoints[0].marin3rSidecar.ports
+      - description: Port name
+        displayName: Name
+        path: publishingStrategies.endpoints[0].marin3rSidecar.ports[0].name
+      - description: Port value
+        displayName: Port
+        path: publishingStrategies.endpoints[0].marin3rSidecar.ports[0].port
+      - description: Compute Resources required by the sidecar container.
+        displayName: Resources
+        path: publishingStrategies.endpoints[0].marin3rSidecar.resources
+      - description: 'Limits describes the maximum amount of compute resources allowed.
+          More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Limits
+        path: publishingStrategies.endpoints[0].marin3rSidecar.resources.limits
+      - description: 'Requests describes the minimum amount of compute resources required.
+          If Requests is omitted for a container, it defaults to Limits if that is
+          explicitly specified, otherwise to an implementation-defined value. More
+          info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Requests
+        path: publishingStrategies.endpoints[0].marin3rSidecar.resources.requests
+      - description: ServiceNameOverride allows the user to override the generated
+          Service name
+        displayName: Service Name Override
+        path: publishingStrategies.endpoints[0].marin3rSidecar.serviceName
+      - description: ServicePortsOverride allows the user to override the ports of
+          a Service. It's a replace operation, so specify all the required ports.
+        displayName: Service Ports Override
+        path: publishingStrategies.endpoints[0].marin3rSidecar.servicePorts
+      - description: ServiceType defines the type of k8s Service to use for exposing
+          the service to its consumers
+        displayName: Service Type
+        path: publishingStrategies.endpoints[0].marin3rSidecar.serviceType
+      - description: Extra containers to sync with the shutdown manager upon pod termination
+        displayName: Shutdown Manager Extra Lifecycle Hooks
+        path: publishingStrategies.endpoints[0].marin3rSidecar.shtdnmgrExtraLifecycleHooks
+      - description: The port where Marin3r's shutdown manager listens
+        displayName: Shutdown Manager Port
+        path: publishingStrategies.endpoints[0].marin3rSidecar.shtdnmgrPort
+      - description: EndpointName defines the endpoint affected by this publishing
+          strategy
+        displayName: Endpoint Name
+        path: publishingStrategies.endpoints[0].name
+      - description: Simple holds configuration for the Simple publishing strategy
+        displayName: Simple
+        path: publishingStrategies.endpoints[0].simple
+      - description: Classic LB configuration
+        displayName: Elastic Load Balancer Config
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig
+      - description: Enables/disables connection draining
+        displayName: Connection Draining Enabled
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.connectionDrainingEnabled
+      - description: Sets the timeout for connection draining
+        displayName: Connection Draining Timeout
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.connectionDrainingTimeout
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Sets the healthy threshold for the load balancer
+        displayName: Healthcheck Healthy Threshold
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckHealthyThreshold
+      - description: Sets the interval between health checks
+        displayName: Healthcheck Interval
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckInterval
+      - description: Sets the timeout for the health check
+        displayName: Healthcheck Timeout
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckTimeout
+      - description: Sets the unhealthy threshold for the load balancer
+        displayName: Healthcheck Unhealthy Threshold
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckUnhealthyThreshold
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.proxyProtocol
+      - description: NLB configuration
+        displayName: Network Load Balancer Config
+        path: publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Deletion protection setting
+        displayName: Deletion Protection
+        path: publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.deletionProtection
+      - description: The list of optional Elastic IPs allocations
+        displayName: EIPAllocations
+        path: publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.eipAllocations
+      - description: Optionally specify the load balancer name
+        displayName: Load Balancer Name
+        path: publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.loadBalancerName
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.proxyProtocol
+      - description: ServiceNameOverride allows the user to override the generated
+          Service name
+        displayName: Service Name Override
+        path: publishingStrategies.endpoints[0].simple.serviceName
+      - description: ServicePortsOverride allows the user to override the ports of
+          a Service. It's a replace operation, so specify all the required ports.
+        displayName: Service Ports Override
+        path: publishingStrategies.endpoints[0].simple.servicePorts
+      - description: ServiceType defines the type of k8s Service to use for exposing
+          the service to its consumers
+        displayName: Service Type
+        path: publishingStrategies.endpoints[0].simple.serviceType
+      - description: Strategy defines the type of publishing strategy
+        displayName: Strategy
+        path: publishingStrategies.endpoints[0].strategy
+      - description: PublishingStrategiesReconcileMode specifies if the list of strategies
+          should be merged with the defautls or replace them entirely. Allowed values
+          are "Merge" or "Replace". "Replace" strategy should be used to enable 2
+          strategies at the same time for a single endpoint.
+        displayName: Mode
+        path: publishingStrategies.mode
       - description: Readiness probe for the component
         displayName: Readiness Probe
         path: readinessProbe
@@ -1086,7 +1779,7 @@ spec:
       - description: Enable (true) or disable (false) listener redis async mode
         displayName: Redis Async
         path: listener.config.redisAsync
-      - description: The external endpoint/s for the component
+      - description: The external endpoint/s for the component DEPRECATED
         displayName: Endpoint
         path: listener.endpoint
       - description: The list of dns records that will point to the component
@@ -1134,7 +1827,7 @@ spec:
       - description: Number of seconds after which the probe times out
         displayName: Timeout Seconds
         path: listener.livenessProbe.timeoutSeconds
-      - description: Configures the AWS Network load balancer for the component
+      - description: Configures the AWS load balancer for the component DEPRECATED
         displayName: Load Balancer
         path: listener.loadBalancer
       - description: Enables/disables cross zone load balancing
@@ -1152,7 +1845,7 @@ spec:
       - description: Enables/disbles use of proxy protocol in the load balancer
         displayName: Proxy Protocol
         path: listener.loadBalancer.proxyProtocol
-      - description: Marin3r configures the Marin3r sidecars for the component
+      - description: Marin3r configures the Marin3r sidecars for the component DEPRECATED
         displayName: Marin3r
         path: listener.marin3r
       - description: Envoy dynamic configuration. Populating this field causes the
@@ -1160,6 +1853,33 @@ spec:
           in the cluster.
         displayName: Envoy Dynamic Config
         path: listener.marin3r.dynamicConfigs
+      - description: Classic LB configuration
+        displayName: Elastic Load Balancer Config
+        path: listener.marin3r.elasticLoadBalancerConfig
+      - description: Enables/disables connection draining
+        displayName: Connection Draining Enabled
+        path: listener.marin3r.elasticLoadBalancerConfig.connectionDrainingEnabled
+      - description: Sets the timeout for connection draining
+        displayName: Connection Draining Timeout
+        path: listener.marin3r.elasticLoadBalancerConfig.connectionDrainingTimeout
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: listener.marin3r.elasticLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Sets the healthy threshold for the load balancer
+        displayName: Healthcheck Healthy Threshold
+        path: listener.marin3r.elasticLoadBalancerConfig.healthcheckHealthyThreshold
+      - description: Sets the interval between health checks
+        displayName: Healthcheck Interval
+        path: listener.marin3r.elasticLoadBalancerConfig.healthcheckInterval
+      - description: Sets the timeout for the health check
+        displayName: Healthcheck Timeout
+        path: listener.marin3r.elasticLoadBalancerConfig.healthcheckTimeout
+      - description: Sets the unhealthy threshold for the load balancer
+        displayName: Healthcheck Unhealthy Threshold
+        path: listener.marin3r.elasticLoadBalancerConfig.healthcheckUnhealthyThreshold
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: listener.marin3r.elasticLoadBalancerConfig.proxyProtocol
       - description: The Envoy API version to use
         displayName: Envoy APIVersion
         path: listener.marin3r.envoyAPIVersion
@@ -1170,6 +1890,24 @@ spec:
           container.
         displayName: Extra Pod Annotations
         path: listener.marin3r.extraPodAnnotations
+      - description: NLB configuration
+        displayName: Network Load Balancer Config
+        path: listener.marin3r.networkLoadBalancerConfig
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: listener.marin3r.networkLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Deletion protection setting
+        displayName: Deletion Protection
+        path: listener.marin3r.networkLoadBalancerConfig.deletionProtection
+      - description: The list of optional Elastic IPs allocations
+        displayName: EIPAllocations
+        path: listener.marin3r.networkLoadBalancerConfig.eipAllocations
+      - description: Optionally specify the load balancer name
+        displayName: Load Balancer Name
+        path: listener.marin3r.networkLoadBalancerConfig.loadBalancerName
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: listener.marin3r.networkLoadBalancerConfig.proxyProtocol
       - description: The NodeID that identifies the Envoy sidecar to the DiscoveryService
         displayName: Node ID
         path: listener.marin3r.nodeID
@@ -1182,7 +1920,7 @@ spec:
       - description: Port value
         displayName: Port
         path: listener.marin3r.ports[0].port
-      - description: Compute Resources required by this container.
+      - description: Compute Resources required by the sidecar container.
         displayName: Resources
         path: listener.marin3r.resources
       - description: 'Limits describes the maximum amount of compute resources allowed.
@@ -1195,6 +1933,18 @@ spec:
           info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
         displayName: Requests
         path: listener.marin3r.resources.requests
+      - description: ServiceNameOverride allows the user to override the generated
+          Service name
+        displayName: Service Name Override
+        path: listener.marin3r.serviceName
+      - description: ServicePortsOverride allows the user to override the ports of
+          a Service. It's a replace operation, so specify all the required ports.
+        displayName: Service Ports Override
+        path: listener.marin3r.servicePorts
+      - description: ServiceType defines the type of k8s Service to use for exposing
+          the service to its consumers
+        displayName: Service Type
+        path: listener.marin3r.serviceType
       - description: Extra containers to sync with the shutdown manager upon pod termination
         displayName: Shutdown Manager Extra Lifecycle Hooks
         path: listener.marin3r.shtdnmgrExtraLifecycleHooks
@@ -1219,6 +1969,199 @@ spec:
           evictions by specifying "100%".
         displayName: Min Available
         path: listener.pdb.minAvailable
+      - description: Describes how the services provided by this workload are exposed
+          to its consumers
+        displayName: Publishing Strategies
+        path: listener.publishingStrategies
+      - description: Endpoints holds the list of publishing strategies for each workload
+          endpoint.
+        displayName: Endpoints
+        path: listener.publishingStrategies.endpoints
+      - description: Create explicitely tells the controller that this is a new endpoint
+          that should be added. Default is false, causing the controller to error
+          when seeing an unknown endpoint.
+        displayName: Create
+        path: listener.publishingStrategies.endpoints[0].create
+      - description: Marin3rSidecar holds configuration for the Marin3rSidecar publishing
+          strategy
+        displayName: Marin3r Sidecar
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar
+      - description: Envoy dynamic configuration. Populating this field causes the
+          operator to create a Marin3r EnvoyConfig resource, so Marin3r must be installed
+          in the cluster.
+        displayName: Envoy Dynamic Config
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.dynamicConfigs
+      - description: Classic LB configuration
+        displayName: Elastic Load Balancer Config
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig
+      - description: Enables/disables connection draining
+        displayName: Connection Draining Enabled
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.connectionDrainingEnabled
+      - description: Sets the timeout for connection draining
+        displayName: Connection Draining Timeout
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.connectionDrainingTimeout
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Sets the healthy threshold for the load balancer
+        displayName: Healthcheck Healthy Threshold
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckHealthyThreshold
+      - description: Sets the interval between health checks
+        displayName: Healthcheck Interval
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckInterval
+      - description: Sets the timeout for the health check
+        displayName: Healthcheck Timeout
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckTimeout
+      - description: Sets the unhealthy threshold for the load balancer
+        displayName: Healthcheck Unhealthy Threshold
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckUnhealthyThreshold
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.proxyProtocol
+      - description: The Envoy API version to use
+        displayName: Envoy APIVersion
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.envoyAPIVersion
+      - description: The Envoy iamge to use
+        displayName: Envoy Image
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.envoyImage
+      - description: Extra annotations to pass the Pod to further configure the sidecar
+          container.
+        displayName: Extra Pod Annotations
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.extraPodAnnotations
+      - description: NLB configuration
+        displayName: Network Load Balancer Config
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Deletion protection setting
+        displayName: Deletion Protection
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.deletionProtection
+      - description: The list of optional Elastic IPs allocations
+        displayName: EIPAllocations
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.eipAllocations
+      - description: Optionally specify the load balancer name
+        displayName: Load Balancer Name
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.loadBalancerName
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.proxyProtocol
+      - description: The NodeID that identifies the Envoy sidecar to the DiscoveryService
+        displayName: Node ID
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.nodeID
+      - description: The ports that the sidecar exposes
+        displayName: Ports
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.ports
+      - description: Port name
+        displayName: Name
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.ports[0].name
+      - description: Port value
+        displayName: Port
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.ports[0].port
+      - description: Compute Resources required by the sidecar container.
+        displayName: Resources
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.resources
+      - description: 'Limits describes the maximum amount of compute resources allowed.
+          More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Limits
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.resources.limits
+      - description: 'Requests describes the minimum amount of compute resources required.
+          If Requests is omitted for a container, it defaults to Limits if that is
+          explicitly specified, otherwise to an implementation-defined value. More
+          info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Requests
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.resources.requests
+      - description: ServiceNameOverride allows the user to override the generated
+          Service name
+        displayName: Service Name Override
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.serviceName
+      - description: ServicePortsOverride allows the user to override the ports of
+          a Service. It's a replace operation, so specify all the required ports.
+        displayName: Service Ports Override
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.servicePorts
+      - description: ServiceType defines the type of k8s Service to use for exposing
+          the service to its consumers
+        displayName: Service Type
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.serviceType
+      - description: Extra containers to sync with the shutdown manager upon pod termination
+        displayName: Shutdown Manager Extra Lifecycle Hooks
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.shtdnmgrExtraLifecycleHooks
+      - description: The port where Marin3r's shutdown manager listens
+        displayName: Shutdown Manager Port
+        path: listener.publishingStrategies.endpoints[0].marin3rSidecar.shtdnmgrPort
+      - description: EndpointName defines the endpoint affected by this publishing
+          strategy
+        displayName: Endpoint Name
+        path: listener.publishingStrategies.endpoints[0].name
+      - description: Simple holds configuration for the Simple publishing strategy
+        displayName: Simple
+        path: listener.publishingStrategies.endpoints[0].simple
+      - description: Classic LB configuration
+        displayName: Elastic Load Balancer Config
+        path: listener.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig
+      - description: Enables/disables connection draining
+        displayName: Connection Draining Enabled
+        path: listener.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.connectionDrainingEnabled
+      - description: Sets the timeout for connection draining
+        displayName: Connection Draining Timeout
+        path: listener.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.connectionDrainingTimeout
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: listener.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Sets the healthy threshold for the load balancer
+        displayName: Healthcheck Healthy Threshold
+        path: listener.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckHealthyThreshold
+      - description: Sets the interval between health checks
+        displayName: Healthcheck Interval
+        path: listener.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckInterval
+      - description: Sets the timeout for the health check
+        displayName: Healthcheck Timeout
+        path: listener.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckTimeout
+      - description: Sets the unhealthy threshold for the load balancer
+        displayName: Healthcheck Unhealthy Threshold
+        path: listener.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckUnhealthyThreshold
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: listener.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.proxyProtocol
+      - description: NLB configuration
+        displayName: Network Load Balancer Config
+        path: listener.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: listener.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Deletion protection setting
+        displayName: Deletion Protection
+        path: listener.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.deletionProtection
+      - description: The list of optional Elastic IPs allocations
+        displayName: EIPAllocations
+        path: listener.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.eipAllocations
+      - description: Optionally specify the load balancer name
+        displayName: Load Balancer Name
+        path: listener.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.loadBalancerName
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: listener.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.proxyProtocol
+      - description: ServiceNameOverride allows the user to override the generated
+          Service name
+        displayName: Service Name Override
+        path: listener.publishingStrategies.endpoints[0].simple.serviceName
+      - description: ServicePortsOverride allows the user to override the ports of
+          a Service. It's a replace operation, so specify all the required ports.
+        displayName: Service Ports Override
+        path: listener.publishingStrategies.endpoints[0].simple.servicePorts
+      - description: ServiceType defines the type of k8s Service to use for exposing
+          the service to its consumers
+        displayName: Service Type
+        path: listener.publishingStrategies.endpoints[0].simple.serviceType
+      - description: Strategy defines the type of publishing strategy
+        displayName: Strategy
+        path: listener.publishingStrategies.endpoints[0].strategy
+      - description: PublishingStrategiesReconcileMode specifies if the list of strategies
+          should be merged with the defautls or replace them entirely. Allowed values
+          are "Merge" or "Replace". "Replace" strategy should be used to enable 2
+          strategies at the same time for a single endpoint.
+        displayName: Mode
+        path: listener.publishingStrategies.mode
       - description: Readiness probe for the component
         displayName: Readiness Probe
         path: listener.readinessProbe
@@ -1610,6 +2553,199 @@ spec:
           evictions by specifying "100%".
         displayName: Min Available
         path: pdb.minAvailable
+      - description: Describes how the services provided by this workload are exposed
+          to its consumers
+        displayName: Publishing Strategies
+        path: publishingStrategies
+      - description: Endpoints holds the list of publishing strategies for each workload
+          endpoint.
+        displayName: Endpoints
+        path: publishingStrategies.endpoints
+      - description: Create explicitely tells the controller that this is a new endpoint
+          that should be added. Default is false, causing the controller to error
+          when seeing an unknown endpoint.
+        displayName: Create
+        path: publishingStrategies.endpoints[0].create
+      - description: Marin3rSidecar holds configuration for the Marin3rSidecar publishing
+          strategy
+        displayName: Marin3r Sidecar
+        path: publishingStrategies.endpoints[0].marin3rSidecar
+      - description: Envoy dynamic configuration. Populating this field causes the
+          operator to create a Marin3r EnvoyConfig resource, so Marin3r must be installed
+          in the cluster.
+        displayName: Envoy Dynamic Config
+        path: publishingStrategies.endpoints[0].marin3rSidecar.dynamicConfigs
+      - description: Classic LB configuration
+        displayName: Elastic Load Balancer Config
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig
+      - description: Enables/disables connection draining
+        displayName: Connection Draining Enabled
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.connectionDrainingEnabled
+      - description: Sets the timeout for connection draining
+        displayName: Connection Draining Timeout
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.connectionDrainingTimeout
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Sets the healthy threshold for the load balancer
+        displayName: Healthcheck Healthy Threshold
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckHealthyThreshold
+      - description: Sets the interval between health checks
+        displayName: Healthcheck Interval
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckInterval
+      - description: Sets the timeout for the health check
+        displayName: Healthcheck Timeout
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckTimeout
+      - description: Sets the unhealthy threshold for the load balancer
+        displayName: Healthcheck Unhealthy Threshold
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckUnhealthyThreshold
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.proxyProtocol
+      - description: The Envoy API version to use
+        displayName: Envoy APIVersion
+        path: publishingStrategies.endpoints[0].marin3rSidecar.envoyAPIVersion
+      - description: The Envoy iamge to use
+        displayName: Envoy Image
+        path: publishingStrategies.endpoints[0].marin3rSidecar.envoyImage
+      - description: Extra annotations to pass the Pod to further configure the sidecar
+          container.
+        displayName: Extra Pod Annotations
+        path: publishingStrategies.endpoints[0].marin3rSidecar.extraPodAnnotations
+      - description: NLB configuration
+        displayName: Network Load Balancer Config
+        path: publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Deletion protection setting
+        displayName: Deletion Protection
+        path: publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.deletionProtection
+      - description: The list of optional Elastic IPs allocations
+        displayName: EIPAllocations
+        path: publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.eipAllocations
+      - description: Optionally specify the load balancer name
+        displayName: Load Balancer Name
+        path: publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.loadBalancerName
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.proxyProtocol
+      - description: The NodeID that identifies the Envoy sidecar to the DiscoveryService
+        displayName: Node ID
+        path: publishingStrategies.endpoints[0].marin3rSidecar.nodeID
+      - description: The ports that the sidecar exposes
+        displayName: Ports
+        path: publishingStrategies.endpoints[0].marin3rSidecar.ports
+      - description: Port name
+        displayName: Name
+        path: publishingStrategies.endpoints[0].marin3rSidecar.ports[0].name
+      - description: Port value
+        displayName: Port
+        path: publishingStrategies.endpoints[0].marin3rSidecar.ports[0].port
+      - description: Compute Resources required by the sidecar container.
+        displayName: Resources
+        path: publishingStrategies.endpoints[0].marin3rSidecar.resources
+      - description: 'Limits describes the maximum amount of compute resources allowed.
+          More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Limits
+        path: publishingStrategies.endpoints[0].marin3rSidecar.resources.limits
+      - description: 'Requests describes the minimum amount of compute resources required.
+          If Requests is omitted for a container, it defaults to Limits if that is
+          explicitly specified, otherwise to an implementation-defined value. More
+          info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Requests
+        path: publishingStrategies.endpoints[0].marin3rSidecar.resources.requests
+      - description: ServiceNameOverride allows the user to override the generated
+          Service name
+        displayName: Service Name Override
+        path: publishingStrategies.endpoints[0].marin3rSidecar.serviceName
+      - description: ServicePortsOverride allows the user to override the ports of
+          a Service. It's a replace operation, so specify all the required ports.
+        displayName: Service Ports Override
+        path: publishingStrategies.endpoints[0].marin3rSidecar.servicePorts
+      - description: ServiceType defines the type of k8s Service to use for exposing
+          the service to its consumers
+        displayName: Service Type
+        path: publishingStrategies.endpoints[0].marin3rSidecar.serviceType
+      - description: Extra containers to sync with the shutdown manager upon pod termination
+        displayName: Shutdown Manager Extra Lifecycle Hooks
+        path: publishingStrategies.endpoints[0].marin3rSidecar.shtdnmgrExtraLifecycleHooks
+      - description: The port where Marin3r's shutdown manager listens
+        displayName: Shutdown Manager Port
+        path: publishingStrategies.endpoints[0].marin3rSidecar.shtdnmgrPort
+      - description: EndpointName defines the endpoint affected by this publishing
+          strategy
+        displayName: Endpoint Name
+        path: publishingStrategies.endpoints[0].name
+      - description: Simple holds configuration for the Simple publishing strategy
+        displayName: Simple
+        path: publishingStrategies.endpoints[0].simple
+      - description: Classic LB configuration
+        displayName: Elastic Load Balancer Config
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig
+      - description: Enables/disables connection draining
+        displayName: Connection Draining Enabled
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.connectionDrainingEnabled
+      - description: Sets the timeout for connection draining
+        displayName: Connection Draining Timeout
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.connectionDrainingTimeout
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Sets the healthy threshold for the load balancer
+        displayName: Healthcheck Healthy Threshold
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckHealthyThreshold
+      - description: Sets the interval between health checks
+        displayName: Healthcheck Interval
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckInterval
+      - description: Sets the timeout for the health check
+        displayName: Healthcheck Timeout
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckTimeout
+      - description: Sets the unhealthy threshold for the load balancer
+        displayName: Healthcheck Unhealthy Threshold
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckUnhealthyThreshold
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.proxyProtocol
+      - description: NLB configuration
+        displayName: Network Load Balancer Config
+        path: publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Deletion protection setting
+        displayName: Deletion Protection
+        path: publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.deletionProtection
+      - description: The list of optional Elastic IPs allocations
+        displayName: EIPAllocations
+        path: publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.eipAllocations
+      - description: Optionally specify the load balancer name
+        displayName: Load Balancer Name
+        path: publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.loadBalancerName
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.proxyProtocol
+      - description: ServiceNameOverride allows the user to override the generated
+          Service name
+        displayName: Service Name Override
+        path: publishingStrategies.endpoints[0].simple.serviceName
+      - description: ServicePortsOverride allows the user to override the ports of
+          a Service. It's a replace operation, so specify all the required ports.
+        displayName: Service Ports Override
+        path: publishingStrategies.endpoints[0].simple.servicePorts
+      - description: ServiceType defines the type of k8s Service to use for exposing
+          the service to its consumers
+        displayName: Service Type
+        path: publishingStrategies.endpoints[0].simple.serviceType
+      - description: Strategy defines the type of publishing strategy
+        displayName: Strategy
+        path: publishingStrategies.endpoints[0].strategy
+      - description: PublishingStrategiesReconcileMode specifies if the list of strategies
+          should be merged with the defautls or replace them entirely. Allowed values
+          are "Merge" or "Replace". "Replace" strategy should be used to enable 2
+          strategies at the same time for a single endpoint.
+        displayName: Mode
+        path: publishingStrategies.mode
       - description: Readiness probe for the component
         displayName: Readiness Probe
         path: readinessProbe
@@ -1653,7 +2789,7 @@ spec:
       kind: EchoAPI
       name: echoapis.saas.3scale.net
       specDescriptors:
-      - description: The external endpoint/s for the component
+      - description: The external endpoint/s for the component DEPRECATED
         displayName: Endpoint
         path: endpoint
       - description: The list of dns records that will point to the component
@@ -1717,7 +2853,7 @@ spec:
       - description: Number of seconds after which the probe times out
         displayName: Timeout Seconds
         path: livenessProbe.timeoutSeconds
-      - description: Configures the AWS Network load balancer for the component
+      - description: Configures the AWS load balancer for the component DEPRECATED
         displayName: Load Balancer
         path: loadBalancer
       - description: Enables/disables cross zone load balancing
@@ -1735,7 +2871,7 @@ spec:
       - description: Enables/disbles use of proxy protocol in the load balancer
         displayName: Proxy Protocol
         path: loadBalancer.proxyProtocol
-      - description: Marin3r configures the Marin3r sidecars for the component
+      - description: Marin3r configures the Marin3r sidecars for the component DEPRECATED
         displayName: Marin3r
         path: marin3r
       - description: Envoy dynamic configuration. Populating this field causes the
@@ -1743,6 +2879,33 @@ spec:
           in the cluster.
         displayName: Envoy Dynamic Config
         path: marin3r.dynamicConfigs
+      - description: Classic LB configuration
+        displayName: Elastic Load Balancer Config
+        path: marin3r.elasticLoadBalancerConfig
+      - description: Enables/disables connection draining
+        displayName: Connection Draining Enabled
+        path: marin3r.elasticLoadBalancerConfig.connectionDrainingEnabled
+      - description: Sets the timeout for connection draining
+        displayName: Connection Draining Timeout
+        path: marin3r.elasticLoadBalancerConfig.connectionDrainingTimeout
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: marin3r.elasticLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Sets the healthy threshold for the load balancer
+        displayName: Healthcheck Healthy Threshold
+        path: marin3r.elasticLoadBalancerConfig.healthcheckHealthyThreshold
+      - description: Sets the interval between health checks
+        displayName: Healthcheck Interval
+        path: marin3r.elasticLoadBalancerConfig.healthcheckInterval
+      - description: Sets the timeout for the health check
+        displayName: Healthcheck Timeout
+        path: marin3r.elasticLoadBalancerConfig.healthcheckTimeout
+      - description: Sets the unhealthy threshold for the load balancer
+        displayName: Healthcheck Unhealthy Threshold
+        path: marin3r.elasticLoadBalancerConfig.healthcheckUnhealthyThreshold
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: marin3r.elasticLoadBalancerConfig.proxyProtocol
       - description: The Envoy API version to use
         displayName: Envoy APIVersion
         path: marin3r.envoyAPIVersion
@@ -1753,6 +2916,24 @@ spec:
           container.
         displayName: Extra Pod Annotations
         path: marin3r.extraPodAnnotations
+      - description: NLB configuration
+        displayName: Network Load Balancer Config
+        path: marin3r.networkLoadBalancerConfig
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: marin3r.networkLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Deletion protection setting
+        displayName: Deletion Protection
+        path: marin3r.networkLoadBalancerConfig.deletionProtection
+      - description: The list of optional Elastic IPs allocations
+        displayName: EIPAllocations
+        path: marin3r.networkLoadBalancerConfig.eipAllocations
+      - description: Optionally specify the load balancer name
+        displayName: Load Balancer Name
+        path: marin3r.networkLoadBalancerConfig.loadBalancerName
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: marin3r.networkLoadBalancerConfig.proxyProtocol
       - description: The NodeID that identifies the Envoy sidecar to the DiscoveryService
         displayName: Node ID
         path: marin3r.nodeID
@@ -1765,7 +2946,7 @@ spec:
       - description: Port value
         displayName: Port
         path: marin3r.ports[0].port
-      - description: Compute Resources required by this container.
+      - description: Compute Resources required by the sidecar container.
         displayName: Resources
         path: marin3r.resources
       - description: 'Limits describes the maximum amount of compute resources allowed.
@@ -1778,6 +2959,18 @@ spec:
           info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
         displayName: Requests
         path: marin3r.resources.requests
+      - description: ServiceNameOverride allows the user to override the generated
+          Service name
+        displayName: Service Name Override
+        path: marin3r.serviceName
+      - description: ServicePortsOverride allows the user to override the ports of
+          a Service. It's a replace operation, so specify all the required ports.
+        displayName: Service Ports Override
+        path: marin3r.servicePorts
+      - description: ServiceType defines the type of k8s Service to use for exposing
+          the service to its consumers
+        displayName: Service Type
+        path: marin3r.serviceType
       - description: Extra containers to sync with the shutdown manager upon pod termination
         displayName: Shutdown Manager Extra Lifecycle Hooks
         path: marin3r.shtdnmgrExtraLifecycleHooks
@@ -1799,6 +2992,199 @@ spec:
           evictions by specifying "100%".
         displayName: Min Available
         path: pdb.minAvailable
+      - description: Describes how the services provided by this workload are exposed
+          to its consumers
+        displayName: Publishing Strategies
+        path: publishingStrategies
+      - description: Endpoints holds the list of publishing strategies for each workload
+          endpoint.
+        displayName: Endpoints
+        path: publishingStrategies.endpoints
+      - description: Create explicitely tells the controller that this is a new endpoint
+          that should be added. Default is false, causing the controller to error
+          when seeing an unknown endpoint.
+        displayName: Create
+        path: publishingStrategies.endpoints[0].create
+      - description: Marin3rSidecar holds configuration for the Marin3rSidecar publishing
+          strategy
+        displayName: Marin3r Sidecar
+        path: publishingStrategies.endpoints[0].marin3rSidecar
+      - description: Envoy dynamic configuration. Populating this field causes the
+          operator to create a Marin3r EnvoyConfig resource, so Marin3r must be installed
+          in the cluster.
+        displayName: Envoy Dynamic Config
+        path: publishingStrategies.endpoints[0].marin3rSidecar.dynamicConfigs
+      - description: Classic LB configuration
+        displayName: Elastic Load Balancer Config
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig
+      - description: Enables/disables connection draining
+        displayName: Connection Draining Enabled
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.connectionDrainingEnabled
+      - description: Sets the timeout for connection draining
+        displayName: Connection Draining Timeout
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.connectionDrainingTimeout
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Sets the healthy threshold for the load balancer
+        displayName: Healthcheck Healthy Threshold
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckHealthyThreshold
+      - description: Sets the interval between health checks
+        displayName: Healthcheck Interval
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckInterval
+      - description: Sets the timeout for the health check
+        displayName: Healthcheck Timeout
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckTimeout
+      - description: Sets the unhealthy threshold for the load balancer
+        displayName: Healthcheck Unhealthy Threshold
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckUnhealthyThreshold
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.proxyProtocol
+      - description: The Envoy API version to use
+        displayName: Envoy APIVersion
+        path: publishingStrategies.endpoints[0].marin3rSidecar.envoyAPIVersion
+      - description: The Envoy iamge to use
+        displayName: Envoy Image
+        path: publishingStrategies.endpoints[0].marin3rSidecar.envoyImage
+      - description: Extra annotations to pass the Pod to further configure the sidecar
+          container.
+        displayName: Extra Pod Annotations
+        path: publishingStrategies.endpoints[0].marin3rSidecar.extraPodAnnotations
+      - description: NLB configuration
+        displayName: Network Load Balancer Config
+        path: publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Deletion protection setting
+        displayName: Deletion Protection
+        path: publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.deletionProtection
+      - description: The list of optional Elastic IPs allocations
+        displayName: EIPAllocations
+        path: publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.eipAllocations
+      - description: Optionally specify the load balancer name
+        displayName: Load Balancer Name
+        path: publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.loadBalancerName
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.proxyProtocol
+      - description: The NodeID that identifies the Envoy sidecar to the DiscoveryService
+        displayName: Node ID
+        path: publishingStrategies.endpoints[0].marin3rSidecar.nodeID
+      - description: The ports that the sidecar exposes
+        displayName: Ports
+        path: publishingStrategies.endpoints[0].marin3rSidecar.ports
+      - description: Port name
+        displayName: Name
+        path: publishingStrategies.endpoints[0].marin3rSidecar.ports[0].name
+      - description: Port value
+        displayName: Port
+        path: publishingStrategies.endpoints[0].marin3rSidecar.ports[0].port
+      - description: Compute Resources required by the sidecar container.
+        displayName: Resources
+        path: publishingStrategies.endpoints[0].marin3rSidecar.resources
+      - description: 'Limits describes the maximum amount of compute resources allowed.
+          More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Limits
+        path: publishingStrategies.endpoints[0].marin3rSidecar.resources.limits
+      - description: 'Requests describes the minimum amount of compute resources required.
+          If Requests is omitted for a container, it defaults to Limits if that is
+          explicitly specified, otherwise to an implementation-defined value. More
+          info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Requests
+        path: publishingStrategies.endpoints[0].marin3rSidecar.resources.requests
+      - description: ServiceNameOverride allows the user to override the generated
+          Service name
+        displayName: Service Name Override
+        path: publishingStrategies.endpoints[0].marin3rSidecar.serviceName
+      - description: ServicePortsOverride allows the user to override the ports of
+          a Service. It's a replace operation, so specify all the required ports.
+        displayName: Service Ports Override
+        path: publishingStrategies.endpoints[0].marin3rSidecar.servicePorts
+      - description: ServiceType defines the type of k8s Service to use for exposing
+          the service to its consumers
+        displayName: Service Type
+        path: publishingStrategies.endpoints[0].marin3rSidecar.serviceType
+      - description: Extra containers to sync with the shutdown manager upon pod termination
+        displayName: Shutdown Manager Extra Lifecycle Hooks
+        path: publishingStrategies.endpoints[0].marin3rSidecar.shtdnmgrExtraLifecycleHooks
+      - description: The port where Marin3r's shutdown manager listens
+        displayName: Shutdown Manager Port
+        path: publishingStrategies.endpoints[0].marin3rSidecar.shtdnmgrPort
+      - description: EndpointName defines the endpoint affected by this publishing
+          strategy
+        displayName: Endpoint Name
+        path: publishingStrategies.endpoints[0].name
+      - description: Simple holds configuration for the Simple publishing strategy
+        displayName: Simple
+        path: publishingStrategies.endpoints[0].simple
+      - description: Classic LB configuration
+        displayName: Elastic Load Balancer Config
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig
+      - description: Enables/disables connection draining
+        displayName: Connection Draining Enabled
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.connectionDrainingEnabled
+      - description: Sets the timeout for connection draining
+        displayName: Connection Draining Timeout
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.connectionDrainingTimeout
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Sets the healthy threshold for the load balancer
+        displayName: Healthcheck Healthy Threshold
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckHealthyThreshold
+      - description: Sets the interval between health checks
+        displayName: Healthcheck Interval
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckInterval
+      - description: Sets the timeout for the health check
+        displayName: Healthcheck Timeout
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckTimeout
+      - description: Sets the unhealthy threshold for the load balancer
+        displayName: Healthcheck Unhealthy Threshold
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckUnhealthyThreshold
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.proxyProtocol
+      - description: NLB configuration
+        displayName: Network Load Balancer Config
+        path: publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Deletion protection setting
+        displayName: Deletion Protection
+        path: publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.deletionProtection
+      - description: The list of optional Elastic IPs allocations
+        displayName: EIPAllocations
+        path: publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.eipAllocations
+      - description: Optionally specify the load balancer name
+        displayName: Load Balancer Name
+        path: publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.loadBalancerName
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.proxyProtocol
+      - description: ServiceNameOverride allows the user to override the generated
+          Service name
+        displayName: Service Name Override
+        path: publishingStrategies.endpoints[0].simple.serviceName
+      - description: ServicePortsOverride allows the user to override the ports of
+          a Service. It's a replace operation, so specify all the required ports.
+        displayName: Service Ports Override
+        path: publishingStrategies.endpoints[0].simple.servicePorts
+      - description: ServiceType defines the type of k8s Service to use for exposing
+          the service to its consumers
+        displayName: Service Type
+        path: publishingStrategies.endpoints[0].simple.serviceType
+      - description: Strategy defines the type of publishing strategy
+        displayName: Strategy
+        path: publishingStrategies.endpoints[0].strategy
+      - description: PublishingStrategiesReconcileMode specifies if the list of strategies
+          should be merged with the defautls or replace them entirely. Allowed values
+          are "Merge" or "Replace". "Replace" strategy should be used to enable 2
+          strategies at the same time for a single endpoint.
+        displayName: Mode
+        path: publishingStrategies.mode
       - description: Readiness probe for the component
         displayName: Readiness Probe
         path: readinessProbe
@@ -1973,6 +3359,199 @@ spec:
           evictions by specifying "100%".
         displayName: Min Available
         path: pdb.minAvailable
+      - description: Describes how the services provided by this workload are exposed
+          to its consumers
+        displayName: Publishing Strategies
+        path: publishingStrategies
+      - description: Endpoints holds the list of publishing strategies for each workload
+          endpoint.
+        displayName: Endpoints
+        path: publishingStrategies.endpoints
+      - description: Create explicitely tells the controller that this is a new endpoint
+          that should be added. Default is false, causing the controller to error
+          when seeing an unknown endpoint.
+        displayName: Create
+        path: publishingStrategies.endpoints[0].create
+      - description: Marin3rSidecar holds configuration for the Marin3rSidecar publishing
+          strategy
+        displayName: Marin3r Sidecar
+        path: publishingStrategies.endpoints[0].marin3rSidecar
+      - description: Envoy dynamic configuration. Populating this field causes the
+          operator to create a Marin3r EnvoyConfig resource, so Marin3r must be installed
+          in the cluster.
+        displayName: Envoy Dynamic Config
+        path: publishingStrategies.endpoints[0].marin3rSidecar.dynamicConfigs
+      - description: Classic LB configuration
+        displayName: Elastic Load Balancer Config
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig
+      - description: Enables/disables connection draining
+        displayName: Connection Draining Enabled
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.connectionDrainingEnabled
+      - description: Sets the timeout for connection draining
+        displayName: Connection Draining Timeout
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.connectionDrainingTimeout
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Sets the healthy threshold for the load balancer
+        displayName: Healthcheck Healthy Threshold
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckHealthyThreshold
+      - description: Sets the interval between health checks
+        displayName: Healthcheck Interval
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckInterval
+      - description: Sets the timeout for the health check
+        displayName: Healthcheck Timeout
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckTimeout
+      - description: Sets the unhealthy threshold for the load balancer
+        displayName: Healthcheck Unhealthy Threshold
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckUnhealthyThreshold
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.proxyProtocol
+      - description: The Envoy API version to use
+        displayName: Envoy APIVersion
+        path: publishingStrategies.endpoints[0].marin3rSidecar.envoyAPIVersion
+      - description: The Envoy iamge to use
+        displayName: Envoy Image
+        path: publishingStrategies.endpoints[0].marin3rSidecar.envoyImage
+      - description: Extra annotations to pass the Pod to further configure the sidecar
+          container.
+        displayName: Extra Pod Annotations
+        path: publishingStrategies.endpoints[0].marin3rSidecar.extraPodAnnotations
+      - description: NLB configuration
+        displayName: Network Load Balancer Config
+        path: publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Deletion protection setting
+        displayName: Deletion Protection
+        path: publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.deletionProtection
+      - description: The list of optional Elastic IPs allocations
+        displayName: EIPAllocations
+        path: publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.eipAllocations
+      - description: Optionally specify the load balancer name
+        displayName: Load Balancer Name
+        path: publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.loadBalancerName
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.proxyProtocol
+      - description: The NodeID that identifies the Envoy sidecar to the DiscoveryService
+        displayName: Node ID
+        path: publishingStrategies.endpoints[0].marin3rSidecar.nodeID
+      - description: The ports that the sidecar exposes
+        displayName: Ports
+        path: publishingStrategies.endpoints[0].marin3rSidecar.ports
+      - description: Port name
+        displayName: Name
+        path: publishingStrategies.endpoints[0].marin3rSidecar.ports[0].name
+      - description: Port value
+        displayName: Port
+        path: publishingStrategies.endpoints[0].marin3rSidecar.ports[0].port
+      - description: Compute Resources required by the sidecar container.
+        displayName: Resources
+        path: publishingStrategies.endpoints[0].marin3rSidecar.resources
+      - description: 'Limits describes the maximum amount of compute resources allowed.
+          More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Limits
+        path: publishingStrategies.endpoints[0].marin3rSidecar.resources.limits
+      - description: 'Requests describes the minimum amount of compute resources required.
+          If Requests is omitted for a container, it defaults to Limits if that is
+          explicitly specified, otherwise to an implementation-defined value. More
+          info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Requests
+        path: publishingStrategies.endpoints[0].marin3rSidecar.resources.requests
+      - description: ServiceNameOverride allows the user to override the generated
+          Service name
+        displayName: Service Name Override
+        path: publishingStrategies.endpoints[0].marin3rSidecar.serviceName
+      - description: ServicePortsOverride allows the user to override the ports of
+          a Service. It's a replace operation, so specify all the required ports.
+        displayName: Service Ports Override
+        path: publishingStrategies.endpoints[0].marin3rSidecar.servicePorts
+      - description: ServiceType defines the type of k8s Service to use for exposing
+          the service to its consumers
+        displayName: Service Type
+        path: publishingStrategies.endpoints[0].marin3rSidecar.serviceType
+      - description: Extra containers to sync with the shutdown manager upon pod termination
+        displayName: Shutdown Manager Extra Lifecycle Hooks
+        path: publishingStrategies.endpoints[0].marin3rSidecar.shtdnmgrExtraLifecycleHooks
+      - description: The port where Marin3r's shutdown manager listens
+        displayName: Shutdown Manager Port
+        path: publishingStrategies.endpoints[0].marin3rSidecar.shtdnmgrPort
+      - description: EndpointName defines the endpoint affected by this publishing
+          strategy
+        displayName: Endpoint Name
+        path: publishingStrategies.endpoints[0].name
+      - description: Simple holds configuration for the Simple publishing strategy
+        displayName: Simple
+        path: publishingStrategies.endpoints[0].simple
+      - description: Classic LB configuration
+        displayName: Elastic Load Balancer Config
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig
+      - description: Enables/disables connection draining
+        displayName: Connection Draining Enabled
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.connectionDrainingEnabled
+      - description: Sets the timeout for connection draining
+        displayName: Connection Draining Timeout
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.connectionDrainingTimeout
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Sets the healthy threshold for the load balancer
+        displayName: Healthcheck Healthy Threshold
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckHealthyThreshold
+      - description: Sets the interval between health checks
+        displayName: Healthcheck Interval
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckInterval
+      - description: Sets the timeout for the health check
+        displayName: Healthcheck Timeout
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckTimeout
+      - description: Sets the unhealthy threshold for the load balancer
+        displayName: Healthcheck Unhealthy Threshold
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckUnhealthyThreshold
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.proxyProtocol
+      - description: NLB configuration
+        displayName: Network Load Balancer Config
+        path: publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Deletion protection setting
+        displayName: Deletion Protection
+        path: publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.deletionProtection
+      - description: The list of optional Elastic IPs allocations
+        displayName: EIPAllocations
+        path: publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.eipAllocations
+      - description: Optionally specify the load balancer name
+        displayName: Load Balancer Name
+        path: publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.loadBalancerName
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.proxyProtocol
+      - description: ServiceNameOverride allows the user to override the generated
+          Service name
+        displayName: Service Name Override
+        path: publishingStrategies.endpoints[0].simple.serviceName
+      - description: ServicePortsOverride allows the user to override the ports of
+          a Service. It's a replace operation, so specify all the required ports.
+        displayName: Service Ports Override
+        path: publishingStrategies.endpoints[0].simple.servicePorts
+      - description: ServiceType defines the type of k8s Service to use for exposing
+          the service to its consumers
+        displayName: Service Type
+        path: publishingStrategies.endpoints[0].simple.serviceType
+      - description: Strategy defines the type of publishing strategy
+        displayName: Strategy
+        path: publishingStrategies.endpoints[0].strategy
+      - description: PublishingStrategiesReconcileMode specifies if the list of strategies
+          should be merged with the defautls or replace them entirely. Allowed values
+          are "Merge" or "Replace". "Replace" strategy should be used to enable 2
+          strategies at the same time for a single endpoint.
+        displayName: Mode
+        path: publishingStrategies.mode
       - description: Readiness probe for the component
         displayName: Readiness Probe
         path: readinessProbe
@@ -2333,6 +3912,199 @@ spec:
           evictions by specifying "100%".
         displayName: Min Available
         path: app.pdb.minAvailable
+      - description: Describes how the services provided by this workload are exposed
+          to its consumers
+        displayName: Publishing Strategies
+        path: app.publishingStrategies
+      - description: Endpoints holds the list of publishing strategies for each workload
+          endpoint.
+        displayName: Endpoints
+        path: app.publishingStrategies.endpoints
+      - description: Create explicitely tells the controller that this is a new endpoint
+          that should be added. Default is false, causing the controller to error
+          when seeing an unknown endpoint.
+        displayName: Create
+        path: app.publishingStrategies.endpoints[0].create
+      - description: Marin3rSidecar holds configuration for the Marin3rSidecar publishing
+          strategy
+        displayName: Marin3r Sidecar
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar
+      - description: Envoy dynamic configuration. Populating this field causes the
+          operator to create a Marin3r EnvoyConfig resource, so Marin3r must be installed
+          in the cluster.
+        displayName: Envoy Dynamic Config
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.dynamicConfigs
+      - description: Classic LB configuration
+        displayName: Elastic Load Balancer Config
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig
+      - description: Enables/disables connection draining
+        displayName: Connection Draining Enabled
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.connectionDrainingEnabled
+      - description: Sets the timeout for connection draining
+        displayName: Connection Draining Timeout
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.connectionDrainingTimeout
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Sets the healthy threshold for the load balancer
+        displayName: Healthcheck Healthy Threshold
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckHealthyThreshold
+      - description: Sets the interval between health checks
+        displayName: Healthcheck Interval
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckInterval
+      - description: Sets the timeout for the health check
+        displayName: Healthcheck Timeout
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckTimeout
+      - description: Sets the unhealthy threshold for the load balancer
+        displayName: Healthcheck Unhealthy Threshold
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckUnhealthyThreshold
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.proxyProtocol
+      - description: The Envoy API version to use
+        displayName: Envoy APIVersion
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.envoyAPIVersion
+      - description: The Envoy iamge to use
+        displayName: Envoy Image
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.envoyImage
+      - description: Extra annotations to pass the Pod to further configure the sidecar
+          container.
+        displayName: Extra Pod Annotations
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.extraPodAnnotations
+      - description: NLB configuration
+        displayName: Network Load Balancer Config
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Deletion protection setting
+        displayName: Deletion Protection
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.deletionProtection
+      - description: The list of optional Elastic IPs allocations
+        displayName: EIPAllocations
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.eipAllocations
+      - description: Optionally specify the load balancer name
+        displayName: Load Balancer Name
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.loadBalancerName
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.proxyProtocol
+      - description: The NodeID that identifies the Envoy sidecar to the DiscoveryService
+        displayName: Node ID
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.nodeID
+      - description: The ports that the sidecar exposes
+        displayName: Ports
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.ports
+      - description: Port name
+        displayName: Name
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.ports[0].name
+      - description: Port value
+        displayName: Port
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.ports[0].port
+      - description: Compute Resources required by the sidecar container.
+        displayName: Resources
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.resources
+      - description: 'Limits describes the maximum amount of compute resources allowed.
+          More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Limits
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.resources.limits
+      - description: 'Requests describes the minimum amount of compute resources required.
+          If Requests is omitted for a container, it defaults to Limits if that is
+          explicitly specified, otherwise to an implementation-defined value. More
+          info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Requests
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.resources.requests
+      - description: ServiceNameOverride allows the user to override the generated
+          Service name
+        displayName: Service Name Override
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.serviceName
+      - description: ServicePortsOverride allows the user to override the ports of
+          a Service. It's a replace operation, so specify all the required ports.
+        displayName: Service Ports Override
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.servicePorts
+      - description: ServiceType defines the type of k8s Service to use for exposing
+          the service to its consumers
+        displayName: Service Type
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.serviceType
+      - description: Extra containers to sync with the shutdown manager upon pod termination
+        displayName: Shutdown Manager Extra Lifecycle Hooks
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.shtdnmgrExtraLifecycleHooks
+      - description: The port where Marin3r's shutdown manager listens
+        displayName: Shutdown Manager Port
+        path: app.publishingStrategies.endpoints[0].marin3rSidecar.shtdnmgrPort
+      - description: EndpointName defines the endpoint affected by this publishing
+          strategy
+        displayName: Endpoint Name
+        path: app.publishingStrategies.endpoints[0].name
+      - description: Simple holds configuration for the Simple publishing strategy
+        displayName: Simple
+        path: app.publishingStrategies.endpoints[0].simple
+      - description: Classic LB configuration
+        displayName: Elastic Load Balancer Config
+        path: app.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig
+      - description: Enables/disables connection draining
+        displayName: Connection Draining Enabled
+        path: app.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.connectionDrainingEnabled
+      - description: Sets the timeout for connection draining
+        displayName: Connection Draining Timeout
+        path: app.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.connectionDrainingTimeout
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: app.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Sets the healthy threshold for the load balancer
+        displayName: Healthcheck Healthy Threshold
+        path: app.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckHealthyThreshold
+      - description: Sets the interval between health checks
+        displayName: Healthcheck Interval
+        path: app.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckInterval
+      - description: Sets the timeout for the health check
+        displayName: Healthcheck Timeout
+        path: app.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckTimeout
+      - description: Sets the unhealthy threshold for the load balancer
+        displayName: Healthcheck Unhealthy Threshold
+        path: app.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckUnhealthyThreshold
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: app.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.proxyProtocol
+      - description: NLB configuration
+        displayName: Network Load Balancer Config
+        path: app.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: app.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Deletion protection setting
+        displayName: Deletion Protection
+        path: app.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.deletionProtection
+      - description: The list of optional Elastic IPs allocations
+        displayName: EIPAllocations
+        path: app.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.eipAllocations
+      - description: Optionally specify the load balancer name
+        displayName: Load Balancer Name
+        path: app.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.loadBalancerName
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: app.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.proxyProtocol
+      - description: ServiceNameOverride allows the user to override the generated
+          Service name
+        displayName: Service Name Override
+        path: app.publishingStrategies.endpoints[0].simple.serviceName
+      - description: ServicePortsOverride allows the user to override the ports of
+          a Service. It's a replace operation, so specify all the required ports.
+        displayName: Service Ports Override
+        path: app.publishingStrategies.endpoints[0].simple.servicePorts
+      - description: ServiceType defines the type of k8s Service to use for exposing
+          the service to its consumers
+        displayName: Service Type
+        path: app.publishingStrategies.endpoints[0].simple.serviceType
+      - description: Strategy defines the type of publishing strategy
+        displayName: Strategy
+        path: app.publishingStrategies.endpoints[0].strategy
+      - description: PublishingStrategiesReconcileMode specifies if the list of strategies
+          should be merged with the defautls or replace them entirely. Allowed values
+          are "Merge" or "Replace". "Replace" strategy should be used to enable 2
+          strategies at the same time for a single endpoint.
+        displayName: Mode
+        path: app.publishingStrategies.mode
       - description: Readiness probe for the component
         displayName: Readiness Probe
         path: app.readinessProbe
@@ -2396,6 +4168,12 @@ spec:
       - description: Override allows to directly specify a string value.
         displayName: Override
         path: config.accessCode.override
+      - description: Apicast can be used to pass down apicast endpoints configuration
+        displayName: Apicast
+        path: config.apicast
+      - description: Assets has configuration to access assets in AWS s3
+        displayName: Assets
+        path: config.assets
       - description: AWS access key
         displayName: Access Key
         path: config.assets.accessKey
@@ -3788,6 +5566,199 @@ spec:
           evictions by specifying "100%".
         displayName: Min Available
         path: api.pdb.minAvailable
+      - description: Describes how the services provided by this workload are exposed
+          to its consumers
+        displayName: Publishing Strategies
+        path: api.publishingStrategies
+      - description: Endpoints holds the list of publishing strategies for each workload
+          endpoint.
+        displayName: Endpoints
+        path: api.publishingStrategies.endpoints
+      - description: Create explicitely tells the controller that this is a new endpoint
+          that should be added. Default is false, causing the controller to error
+          when seeing an unknown endpoint.
+        displayName: Create
+        path: api.publishingStrategies.endpoints[0].create
+      - description: Marin3rSidecar holds configuration for the Marin3rSidecar publishing
+          strategy
+        displayName: Marin3r Sidecar
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar
+      - description: Envoy dynamic configuration. Populating this field causes the
+          operator to create a Marin3r EnvoyConfig resource, so Marin3r must be installed
+          in the cluster.
+        displayName: Envoy Dynamic Config
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.dynamicConfigs
+      - description: Classic LB configuration
+        displayName: Elastic Load Balancer Config
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig
+      - description: Enables/disables connection draining
+        displayName: Connection Draining Enabled
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.connectionDrainingEnabled
+      - description: Sets the timeout for connection draining
+        displayName: Connection Draining Timeout
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.connectionDrainingTimeout
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Sets the healthy threshold for the load balancer
+        displayName: Healthcheck Healthy Threshold
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckHealthyThreshold
+      - description: Sets the interval between health checks
+        displayName: Healthcheck Interval
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckInterval
+      - description: Sets the timeout for the health check
+        displayName: Healthcheck Timeout
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckTimeout
+      - description: Sets the unhealthy threshold for the load balancer
+        displayName: Healthcheck Unhealthy Threshold
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.healthcheckUnhealthyThreshold
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.elasticLoadBalancerConfig.proxyProtocol
+      - description: The Envoy API version to use
+        displayName: Envoy APIVersion
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.envoyAPIVersion
+      - description: The Envoy iamge to use
+        displayName: Envoy Image
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.envoyImage
+      - description: Extra annotations to pass the Pod to further configure the sidecar
+          container.
+        displayName: Extra Pod Annotations
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.extraPodAnnotations
+      - description: NLB configuration
+        displayName: Network Load Balancer Config
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Deletion protection setting
+        displayName: Deletion Protection
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.deletionProtection
+      - description: The list of optional Elastic IPs allocations
+        displayName: EIPAllocations
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.eipAllocations
+      - description: Optionally specify the load balancer name
+        displayName: Load Balancer Name
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.loadBalancerName
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.networkLoadBalancerConfig.proxyProtocol
+      - description: The NodeID that identifies the Envoy sidecar to the DiscoveryService
+        displayName: Node ID
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.nodeID
+      - description: The ports that the sidecar exposes
+        displayName: Ports
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.ports
+      - description: Port name
+        displayName: Name
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.ports[0].name
+      - description: Port value
+        displayName: Port
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.ports[0].port
+      - description: Compute Resources required by the sidecar container.
+        displayName: Resources
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.resources
+      - description: 'Limits describes the maximum amount of compute resources allowed.
+          More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Limits
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.resources.limits
+      - description: 'Requests describes the minimum amount of compute resources required.
+          If Requests is omitted for a container, it defaults to Limits if that is
+          explicitly specified, otherwise to an implementation-defined value. More
+          info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+        displayName: Requests
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.resources.requests
+      - description: ServiceNameOverride allows the user to override the generated
+          Service name
+        displayName: Service Name Override
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.serviceName
+      - description: ServicePortsOverride allows the user to override the ports of
+          a Service. It's a replace operation, so specify all the required ports.
+        displayName: Service Ports Override
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.servicePorts
+      - description: ServiceType defines the type of k8s Service to use for exposing
+          the service to its consumers
+        displayName: Service Type
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.serviceType
+      - description: Extra containers to sync with the shutdown manager upon pod termination
+        displayName: Shutdown Manager Extra Lifecycle Hooks
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.shtdnmgrExtraLifecycleHooks
+      - description: The port where Marin3r's shutdown manager listens
+        displayName: Shutdown Manager Port
+        path: api.publishingStrategies.endpoints[0].marin3rSidecar.shtdnmgrPort
+      - description: EndpointName defines the endpoint affected by this publishing
+          strategy
+        displayName: Endpoint Name
+        path: api.publishingStrategies.endpoints[0].name
+      - description: Simple holds configuration for the Simple publishing strategy
+        displayName: Simple
+        path: api.publishingStrategies.endpoints[0].simple
+      - description: Classic LB configuration
+        displayName: Elastic Load Balancer Config
+        path: api.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig
+      - description: Enables/disables connection draining
+        displayName: Connection Draining Enabled
+        path: api.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.connectionDrainingEnabled
+      - description: Sets the timeout for connection draining
+        displayName: Connection Draining Timeout
+        path: api.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.connectionDrainingTimeout
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: api.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Sets the healthy threshold for the load balancer
+        displayName: Healthcheck Healthy Threshold
+        path: api.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckHealthyThreshold
+      - description: Sets the interval between health checks
+        displayName: Healthcheck Interval
+        path: api.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckInterval
+      - description: Sets the timeout for the health check
+        displayName: Healthcheck Timeout
+        path: api.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckTimeout
+      - description: Sets the unhealthy threshold for the load balancer
+        displayName: Healthcheck Unhealthy Threshold
+        path: api.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.healthcheckUnhealthyThreshold
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: api.publishingStrategies.endpoints[0].simple.elasticLoadBalancerConfig.proxyProtocol
+      - description: NLB configuration
+        displayName: Network Load Balancer Config
+        path: api.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig
+      - description: Enables/disables cross zone load balancing
+        displayName: Cross Zone Load Balancing Enabled
+        path: api.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.crossZoneLoadBalancingEnabled
+      - description: Deletion protection setting
+        displayName: Deletion Protection
+        path: api.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.deletionProtection
+      - description: The list of optional Elastic IPs allocations
+        displayName: EIPAllocations
+        path: api.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.eipAllocations
+      - description: Optionally specify the load balancer name
+        displayName: Load Balancer Name
+        path: api.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.loadBalancerName
+      - description: Enables/disbles use of proxy protocol in the load balancer
+        displayName: Proxy Protocol
+        path: api.publishingStrategies.endpoints[0].simple.networkLoadBalancerConfig.proxyProtocol
+      - description: ServiceNameOverride allows the user to override the generated
+          Service name
+        displayName: Service Name Override
+        path: api.publishingStrategies.endpoints[0].simple.serviceName
+      - description: ServicePortsOverride allows the user to override the ports of
+          a Service. It's a replace operation, so specify all the required ports.
+        displayName: Service Ports Override
+        path: api.publishingStrategies.endpoints[0].simple.servicePorts
+      - description: ServiceType defines the type of k8s Service to use for exposing
+          the service to its consumers
+        displayName: Service Type
+        path: api.publishingStrategies.endpoints[0].simple.serviceType
+      - description: Strategy defines the type of publishing strategy
+        displayName: Strategy
+        path: api.publishingStrategies.endpoints[0].strategy
+      - description: PublishingStrategiesReconcileMode specifies if the list of strategies
+          should be merged with the defautls or replace them entirely. Allowed values
+          are "Merge" or "Replace". "Replace" strategy should be used to enable 2
+          strategies at the same time for a single endpoint.
+        displayName: Mode
+        path: api.publishingStrategies.mode
       - description: Readiness probe for the component
         displayName: Readiness Probe
         path: api.readinessProbe
