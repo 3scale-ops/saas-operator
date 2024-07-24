@@ -752,6 +752,10 @@ spec:
                       serviceType:
                         description: ServiceType defines the type of k8s Service to
                           use for exposing the service to its consumers
+                        enum:
+                        - ClusterIP
+                        - ELB
+                        - NLB
                         type: string
                       shtdnmgrExtraLifecycleHooks:
                         description: Extra containers to sync with the shutdown manager
@@ -1436,6 +1440,10 @@ spec:
                                   description: ServiceType defines the type of k8s
                                     Service to use for exposing the service to its
                                     consumers
+                                  enum:
+                                  - ClusterIP
+                                  - ELB
+                                  - NLB
                                   type: string
                                 shtdnmgrExtraLifecycleHooks:
                                   description: Extra containers to sync with the shutdown
@@ -1622,11 +1630,18 @@ spec:
                                   description: ServiceType defines the type of k8s
                                     Service to use for exposing the service to its
                                     consumers
+                                  enum:
+                                  - ClusterIP
+                                  - ELB
+                                  - NLB
                                   type: string
                               type: object
                             strategy:
                               description: Strategy defines the type of publishing
                                 strategy
+                              enum:
+                              - Simple
+                              - Marin3rSidecar
                               type: string
                           required:
                           - name
@@ -1639,6 +1654,9 @@ spec:
                           or replace them entirely. Allowed values are "Merge" or
                           "Replace". "Replace" strategy should be used to enable 2
                           strategies at the same time for a single endpoint.
+                        enum:
+                        - Merge
+                        - Replace
                         type: string
                     type: object
                   readinessProbe:
@@ -2470,6 +2488,10 @@ spec:
                       serviceType:
                         description: ServiceType defines the type of k8s Service to
                           use for exposing the service to its consumers
+                        enum:
+                        - ClusterIP
+                        - ELB
+                        - NLB
                         type: string
                       shtdnmgrExtraLifecycleHooks:
                         description: Extra containers to sync with the shutdown manager
@@ -3154,6 +3176,10 @@ spec:
                                   description: ServiceType defines the type of k8s
                                     Service to use for exposing the service to its
                                     consumers
+                                  enum:
+                                  - ClusterIP
+                                  - ELB
+                                  - NLB
                                   type: string
                                 shtdnmgrExtraLifecycleHooks:
                                   description: Extra containers to sync with the shutdown
@@ -3340,11 +3366,18 @@ spec:
                                   description: ServiceType defines the type of k8s
                                     Service to use for exposing the service to its
                                     consumers
+                                  enum:
+                                  - ClusterIP
+                                  - ELB
+                                  - NLB
                                   type: string
                               type: object
                             strategy:
                               description: Strategy defines the type of publishing
                                 strategy
+                              enum:
+                              - Simple
+                              - Marin3rSidecar
                               type: string
                           required:
                           - name
@@ -3357,6 +3390,9 @@ spec:
                           or replace them entirely. Allowed values are "Merge" or
                           "Replace". "Replace" strategy should be used to enable 2
                           strategies at the same time for a single endpoint.
+                        enum:
+                        - Merge
+                        - Replace
                         type: string
                     type: object
                   readinessProbe:

@@ -27,6 +27,7 @@ type PublishingStrategies struct {
 	// are "Merge" or "Replace". "Replace" strategy should be used to enable 2 strategies
 	// at the same time for a single endpoint.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +kubebuilder:validation:Enum=Merge;Replace
 	// +optional
 	Mode *PublishingStrategiesReconcileMode `json:"mode,omitempty"`
 	// Endpoints holds the list of publishing strategies for each workload endpoint.
@@ -66,6 +67,7 @@ const (
 type PublishingStrategy struct {
 	// Strategy defines the type of publishing strategy
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +kubebuilder:validation:Enum=Simple;Marin3rSidecar
 	Strategy Strategy `json:"strategy"`
 	// EndpointName defines the endpoint affected by this publishing strategy
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
@@ -99,6 +101,7 @@ type Simple struct {
 	// the service to its consumers
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
+	// +kubebuilder:validation:Enum=ClusterIP;ELB;NLB
 	ServiceType *ServiceType `json:"serviceType,omitempty"`
 	// ExternalDnsHostnames defines the hostnames that ExternalDNS
 	// should configure records for external consumners to reach the service
