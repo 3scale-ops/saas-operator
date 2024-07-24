@@ -110,6 +110,13 @@ func (gen *TestWorkloadGenerator) EnvoyDynamicConfigurations() []descriptor.Envo
 	return nil
 }
 
+var ports = []corev1.ServicePort{{
+	Name:       "http",
+	Port:       80,
+	Protocol:   corev1.ProtocolTCP,
+	TargetPort: intstr.FromInt(80),
+}}
+
 // // TESTS START HERE
 
 func TestWorkloadReconciler_NewDeploymentWorkload(t *testing.T) {
@@ -120,6 +127,7 @@ func TestWorkloadReconciler_NewDeploymentWorkload(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
+		client  client.Client
 		want    []client.Object
 		wantErr bool
 	}{
@@ -151,6 +159,7 @@ func TestWorkloadReconciler_NewDeploymentWorkload(t *testing.T) {
 				},
 				canary: nil,
 			},
+			client: fake.NewClientBuilder().Build(),
 			want: []client.Object{
 				&appsv1.Deployment{
 					ObjectMeta: metav1.ObjectMeta{
@@ -264,6 +273,7 @@ func TestWorkloadReconciler_NewDeploymentWorkload(t *testing.T) {
 				},
 				canary: nil,
 			},
+			client: fake.NewClientBuilder().Build(),
 			want: []client.Object{
 				&appsv1.Deployment{
 					ObjectMeta: metav1.ObjectMeta{
@@ -366,6 +376,197 @@ func TestWorkloadReconciler_NewDeploymentWorkload(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "Generates the workload resources using both SimpleStrategy and Marin3rSidecarStrategy",
+			args: args{
+				main: &TestWorkloadGenerator{
+					TName:            "my-workload",
+					TNamespace:       "ns",
+					TTraffic:         true,
+					TLabels:          map[string]string{"l-key": "l-value"},
+					TSelector:        map[string]string{"sel-key": "sel-value"},
+					TTrafficSelector: map[string]string{"traffic": "yes"},
+					TPublishingStrategy: []service.ServiceDescriptor{
+						{
+							PortDefinitions: []corev1.ServicePort{{
+								Name:       "http",
+								Port:       80,
+								Protocol:   corev1.ProtocolTCP,
+								TargetPort: intstr.FromInt(80),
+							}},
+							PublishingStrategy: saasv1alpha1.PublishingStrategy{
+								Strategy:     saasv1alpha1.Marin3rSidecarStrategy,
+								EndpointName: "HTTP",
+								Marin3rSidecar: &saasv1alpha1.Marin3rSidecarSpec{
+									Simple: &saasv1alpha1.Simple{
+										ServiceType: util.Pointer(saasv1alpha1.ServiceTypeNLB),
+									},
+								},
+							},
+						},
+						{
+							PortDefinitions: []corev1.ServicePort{{
+								Name:       "http",
+								Port:       80,
+								Protocol:   corev1.ProtocolTCP,
+								TargetPort: intstr.FromInt(80),
+							}},
+							PublishingStrategy: saasv1alpha1.PublishingStrategy{
+								Strategy:     saasv1alpha1.SimpleStrategy,
+								EndpointName: "HTTP",
+								Simple: &saasv1alpha1.Simple{
+									ServiceType: util.Pointer(saasv1alpha1.ServiceTypeClusterIP),
+								},
+							},
+						},
+					},
+				},
+				canary: nil,
+			},
+			client: fake.NewClientBuilder().WithObjects(
+				&corev1.Service{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "my-workload-http-marin3r-nlb", Namespace: "ns",
+						Labels: map[string]string{"l-key": "l-value"},
+						Annotations: map[string]string{
+							"external-dns.alpha.kubernetes.io/hostname":                    "",
+							"service.beta.kubernetes.io/aws-load-balancer-attributes":      "load_balancing.cross_zone.enabled=true,deletion_protection.enabled=false",
+							"service.beta.kubernetes.io/aws-load-balancer-nlb-target-type": "instance",
+							"service.beta.kubernetes.io/aws-load-balancer-proxy-protocol":  "*",
+							"service.beta.kubernetes.io/aws-load-balancer-scheme":          "internet-facing",
+							"service.beta.kubernetes.io/aws-load-balancer-type":            "external",
+						},
+					},
+					Spec: corev1.ServiceSpec{
+						Selector: map[string]string{"sel-key": "sel-value", "traffic": "yes"},
+						Ports: []corev1.ServicePort{{
+							Name: "http", Port: 80, TargetPort: intstr.FromInt(80), Protocol: corev1.ProtocolTCP, NodePort: 30573}},
+						Type: corev1.ServiceTypeLoadBalancer,
+					},
+				},
+			).Build(),
+			want: []client.Object{
+				&appsv1.Deployment{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "my-workload", Namespace: "ns",
+						Labels: map[string]string{"l-key": "l-value"}},
+					Spec: appsv1.DeploymentSpec{
+						Replicas: util.Pointer[int32](1),
+						Selector: &metav1.LabelSelector{MatchLabels: map[string]string{"sel-key": "sel-value"}},
+						Template: corev1.PodTemplateSpec{
+							ObjectMeta: metav1.ObjectMeta{
+								Labels: map[string]string{
+									"orig-key":                  "orig-value",
+									"l-key":                     "l-value",
+									"sel-key":                   "sel-value",
+									"traffic":                   "yes",
+									"marin3r.3scale.net/status": "enabled",
+								},
+								Annotations: map[string]string{
+									"basereconciler.3cale.net/secret.secret-hash": "",
+									"marin3r.3scale.net/node-id":                  "my-workload",
+									"marin3r.3scale.net/shutdown-manager.enabled": "true",
+								},
+							},
+							Spec: corev1.PodSpec{
+								Containers: []corev1.Container{{
+									Name:      "container",
+									Image:     "example.com:latest",
+									Resources: corev1.ResourceRequirements{},
+								}}}}}},
+				&policyv1.PodDisruptionBudget{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "my-workload", Namespace: "ns",
+						Labels: map[string]string{"l-key": "l-value"},
+					},
+					Spec: policyv1.PodDisruptionBudgetSpec{
+						Selector:       &metav1.LabelSelector{MatchLabels: map[string]string{"sel-key": "sel-value"}},
+						MaxUnavailable: util.Pointer(intstr.FromInt(1)),
+					}},
+				&autoscalingv2.HorizontalPodAutoscaler{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "my-workload", Namespace: "ns",
+						Labels: map[string]string{"l-key": "l-value"},
+					},
+					Spec: autoscalingv2.HorizontalPodAutoscalerSpec{
+						ScaleTargetRef: autoscalingv2.CrossVersionObjectReference{
+							APIVersion: appsv1.SchemeGroupVersion.String(),
+							Kind:       "Deployment",
+							Name:       "my-workload",
+						},
+						MinReplicas: util.Pointer[int32](1),
+						MaxReplicas: 2,
+						Metrics: []autoscalingv2.MetricSpec{{
+							Type: autoscalingv2.ResourceMetricSourceType,
+							Resource: &autoscalingv2.ResourceMetricSource{
+								Name: corev1.ResourceName("cpu"),
+								Target: autoscalingv2.MetricTarget{
+									Type:               autoscalingv2.UtilizationMetricType,
+									AverageUtilization: util.Pointer[int32](90),
+								}}}}}},
+				&monitoringv1.PodMonitor{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "my-workload", Namespace: "ns",
+						Labels: map[string]string{"l-key": "l-value"},
+					},
+					Spec: monitoringv1.PodMonitorSpec{
+						PodMetricsEndpoints: nil,
+						Selector: metav1.LabelSelector{
+							MatchLabels: map[string]string{"sel-key": "sel-value"},
+						},
+					}},
+				&marin3rv1alpha1.EnvoyConfig{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "my-workload", Namespace: "ns",
+						Labels: map[string]string{"l-key": "l-value"},
+					},
+					Spec: marin3rv1alpha1.EnvoyConfigSpec{
+						NodeID:        "my-workload",
+						Serialization: util.Pointer[envoy_serializer.Serialization]("yaml"),
+						EnvoyAPI:      util.Pointer[envoy.APIVersion]("v3"),
+						EnvoyResources: &marin3rv1alpha1.EnvoyResources{
+							Clusters:  []marin3rv1alpha1.EnvoyResource{},
+							Routes:    []marin3rv1alpha1.EnvoyResource{},
+							Listeners: []marin3rv1alpha1.EnvoyResource{},
+							Runtimes:  []marin3rv1alpha1.EnvoyResource{},
+							Secrets:   []marin3rv1alpha1.EnvoySecretResource{},
+						}}},
+				&corev1.Service{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "my-workload-http-marin3r-nlb", Namespace: "ns",
+						Labels: map[string]string{"l-key": "l-value"},
+						Annotations: map[string]string{
+							"external-dns.alpha.kubernetes.io/hostname":                    "",
+							"service.beta.kubernetes.io/aws-load-balancer-attributes":      "load_balancing.cross_zone.enabled=true,deletion_protection.enabled=false",
+							"service.beta.kubernetes.io/aws-load-balancer-nlb-target-type": "instance",
+							"service.beta.kubernetes.io/aws-load-balancer-proxy-protocol":  "*",
+							"service.beta.kubernetes.io/aws-load-balancer-scheme":          "internet-facing",
+							"service.beta.kubernetes.io/aws-load-balancer-type":            "external",
+						},
+					},
+					Spec: corev1.ServiceSpec{
+						Selector: map[string]string{"sel-key": "sel-value", "traffic": "yes"},
+						Ports: []corev1.ServicePort{{
+							Name: "http", Port: 80, TargetPort: intstr.FromInt(80), Protocol: corev1.ProtocolTCP, NodePort: 30573}},
+						Type: corev1.ServiceTypeLoadBalancer,
+					},
+				},
+				&corev1.Service{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "my-workload-http-svc", Namespace: "ns",
+						Labels:      map[string]string{"l-key": "l-value"},
+						Annotations: map[string]string{},
+					},
+					Spec: corev1.ServiceSpec{
+						Selector: map[string]string{"sel-key": "sel-value", "traffic": "yes"},
+						Ports: []corev1.ServicePort{{
+							Name: "http", Port: 80, TargetPort: intstr.FromInt(80), Protocol: corev1.ProtocolTCP}},
+						Type: corev1.ServiceTypeClusterIP,
+					},
+				},
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -376,7 +577,7 @@ func TestWorkloadReconciler_NewDeploymentWorkload(t *testing.T) {
 			}
 			got := make([]client.Object, 0, len(templates))
 			for _, tpl := range templates {
-				o, _ := tpl.Build(context.TODO(), fake.NewClientBuilder().Build(), nil)
+				o, _ := tpl.Build(context.TODO(), tt.client, nil)
 				got = append(got, o)
 			}
 			if diff := cmp.Diff(got, tt.want, util.IgnoreProperty("Status")); len(diff) > 0 {
