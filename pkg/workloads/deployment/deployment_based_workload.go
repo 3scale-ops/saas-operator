@@ -182,11 +182,11 @@ func trafficSwitcher(main WithCanary, canary WithCanary) map[string]string {
 	case 1:
 		// If there is only one Deployment with SendTraffic() active
 		// return its selector together with the shared traffic selector
-		return util.MergeMaps(enabledSelectors[0], main.TrafficSelector())
+		return util.MergeMaps(map[string]string{}, enabledSelectors[0], main.TrafficSelector())
 	default:
 		// If there is more than one Deployment with SendTraffic() active
 		// send traffic to all Deployments by using the shared traffic selector
-		return main.TrafficSelector()
+		return util.MergeMaps(map[string]string{}, main.TrafficSelector())
 	}
 }
 
