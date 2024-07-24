@@ -62,7 +62,7 @@ func (sd *ServiceDescriptor) Service(prefix, suffix string) *corev1.Service {
 		}
 	}
 
-	return opts.Service()
+	return opts.Service().DeepCopy()
 }
 
 type ServiceOptions struct {
