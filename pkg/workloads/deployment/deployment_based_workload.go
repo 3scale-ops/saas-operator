@@ -38,27 +38,27 @@ func New(main DeploymentWorkload, canary DeploymentWorkload) ([]resource.Templat
 	// Generate resources to implement the desired publishing strategies
 	if _, ok := main.(WithPublishingStrategies); ok {
 
-		pss, err := main.(WithPublishingStrategies).PublishingStrategies()
+		strategies, err := main.(WithPublishingStrategies).PublishingStrategies()
 		if err != nil {
 			return nil, err
 		}
 
-		for _, desc := range pss {
-			d := desc
-			switch desc.Strategy {
+		for _, item := range strategies {
+			descriptor := item
+			switch descriptor.Strategy {
 
 			case saasv1alpha1.SimpleStrategy:
 				services = append(services,
-					resource.NewTemplateFromObjectFunction(func() *corev1.Service { return d.Service(main.GetKey().Name, "svc") }).
+					resource.NewTemplateFromObjectFunction(func() *corev1.Service { return descriptor.Service(main.GetKey().Name, "svc") }).
 						WithMutation(mutators.SetServiceLiveValues()),
 				)
 
 			case saasv1alpha1.Marin3rSidecarStrategy:
-				if desc.Marin3rSidecar == nil {
+				if descriptor.Marin3rSidecar == nil {
 					return nil, fmt.Errorf("Marin3rSidecarSpec is missing, can't implement strategy without it")
 				}
 				services = append(services,
-					resource.NewTemplateFromObjectFunction(func() *corev1.Service { return d.Service(main.GetKey().Name, "marin3r") }).
+					resource.NewTemplateFromObjectFunction(func() *corev1.Service { return descriptor.Service(main.GetKey().Name, "marin3r") }).
 						WithMutation(mutators.SetServiceLiveValues()),
 				)
 
@@ -67,18 +67,18 @@ func New(main DeploymentWorkload, canary DeploymentWorkload) ([]resource.Templat
 				// TODO: a proper mechanism to identify resource templates should exists. Basereconciler
 				// should provide one.
 				if deployment, ok := resources[0].(*resource.Template[*appsv1.Deployment]); ok {
-					deployment.Apply(marin3rSidecarToDeployment(desc))
+					deployment.Apply(marin3rSidecarToDeployment(descriptor))
 				} else {
 					return nil, fmt.Errorf("expected a Deployment but found something else")
 				}
 				// Add EnvoyConfig resource
-				dynamicConfigurations := desc.Marin3rSidecar.EnvoyDynamicConfig.AsList()
+				dynamicConfigurations := descriptor.Marin3rSidecar.EnvoyDynamicConfig.AsList()
 				resources = append(resources,
 					resource.NewTemplate(
 						envoyconfig.New(EmptyKey, EmptyKey.Name, factory.Default(), dynamicConfigurations...)).
 						WithEnabled(len(dynamicConfigurations) > 0).
 						Apply(meta[*marin3rv1alpha1.EnvoyConfig](main)).
-						Apply(nodeIdToEnvoyConfig(desc)),
+						Apply(nodeIdToEnvoyConfig(descriptor)),
 				)
 			}
 		}
