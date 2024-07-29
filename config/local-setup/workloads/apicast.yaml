@@ -35,54 +35,77 @@ spec:
       pullPolicy: Always
     config:
       configurationCache: 300
-      threescalePortalEndpoint: "http://mapping-service/config"
-    endpoint: {dns: ["*.REPLACE"]}
+      threescalePortalEndpoint: "http://mapping-service-http-svc/config"
     hpa: {}
-    loadBalancer:
-      proxyProtocol: false
-    marin3r:
-      dynamicConfigs:
-        gateway_cluster:
-          cluster:
-            host: 127.0.0.1
-            port: 8080
-        http:
-          listenerHttp:
-            proxyProtocol: false
-            port: 38080
-            routeConfigName: router
-        https:
-          listenerHttp:
-            proxyProtocol: false
-            certificateSecretName: apicast-production-wildcard-cert
-            port: 38443
-            routeConfigName: router
-        router:
-          routeConfiguration:
-            virtualHosts:
-              - domains: ["*"]
-                name: gateway
-                routes:
-                  - match:
-                      prefix: /
-                    route:
-                      cluster: gateway_cluster
-                      timeout: 30s
-      envoyImage: REPLACE
-      nodeID: apicast-production
-      ports:
-        - name: gateway-http
-          port: 38080
-        - name: gateway-https
-          port: 38443
-        - name: envoy-metrics
-          port: 9901
-      shtdnmgrExtraLifecycleHooks:
-        - apicast
-      shtdnmgrPort: 8091
     pdb: {}
-    replicas: 1
     resources: {}
+    replicas: 1
+    publishingStrategies:
+      endpoints:
+        - marin3rSidecar:
+            dynamicConfigs:
+              gateway_cluster:
+                cluster:
+                  host: 127.0.0.1
+                  isHttp2: false
+                  port: 8080
+                generatorVersion: v1
+              http:
+                generatorVersion: v1
+                listenerHttp:
+                  allowHeadersWithUnderscores: true
+                  enableHttp2: false
+                  port: 38080
+                  proxyProtocol: false
+                  routeConfigName: router
+              https:
+                generatorVersion: v1
+                listenerHttp:
+                  allowHeadersWithUnderscores: true
+                  certificateSecretName: apicast-production-wildcard-cert
+                  enableHttp2: false
+                  port: 38443
+                  proxyProtocol: false
+                  routeConfigName: router
+              router:
+                generatorVersion: v1
+                routeConfiguration:
+                  virtualHosts:
+                    - domains:
+                        - "*"
+                      name: gateway
+                      routes:
+                        - match:
+                            prefix: /
+                          route:
+                            cluster: gateway_cluster
+                            timeout: 30s
+            elasticLoadBalancerConfig:
+              proxyProtocol: false
+            envoyImage: REPLACE
+            externalDnsHostnames: ["*.REPLACE"]
+            ports:
+              - name: gateway-http
+                port: 38080
+              - name: gateway-https
+                port: 38443
+              - name: envoy-metrics
+                port: 9901
+            servicePorts:
+              - name: gateway-http
+                port: 80
+                protocol: TCP
+                targetPort: gateway-http
+              - name: gateway-https
+                port: 443
+                protocol: TCP
+                targetPort: gateway-https
+            serviceType: ELB
+            shtdnmgrExtraLifecycleHooks:
+              - apicast
+            shtdnmgrPort: 8091
+          name: Gateway
+          strategy: Marin3rSidecar
   staging:
     image:
       name: REPLACE
@@ -91,56 +114,81 @@ spec:
       pullPolicy: Always
     config:
       configurationCache: 60
-      threescalePortalEndpoint: "http://mapping-service/config"
-    endpoint: {dns: ["*.REPLACE"]}
+      threescalePortalEndpoint: "http://mapping-service-http-svc/config"
     hpa: {}
-    loadBalancer:
-      proxyProtocol: false
-    marin3r:
-      dynamicConfigs:
-        gateway_cluster:
-          cluster:
-            host: 127.0.0.1
-            port: 8080
-        http:
-          listenerHttp:
-            proxyProtocol: false
-            port: 38080
-            routeConfigName: router
-        https:
-          listenerHttp:
-            proxyProtocol: false
-            certificateSecretName: apicast-staging-wildcard-cert
-            port: 38443
-            routeConfigName: router
-        mgmt_cluster:
-          cluster:
-            host: 127.0.0.1
-            port: 8090
-        router:
-          routeConfiguration:
-            virtualHosts:
-              - domains: ["*"]
-                name: gateway
-                routes:
-                  - match:
-                      prefix: /
-                    route:
-                      cluster: gateway_cluster
-                      timeout: 30s
-      envoyImage: REPLACE
-      nodeID: apicast-staging
-      ports:
-        - name: gateway-http
-          port: 38080
-        - name: gateway-https
-          port: 38443
-        - name: envoy-metrics
-          port: 9901
-      resources: {}
-      shtdnmgrExtraLifecycleHooks:
-        - apicast
-      shtdnmgrPort: 8091
     pdb: {}
-    replicas: 1
     resources: {}
+    replicas: 1
+    publishingStrategies:
+      endpoints:
+        - name: Gateway
+          strategy: Marin3rSidecar
+          marin3rSidecar:
+            dynamicConfigs:
+              gateway_cluster:
+                cluster:
+                  host: 127.0.0.1
+                  isHttp2: false
+                  port: 8080
+                generatorVersion: v1
+              http:
+                generatorVersion: v1
+                listenerHttp:
+                  allowHeadersWithUnderscores: true
+                  enableHttp2: false
+                  port: 38080
+                  proxyProtocol: false
+                  routeConfigName: router
+              https:
+                generatorVersion: v1
+                listenerHttp:
+                  allowHeadersWithUnderscores: true
+                  certificateSecretName: apicast-staging-wildcard-cert
+                  enableHttp2: false
+                  port: 38443
+                  proxyProtocol: false
+                  routeConfigName: router
+              mgmt_cluster:
+                cluster:
+                  host: 127.0.0.1
+                  isHttp2: false
+                  port: 8090
+                generatorVersion: v1
+              router:
+                generatorVersion: v1
+                routeConfiguration:
+                  virtualHosts:
+                    - domains:
+                        - "*"
+                      name: gateway
+                      routes:
+                        - match:
+                            prefix: /
+                          route:
+                            cluster: gateway_cluster
+                            timeout: 30s
+            elasticLoadBalancerConfig:
+              proxyProtocol: false
+            envoyImage: REPLACE
+            externalDnsHostnames: ["*.REPLACE"]
+            ports:
+              - name: gateway-http
+                port: 38080
+              - name: gateway-https
+                port: 38443
+              - name: envoy-metrics
+                port: 9901
+            resources: {}
+            servicePorts:
+              - name: gateway-http
+                port: 80
+                protocol: TCP
+                targetPort: gateway-http
+              - name: gateway-https
+                port: 443
+                protocol: TCP
+                targetPort: gateway-https
+            serviceType: ELB
+            shtdnmgrExtraLifecycleHooks:
+              - apicast
+            shtdnmgrPort: 8091

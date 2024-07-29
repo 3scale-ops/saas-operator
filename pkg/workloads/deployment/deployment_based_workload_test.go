@@ -1,4 +1,4 @@
-package delpoyment_workload
+package deployment
 
 import (
 	"context"
@@ -13,6 +13,7 @@ import (
 	envoy_serializer "github.com/3scale-ops/marin3r/pkg/envoy/serializer"
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	descriptor "github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/service"
 	"github.com/google/go-cmp/cmp"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -28,17 +29,18 @@ import (
 
 // TEST GENERATORS
 type TestWorkloadGenerator struct {
-	TName            string
-	TNamespace       string
-	TTraffic         bool
-	TLabels          map[string]string
-	TSelector        map[string]string
-	TTrafficSelector map[string]string
+	TName               string
+	TNamespace          string
+	TTraffic            bool
+	TLabels             map[string]string
+	TSelector           map[string]string
+	TTrafficSelector    map[string]string
+	TPublishingStrategy []service.ServiceDescriptor
 }
 
 var _ DeploymentWorkload = &TestWorkloadGenerator{}
-var _ WithTraffic = &TestWorkloadGenerator{}
-var _ WithEnvoySidecar = &TestWorkloadGenerator{}
+var _ WithPublishingStrategies = &TestWorkloadGenerator{}
+var _ WithMarin3rSidecar = &TestWorkloadGenerator{}
 
 func (gen *TestWorkloadGenerator) Deployment() *resource.Template[*appsv1.Deployment] {
 	return &resource.Template[*appsv1.Deployment]{
@@ -96,22 +98,8 @@ func (gen *TestWorkloadGenerator) PDBSpec() *saasv1alpha1.PodDisruptionBudgetSpe
 }
 func (gen *TestWorkloadGenerator) SendTraffic() bool { return gen.TTraffic }
 
-func (gen *TestWorkloadGenerator) Services() []*resource.Template[*corev1.Service] {
-	return []*resource.Template[*corev1.Service]{{
-		TemplateBuilder: func(client.Object) (*corev1.Service, error) {
-			return &corev1.Service{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "service",
-					Namespace: gen.TNamespace,
-				},
-				Spec: corev1.ServiceSpec{
-					Ports: []corev1.ServicePort{{
-						Name: "port", Port: 80, TargetPort: intstr.FromInt(80), Protocol: corev1.ProtocolTCP}},
-				},
-			}, nil
-		},
-		IsEnabled: true,
-	}}
+func (gen *TestWorkloadGenerator) PublishingStrategies() ([]service.ServiceDescriptor, error) {
+	return gen.TPublishingStrategy, nil
 }
 
 func (gen *TestWorkloadGenerator) TrafficSelector() map[string]string {
@@ -121,6 +109,13 @@ func (gen *TestWorkloadGenerator) TrafficSelector() map[string]string {
 func (gen *TestWorkloadGenerator) EnvoyDynamicConfigurations() []descriptor.EnvoyDynamicConfigDescriptor {
 	return nil
 }
+
+var ports = []corev1.ServicePort{{
+	Name:       "http",
+	Port:       80,
+	Protocol:   corev1.ProtocolTCP,
+	TargetPort: intstr.FromInt(80),
+}}
 
 // // TESTS START HERE
 
@@ -132,11 +127,12 @@ func TestWorkloadReconciler_NewDeploymentWorkload(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
+		client  client.Client
 		want    []client.Object
 		wantErr bool
 	}{
 		{
-			name: "Generates the workload resources",
+			name: "Generates the workload resources using SimpleStrategy",
 			args: args{
 				main: &TestWorkloadGenerator{
 					TName:            "my-workload",
@@ -145,9 +141,25 @@ func TestWorkloadReconciler_NewDeploymentWorkload(t *testing.T) {
 					TLabels:          map[string]string{"l-key": "l-value"},
 					TSelector:        map[string]string{"sel-key": "sel-value"},
 					TTrafficSelector: map[string]string{"traffic": "yes"},
+					TPublishingStrategy: []service.ServiceDescriptor{{
+						PortDefinitions: []corev1.ServicePort{{
+							Name:       "http",
+							Port:       80,
+							Protocol:   corev1.ProtocolTCP,
+							TargetPort: intstr.FromInt(80),
+						}},
+						PublishingStrategy: saasv1alpha1.PublishingStrategy{
+							Strategy:     saasv1alpha1.SimpleStrategy,
+							EndpointName: "HTTP",
+							Simple: &saasv1alpha1.Simple{
+								ServiceType: util.Pointer(saasv1alpha1.ServiceTypeClusterIP),
+							},
+						},
+					}},
 				},
 				canary: nil,
 			},
+			client: fake.NewClientBuilder().Build(),
 			want: []client.Object{
 				&appsv1.Deployment{
 					ObjectMeta: metav1.ObjectMeta{
@@ -164,7 +176,126 @@ func TestWorkloadReconciler_NewDeploymentWorkload(t *testing.T) {
 									"sel-key":  "sel-value",
 									"traffic":  "yes",
 								},
-								Annotations: map[string]string{"basereconciler.3cale.net/secret.secret-hash": ""},
+								Annotations: map[string]string{
+									"basereconciler.3cale.net/secret.secret-hash": "",
+								},
+							},
+							Spec: corev1.PodSpec{
+								Containers: []corev1.Container{{
+									Name:      "container",
+									Image:     "example.com:latest",
+									Resources: corev1.ResourceRequirements{},
+								}}}}}},
+				&policyv1.PodDisruptionBudget{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "my-workload", Namespace: "ns",
+						Labels: map[string]string{"l-key": "l-value"},
+					},
+					Spec: policyv1.PodDisruptionBudgetSpec{
+						Selector:       &metav1.LabelSelector{MatchLabels: map[string]string{"sel-key": "sel-value"}},
+						MaxUnavailable: util.Pointer(intstr.FromInt(1)),
+					}},
+				&autoscalingv2.HorizontalPodAutoscaler{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "my-workload", Namespace: "ns",
+						Labels: map[string]string{"l-key": "l-value"},
+					},
+					Spec: autoscalingv2.HorizontalPodAutoscalerSpec{
+						ScaleTargetRef: autoscalingv2.CrossVersionObjectReference{
+							APIVersion: appsv1.SchemeGroupVersion.String(),
+							Kind:       "Deployment",
+							Name:       "my-workload",
+						},
+						MinReplicas: util.Pointer[int32](1),
+						MaxReplicas: 2,
+						Metrics: []autoscalingv2.MetricSpec{{
+							Type: autoscalingv2.ResourceMetricSourceType,
+							Resource: &autoscalingv2.ResourceMetricSource{
+								Name: corev1.ResourceName("cpu"),
+								Target: autoscalingv2.MetricTarget{
+									Type:               autoscalingv2.UtilizationMetricType,
+									AverageUtilization: util.Pointer[int32](90),
+								}}}}}},
+				&monitoringv1.PodMonitor{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "my-workload", Namespace: "ns",
+						Labels: map[string]string{"l-key": "l-value"},
+					},
+					Spec: monitoringv1.PodMonitorSpec{
+						PodMetricsEndpoints: nil,
+						Selector: metav1.LabelSelector{
+							MatchLabels: map[string]string{"sel-key": "sel-value"},
+						},
+					}},
+				&corev1.Service{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "my-workload-http-svc", Namespace: "ns",
+						Labels:      map[string]string{"l-key": "l-value"},
+						Annotations: map[string]string{},
+					},
+					Spec: corev1.ServiceSpec{
+						Selector: map[string]string{"sel-key": "sel-value", "traffic": "yes"},
+						Ports: []corev1.ServicePort{{
+							Name: "http", Port: 80, TargetPort: intstr.FromInt(80), Protocol: corev1.ProtocolTCP}},
+						Type: corev1.ServiceTypeClusterIP,
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Generates the workload resources using Marin3rSidecarStrategy",
+			args: args{
+				main: &TestWorkloadGenerator{
+					TName:            "my-workload",
+					TNamespace:       "ns",
+					TTraffic:         true,
+					TLabels:          map[string]string{"l-key": "l-value"},
+					TSelector:        map[string]string{"sel-key": "sel-value"},
+					TTrafficSelector: map[string]string{"traffic": "yes"},
+					TPublishingStrategy: []service.ServiceDescriptor{{
+						PortDefinitions: []corev1.ServicePort{{
+							Name:       "http",
+							Port:       80,
+							Protocol:   corev1.ProtocolTCP,
+							TargetPort: intstr.FromInt(80),
+						}},
+						PublishingStrategy: saasv1alpha1.PublishingStrategy{
+							Strategy:     saasv1alpha1.Marin3rSidecarStrategy,
+							EndpointName: "HTTP",
+							Marin3rSidecar: &saasv1alpha1.Marin3rSidecarSpec{
+								Simple: &saasv1alpha1.Simple{
+									ServiceType: util.Pointer(saasv1alpha1.ServiceTypeClusterIP),
+								},
+							},
+						},
+					}},
+				},
+				canary: nil,
+			},
+			client: fake.NewClientBuilder().Build(),
+			want: []client.Object{
+				&appsv1.Deployment{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "my-workload", Namespace: "ns",
+						Labels: map[string]string{"l-key": "l-value"}},
+					Spec: appsv1.DeploymentSpec{
+						Replicas: util.Pointer[int32](1),
+						Selector: &metav1.LabelSelector{MatchLabels: map[string]string{"sel-key": "sel-value"}},
+						Template: corev1.PodTemplateSpec{
+							ObjectMeta: metav1.ObjectMeta{
+								Labels: map[string]string{
+									"orig-key":                  "orig-value",
+									"l-key":                     "l-value",
+									"sel-key":                   "sel-value",
+									"traffic":                   "yes",
+									"marin3r.3scale.net/status": "enabled",
+								},
+								Annotations: map[string]string{
+									"basereconciler.3cale.net/secret.secret-hash": "",
+									"marin3r.3scale.net/node-id":                  "my-workload",
+									"marin3r.3scale.net/shutdown-manager.enabled": "true",
+								},
 							},
 							Spec: corev1.PodSpec{
 								Containers: []corev1.Container{{
@@ -231,13 +362,206 @@ func TestWorkloadReconciler_NewDeploymentWorkload(t *testing.T) {
 						}}},
 				&corev1.Service{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "service", Namespace: "ns",
-						Labels: map[string]string{"l-key": "l-value"},
+						Name: "my-workload-http-marin3r", Namespace: "ns",
+						Labels:      map[string]string{"l-key": "l-value"},
+						Annotations: map[string]string{},
 					},
 					Spec: corev1.ServiceSpec{
 						Selector: map[string]string{"sel-key": "sel-value", "traffic": "yes"},
 						Ports: []corev1.ServicePort{{
-							Name: "port", Port: 80, TargetPort: intstr.FromInt(80), Protocol: corev1.ProtocolTCP}},
+							Name: "http", Port: 80, TargetPort: intstr.FromInt(80), Protocol: corev1.ProtocolTCP}},
+						Type: corev1.ServiceTypeClusterIP,
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Generates the workload resources using both SimpleStrategy and Marin3rSidecarStrategy",
+			args: args{
+				main: &TestWorkloadGenerator{
+					TName:            "my-workload",
+					TNamespace:       "ns",
+					TTraffic:         true,
+					TLabels:          map[string]string{"l-key": "l-value"},
+					TSelector:        map[string]string{"sel-key": "sel-value"},
+					TTrafficSelector: map[string]string{"traffic": "yes"},
+					TPublishingStrategy: []service.ServiceDescriptor{
+						{
+							PortDefinitions: []corev1.ServicePort{{
+								Name:       "http",
+								Port:       80,
+								Protocol:   corev1.ProtocolTCP,
+								TargetPort: intstr.FromInt(80),
+							}},
+							PublishingStrategy: saasv1alpha1.PublishingStrategy{
+								Strategy:     saasv1alpha1.Marin3rSidecarStrategy,
+								EndpointName: "HTTP",
+								Marin3rSidecar: &saasv1alpha1.Marin3rSidecarSpec{
+									Simple: &saasv1alpha1.Simple{
+										ServiceType: util.Pointer(saasv1alpha1.ServiceTypeNLB),
+									},
+								},
+							},
+						},
+						{
+							PortDefinitions: []corev1.ServicePort{{
+								Name:       "http",
+								Port:       80,
+								Protocol:   corev1.ProtocolTCP,
+								TargetPort: intstr.FromInt(80),
+							}},
+							PublishingStrategy: saasv1alpha1.PublishingStrategy{
+								Strategy:     saasv1alpha1.SimpleStrategy,
+								EndpointName: "HTTP",
+								Simple: &saasv1alpha1.Simple{
+									ServiceType: util.Pointer(saasv1alpha1.ServiceTypeClusterIP),
+								},
+							},
+						},
+					},
+				},
+				canary: nil,
+			},
+			client: fake.NewClientBuilder().WithObjects(
+				&corev1.Service{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "my-workload-http-marin3r-nlb", Namespace: "ns",
+						Labels: map[string]string{"l-key": "l-value"},
+						Annotations: map[string]string{
+							"external-dns.alpha.kubernetes.io/hostname":                    "",
+							"service.beta.kubernetes.io/aws-load-balancer-attributes":      "load_balancing.cross_zone.enabled=true,deletion_protection.enabled=false",
+							"service.beta.kubernetes.io/aws-load-balancer-nlb-target-type": "instance",
+							"service.beta.kubernetes.io/aws-load-balancer-proxy-protocol":  "*",
+							"service.beta.kubernetes.io/aws-load-balancer-scheme":          "internet-facing",
+							"service.beta.kubernetes.io/aws-load-balancer-type":            "external",
+						},
+					},
+					Spec: corev1.ServiceSpec{
+						Selector: map[string]string{"sel-key": "sel-value", "traffic": "yes"},
+						Ports: []corev1.ServicePort{{
+							Name: "http", Port: 80, TargetPort: intstr.FromInt(80), Protocol: corev1.ProtocolTCP, NodePort: 30573}},
+						Type: corev1.ServiceTypeLoadBalancer,
+					},
+				},
+			).Build(),
+			want: []client.Object{
+				&appsv1.Deployment{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "my-workload", Namespace: "ns",
+						Labels: map[string]string{"l-key": "l-value"}},
+					Spec: appsv1.DeploymentSpec{
+						Replicas: util.Pointer[int32](1),
+						Selector: &metav1.LabelSelector{MatchLabels: map[string]string{"sel-key": "sel-value"}},
+						Template: corev1.PodTemplateSpec{
+							ObjectMeta: metav1.ObjectMeta{
+								Labels: map[string]string{
+									"orig-key":                  "orig-value",
+									"l-key":                     "l-value",
+									"sel-key":                   "sel-value",
+									"traffic":                   "yes",
+									"marin3r.3scale.net/status": "enabled",
+								},
+								Annotations: map[string]string{
+									"basereconciler.3cale.net/secret.secret-hash": "",
+									"marin3r.3scale.net/node-id":                  "my-workload",
+									"marin3r.3scale.net/shutdown-manager.enabled": "true",
+								},
+							},
+							Spec: corev1.PodSpec{
+								Containers: []corev1.Container{{
+									Name:      "container",
+									Image:     "example.com:latest",
+									Resources: corev1.ResourceRequirements{},
+								}}}}}},
+				&policyv1.PodDisruptionBudget{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "my-workload", Namespace: "ns",
+						Labels: map[string]string{"l-key": "l-value"},
+					},
+					Spec: policyv1.PodDisruptionBudgetSpec{
+						Selector:       &metav1.LabelSelector{MatchLabels: map[string]string{"sel-key": "sel-value"}},
+						MaxUnavailable: util.Pointer(intstr.FromInt(1)),
+					}},
+				&autoscalingv2.HorizontalPodAutoscaler{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "my-workload", Namespace: "ns",
+						Labels: map[string]string{"l-key": "l-value"},
+					},
+					Spec: autoscalingv2.HorizontalPodAutoscalerSpec{
+						ScaleTargetRef: autoscalingv2.CrossVersionObjectReference{
+							APIVersion: appsv1.SchemeGroupVersion.String(),
+							Kind:       "Deployment",
+							Name:       "my-workload",
+						},
+						MinReplicas: util.Pointer[int32](1),
+						MaxReplicas: 2,
+						Metrics: []autoscalingv2.MetricSpec{{
+							Type: autoscalingv2.ResourceMetricSourceType,
+							Resource: &autoscalingv2.ResourceMetricSource{
+								Name: corev1.ResourceName("cpu"),
+								Target: autoscalingv2.MetricTarget{
+									Type:               autoscalingv2.UtilizationMetricType,
+									AverageUtilization: util.Pointer[int32](90),
+								}}}}}},
+				&monitoringv1.PodMonitor{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "my-workload", Namespace: "ns",
+						Labels: map[string]string{"l-key": "l-value"},
+					},
+					Spec: monitoringv1.PodMonitorSpec{
+						PodMetricsEndpoints: nil,
+						Selector: metav1.LabelSelector{
+							MatchLabels: map[string]string{"sel-key": "sel-value"},
+						},
+					}},
+				&marin3rv1alpha1.EnvoyConfig{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "my-workload", Namespace: "ns",
+						Labels: map[string]string{"l-key": "l-value"},
+					},
+					Spec: marin3rv1alpha1.EnvoyConfigSpec{
+						NodeID:        "my-workload",
+						Serialization: util.Pointer[envoy_serializer.Serialization]("yaml"),
+						EnvoyAPI:      util.Pointer[envoy.APIVersion]("v3"),
+						EnvoyResources: &marin3rv1alpha1.EnvoyResources{
+							Clusters:  []marin3rv1alpha1.EnvoyResource{},
+							Routes:    []marin3rv1alpha1.EnvoyResource{},
+							Listeners: []marin3rv1alpha1.EnvoyResource{},
+							Runtimes:  []marin3rv1alpha1.EnvoyResource{},
+							Secrets:   []marin3rv1alpha1.EnvoySecretResource{},
+						}}},
+				&corev1.Service{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "my-workload-http-marin3r-nlb", Namespace: "ns",
+						Labels: map[string]string{"l-key": "l-value"},
+						Annotations: map[string]string{
+							"external-dns.alpha.kubernetes.io/hostname":                    "",
+							"service.beta.kubernetes.io/aws-load-balancer-attributes":      "load_balancing.cross_zone.enabled=true,deletion_protection.enabled=false",
+							"service.beta.kubernetes.io/aws-load-balancer-nlb-target-type": "instance",
+							"service.beta.kubernetes.io/aws-load-balancer-proxy-protocol":  "*",
+							"service.beta.kubernetes.io/aws-load-balancer-scheme":          "internet-facing",
+							"service.beta.kubernetes.io/aws-load-balancer-type":            "external",
+						},
+					},
+					Spec: corev1.ServiceSpec{
+						Selector: map[string]string{"sel-key": "sel-value", "traffic": "yes"},
+						Ports: []corev1.ServicePort{{
+							Name: "http", Port: 80, TargetPort: intstr.FromInt(80), Protocol: corev1.ProtocolTCP, NodePort: 30573}},
+						Type: corev1.ServiceTypeLoadBalancer,
+					},
+				},
+				&corev1.Service{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "my-workload-http-svc", Namespace: "ns",
+						Labels:      map[string]string{"l-key": "l-value"},
+						Annotations: map[string]string{},
+					},
+					Spec: corev1.ServiceSpec{
+						Selector: map[string]string{"sel-key": "sel-value", "traffic": "yes"},
+						Ports: []corev1.ServicePort{{
+							Name: "http", Port: 80, TargetPort: intstr.FromInt(80), Protocol: corev1.ProtocolTCP}},
+						Type: corev1.ServiceTypeClusterIP,
 					},
 				},
 			},
@@ -253,7 +577,7 @@ func TestWorkloadReconciler_NewDeploymentWorkload(t *testing.T) {
 			}
 			got := make([]client.Object, 0, len(templates))
 			for _, tpl := range templates {
-				o, _ := tpl.Build(context.TODO(), fake.NewClientBuilder().Build(), nil)
+				o, _ := tpl.Build(context.TODO(), tt.client, nil)
 				got = append(got, o)
 			}
 			if diff := cmp.Diff(got, tt.want, util.IgnoreProperty("Status")); len(diff) > 0 {
@@ -459,8 +783,8 @@ func Test_applyMeta(t *testing.T) {
 
 func Test_applyTrafficSelectorToService(t *testing.T) {
 	type args struct {
-		main   WithTraffic
-		canary WithTraffic
+		main   WithCanary
+		canary WithCanary
 	}
 	tests := []struct {
 		name     string
@@ -581,7 +905,7 @@ func Test_trafficSwitcher(t *testing.T) {
 
 func Test_applyNodeIdToEnvoyConfig(t *testing.T) {
 	type args struct {
-		w WithWorkloadMeta
+		sd service.ServiceDescriptor
 	}
 	tests := []struct {
 		name     string
@@ -591,26 +915,49 @@ func Test_applyNodeIdToEnvoyConfig(t *testing.T) {
 	}{
 		{
 			name: "Adds the nodeID",
-			template: resource.NewTemplate[*marin3rv1alpha1.EnvoyConfig](
+			template: resource.NewTemplate(
 				func(client.Object) (*marin3rv1alpha1.EnvoyConfig, error) {
 					return &marin3rv1alpha1.EnvoyConfig{}, nil
 				},
 			),
 			args: args{
-				w: &TestWorkloadGenerator{
-					TName: "id",
+				sd: service.ServiceDescriptor{
+					PortDefinitions: []corev1.ServicePort{},
+					PublishingStrategy: saasv1alpha1.PublishingStrategy{
+						Marin3rSidecar: &saasv1alpha1.Marin3rSidecarSpec{
+							NodeID: util.Pointer("aaaa"),
+						},
+					},
 				},
 			},
 			want: &marin3rv1alpha1.EnvoyConfig{
-				Spec: marin3rv1alpha1.EnvoyConfigSpec{
-					NodeID: "id",
+				Spec: marin3rv1alpha1.EnvoyConfigSpec{NodeID: "aaaa"},
+			},
+		},
+		{
+			name: "Adds the resource name as the nodeID when unset",
+			template: resource.NewTemplate(
+				func(client.Object) (*marin3rv1alpha1.EnvoyConfig, error) {
+					return &marin3rv1alpha1.EnvoyConfig{ObjectMeta: metav1.ObjectMeta{Name: "bbbb"}}, nil
 				},
+			),
+			args: args{
+				sd: service.ServiceDescriptor{
+					PortDefinitions: []corev1.ServicePort{},
+					PublishingStrategy: saasv1alpha1.PublishingStrategy{
+						Marin3rSidecar: &saasv1alpha1.Marin3rSidecarSpec{},
+					},
+				},
+			},
+			want: &marin3rv1alpha1.EnvoyConfig{
+				ObjectMeta: metav1.ObjectMeta{Name: "bbbb"},
+				Spec:       marin3rv1alpha1.EnvoyConfigSpec{NodeID: "bbbb"},
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, _ := tt.template.Apply(nodeIdToEnvoyConfig(tt.args.w)).Build(context.TODO(), nil, nil)
+			got, _ := tt.template.Apply(nodeIdToEnvoyConfig(tt.args.sd)).Build(context.TODO(), nil, nil)
 			if diff := cmp.Diff(got, tt.want); len(diff) > 0 {
 				t.Errorf("applyNodeIdToEnvoyConfig() got diff %v", diff)
 			}
@@ -618,14 +965,81 @@ func Test_applyNodeIdToEnvoyConfig(t *testing.T) {
 	}
 }
 
-func Test_toWithTraffic(t *testing.T) {
+func Test_marin3rSidecarToDeployment(t *testing.T) {
+	type args struct {
+		sd service.ServiceDescriptor
+	}
+	tests := []struct {
+		name     string
+		template *resource.Template[*appsv1.Deployment]
+		args     args
+		want     *appsv1.Deployment
+	}{
+		{
+			name: "Adds the marin3r annotations for sidecar injection",
+			template: resource.NewTemplateFromObjectFunction(
+				func() *appsv1.Deployment {
+					return &appsv1.Deployment{
+						ObjectMeta: metav1.ObjectMeta{Name: "test"},
+						Spec: appsv1.DeploymentSpec{
+							Template: corev1.PodTemplateSpec{
+								ObjectMeta: metav1.ObjectMeta{},
+							},
+						},
+					}
+				},
+			),
+			args: args{
+				sd: service.ServiceDescriptor{
+					PublishingStrategy: saasv1alpha1.PublishingStrategy{
+						Strategy:     saasv1alpha1.Marin3rSidecarStrategy,
+						EndpointName: "Endpoint",
+						Marin3rSidecar: &saasv1alpha1.Marin3rSidecarSpec{
+							Ports:                              []saasv1alpha1.SidecarPort{{Name: "port", Port: 8888}},
+							ShutdownManagerExtraLifecycleHooks: []string{"container"},
+						},
+					},
+				},
+			},
+			want: &appsv1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{Name: "test"},
+				Spec: appsv1.DeploymentSpec{
+					Template: corev1.PodTemplateSpec{
+						ObjectMeta: metav1.ObjectMeta{
+							Labels: map[string]string{
+								"marin3r.3scale.net/status": "enabled",
+							},
+							Annotations: map[string]string{
+								"marin3r.3scale.net/node-id":                                "test",
+								"marin3r.3scale.net/ports":                                  "port:8888",
+								"marin3r.3scale.net/shutdown-manager.enabled":               "true",
+								"marin3r.3scale.net/shutdown-manager.extra-lifecycle-hooks": "container",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, _ := tt.template.Apply(marin3rSidecarToDeployment(tt.args.sd)).Build(context.TODO(), nil, nil)
+			if diff := cmp.Diff(got, tt.want); len(diff) > 0 {
+				t.Errorf("marin3rSidecarToDeployment() got diff %v", diff)
+			}
+		})
+	}
+}
+
+func Test_toWithCanaryOrNil(t *testing.T) {
 	type args struct {
 		w DeploymentWorkload
 	}
 	tests := []struct {
 		name string
 		args args
-		want WithTraffic
+		want WithCanary
 	}{
 		{
 			name: "Detects a nil value",
@@ -654,8 +1068,8 @@ func Test_toWithTraffic(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := toWithTraffic(tt.args.w); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("toWithTraffic() = %+v, want %+v", got, tt.want)
+			if got := toWithCanaryOrNil(tt.args.w); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("toWithCanaryOrNil() = %+v, want %+v", got, tt.want)
 			}
 		})
 	}

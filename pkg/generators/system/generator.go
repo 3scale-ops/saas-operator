@@ -12,6 +12,7 @@ import (
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/grafanadashboard"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/podmonitor"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/service"
 	operatorutil "github.com/3scale-ops/saas-operator/pkg/util"
 	deployment_workload "github.com/3scale-ops/saas-operator/pkg/workloads/deployment"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
@@ -376,21 +377,8 @@ type AppGenerator struct {
 // Validate that AppGenerator implements deployment_workload.DeploymentWorkload interface
 var _ deployment_workload.DeploymentWorkload = &AppGenerator{}
 
-// Validate that AppGenerator implements deployment_workload.WithTraffic interface
-var _ deployment_workload.WithTraffic = &AppGenerator{}
-
-func (gen *AppGenerator) Services() []*resource.Template[*corev1.Service] {
-	return []*resource.Template[*corev1.Service]{
-		resource.NewTemplateFromObjectFunction(gen.service).
-			WithMutation(mutators.SetServiceLiveValues()),
-	}
-}
-func (gen *AppGenerator) SendTraffic() bool { return gen.Traffic }
-func (gen *AppGenerator) TrafficSelector() map[string]string {
-	return map[string]string{
-		fmt.Sprintf("%s/traffic", saasv1alpha1.GroupVersion.Group): fmt.Sprintf("%s-%s", component, app),
-	}
-}
+// Validate that AppGenerator implements deployment_workload.WithPublishingStrategies interface
+var _ deployment_workload.WithPublishingStrategies = &AppGenerator{}
 
 func (gen *AppGenerator) Deployment() *resource.Template[*appsv1.Deployment] {
 	return resource.NewTemplateFromObjectFunction(gen.deployment).
@@ -414,6 +402,20 @@ func (gen *AppGenerator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint 
 		pmes = append(pmes, podmonitor.PodMetricsEndpoint("/metrics", "twem-metrics", 30))
 	}
 	return pmes
+}
+
+func (gen *AppGenerator) SendTraffic() bool { return gen.Traffic }
+func (gen *AppGenerator) TrafficSelector() map[string]string {
+	return map[string]string{
+		fmt.Sprintf("%s/traffic", saasv1alpha1.GroupVersion.Group): fmt.Sprintf("%s-%s", component, app),
+	}
+}
+func (gen *AppGenerator) PublishingStrategies() ([]service.ServiceDescriptor, error) {
+	if pss, err := service.MergeWithDefaultPublishingStrategy(config.DefaultAppPublishingStrategy(), gen.Spec.PublishingStrategies); err != nil {
+		return nil, err
+	} else {
+		return pss, nil
+	}
 }
 
 // Validate that SidekiqGenerator implements deployment_workload.DeploymentWorkloadWithTraffic interface

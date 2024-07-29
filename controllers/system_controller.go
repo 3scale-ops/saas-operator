@@ -25,6 +25,7 @@ import (
 	"github.com/3scale-ops/saas-operator/pkg/generators/system"
 	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // SystemReconciler reconciles a System object
@@ -53,7 +54,8 @@ func (r *SystemReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	ctx, _ = r.Logger(ctx, "name", req.Name, "namespace", req.Namespace)
 	instance := &saasv1alpha1.System{}
 	result := r.ManageResourceLifecycle(ctx, req, instance,
-		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)))
+		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)),
+		reconciler.WithInitializationFunc(SystemResourceUpgrader))
 	if result.ShouldReturn() {
 		return result.Values()
 	}
@@ -82,4 +84,31 @@ func (r *SystemReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			For(&saasv1alpha1.System{}).
 			Watches(&corev1.Secret{}, r.FilteredEventHandler(&saasv1alpha1.SystemList{}, nil, r.Log)),
 	)
+}
+
+func SystemResourceUpgrader(ctx context.Context, cl client.Client, o client.Object) error {
+	instance := o.(*saasv1alpha1.System)
+
+	if instance.Spec.App == nil || instance.Spec.App.PublishingStrategies == nil {
+		pss, err := saasv1alpha1.UpgradeCR2PublishingStrategies(ctx, cl,
+			saasv1alpha1.WorkloadPublishingStrategyUpgrader{
+				EndpointName: "HTTP",
+				ServiceName:  "system-app",
+				Namespace:    instance.GetNamespace(),
+				ServiceType:  saasv1alpha1.ServiceTypeClusterIP,
+			},
+		)
+
+		if err != nil {
+			return err
+		}
+
+		if len(pss.Endpoints) > 0 {
+			if instance.Spec.App == nil {
+				instance.Spec.App = &saasv1alpha1.SystemAppSpec{}
+			}
+			instance.Spec.App.PublishingStrategies = pss
+		}
+	}
+	return nil
 }

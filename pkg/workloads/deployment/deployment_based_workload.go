@@ -1,14 +1,19 @@
-package delpoyment_workload
+package deployment
 
 import (
+	"fmt"
+
+	"github.com/3scale-ops/basereconciler/mutators"
 	"github.com/3scale-ops/basereconciler/resource"
 	"github.com/3scale-ops/basereconciler/util"
 	marin3rv1alpha1 "github.com/3scale-ops/marin3r/apis/marin3r/v1alpha1"
+	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/factory"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/hpa"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pdb"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/podmonitor"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/service"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	"github.com/samber/lo"
 	appsv1 "k8s.io/api/apps/v1"
@@ -28,14 +33,63 @@ func New(main DeploymentWorkload, canary DeploymentWorkload) ([]resource.Templat
 		resources = append(resources, workloadResources(canary)...)
 	}
 
-	// Generate services if the workload implements WithTraffic interface
-	if _, ok := main.(WithTraffic); ok {
-		for _, svct := range main.(WithTraffic).Services() {
-			resources = append(resources,
-				svct.Apply(meta[*corev1.Service](main)).
-					Apply(trafficSelectorToService(main.(WithTraffic), toWithTraffic(canary))),
-			)
+	services := []*resource.Template[*corev1.Service]{}
+
+	// Generate resources to implement the desired publishing strategies
+	if _, ok := main.(WithPublishingStrategies); ok {
+
+		strategies, err := main.(WithPublishingStrategies).PublishingStrategies()
+		if err != nil {
+			return nil, err
 		}
+
+		for _, item := range strategies {
+			descriptor := item
+			switch descriptor.Strategy {
+
+			case saasv1alpha1.SimpleStrategy:
+				services = append(services,
+					resource.NewTemplateFromObjectFunction(func() *corev1.Service { return descriptor.Service(main.GetKey().Name, "svc") }).
+						WithMutation(mutators.SetServiceLiveValues()),
+				)
+
+			case saasv1alpha1.Marin3rSidecarStrategy:
+				if descriptor.Marin3rSidecar == nil {
+					return nil, fmt.Errorf("Marin3rSidecarSpec is missing, can't implement strategy without it")
+				}
+				services = append(services,
+					resource.NewTemplateFromObjectFunction(func() *corev1.Service { return descriptor.Service(main.GetKey().Name, "marin3r") }).
+						WithMutation(mutators.SetServiceLiveValues()),
+				)
+
+				// Add Marin3r sidecar to Deployment
+				// NOTE: Deployment is always the first resource
+				// TODO: a proper mechanism to identify resource templates should exists. Basereconciler
+				// should provide one.
+				if deployment, ok := resources[0].(*resource.Template[*appsv1.Deployment]); ok {
+					deployment.Apply(marin3rSidecarToDeployment(descriptor))
+				} else {
+					return nil, fmt.Errorf("expected a Deployment but found something else")
+				}
+				// Add EnvoyConfig resource
+				dynamicConfigurations := descriptor.Marin3rSidecar.EnvoyDynamicConfig.AsList()
+				resources = append(resources,
+					resource.NewTemplate(
+						envoyconfig.New(EmptyKey, EmptyKey.Name, factory.Default(), dynamicConfigurations...)).
+						WithEnabled(len(dynamicConfigurations) > 0).
+						Apply(meta[*marin3rv1alpha1.EnvoyConfig](main)).
+						Apply(nodeIdToEnvoyConfig(descriptor)),
+				)
+			}
+		}
+	}
+
+	// Apply traffic routing logic (canary yes/no)
+	for _, svct := range services {
+		resources = append(resources,
+			svct.Apply(meta[*corev1.Service](main)).
+				Apply(trafficSelectorToService(main.(WithCanary), toWithCanaryOrNil(canary))),
+		)
 	}
 
 	return resources, nil
@@ -56,34 +110,23 @@ func workloadResources(workload DeploymentWorkload) []resource.TemplateInterface
 			Apply(selector[*appsv1.Deployment](workload)).
 			Apply(trafficSelectorToDeployment(workload)),
 
-		resource.NewTemplate[*policyv1.PodDisruptionBudget](
+		resource.NewTemplate(
 			pdb.New(EmptyKey, EmptyLabel, EmptySelector, *workload.PDBSpec())).
 			WithEnabled(!workload.PDBSpec().IsDeactivated()).
 			Apply(meta[*policyv1.PodDisruptionBudget](workload)).
 			Apply(selector[*policyv1.PodDisruptionBudget](workload)),
 
-		resource.NewTemplate[*autoscalingv2.HorizontalPodAutoscaler](
+		resource.NewTemplate(
 			hpa.New(EmptyKey, EmptyLabel, *workload.HPASpec())).
 			WithEnabled(!workload.HPASpec().IsDeactivated()).
 			Apply(meta[*autoscalingv2.HorizontalPodAutoscaler](workload)).
 			Apply(scaleTargetRefToHPA(workload)),
 
-		resource.NewTemplate[*monitoringv1.PodMonitor](
+		resource.NewTemplate(
 			podmonitor.New(EmptyKey, EmptyLabel, EmptySelector, workload.MonitoredEndpoints()...)).
 			WithEnabled(len(workload.MonitoredEndpoints()) > 0).
 			Apply(meta[*monitoringv1.PodMonitor](workload)).
 			Apply(selector[*monitoringv1.PodMonitor](workload)),
-	}
-
-	// if workload implements WithEnvoySidecar add the EnvoyConfig
-	if w, ok := workload.(WithEnvoySidecar); ok {
-		resources = append(resources,
-			resource.NewTemplate[*marin3rv1alpha1.EnvoyConfig](
-				envoyconfig.New(EmptyKey, EmptyKey.Name, factory.Default(), w.EnvoyDynamicConfigurations()...)).
-				WithEnabled(len(w.EnvoyDynamicConfigurations()) > 0).
-				Apply(meta[*marin3rv1alpha1.EnvoyConfig](w)).
-				Apply(nodeIdToEnvoyConfig(w)),
-		)
 	}
 
 	return resources
@@ -107,7 +150,7 @@ func meta[T client.Object](w WithWorkloadMeta) resource.TemplateBuilderFunction[
 	}
 }
 
-func trafficSelectorToService(main WithTraffic, canary WithTraffic) resource.TemplateBuilderFunction[*corev1.Service] {
+func trafficSelectorToService(main WithCanary, canary WithCanary) resource.TemplateBuilderFunction[*corev1.Service] {
 	return func(o client.Object) (*corev1.Service, error) {
 		svc := o.(*corev1.Service)
 		svc.Spec.Selector = trafficSwitcher(main, canary)
@@ -115,7 +158,7 @@ func trafficSelectorToService(main WithTraffic, canary WithTraffic) resource.Tem
 	}
 }
 
-func trafficSwitcher(main WithTraffic, canary WithTraffic) map[string]string {
+func trafficSwitcher(main WithCanary, canary WithCanary) map[string]string {
 
 	// NOTE: due to the fact that services do not yet support set-based selectors, only MatchLabels selectors
 	// can be used. This limits a lot what can be done in terms of deciding where to send traffic, as all
@@ -127,7 +170,7 @@ func trafficSwitcher(main WithTraffic, canary WithTraffic) map[string]string {
 	// There seems to be great demand for set-based selectors for Services but it is not yet implamented:
 	// https://github.com/kubernetes/kubernetes/issues/48528
 	enabledSelectors := []map[string]string{}
-	for _, workload := range []WithTraffic{main, canary} {
+	for _, workload := range []WithCanary{main, canary} {
 		if workload != nil && workload.SendTraffic() {
 			enabledSelectors = append(enabledSelectors, workload.GetSelector())
 		}
@@ -139,11 +182,11 @@ func trafficSwitcher(main WithTraffic, canary WithTraffic) map[string]string {
 	case 1:
 		// If there is only one Deployment with SendTraffic() active
 		// return its selector together with the shared traffic selector
-		return util.MergeMaps(enabledSelectors[0], main.TrafficSelector())
+		return util.MergeMaps(map[string]string{}, enabledSelectors[0], main.TrafficSelector())
 	default:
 		// If there is more than one Deployment with SendTraffic() active
 		// send traffic to all Deployments by using the shared traffic selector
-		return main.TrafficSelector()
+		return util.MergeMaps(map[string]string{}, main.TrafficSelector())
 	}
 }
 
@@ -178,24 +221,34 @@ func selector[T client.Object](w DeploymentWorkload) resource.TemplateBuilderFun
 func trafficSelectorToDeployment(w DeploymentWorkload) resource.TemplateBuilderFunction[*appsv1.Deployment] {
 	return func(o client.Object) (*appsv1.Deployment, error) {
 		dep := o.(*appsv1.Deployment)
-		if w, ok := w.(WithTraffic); ok {
+		if w, ok := w.(WithCanary); ok {
 			dep.Spec.Template.ObjectMeta.Labels = util.MergeMaps(map[string]string{}, dep.Spec.Template.ObjectMeta.Labels, w.TrafficSelector())
 		}
 		return dep, nil
 	}
 }
 
-func nodeIdToEnvoyConfig(w WithWorkloadMeta) resource.TemplateBuilderFunction[*marin3rv1alpha1.EnvoyConfig] {
+func marin3rSidecarToDeployment(sd service.ServiceDescriptor) resource.TemplateBuilderFunction[*appsv1.Deployment] {
+	return func(o client.Object) (*appsv1.Deployment, error) {
+		return service.AddMarin3rSidecar(o.(*appsv1.Deployment), *sd.Marin3rSidecar), nil
+	}
+}
+
+func nodeIdToEnvoyConfig(sd service.ServiceDescriptor) resource.TemplateBuilderFunction[*marin3rv1alpha1.EnvoyConfig] {
 	return func(o client.Object) (*marin3rv1alpha1.EnvoyConfig, error) {
 		ec := o.(*marin3rv1alpha1.EnvoyConfig)
-		ec.Spec.NodeID = w.GetKey().Name
+		if sd.Marin3rSidecar.NodeID != nil {
+			ec.Spec.NodeID = *sd.Marin3rSidecar.NodeID
+		} else {
+			ec.Spec.NodeID = ec.GetName()
+		}
 		return ec, nil
 	}
 }
 
-func toWithTraffic(w DeploymentWorkload) WithTraffic {
+func toWithCanaryOrNil(w DeploymentWorkload) WithCanary {
 	if lo.IsNil(w) {
 		return nil
 	}
-	return w.(WithTraffic)
+	return w.(WithCanary)
 }

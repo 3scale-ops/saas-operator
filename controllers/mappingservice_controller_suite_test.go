@@ -100,7 +100,7 @@ var _ = Describe("MappingService controller", func() {
 
 			svc := &corev1.Service{}
 			By("deploying a MappingService service",
-				(&testutil.ExpectedResource{Name: "mapping-service", Namespace: namespace}).
+				(&testutil.ExpectedResource{Name: "mapping-service-http-svc", Namespace: namespace}).
 					Assert(k8sClient, svc, timeout, poll))
 
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("mapping-service"))

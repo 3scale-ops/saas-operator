@@ -21,6 +21,7 @@ require (
 	github.com/goombaio/namegenerator v0.0.0-20181006234301-989e774b106e
 	github.com/grafana/grafana-operator/v5 v5.8.0
 	github.com/huandu/go-clone v1.7.2 // indirect
+	github.com/imdario/mergo v0.3.16
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/onsi/ginkgo/v2 v2.17.0
 	github.com/onsi/gomega v1.32.0
@@ -44,7 +45,6 @@ require (
 
 // For local dev uncomment this and point it to the correct path in your system
 // github.com/3scale-ops/basereconciler => /home/roi/github.com/3scale/basereconciler
-replace github.com/imdario/mergo => github.com/imdario/mergo v0.3.16
 
 require (
 	contrib.go.opencensus.io/exporter/ocagent v0.7.1-0.20200907061046-05415f1de66d // indirect
@@ -104,7 +104,6 @@ require (
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/huandu/go-clone/generic v1.7.2
-	github.com/imdario/mergo v1.0.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect

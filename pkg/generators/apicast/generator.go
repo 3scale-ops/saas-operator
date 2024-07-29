@@ -8,15 +8,14 @@ import (
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/pkg/generators"
 	"github.com/3scale-ops/saas-operator/pkg/generators/apicast/config"
-	descriptor "github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/grafanadashboard"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/podmonitor"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/service"
 	operatorutil "github.com/3scale-ops/saas-operator/pkg/util"
 	deployment_workload "github.com/3scale-ops/saas-operator/pkg/workloads/deployment"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
 
@@ -35,7 +34,7 @@ type Generator struct {
 	CanaryStaging        *EnvGenerator
 	Production           EnvGenerator
 	CanaryProduction     *EnvGenerator
-	LoadBalancerSpec     saasv1alpha1.LoadBalancerSpec
+	LoadBalancerSpec     saasv1alpha1.ElasticLoadBalancerSpec
 	GrafanaDashboardSpec saasv1alpha1.GrafanaDashboardSpec
 }
 
@@ -175,11 +174,8 @@ type EnvGenerator struct {
 // Validate that EnvGenerator implements deployment_workload.DeploymentWorkload interface
 var _ deployment_workload.DeploymentWorkload = &EnvGenerator{}
 
-// Validate that EnvGenerator implements deployment_workload.WithTraffic interface
-var _ deployment_workload.WithTraffic = &EnvGenerator{}
-
-// Validate that EnvGenerator implements deployment_workload.WithEnvoySidecar interface
-var _ deployment_workload.WithEnvoySidecar = &EnvGenerator{}
+// Validate that EnvGenerator implements deployment_workload.WithPublishingStrategies interface
+var _ deployment_workload.WithPublishingStrategies = &EnvGenerator{}
 
 func (gen *EnvGenerator) Labels() map[string]string {
 	return gen.GetLabels()
@@ -201,12 +197,7 @@ func (gen *EnvGenerator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint 
 		podmonitor.PodMetricsEndpoint("/stats/prometheus", "envoy-metrics", 60),
 	}
 }
-func (gen *EnvGenerator) Services() []*resource.Template[*corev1.Service] {
-	return []*resource.Template[*corev1.Service]{
-		resource.NewTemplateFromObjectFunction(gen.gatewayService).WithMutation(mutators.SetServiceLiveValues()),
-		resource.NewTemplateFromObjectFunction(gen.mgmtService).WithMutation(mutators.SetServiceLiveValues()),
-	}
-}
+
 func (gen *EnvGenerator) SendTraffic() bool { return gen.Traffic }
 func (gen *EnvGenerator) TrafficSelector() map[string]string {
 	return map[string]string{
@@ -215,6 +206,11 @@ func (gen *EnvGenerator) TrafficSelector() map[string]string {
 		fmt.Sprintf("%s/traffic", saasv1alpha1.GroupVersion.Group): gen.GetComponent(),
 	}
 }
-func (gen *EnvGenerator) EnvoyDynamicConfigurations() []descriptor.EnvoyDynamicConfigDescriptor {
-	return gen.Spec.Marin3r.EnvoyDynamicConfig.AsList()
+
+func (gen *EnvGenerator) PublishingStrategies() ([]service.ServiceDescriptor, error) {
+	if pss, err := service.MergeWithDefaultPublishingStrategy(config.DefaultPublishingStrategy(), gen.Spec.PublishingStrategies); err != nil {
+		return nil, err
+	} else {
+		return pss, nil
+	}
 }

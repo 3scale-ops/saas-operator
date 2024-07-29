@@ -25,6 +25,7 @@ import (
 	"github.com/3scale-ops/saas-operator/pkg/generators/corsproxy"
 	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // CORSProxyReconciler reconciles a CORSProxy object
@@ -51,7 +52,8 @@ func (r *CORSProxyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	ctx, _ = r.Logger(ctx, "name", req.Name, "namespace", req.Namespace)
 	instance := &saasv1alpha1.CORSProxy{}
 	result := r.ManageResourceLifecycle(ctx, req, instance,
-		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)))
+		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)),
+		reconciler.WithInitializationFunc(CorsproxyResourceUpgrader))
 	if result.ShouldReturn() {
 		return result.Values()
 	}
@@ -77,4 +79,28 @@ func (r *CORSProxyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			For(&saasv1alpha1.CORSProxy{}).
 			Watches(&corev1.Secret{}, r.FilteredEventHandler(&saasv1alpha1.CORSProxyList{}, nil, r.Log)),
 	)
+}
+
+func CorsproxyResourceUpgrader(ctx context.Context, cl client.Client, o client.Object) error {
+	instance := o.(*saasv1alpha1.CORSProxy)
+
+	if instance.Spec.PublishingStrategies == nil {
+		pss, err := saasv1alpha1.UpgradeCR2PublishingStrategies(ctx, cl,
+			saasv1alpha1.WorkloadPublishingStrategyUpgrader{
+				EndpointName: "HTTP",
+				ServiceName:  "cors-proxy",
+				Namespace:    instance.GetNamespace(),
+				ServiceType:  saasv1alpha1.ServiceTypeClusterIP,
+			},
+		)
+
+		if err != nil {
+			return err
+		}
+
+		if len(pss.Endpoints) > 0 {
+			instance.Spec.PublishingStrategies = pss
+		}
+	}
+	return nil
 }

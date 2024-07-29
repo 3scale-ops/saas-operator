@@ -7,12 +7,12 @@ import (
 	"github.com/3scale-ops/basereconciler/resource"
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/pkg/generators"
-	descriptor "github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
+	"github.com/3scale-ops/saas-operator/pkg/generators/echoapi/config"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/podmonitor"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/service"
 	deployment_workload "github.com/3scale-ops/saas-operator/pkg/workloads/deployment"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -29,11 +29,8 @@ type Generator struct {
 // Validate that Generator implements deployment_workload.DeploymentWorkload interface
 var _ deployment_workload.DeploymentWorkload = &Generator{}
 
-// Validate that Generator implements deployment_workload.WithTraffic interface
-var _ deployment_workload.WithTraffic = &Generator{}
-
-// Validate that Generator implements deployment_workload.WithEnvoySidecar interface
-var _ deployment_workload.WithEnvoySidecar = &Generator{}
+// Validate that Generator implements deployment_workload.WithTWithPublishingStrategiesraffic interface
+var _ deployment_workload.WithPublishingStrategies = &Generator{}
 
 // NewGenerator returns a new Options struct
 func NewGenerator(instance, namespace string, spec saasv1alpha1.EchoAPISpec) Generator {
@@ -62,18 +59,6 @@ func (gen *Generator) Resources() ([]resource.TemplateInterface, error) {
 	return workload, nil
 }
 
-func (gen *Generator) Services() []*resource.Template[*corev1.Service] {
-	return []*resource.Template[*corev1.Service]{
-		resource.NewTemplateFromObjectFunction(gen.service).WithMutation(mutators.SetServiceLiveValues()),
-	}
-}
-func (gen *Generator) SendTraffic() bool { return gen.Traffic }
-func (gen *Generator) TrafficSelector() map[string]string {
-	return map[string]string{
-		fmt.Sprintf("%s/traffic", saasv1alpha1.GroupVersion.Group): component,
-	}
-}
-
 func (gen *Generator) Deployment() *resource.Template[*appsv1.Deployment] {
 	return resource.NewTemplateFromObjectFunction(gen.deployment).
 		WithMutation(mutators.SetDeploymentReplicas(gen.Spec.HPA.IsDeactivated()))
@@ -93,6 +78,17 @@ func (gen *Generator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint {
 	}
 }
 
-func (gen *Generator) EnvoyDynamicConfigurations() []descriptor.EnvoyDynamicConfigDescriptor {
-	return gen.Spec.Marin3r.EnvoyDynamicConfig.AsList()
+func (gen *Generator) SendTraffic() bool { return gen.Traffic }
+func (gen *Generator) TrafficSelector() map[string]string {
+	return map[string]string{
+		fmt.Sprintf("%s/traffic", saasv1alpha1.GroupVersion.Group): component,
+	}
+}
+
+func (gen *Generator) PublishingStrategies() ([]service.ServiceDescriptor, error) {
+	if pss, err := service.MergeWithDefaultPublishingStrategy(config.DefaultPublishingStrategy(), gen.Spec.PublishingStrategies); err != nil {
+		return nil, err
+	} else {
+		return pss, nil
+	}
 }

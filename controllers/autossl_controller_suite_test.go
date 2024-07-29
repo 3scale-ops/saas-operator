@@ -57,9 +57,6 @@ var _ = Describe("AutoSSL controller", func() {
 						VerificationEndpoint: "example.com/verification",
 						RedisHost:            "redis.example.com",
 					},
-					Endpoint: saasv1alpha1.Endpoint{
-						DNS: []string{"autossl.example.com"},
-					},
 					HPA: &saasv1alpha1.HorizontalPodAutoscalerSpec{
 						Behavior: &autoscalingv2.HorizontalPodAutoscalerBehavior{
 							ScaleDown: &autoscalingv2.HPAScalingRules{
@@ -111,7 +108,7 @@ var _ = Describe("AutoSSL controller", func() {
 			svc := &corev1.Service{}
 			By("deploying an autossl service",
 				(&testutil.ExpectedResource{
-					Name:      "autossl",
+					Name:      "autossl-proxy-svc",
 					Namespace: namespace,
 				}).Assert(k8sClient, svc, timeout, poll))
 
@@ -250,7 +247,7 @@ var _ = Describe("AutoSSL controller", func() {
 					}
 
 					rvs["svc/autossl"] = testutil.GetResourceVersion(
-						k8sClient, &corev1.Service{}, "autossl", namespace, timeout, poll)
+						k8sClient, &corev1.Service{}, "autossl-proxy-svc", namespace, timeout, poll)
 					rvs["deployment/autossl"] = testutil.GetResourceVersion(
 						k8sClient, &appsv1.Deployment{}, "autossl", namespace, timeout, poll)
 
@@ -300,7 +297,7 @@ var _ = Describe("AutoSSL controller", func() {
 				svc := &corev1.Service{}
 				By("keeping the autossl service deployment label selector",
 					(&testutil.ExpectedResource{
-						Name: "autossl", Namespace: namespace,
+						Name: "autossl-proxy-svc", Namespace: namespace,
 					}).Assert(k8sClient, svc, timeout, poll))
 
 				Expect(svc.Spec.Selector["deployment"]).To(Equal("autossl"))
@@ -320,8 +317,8 @@ var _ = Describe("AutoSSL controller", func() {
 						); err != nil {
 							return err
 						}
-						rvs["svc/autossl"] = testutil.GetResourceVersion(
-							k8sClient, &corev1.Service{}, "autossl", namespace, timeout, poll)
+						rvs["svc/autossl-proxy-svc"] = testutil.GetResourceVersion(
+							k8sClient, &corev1.Service{}, "autossl-proxy-svc", namespace, timeout, poll)
 
 						patch := client.MergeFrom(autossl.DeepCopy())
 						autossl.Spec.Canary = &saasv1alpha1.Canary{
@@ -336,8 +333,8 @@ var _ = Describe("AutoSSL controller", func() {
 					svc := &corev1.Service{}
 					By("removing the autossl service deployment label selector",
 						(&testutil.ExpectedResource{
-							Name: "autossl", Namespace: namespace,
-							LastVersion: rvs["svc/autossl"],
+							Name: "autossl-proxy-svc", Namespace: namespace,
+							LastVersion: rvs["svc/autossl-proxy-svc"],
 						}).Assert(k8sClient, svc, timeout, poll))
 
 					Expect(svc.Spec.Selector).NotTo(HaveKey("deployment"))

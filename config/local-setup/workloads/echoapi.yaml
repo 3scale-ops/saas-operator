@@ -15,54 +15,69 @@ kind: EchoAPI
 metadata:
   name: echo-api
 spec:
-  endpoint: {dns: [REPLACE]}
-  hpa: {}
   image:
-      name: REPLACE
-      tag: REPLACE
-      pullSecretName: pull-secrets
-      pullPolicy: Always
-  loadBalancer:
-    proxyProtocol: false
-  marin3r:
-    dynamicConfigs:
-      echo_api_cluster:
-        cluster:
-          host: 127.0.0.1
-          port: 9292
-      echo_api_route:
-        routeConfiguration:
-          virtualHosts:
-            - domains: ['*']
-              name: echo_api
-              routes:
-                - match:
-                    prefix: /
-                  route:
-                    cluster: echo_api_cluster
-      http:
-        listenerHttp:
-          proxyProtocol: false
-          port: 38080
-          routeConfigName: echo_api_route
-      https:
-        listenerHttp:
-          proxyProtocol: false
-          certificateSecretName: echoapi-cert
-          port: 38443
-          routeConfigName: echo_api_route
-    envoyImage: REPLACE
-    nodeID: echo-api
-    ports:
-      - name: echo-api-http
-        port: 38080
-      - name: echo-api-https
-        port: 38443
-      - name: envoy-metrics
-        port: 9901
-    resources: {}
-    shtdnmgrExtraLifecycleHooks:
-      - echo-api
+    name: REPLACE
+    tag: REPLACE
+    pullSecretName: pull-secrets
+    pullPolicy: Always
+  hpa: {}
   pdb: {}
-  replicas: 1
   resources: {}
+  replicas: 1
+  publishingStrategies:
+    endpoints:
+      - marin3rSidecar:
+          dynamicConfigs:
+            echo_api_cluster:
+              cluster:
+                host: 127.0.0.1
+                isHttp2: false
+                port: 9292
+              generatorVersion: v1
+            echo_api_route:
+              generatorVersion: v1
+              routeConfiguration:
+                virtualHosts:
+                  - domains:
+                      - "*"
+                    name: echo_api
+                    routes:
+                      - match:
+                          prefix: /
+                        route:
+                          cluster: echo_api_cluster
+            http:
+              generatorVersion: v1
+              listenerHttp:
+                allowHeadersWithUnderscores: true
+                enableHttp2: false
+                port: 38080
+                proxyProtocol: false
+                routeConfigName: echo_api_route
+            https:
+              generatorVersion: v1
+              listenerHttp:
+                allowHeadersWithUnderscores: true
+                certificateSecretName: echoapi-cert
+                enableHttp2: false
+                port: 38443
+                proxyProtocol: false
+                routeConfigName: echo_api_route
+          envoyImage: REPLACE
+          externalDnsHostnames: [REPLACE]
+          networkLoadBalancerConfig:
+            proxyProtocol: false
+          nodeID: echo-api
+          ports:
+            - name: echo-api-http
+              port: 38080
+            - name: echo-api-https
+              port: 38443
+            - name: envoy-metrics
+              port: 9901
+          resources: {}
+          serviceType: NLB
+          shtdnmgrExtraLifecycleHooks:
+            - echo-api
+        name: HTTP
+        strategy: Marin3rSidecar

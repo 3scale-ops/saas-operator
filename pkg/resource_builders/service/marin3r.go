@@ -1,4 +1,4 @@
-package marin3r
+package service
 
 import (
 	"fmt"
@@ -8,6 +8,7 @@ import (
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 const (
@@ -22,9 +23,9 @@ var (
 	}
 )
 
-// EnableSidecar adds the appropriate labels and annotations for marin3r sidecar
+// AddMarin3rSidecar adds the appropriate labels and annotations for marin3r sidecar
 // injection to work for this Deployment
-func EnableSidecar(dep appsv1.Deployment, spec saasv1alpha1.Marin3rSidecarSpec) *appsv1.Deployment {
+func AddMarin3rSidecar(dep *appsv1.Deployment, spec saasv1alpha1.Marin3rSidecarSpec) *appsv1.Deployment {
 
 	if dep.Spec.Template.ObjectMeta.Labels == nil {
 		dep.Spec.Template.ObjectMeta.Labels = map[string]string{}
@@ -35,7 +36,7 @@ func EnableSidecar(dep appsv1.Deployment, spec saasv1alpha1.Marin3rSidecarSpec) 
 	dep.Spec.Template.ObjectMeta.Labels[sidecarEnabledLabelKey] = sidecarEnabledLabelValue
 	dep.Spec.Template.ObjectMeta.Annotations = util.MergeMaps(
 		dep.Spec.Template.ObjectMeta.Annotations,
-		nodeIDAnnotation(spec.NodeID),
+		nodeIDAnnotation(util.ObjectKey(dep), spec.NodeID),
 		imageAnnotation(spec.EnvoyImage),
 		apiVersionAnnotation(spec.EnvoyAPIVersion),
 		shtdnmgrPortAnnotation(spec.ShutdownManagerPort),
@@ -46,14 +47,17 @@ func EnableSidecar(dep appsv1.Deployment, spec saasv1alpha1.Marin3rSidecarSpec) 
 		spec.ExtraPodAnnotations,
 	)
 
-	return &dep
+	return dep
 }
 
-func nodeIDAnnotation(nodeID *string) map[string]string {
+func nodeIDAnnotation(key types.NamespacedName, nodeID *string) map[string]string {
+	var value string
 	if nodeID != nil {
-		return map[string]string{marin3rDomain + "/node-id": *nodeID}
+		value = *nodeID
+	} else {
+		value = key.Name
 	}
-	return nil
+	return map[string]string{marin3rDomain + "/node-id": value}
 }
 
 func imageAnnotation(image *string) map[string]string {

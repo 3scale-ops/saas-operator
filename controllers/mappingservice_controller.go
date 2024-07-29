@@ -25,6 +25,7 @@ import (
 	"github.com/3scale-ops/saas-operator/pkg/generators/mappingservice"
 	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // MappingServiceReconciler reconciles a MappingService object
@@ -51,7 +52,8 @@ func (r *MappingServiceReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	ctx, _ = r.Logger(ctx, "name", req.Name, "namespace", req.Namespace)
 	instance := &saasv1alpha1.MappingService{}
 	result := r.ManageResourceLifecycle(ctx, req, instance,
-		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)))
+		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)),
+		reconciler.WithInitializationFunc(MappingserviceResourceUpgrader))
 	if result.ShouldReturn() {
 		return result.Values()
 	}
@@ -77,4 +79,28 @@ func (r *MappingServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			For(&saasv1alpha1.MappingService{}).
 			Watches(&corev1.Secret{}, r.FilteredEventHandler(&saasv1alpha1.MappingServiceList{}, nil, r.Log)),
 	)
+}
+
+func MappingserviceResourceUpgrader(ctx context.Context, cl client.Client, o client.Object) error {
+	instance := o.(*saasv1alpha1.MappingService)
+
+	if instance.Spec.PublishingStrategies == nil {
+		pss, err := saasv1alpha1.UpgradeCR2PublishingStrategies(ctx, cl,
+			saasv1alpha1.WorkloadPublishingStrategyUpgrader{
+				EndpointName: "HTTP",
+				ServiceName:  "mapping-service",
+				Namespace:    instance.GetNamespace(),
+				ServiceType:  saasv1alpha1.ServiceTypeClusterIP,
+			},
+		)
+
+		if err != nil {
+			return err
+		}
+
+		if len(pss.Endpoints) > 0 {
+			instance.Spec.PublishingStrategies = pss
+		}
+	}
+	return nil
 }

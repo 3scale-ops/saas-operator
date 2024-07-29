@@ -481,8 +481,11 @@ type SystemConfig struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Backend SystemBackendSpec `json:"backend"`
 	// Assets has configuration to access assets in AWS s3
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Assets AssetsSpec `json:"assets"`
 	// Apicast can be used to pass down apicast endpoints configuration
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
 	Apicast *SystemApicastEndpointsSpec `json:"apicast,omitempty"`
 }
 
@@ -748,15 +751,19 @@ type SystemAppSpec struct {
 	// If specified, the pod's tolerations.
 	// +optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty" protobuf:"bytes,22,opt,name=tolerations"`
+	// Configures the TerminationGracePeriodSeconds
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty"`
 	// Canary defines spec changes for the canary Deployment. If
 	// left unset the canary Deployment wil not be created.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Canary *Canary `json:"canary,omitempty"`
-	// Configures the TerminationGracePeriodSeconds
+	// Describes how the services provided by this workload are exposed to its consumers
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
-	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty"`
+	PublishingStrategies *PublishingStrategies `json:"publishingStrategies,omitempty"`
 }
 
 // Default implements defaulting for the system App component
@@ -771,7 +778,7 @@ func (spec *SystemAppSpec) Default() {
 	spec.TerminationGracePeriodSeconds = int64OrDefault(
 		spec.TerminationGracePeriodSeconds, systemDefaultTerminationGracePeriodSeconds,
 	)
-
+	spec.PublishingStrategies = InitializePublishingStrategies(spec.PublishingStrategies)
 }
 
 // SystemSidekiqSpec configures the Sidekiq component of System

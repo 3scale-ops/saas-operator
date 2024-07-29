@@ -147,7 +147,7 @@ var _ = Describe("Zync controller", func() {
 
 			svc := &corev1.Service{}
 			By("deploying a Zync service",
-				(&testutil.ExpectedResource{Name: "zync", Namespace: namespace}).
+				(&testutil.ExpectedResource{Name: "zync-http-svc", Namespace: namespace}).
 					Assert(k8sClient, svc, timeout, poll))
 
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("zync"))

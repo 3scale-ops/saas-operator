@@ -187,16 +187,16 @@
     - select:
         kind: Apicast
       fieldPaths:
-        - spec.staging.marin3r.envoyImage
-        - spec.production.marin3r.envoyImage
+        - spec.staging.publishingStrategies.endpoints.0.marin3rSidecar.envoyImage
+        - spec.production.publishingStrategies.endpoints.0.marin3rSidecar.envoyImage
     - select:
         kind: Backend
       fieldPaths:
-        - spec.listener.marin3r.envoyImage
+        - spec.listener.publishingStrategies.endpoints.0.marin3rSidecar.envoyImage
     - select:
         kind: EchoAPI
       fieldPaths:
-        - spec.marin3r.envoyImage
+        - spec.publishingStrategies.endpoints.0.marin3rSidecar.envoyImage
     - select:
         kind: EnvoyDeployment
       fieldPaths:

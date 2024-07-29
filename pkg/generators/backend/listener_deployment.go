@@ -4,7 +4,6 @@ import (
 	"strings"
 
 	"github.com/3scale-ops/basereconciler/util"
-	"github.com/3scale-ops/saas-operator/pkg/resource_builders/marin3r"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/twemproxy"
 	appsv1 "k8s.io/api/apps/v1"
@@ -57,10 +56,6 @@ func (gen *ListenerGenerator) deployment() *appsv1.Deployment {
 				},
 			},
 		},
-	}
-
-	if !gen.ListenerSpec.Marin3r.IsDeactivated() {
-		dep = marin3r.EnableSidecar(*dep, *gen.ListenerSpec.Marin3r)
 	}
 
 	if gen.TwemproxySpec != nil {

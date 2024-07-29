@@ -31,16 +31,6 @@ var (
 		Tag:        util.Pointer("latest"),
 		PullPolicy: (*corev1.PullPolicy)(util.Pointer(string(corev1.PullIfNotPresent))),
 	}
-	apicastDefaultLoadBalancer defaultLoadBalancerSpec = defaultLoadBalancerSpec{
-		ProxyProtocol:                 util.Pointer(true),
-		CrossZoneLoadBalancingEnabled: util.Pointer(true),
-		ConnectionDrainingEnabled:     util.Pointer(true),
-		ConnectionDrainingTimeout:     util.Pointer[int32](60),
-		HealthcheckHealthyThreshold:   util.Pointer[int32](2),
-		HealthcheckUnhealthyThreshold: util.Pointer[int32](2),
-		HealthcheckInterval:           util.Pointer[int32](5),
-		HealthcheckTimeout:            util.Pointer[int32](3),
-	}
 	apicastDefaultResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
 		Requests: corev1.ResourceList{
 			corev1.ResourceCPU:    resource.MustParse("500m"),
@@ -165,17 +155,6 @@ type ApicastEnvironmentSpec struct {
 	// Application specific configuration options for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Config ApicastConfig `json:"config"`
-	// The external endpoint/s for the component
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	Endpoint Endpoint `json:"endpoint"`
-	// Marin3r configures the Marin3r sidecars for the component
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	Marin3r *Marin3rSidecarSpec `json:"marin3r,omitempty"`
-	// Configures the AWS load balancer for the component
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	LoadBalancer *LoadBalancerSpec `json:"loadBalancer,omitempty"`
 	// Describes node affinity scheduling rules for the pod.
 	// +optional
 	NodeAffinity *corev1.NodeAffinity `json:"nodeAffinity,omitempty" protobuf:"bytes,1,opt,name=nodeAffinity"`
@@ -187,6 +166,25 @@ type ApicastEnvironmentSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Canary *Canary `json:"canary,omitempty"`
+	// Describes how the services provided by this workload are exposed to its consumers
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	PublishingStrategies *PublishingStrategies `json:"publishingStrategies,omitempty"`
+	// The external endpoint/s for the component
+	// DEPRECATED
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Endpoint *Endpoint `json:"endpoint,omitempty"`
+	// Marin3r configures the Marin3r sidecars for the component
+	// DEPRECATED
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Marin3r *Marin3rSidecarSpec `json:"marin3r,omitempty"`
+	// Configures the AWS load balancer for the component
+	// DEPRECATED
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	LoadBalancer *ElasticLoadBalancerSpec `json:"loadBalancer,omitempty"`
 }
 
 // Default implements defaulting for the each apicast environment
@@ -199,8 +197,9 @@ func (spec *ApicastEnvironmentSpec) Default() {
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, apicastDefaultResources)
 	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, apicastDefaultLivenessProbe)
 	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, apicastDefaultReadinessProbe)
-	spec.LoadBalancer = InitializeLoadBalancerSpec(spec.LoadBalancer, apicastDefaultLoadBalancer)
+	spec.LoadBalancer = InitializeElasticLoadBalancerSpec(spec.LoadBalancer, DefaultElasticLoadBalancerSpec)
 	spec.Marin3r = InitializeMarin3rSidecarSpec(spec.Marin3r, apicastDefaultMarin3rSpec)
+	spec.PublishingStrategies = InitializePublishingStrategies(spec.PublishingStrategies)
 	spec.Config.Default()
 }
 

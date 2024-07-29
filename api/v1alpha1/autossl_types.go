@@ -31,16 +31,6 @@ var (
 		Tag:        util.Pointer("latest"),
 		PullPolicy: (*corev1.PullPolicy)(util.Pointer(string(corev1.PullIfNotPresent))),
 	}
-	autosslDefaultLoadBalancer defaultLoadBalancerSpec = defaultLoadBalancerSpec{
-		ProxyProtocol:                 util.Pointer(true),
-		CrossZoneLoadBalancingEnabled: util.Pointer(true),
-		ConnectionDrainingEnabled:     util.Pointer(true),
-		ConnectionDrainingTimeout:     util.Pointer[int32](60),
-		HealthcheckHealthyThreshold:   util.Pointer[int32](2),
-		HealthcheckUnhealthyThreshold: util.Pointer[int32](2),
-		HealthcheckInterval:           util.Pointer[int32](5),
-		HealthcheckTimeout:            util.Pointer[int32](3),
-	}
 	autosslDefaultResources defaultResourceRequirementsSpec = defaultResourceRequirementsSpec{
 		Requests: corev1.ResourceList{
 			corev1.ResourceCPU:    resource.MustParse("75m"),
@@ -107,10 +97,6 @@ type AutoSSLSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	ReadinessProbe *ProbeSpec `json:"readinessProbe,omitempty"`
-	// Configures the AWS load balancer for the component
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	// +optional
-	LoadBalancer *LoadBalancerSpec `json:"loadBalancer,omitempty"`
 	// Configures the Grafana Dashboard for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -118,9 +104,6 @@ type AutoSSLSpec struct {
 	// Application specific configuration options for the component
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	Config AutoSSLConfig `json:"config"`
-	// The external endpoint/s for the component
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	Endpoint Endpoint `json:"endpoint"`
 	// Describes node affinity scheduling rules for the pod.
 	// +optional
 	NodeAffinity *corev1.NodeAffinity `json:"nodeAffinity,omitempty" protobuf:"bytes,1,opt,name=nodeAffinity"`
@@ -132,6 +115,20 @@ type AutoSSLSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Canary *Canary `json:"canary,omitempty"`
+	// Describes how the services provided by this workload are exposed to its consumers
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	PublishingStrategies *PublishingStrategies `json:"publishingStrategies,omitempty"`
+	// The external endpoint/s for the component
+	// DEPRECATED
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Endpoint *Endpoint `json:"endpoint,omitempty"`
+	// Configures the AWS load balancer for the component
+	// DEPRECATED
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	LoadBalancer *ElasticLoadBalancerSpec `json:"loadBalancer,omitempty"`
 }
 
 // Default implements defaulting for AutoSSLSpec
@@ -144,8 +141,9 @@ func (spec *AutoSSLSpec) Default() {
 	spec.Resources = InitializeResourceRequirementsSpec(spec.Resources, autosslDefaultResources)
 	spec.LivenessProbe = InitializeProbeSpec(spec.LivenessProbe, autosslDefaultProbe)
 	spec.ReadinessProbe = InitializeProbeSpec(spec.ReadinessProbe, autosslDefaultProbe)
-	spec.LoadBalancer = InitializeLoadBalancerSpec(spec.LoadBalancer, autosslDefaultLoadBalancer)
+	spec.LoadBalancer = InitializeElasticLoadBalancerSpec(spec.LoadBalancer, DefaultElasticLoadBalancerSpec)
 	spec.GrafanaDashboard = InitializeGrafanaDashboardSpec(spec.GrafanaDashboard, autosslDefaultGrafanaDashboard)
+	spec.PublishingStrategies = InitializePublishingStrategies(spec.PublishingStrategies)
 	spec.Config.Default()
 }
 

@@ -1,26 +1,142 @@
 package v1alpha1
 
 import (
+	"context"
 	"reflect"
 	"sort"
 
+	"github.com/3scale-ops/basereconciler/util"
 	envoyconfig "github.com/3scale-ops/saas-operator/pkg/resource_builders/envoyconfig/descriptor"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// SidecarPort defines port for the Marin3r sidecar container
-type SidecarPort struct {
-	// Port name
+type PublishingStrategiesReconcileMode string
+
+const (
+	PublishingStrategiesReconcileModeMerge   PublishingStrategiesReconcileMode = "Merge"
+	PublishingStrategiesReconcileModeReplace PublishingStrategiesReconcileMode = "Replace"
+)
+
+type PublishingStrategies struct {
+	// PublishingStrategiesReconcileMode specifies if the list of strategies
+	// should be merged with the defautls or replace them entirely. Allowed values
+	// are "Merge" or "Replace". "Replace" strategy should be used to enable 2 strategies
+	// at the same time for a single endpoint.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	Name string `json:"name"`
-	// Port value
+	// +kubebuilder:validation:Enum=Merge;Replace
+	// +optional
+	Mode *PublishingStrategiesReconcileMode `json:"mode,omitempty"`
+	// Endpoints holds the list of publishing strategies for each workload endpoint.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	Port int32 `json:"port"`
+	// +optional
+	Endpoints []PublishingStrategy `json:"endpoints,omitempty"`
+}
+
+func (ps *PublishingStrategies) Default() {
+	if ps.Mode == nil {
+		ps.Mode = util.Pointer(PublishingStrategiesReconcileModeMerge)
+	}
+	if ps.Endpoints == nil {
+		ps.Endpoints = []PublishingStrategy{}
+	}
+}
+
+// InitializePublishingStrategies initializes a PublishingStrategies struct
+func InitializePublishingStrategies(spec *PublishingStrategies) *PublishingStrategies {
+	if spec == nil {
+		new := &PublishingStrategies{}
+		new.Default()
+		return new
+	} else {
+		spec.Default()
+		return spec
+	}
+}
+
+type Strategy string
+
+const (
+	SimpleStrategy         Strategy = "Simple"
+	Marin3rSidecarStrategy Strategy = "Marin3rSidecar"
+)
+
+type PublishingStrategy struct {
+	// Strategy defines the type of publishing strategy
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +kubebuilder:validation:Enum=Simple;Marin3rSidecar
+	Strategy Strategy `json:"strategy"`
+	// EndpointName defines the endpoint affected by this publishing strategy
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	EndpointName string `json:"name"`
+	// Simple holds configuration for the Simple publishing strategy
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Simple *Simple `json:"simple,omitempty"`
+	// Marin3rSidecar holds configuration for the Marin3rSidecar publishing strategy
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Marin3rSidecar *Marin3rSidecarSpec `json:"marin3rSidecar,omitempty"`
+	// Create explicitely tells the controller that this is a new endpoint that
+	// should be added. Default is false, causing the controller to error when seeing
+	// an unknown endpoint.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	Create *bool `json:"create,omitempty"`
+}
+
+type ServiceType string
+
+const (
+	ServiceTypeClusterIP ServiceType = "ClusterIP"
+	ServiceTypeNLB       ServiceType = "NLB"
+	ServiceTypeELB       ServiceType = "ELB"
+)
+
+type Simple struct {
+	// ServiceType defines the type of k8s Service to use for exposing
+	// the service to its consumers
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	// +kubebuilder:validation:Enum=ClusterIP;ELB;NLB
+	ServiceType *ServiceType `json:"serviceType,omitempty"`
+	// ExternalDnsHostnames defines the hostnames that ExternalDNS
+	// should configure records for external consumners to reach the service
+	// Only works with Services of type NLB/ELB
+	ExternalDnsHostnames []string `json:"externalDnsHostnames,omitempty"`
+	// ServiceNameOverride allows the user to override the generated
+	// Service name
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ServiceNameOverride *string `json:"serviceName,omitempty"`
+	// ServicePortsOverride allows the user to override the ports
+	// of a Service. It's a replace operation, so specify all the
+	// required ports.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ServicePortsOverride []corev1.ServicePort `json:"servicePorts,omitempty"`
+	// Classic LB configuration
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	ElasticLoadBalancerConfig *ElasticLoadBalancerSpec `json:"elasticLoadBalancerConfig,omitempty"`
+	// NLB configuration
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	// +optional
+	NetworkLoadBalancerConfig *NetworkLoadBalancerSpec `json:"networkLoadBalancerConfig,omitempty"`
+}
+
+func (s *Simple) Default() {
+	if s.ServiceType == nil {
+		s.ServiceType = util.Pointer(ServiceTypeClusterIP)
+	}
 }
 
 // Marin3rSidecarSpec defines the marin3r sidecar for the component
 type Marin3rSidecarSpec struct {
+	*Simple `json:",inline"`
 	// The NodeID that identifies the Envoy sidecar to the DiscoveryService
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
@@ -38,7 +154,7 @@ type Marin3rSidecarSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Ports []SidecarPort `json:"ports,omitempty"`
-	// Compute Resources required by this container.
+	// Compute Resources required by the sidecar container.
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
 	// +optional
 	Resources *ResourceRequirementsSpec `json:"resources,omitempty"`
@@ -107,6 +223,16 @@ func InitializeMarin3rSidecarSpec(spec *Marin3rSidecarSpec, def defaultMarin3rSi
 		return copy
 	}
 	return spec
+}
+
+// SidecarPort defines port for the Marin3r sidecar container
+type SidecarPort struct {
+	// Port name
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	Name string `json:"name"`
+	// Port value
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	Port int32 `json:"port"`
 }
 
 type MapOfEnvoyDynamicConfig map[string]EnvoyDynamicConfig
@@ -303,4 +429,103 @@ type RawConfig struct {
 	// WARNING: no validation of this field's value is performed before
 	// writting the custom resource to etcd.
 	Value runtime.RawExtension `json:"value"`
+}
+
+// UPGRADE CODE
+// TODO: delete after upgrade release
+
+func UpgradeCR2PublishingStrategies(ctx context.Context, cl client.Client, bldrs ...WorkloadPublishingStrategyUpgrader) (*PublishingStrategies, error) {
+	endpoints := []PublishingStrategy{}
+	for _, bldr := range bldrs {
+		if endpoint, err := bldr.Build(ctx, cl); endpoint != nil && err == nil {
+			endpoints = append(endpoints, *endpoint)
+		} else if err != nil {
+			return nil, err
+		}
+	}
+
+	return &PublishingStrategies{
+		Mode:      util.Pointer(PublishingStrategiesReconcileModeMerge),
+		Endpoints: endpoints,
+	}, nil
+}
+
+type WorkloadPublishingStrategyUpgrader struct {
+	EndpointName         string
+	ServiceName          string
+	ServiceType          ServiceType
+	Namespace            string
+	Endpoint             *Endpoint
+	Marin3r              *Marin3rSidecarSpec
+	ELBSpec              *ElasticLoadBalancerSpec
+	NLBSpec              *NetworkLoadBalancerSpec
+	ServicePortOverrides []corev1.ServicePort
+	Create               bool
+}
+
+func (gen WorkloadPublishingStrategyUpgrader) Build(ctx context.Context, cl client.Client) (*PublishingStrategy, error) {
+	var out *PublishingStrategy
+	var service *Simple
+
+	// STEP1: check if Service already exists. In case it exists, keeps its original
+	// name and type (defaults for Service names and types have changed).
+	svc := &corev1.Service{ObjectMeta: metav1.ObjectMeta{Name: gen.ServiceName, Namespace: gen.Namespace}}
+	if err := cl.Get(ctx, util.ObjectKey(svc), svc); err != nil {
+		if errors.IsNotFound(err) {
+			service = &Simple{}
+			if gen.Create {
+				// this actually only applies to backend's internal listener
+				return nil, nil
+			}
+		} else {
+			return nil, err
+		}
+	} else {
+		service = &Simple{
+			ServiceNameOverride:  &gen.ServiceName,
+			ServiceType:          &gen.ServiceType,
+			ServicePortsOverride: gen.ServicePortOverrides,
+		}
+	}
+
+	// STEP2: migrate deprecated API fields
+	if gen.Endpoint != nil && len(gen.Endpoint.DNS) > 0 {
+		service.ExternalDnsHostnames = gen.Endpoint.DNS
+	}
+
+	if gen.ELBSpec != nil {
+		service.ElasticLoadBalancerConfig = gen.ELBSpec
+	}
+
+	if gen.NLBSpec != nil {
+		service.NetworkLoadBalancerConfig = gen.NLBSpec
+	}
+
+	// STEP3: create appropriate strategy if required
+	if gen.Marin3r != nil {
+		out = &PublishingStrategy{
+			Strategy:       Marin3rSidecarStrategy,
+			EndpointName:   gen.EndpointName,
+			Marin3rSidecar: gen.Marin3r,
+		}
+
+		out.Marin3rSidecar.Simple = service
+		if out.Marin3rSidecar.Simple.ServiceType == nil {
+			out.Marin3rSidecar.Simple.ServiceType = &gen.ServiceType
+		}
+
+	} else if !reflect.DeepEqual(service, &Simple{}) {
+
+		out = &PublishingStrategy{
+			Strategy:     SimpleStrategy,
+			EndpointName: gen.EndpointName,
+			Simple:       service,
+		}
+	}
+
+	if out != nil && gen.Create {
+		out.Create = &gen.Create
+	}
+
+	return out, nil
 }

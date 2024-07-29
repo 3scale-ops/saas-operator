@@ -15,8 +15,13 @@ spec:
     proxyEndpoint: https://REPLACE
     redisHost: autossl-redis
     verificationEndpoint: https://REPLACE/swagger/spec.json
-  endpoint: {dns: [REPLACE]}
   hpa: {}
   pdb: {}
-  replicas: 1
   resources: {}
+  replicas: 1
+  publishingStrategies:
+    endpoints:
+      - name: Proxy
+        strategy: Simple
+        simple:
+          externalDnsHostnames: [REPLACE]

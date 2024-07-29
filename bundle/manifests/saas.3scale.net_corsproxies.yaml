@@ -509,6 +509,638 @@ spec:
                       "100%".
                     x-kubernetes-int-or-string: true
                 type: object
+              publishingStrategies:
+                description: Describes how the services provided by this workload
+                  are exposed to its consumers
+                properties:
+                  endpoints:
+                    description: Endpoints holds the list of publishing strategies
+                      for each workload endpoint.
+                    items:
+                      properties:
+                        create:
+                          description: Create explicitely tells the controller that
+                            this is a new endpoint that should be added. Default is
+                            false, causing the controller to error when seeing an
+                            unknown endpoint.
+                          type: boolean
+                        marin3rSidecar:
+                          description: Marin3rSidecar holds configuration for the
+                            Marin3rSidecar publishing strategy
+                          properties:
+                            dynamicConfigs:
+                              additionalProperties:
+                                maxProperties: 2
+                                minProperties: 2
+                                properties:
+                                  cluster:
+                                    description: Cluster contains options for an Envoy
+                                      cluster protobuffer message
+                                    properties:
+                                      host:
+                                        description: The upstream host
+                                        type: string
+                                      isHttp2:
+                                        default: false
+                                        description: Specifies if the upstream cluster
+                                          is http2 or not (default).
+                                        type: boolean
+                                      port:
+                                        description: The upstream port
+                                        format: int32
+                                        type: integer
+                                    required:
+                                    - host
+                                    - port
+                                    type: object
+                                  generatorVersion:
+                                    default: v1
+                                    description: GeneratorVersion specifies the version
+                                      of a given template. "v1" is the default.
+                                    type: string
+                                  listenerHttp:
+                                    description: ListenerHttp contains options for
+                                      an HTTP/HTTPS listener
+                                    properties:
+                                      allowHeadersWithUnderscores:
+                                        default: true
+                                        description: Allow headers with underscores
+                                        type: boolean
+                                      certificateSecretName:
+                                        description: The name of the Secret containing
+                                          a valid certificate. If unset the listener
+                                          will be http, if set https
+                                        type: string
+                                      defaultHostForHttp10:
+                                        description: If this filed is set, http 1.0
+                                          will be enabled and this will be the default
+                                          hostname to use.
+                                        type: string
+                                      enableHttp2:
+                                        default: false
+                                        description: Enable http2 in the listener.Disabled
+                                          by default.
+                                        type: boolean
+                                      maxConnectionDuration:
+                                        description: Max connection duration. If unset
+                                          no max connection duration will be applied.
+                                        type: string
+                                      port:
+                                        description: The port where the listener listens
+                                          for new connections
+                                        format: int32
+                                        type: integer
+                                      proxyProtocol:
+                                        default: true
+                                        description: Whether proxy protocol should
+                                          be enabled or not. Defaults to true.
+                                        type: boolean
+                                      rateLimitOptions:
+                                        description: Rate limit options for the ratelimit
+                                          filter of the HTTP connection manager
+                                        properties:
+                                          domain:
+                                            description: The rate limit domain
+                                            type: string
+                                          failureModeDeny:
+                                            default: false
+                                            description: Whether to allow requests
+                                              or not if the rate limit service is
+                                              unavailable
+                                            type: boolean
+                                          rateLimitCluster:
+                                            description: Location of the rate limit
+                                              service. Must point to one of the defined
+                                              clusters.
+                                            type: string
+                                          timeout:
+                                            description: Max time to wait for a response
+                                              from the rate limit service
+                                            format: duration
+                                            type: string
+                                        required:
+                                        - domain
+                                        - rateLimitCluster
+                                        - timeout
+                                        type: object
+                                      routeConfigName:
+                                        description: The name of the RouteConfiguration
+                                          to use in the listener
+                                        type: string
+                                    required:
+                                    - port
+                                    - routeConfigName
+                                    type: object
+                                  rawConfig:
+                                    description: RawConfig is a struct with methods
+                                      to manage a configuration defined using directly
+                                      the Envoy config API
+                                    properties:
+                                      type:
+                                        description: Type is the type url for the
+                                          protobuf message
+                                        enum:
+                                        - listener
+                                        - routeConfiguration
+                                        - cluster
+                                        - runtime
+                                        type: string
+                                      value:
+                                        description: 'Allows defining configuration
+                                          using directly envoy''s config API. WARNING:
+                                          no validation of this field''s value is
+                                          performed before writting the custom resource
+                                          to etcd.'
+                                        type: object
+                                        x-kubernetes-preserve-unknown-fields: true
+                                    required:
+                                    - type
+                                    - value
+                                    type: object
+                                  routeConfiguration:
+                                    description: RouteConfiguration contains options
+                                      for an Envoy route_configuration protobuffer
+                                      message
+                                    properties:
+                                      virtualHosts:
+                                        description: The virtual_hosts definitions
+                                          for this route configuration. Virtual hosts
+                                          must be specified using directly Envoy's
+                                          API
+                                        items:
+                                          type: object
+                                          x-kubernetes-preserve-unknown-fields: true
+                                        type: array
+                                    required:
+                                    - virtualHosts
+                                    type: object
+                                  runtime:
+                                    description: Runtime contains options for an Envoy
+                                      runtime protobuffer message
+                                    properties:
+                                      listenerNames:
+                                        description: The list of listeners to apply
+                                          overload protection limits to
+                                        items:
+                                          type: string
+                                        type: array
+                                    required:
+                                    - listenerNames
+                                    type: object
+                                type: object
+                              description: Envoy dynamic configuration. Populating
+                                this field causes the operator to create a Marin3r
+                                EnvoyConfig resource, so Marin3r must be installed
+                                in the cluster.
+                              type: object
+                            elasticLoadBalancerConfig:
+                              description: Classic LB configuration
+                              properties:
+                                connectionDrainingEnabled:
+                                  description: Enables/disables connection draining
+                                  type: boolean
+                                connectionDrainingTimeout:
+                                  description: Sets the timeout for connection draining
+                                  format: int32
+                                  type: integer
+                                crossZoneLoadBalancingEnabled:
+                                  description: Enables/disables cross zone load balancing
+                                  type: boolean
+                                healthcheckHealthyThreshold:
+                                  description: Sets the healthy threshold for the
+                                    load balancer
+                                  format: int32
+                                  type: integer
+                                healthcheckInterval:
+                                  description: Sets the interval between health checks
+                                  format: int32
+                                  type: integer
+                                healthcheckTimeout:
+                                  description: Sets the timeout for the health check
+                                  format: int32
+                                  type: integer
+                                healthcheckUnhealthyThreshold:
+                                  description: Sets the unhealthy threshold for the
+                                    load balancer
+                                  format: int32
+                                  type: integer
+                                proxyProtocol:
+                                  description: Enables/disbles use of proxy protocol
+                                    in the load balancer
+                                  type: boolean
+                              type: object
+                            envoyAPIVersion:
+                              description: The Envoy API version to use
+                              enum:
+                              - v3
+                              type: string
+                            envoyImage:
+                              description: The Envoy iamge to use
+                              type: string
+                            externalDnsHostnames:
+                              description: ExternalDnsHostnames defines the hostnames
+                                that ExternalDNS should configure records for external
+                                consumners to reach the service Only works with Services
+                                of type NLB/ELB
+                              items:
+                                type: string
+                              type: array
+                            extraPodAnnotations:
+                              additionalProperties:
+                                type: string
+                              description: Extra annotations to pass the Pod to further
+                                configure the sidecar container.
+                              type: object
+                            networkLoadBalancerConfig:
+                              description: NLB configuration
+                              properties:
+                                crossZoneLoadBalancingEnabled:
+                                  description: Enables/disables cross zone load balancing
+                                  type: boolean
+                                deletionProtection:
+                                  description: Deletion protection setting
+                                  type: boolean
+                                eipAllocations:
+                                  description: The list of optional Elastic IPs allocations
+                                  items:
+                                    type: string
+                                  type: array
+                                loadBalancerName:
+                                  description: Optionally specify the load balancer
+                                    name
+                                  type: string
+                                proxyProtocol:
+                                  description: Enables/disbles use of proxy protocol
+                                    in the load balancer
+                                  type: boolean
+                              type: object
+                            nodeID:
+                              description: The NodeID that identifies the Envoy sidecar
+                                to the DiscoveryService
+                              type: string
+                            ports:
+                              description: The ports that the sidecar exposes
+                              items:
+                                description: SidecarPort defines port for the Marin3r
+                                  sidecar container
+                                properties:
+                                  name:
+                                    description: Port name
+                                    type: string
+                                  port:
+                                    description: Port value
+                                    format: int32
+                                    type: integer
+                                required:
+                                - name
+                                - port
+                                type: object
+                              type: array
+                            resources:
+                              description: Compute Resources required by the sidecar
+                                container.
+                              properties:
+                                claims:
+                                  description: "Claims lists the names of resources,
+                                    defined in spec.resourceClaims, that are used
+                                    by this container. \n This is an alpha field and
+                                    requires enabling the DynamicResourceAllocation
+                                    feature gate. \n This field is immutable."
+                                  items:
+                                    description: ResourceClaim references one entry
+                                      in PodSpec.ResourceClaims.
+                                    properties:
+                                      name:
+                                        description: Name must match the name of one
+                                          entry in pod.spec.resourceClaims of the
+                                          Pod where this field is used. It makes that
+                                          resource available inside a container.
+                                        type: string
+                                    required:
+                                    - name
+                                    type: object
+                                  type: array
+                                  x-kubernetes-list-map-keys:
+                                  - name
+                                  x-kubernetes-list-type: map
+                                limits:
+                                  additionalProperties:
+                                    anyOf:
+                                    - type: integer
+                                    - type: string
+                                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                    x-kubernetes-int-or-string: true
+                                  description: 'Limits describes the maximum amount
+                                    of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                  type: object
+                                requests:
+                                  additionalProperties:
+                                    anyOf:
+                                    - type: integer
+                                    - type: string
+                                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                    x-kubernetes-int-or-string: true
+                                  description: 'Requests describes the minimum amount
+                                    of compute resources required. If Requests is
+                                    omitted for a container, it defaults to Limits
+                                    if that is explicitly specified, otherwise to
+                                    an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                  type: object
+                              type: object
+                            serviceName:
+                              description: ServiceNameOverride allows the user to
+                                override the generated Service name
+                              type: string
+                            servicePorts:
+                              description: ServicePortsOverride allows the user to
+                                override the ports of a Service. It's a replace operation,
+                                so specify all the required ports.
+                              items:
+                                description: ServicePort contains information on service's
+                                  port.
+                                properties:
+                                  appProtocol:
+                                    description: "The application protocol for this
+                                      port. This is used as a hint for implementations
+                                      to offer richer behavior for protocols that
+                                      they understand. This field follows standard
+                                      Kubernetes label syntax. Valid values are either:
+                                      \n * Un-prefixed protocol names - reserved for
+                                      IANA standard service names (as per RFC-6335
+                                      and https://www.iana.org/assignments/service-names).
+                                      \n * Kubernetes-defined prefixed names: * 'kubernetes.io/h2c'
+                                      - HTTP/2 prior knowledge over cleartext as described
+                                      in https://www.rfc-editor.org/rfc/rfc9113.html#name-starting-http-2-with-prior-
+                                      * 'kubernetes.io/ws'  - WebSocket over cleartext
+                                      as described in https://www.rfc-editor.org/rfc/rfc6455
+                                      * 'kubernetes.io/wss' - WebSocket over TLS as
+                                      described in https://www.rfc-editor.org/rfc/rfc6455
+                                      \n * Other protocols should use implementation-defined
+                                      prefixed names such as mycompany.com/my-custom-protocol."
+                                    type: string
+                                  name:
+                                    description: The name of this port within the
+                                      service. This must be a DNS_LABEL. All ports
+                                      within a ServiceSpec must have unique names.
+                                      When considering the endpoints for a Service,
+                                      this must match the 'name' field in the EndpointPort.
+                                      Optional if only one ServicePort is defined
+                                      on this service.
+                                    type: string
+                                  nodePort:
+                                    description: 'The port on each node on which this
+                                      service is exposed when type is NodePort or
+                                      LoadBalancer.  Usually assigned by the system.
+                                      If a value is specified, in-range, and not in
+                                      use it will be used, otherwise the operation
+                                      will fail.  If not specified, a port will be
+                                      allocated if this Service requires one.  If
+                                      this field is specified when creating a Service
+                                      which does not need it, creation will fail.
+                                      This field will be wiped when updating a Service
+                                      to no longer need it (e.g. changing type from
+                                      NodePort to ClusterIP). More info: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport'
+                                    format: int32
+                                    type: integer
+                                  port:
+                                    description: The port that will be exposed by
+                                      this service.
+                                    format: int32
+                                    type: integer
+                                  protocol:
+                                    default: TCP
+                                    description: The IP protocol for this port. Supports
+                                      "TCP", "UDP", and "SCTP". Default is TCP.
+                                    type: string
+                                  targetPort:
+                                    anyOf:
+                                    - type: integer
+                                    - type: string
+                                    description: 'Number or name of the port to access
+                                      on the pods targeted by the service. Number
+                                      must be in the range 1 to 65535. Name must be
+                                      an IANA_SVC_NAME. If this is a string, it will
+                                      be looked up as a named port in the target Pod''s
+                                      container ports. If this is not specified, the
+                                      value of the ''port'' field is used (an identity
+                                      map). This field is ignored for services with
+                                      clusterIP=None, and should be omitted or set
+                                      equal to the ''port'' field. More info: https://kubernetes.io/docs/concepts/services-networking/service/#defining-a-service'
+                                    x-kubernetes-int-or-string: true
+                                required:
+                                - port
+                                type: object
+                              type: array
+                            serviceType:
+                              description: ServiceType defines the type of k8s Service
+                                to use for exposing the service to its consumers
+                              enum:
+                              - ClusterIP
+                              - ELB
+                              - NLB
+                              type: string
+                            shtdnmgrExtraLifecycleHooks:
+                              description: Extra containers to sync with the shutdown
+                                manager upon pod termination
+                              items:
+                                type: string
+                              type: array
+                            shtdnmgrPort:
+                              description: The port where Marin3r's shutdown manager
+                                listens
+                              format: int32
+                              type: integer
+                          type: object
+                        name:
+                          description: EndpointName defines the endpoint affected
+                            by this publishing strategy
+                          type: string
+                        simple:
+                          description: Simple holds configuration for the Simple publishing
+                            strategy
+                          properties:
+                            elasticLoadBalancerConfig:
+                              description: Classic LB configuration
+                              properties:
+                                connectionDrainingEnabled:
+                                  description: Enables/disables connection draining
+                                  type: boolean
+                                connectionDrainingTimeout:
+                                  description: Sets the timeout for connection draining
+                                  format: int32
+                                  type: integer
+                                crossZoneLoadBalancingEnabled:
+                                  description: Enables/disables cross zone load balancing
+                                  type: boolean
+                                healthcheckHealthyThreshold:
+                                  description: Sets the healthy threshold for the
+                                    load balancer
+                                  format: int32
+                                  type: integer
+                                healthcheckInterval:
+                                  description: Sets the interval between health checks
+                                  format: int32
+                                  type: integer
+                                healthcheckTimeout:
+                                  description: Sets the timeout for the health check
+                                  format: int32
+                                  type: integer
+                                healthcheckUnhealthyThreshold:
+                                  description: Sets the unhealthy threshold for the
+                                    load balancer
+                                  format: int32
+                                  type: integer
+                                proxyProtocol:
+                                  description: Enables/disbles use of proxy protocol
+                                    in the load balancer
+                                  type: boolean
+                              type: object
+                            externalDnsHostnames:
+                              description: ExternalDnsHostnames defines the hostnames
+                                that ExternalDNS should configure records for external
+                                consumners to reach the service Only works with Services
+                                of type NLB/ELB
+                              items:
+                                type: string
+                              type: array
+                            networkLoadBalancerConfig:
+                              description: NLB configuration
+                              properties:
+                                crossZoneLoadBalancingEnabled:
+                                  description: Enables/disables cross zone load balancing
+                                  type: boolean
+                                deletionProtection:
+                                  description: Deletion protection setting
+                                  type: boolean
+                                eipAllocations:
+                                  description: The list of optional Elastic IPs allocations
+                                  items:
+                                    type: string
+                                  type: array
+                                loadBalancerName:
+                                  description: Optionally specify the load balancer
+                                    name
+                                  type: string
+                                proxyProtocol:
+                                  description: Enables/disbles use of proxy protocol
+                                    in the load balancer
+                                  type: boolean
+                              type: object
+                            serviceName:
+                              description: ServiceNameOverride allows the user to
+                                override the generated Service name
+                              type: string
+                            servicePorts:
+                              description: ServicePortsOverride allows the user to
+                                override the ports of a Service. It's a replace operation,
+                                so specify all the required ports.
+                              items:
+                                description: ServicePort contains information on service's
+                                  port.
+                                properties:
+                                  appProtocol:
+                                    description: "The application protocol for this
+                                      port. This is used as a hint for implementations
+                                      to offer richer behavior for protocols that
+                                      they understand. This field follows standard
+                                      Kubernetes label syntax. Valid values are either:
+                                      \n * Un-prefixed protocol names - reserved for
+                                      IANA standard service names (as per RFC-6335
+                                      and https://www.iana.org/assignments/service-names).
+                                      \n * Kubernetes-defined prefixed names: * 'kubernetes.io/h2c'
+                                      - HTTP/2 prior knowledge over cleartext as described
+                                      in https://www.rfc-editor.org/rfc/rfc9113.html#name-starting-http-2-with-prior-
+                                      * 'kubernetes.io/ws'  - WebSocket over cleartext
+                                      as described in https://www.rfc-editor.org/rfc/rfc6455
+                                      * 'kubernetes.io/wss' - WebSocket over TLS as
+                                      described in https://www.rfc-editor.org/rfc/rfc6455
+                                      \n * Other protocols should use implementation-defined
+                                      prefixed names such as mycompany.com/my-custom-protocol."
+                                    type: string
+                                  name:
+                                    description: The name of this port within the
+                                      service. This must be a DNS_LABEL. All ports
+                                      within a ServiceSpec must have unique names.
+                                      When considering the endpoints for a Service,
+                                      this must match the 'name' field in the EndpointPort.
+                                      Optional if only one ServicePort is defined
+                                      on this service.
+                                    type: string
+                                  nodePort:
+                                    description: 'The port on each node on which this
+                                      service is exposed when type is NodePort or
+                                      LoadBalancer.  Usually assigned by the system.
+                                      If a value is specified, in-range, and not in
+                                      use it will be used, otherwise the operation
+                                      will fail.  If not specified, a port will be
+                                      allocated if this Service requires one.  If
+                                      this field is specified when creating a Service
+                                      which does not need it, creation will fail.
+                                      This field will be wiped when updating a Service
+                                      to no longer need it (e.g. changing type from
+                                      NodePort to ClusterIP). More info: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport'
+                                    format: int32
+                                    type: integer
+                                  port:
+                                    description: The port that will be exposed by
+                                      this service.
+                                    format: int32
+                                    type: integer
+                                  protocol:
+                                    default: TCP
+                                    description: The IP protocol for this port. Supports
+                                      "TCP", "UDP", and "SCTP". Default is TCP.
+                                    type: string
+                                  targetPort:
+                                    anyOf:
+                                    - type: integer
+                                    - type: string
+                                    description: 'Number or name of the port to access
+                                      on the pods targeted by the service. Number
+                                      must be in the range 1 to 65535. Name must be
+                                      an IANA_SVC_NAME. If this is a string, it will
+                                      be looked up as a named port in the target Pod''s
+                                      container ports. If this is not specified, the
+                                      value of the ''port'' field is used (an identity
+                                      map). This field is ignored for services with
+                                      clusterIP=None, and should be omitted or set
+                                      equal to the ''port'' field. More info: https://kubernetes.io/docs/concepts/services-networking/service/#defining-a-service'
+                                    x-kubernetes-int-or-string: true
+                                required:
+                                - port
+                                type: object
+                              type: array
+                            serviceType:
+                              description: ServiceType defines the type of k8s Service
+                                to use for exposing the service to its consumers
+                              enum:
+                              - ClusterIP
+                              - ELB
+                              - NLB
+                              type: string
+                          type: object
+                        strategy:
+                          description: Strategy defines the type of publishing strategy
+                          enum:
+                          - Simple
+                          - Marin3rSidecar
+                          type: string
+                      required:
+                      - name
+                      - strategy
+                      type: object
+                    type: array
+                  mode:
+                    description: PublishingStrategiesReconcileMode specifies if the
+                      list of strategies should be merged with the defautls or replace
+                      them entirely. Allowed values are "Merge" or "Replace". "Replace"
+                      strategy should be used to enable 2 strategies at the same time
+                      for a single endpoint.
+                    enum:
+                    - Merge
+                    - Replace
+                    type: string
+                type: object
               readinessProbe:
                 description: Readiness probe for the component
                 properties:

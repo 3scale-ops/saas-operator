@@ -206,7 +206,7 @@ var _ = Describe("System controller", func() {
 
 			svc := &corev1.Service{}
 			By("deploying the system-app service",
-				(&testutil.ExpectedResource{Name: "system-app", Namespace: namespace}).
+				(&testutil.ExpectedResource{Name: "system-app-http-svc", Namespace: namespace}).
 					Assert(k8sClient, svc, timeout, poll))
 
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("system-app"))
@@ -488,8 +488,8 @@ var _ = Describe("System controller", func() {
 						return err
 					}
 
-					rvs["svc/system-app"] = testutil.GetResourceVersion(
-						k8sClient, &corev1.Service{}, "system-app", namespace, timeout, poll)
+					rvs["svc/system-app-http-svc"] = testutil.GetResourceVersion(
+						k8sClient, &corev1.Service{}, "system-app-http-svc", namespace, timeout, poll)
 					rvs["deployment/system-app"] = testutil.GetResourceVersion(
 						k8sClient, &appsv1.Deployment{}, "system-app", namespace, timeout, poll)
 
@@ -554,7 +554,7 @@ var _ = Describe("System controller", func() {
 
 				svc := &corev1.Service{}
 				By("keeps the system-app service deployment label selector",
-					(&testutil.ExpectedResource{Name: "system-app", Namespace: namespace}).
+					(&testutil.ExpectedResource{Name: "system-app-http-svc", Namespace: namespace}).
 						Assert(k8sClient, svc, timeout, poll))
 
 				Expect(svc.Spec.Selector["deployment"]).To(Equal("system-app"))
@@ -621,8 +621,8 @@ var _ = Describe("System controller", func() {
 						); err != nil {
 							return err
 						}
-						rvs["svc/system-app"] = testutil.GetResourceVersion(
-							k8sClient, &corev1.Service{}, "system-app", namespace, timeout, poll)
+						rvs["svc/system-app-http-svc"] = testutil.GetResourceVersion(
+							k8sClient, &corev1.Service{}, "system-app-http-svc", namespace, timeout, poll)
 
 						patch := client.MergeFrom(system.DeepCopy())
 						system.Spec.App = &saasv1alpha1.SystemAppSpec{
@@ -639,9 +639,9 @@ var _ = Describe("System controller", func() {
 					svc := &corev1.Service{}
 					By("removing the system-app service deployment label selector",
 						(&testutil.ExpectedResource{
-							Name:        "system-app",
+							Name:        "system-app-http-svc",
 							Namespace:   namespace,
-							LastVersion: rvs["svc/system-app"],
+							LastVersion: rvs["svc/system-app-http-svc"],
 						}).Assert(k8sClient, svc, timeout, poll))
 
 					Expect(svc.Spec.Selector).NotTo(HaveKey("deployment"))

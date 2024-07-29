@@ -51,19 +51,14 @@ var _ = Describe("EchoAPI controller", func() {
 					Namespace: namespace,
 				},
 				Spec: saasv1alpha1.EchoAPISpec{
-					Endpoint: saasv1alpha1.Endpoint{
-						DNS: []string{"echo-api.example.com"},
-					},
 					HPA: &saasv1alpha1.HorizontalPodAutoscalerSpec{
 						Behavior: &autoscalingv2.HorizontalPodAutoscalerBehavior{
 							ScaleUp: &autoscalingv2.HPAScalingRules{
-								Policies: []autoscalingv2.HPAScalingPolicy{
-									{
-										Type:          autoscalingv2.PodsScalingPolicy,
-										Value:         4,
-										PeriodSeconds: 60,
-									},
-								},
+								Policies: []autoscalingv2.HPAScalingPolicy{{
+									Type:          autoscalingv2.PodsScalingPolicy,
+									Value:         4,
+									PeriodSeconds: 60,
+								}},
 							},
 						},
 					},
@@ -93,8 +88,8 @@ var _ = Describe("EchoAPI controller", func() {
 			Expect(dep.Spec.Template.Spec.Volumes).To(HaveLen(0))
 
 			svc := &corev1.Service{}
-			By("deploying an echo-api-nlb service",
-				(&testutil.ExpectedResource{Name: "echo-api-nlb", Namespace: namespace}).
+			By("deploying an echo-api service",
+				(&testutil.ExpectedResource{Name: "echo-api-http-svc", Namespace: namespace}).
 					Assert(k8sClient, svc, timeout, poll))
 
 			Expect(svc.Spec.Selector["deployment"]).To(Equal("echo-api"))
@@ -146,16 +141,26 @@ var _ = Describe("EchoAPI controller", func() {
 					echoapi.Spec.LivenessProbe = &saasv1alpha1.ProbeSpec{}
 					echoapi.Spec.ReadinessProbe = &saasv1alpha1.ProbeSpec{}
 
-					echoapi.Spec.Marin3r = &saasv1alpha1.Marin3rSidecarSpec{
-						NodeID: util.Pointer("echo-api"),
-						EnvoyDynamicConfig: saasv1alpha1.MapOfEnvoyDynamicConfig{
-							"http": {
-								GeneratorVersion: util.Pointer("v1"),
-								ListenerHttp: &saasv1alpha1.ListenerHttp{
-									Port:            8080,
-									RouteConfigName: "route",
+					echoapi.Spec.PublishingStrategies = &saasv1alpha1.PublishingStrategies{
+						Endpoints: []saasv1alpha1.PublishingStrategy{{
+							Strategy:     "Marin3rSidecar",
+							EndpointName: "HTTP",
+							Marin3rSidecar: &saasv1alpha1.Marin3rSidecarSpec{
+								Simple: &saasv1alpha1.Simple{
+									ServiceType:          util.Pointer(saasv1alpha1.ServiceTypeNLB),
+									ExternalDnsHostnames: []string{"echo-api.example.com"},
 								},
-							}},
+								EnvoyDynamicConfig: saasv1alpha1.MapOfEnvoyDynamicConfig{
+									"http": {
+										GeneratorVersion: util.Pointer("v1"),
+										ListenerHttp: &saasv1alpha1.ListenerHttp{
+											Port:            8080,
+											RouteConfigName: "route",
+										},
+									},
+								},
+							},
+						}},
 					}
 
 					return k8sClient.Patch(context.Background(), echoapi, patch)
@@ -181,6 +186,14 @@ var _ = Describe("EchoAPI controller", func() {
 
 				Expect(dep.Spec.Template.Spec.Containers[0].LivenessProbe).To(BeNil())
 				Expect(dep.Spec.Template.Spec.Containers[0].ReadinessProbe).To(BeNil())
+
+				svc := &corev1.Service{}
+				By("creates new echo-api service using marin3r strategy",
+					(&testutil.ExpectedResource{Name: "echo-api-http-marin3r-nlb", Namespace: namespace}).
+						Assert(k8sClient, svc, timeout, poll))
+				By("deletes simple strategy echo-api service",
+					(&testutil.ExpectedResource{Name: "echo-api-http-svc", Namespace: namespace, Missing: true}).
+						Assert(k8sClient, svc, timeout, poll))
 
 			})
 

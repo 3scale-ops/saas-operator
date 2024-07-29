@@ -12,11 +12,11 @@ import (
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/grafanadashboard"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/pod"
 	"github.com/3scale-ops/saas-operator/pkg/resource_builders/podmonitor"
+	"github.com/3scale-ops/saas-operator/pkg/resource_builders/service"
 	operatorutil "github.com/3scale-ops/saas-operator/pkg/util"
 	deployment_workload "github.com/3scale-ops/saas-operator/pkg/workloads/deployment"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -36,7 +36,7 @@ type Generator struct {
 var _ deployment_workload.DeploymentWorkload = &Generator{}
 
 // Validate that Generator implements deployment_workload.WithTraffic interface
-var _ deployment_workload.WithTraffic = &Generator{}
+var _ deployment_workload.WithPublishingStrategies = &Generator{}
 
 // NewGenerator returns a new Options struct
 func NewGenerator(instance, namespace string, spec saasv1alpha1.AutoSSLSpec) (Generator, error) {
@@ -98,12 +98,6 @@ func (gen *Generator) Resources() ([]resource.TemplateInterface, error) {
 	return operatorutil.ConcatSlices(workload, misc), nil
 }
 
-func (gen *Generator) Services() []*resource.Template[*corev1.Service] {
-	return []*resource.Template[*corev1.Service]{
-		resource.NewTemplateFromObjectFunction(gen.service).
-			WithMutation(mutators.SetServiceLiveValues()),
-	}
-}
 func (gen *Generator) SendTraffic() bool { return gen.Traffic }
 func (gen *Generator) TrafficSelector() map[string]string {
 	return map[string]string{
@@ -130,5 +124,13 @@ func (gen *Generator) PDBSpec() *saasv1alpha1.PodDisruptionBudgetSpec {
 func (gen *Generator) MonitoredEndpoints() []monitoringv1.PodMetricsEndpoint {
 	return []monitoringv1.PodMetricsEndpoint{
 		podmonitor.PodMetricsEndpoint("/metrics", "metrics", 30),
+	}
+}
+
+func (gen *Generator) PublishingStrategies() ([]service.ServiceDescriptor, error) {
+	if pss, err := service.MergeWithDefaultPublishingStrategy(config.DefaultPublishingStrategy(), gen.Spec.PublishingStrategies); err != nil {
+		return nil, err
+	} else {
+		return pss, nil
 	}
 }

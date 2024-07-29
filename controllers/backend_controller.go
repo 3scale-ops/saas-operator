@@ -18,15 +18,13 @@ package controllers
 
 import (
 	"context"
-	"strings"
 
 	"github.com/3scale-ops/basereconciler/reconciler"
 	"github.com/3scale-ops/basereconciler/util"
 	saasv1alpha1 "github.com/3scale-ops/saas-operator/api/v1alpha1"
 	"github.com/3scale-ops/saas-operator/pkg/generators/backend"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -53,47 +51,17 @@ type BackendReconciler struct {
 // move the current state of the cluster closer to the desired state.
 func (r *BackendReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 
-	ctx, logger := r.Logger(ctx, "name", req.Name, "namespace", req.Namespace)
+	ctx, _ = r.Logger(ctx, "name", req.Name, "namespace", req.Namespace)
 	instance := &saasv1alpha1.Backend{}
 	result := r.ManageResourceLifecycle(ctx, req, instance,
-		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)))
+		reconciler.WithInMemoryInitializationFunc(util.ResourceDefaulter(instance)),
+		reconciler.WithInitializationFunc(BackendResourceUpgrader))
 	if result.ShouldReturn() {
 		return result.Values()
 	}
 
 	gen, err := backend.NewGenerator(instance.GetName(), instance.GetNamespace(), instance.Spec)
 	if err != nil {
-		return ctrl.Result{}, err
-	}
-
-	// Upgrade NLBs managed by nlb-helper-operator
-	svc := &corev1.Service{ObjectMeta: metav1.ObjectMeta{Name: gen.Listener.GetComponent(), Namespace: req.Namespace}}
-	if err := r.Client.Get(ctx, client.ObjectKeyFromObject(svc), svc); err == nil {
-		// 1. Update parent resource with NLB name for NLB adoption
-		// 2. Add termination protection
-		nlbName := strings.Split(strings.Split(svc.Status.LoadBalancer.Ingress[0].Hostname, ".")[0], "-")[0]
-		if instance.Spec.Listener.LoadBalancer.LoadBalancerName == nil ||
-			*instance.Spec.Listener.LoadBalancer.LoadBalancerName != nlbName {
-			patch := client.MergeFrom(instance.DeepCopy())
-			instance.Spec.Listener.LoadBalancer.LoadBalancerName = &nlbName
-			instance.Spec.Listener.LoadBalancer.DeletionProtection = util.Pointer(true)
-			if err := r.Client.Patch(ctx, instance, patch); err != nil {
-				return ctrl.Result{}, err
-			}
-			logger.Info("resource patched", "kind", "Backend", "key", req)
-		}
-
-		// 3. Abandon old Service resource
-		if svc.GetOwnerReferences() != nil || svc.GetAnnotations()["service.beta.kubernetes.io/aws-load-balancer-type"] != "external" {
-			svc.ObjectMeta.OwnerReferences = nil
-			svc.ObjectMeta.Annotations["service.beta.kubernetes.io/aws-load-balancer-type"] = "external"
-			if err := r.Client.Update(ctx, svc); err != nil {
-				return ctrl.Result{}, err
-			}
-			logger.Info("resource abandoned", "kind", "Service", "key", req)
-		}
-
-	} else if !errors.IsNotFound(err) {
 		return ctrl.Result{}, err
 	}
 
@@ -118,4 +86,63 @@ func (r *BackendReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			For(&saasv1alpha1.Backend{}).
 			Watches(&corev1.Secret{}, r.FilteredEventHandler(&saasv1alpha1.BackendList{}, nil, r.Log)),
 	)
+}
+
+func BackendResourceUpgrader(ctx context.Context, cl client.Client, o client.Object) error {
+	instance := o.(*saasv1alpha1.Backend)
+
+	if instance.Spec.Listener.PublishingStrategies == nil {
+		pss, err := saasv1alpha1.UpgradeCR2PublishingStrategies(ctx, cl,
+			saasv1alpha1.WorkloadPublishingStrategyUpgrader{
+				EndpointName: "HTTP",
+				ServiceName:  "backend-listener-nlb",
+				Namespace:    instance.GetNamespace(),
+				ServiceType:  saasv1alpha1.ServiceTypeNLB,
+				Endpoint:     instance.Spec.Listener.Endpoint,
+				Marin3r:      instance.Spec.Listener.Marin3r,
+				NLBSpec:      instance.Spec.Listener.LoadBalancer,
+				ServicePortOverrides: []corev1.ServicePort{
+					{
+						Name:       "http",
+						Protocol:   corev1.ProtocolTCP,
+						Port:       80,
+						TargetPort: intstr.FromString("backend-http"),
+					},
+					{
+						Name:       "https",
+						Protocol:   corev1.ProtocolTCP,
+						Port:       443,
+						TargetPort: intstr.FromString("backend-https"),
+					},
+				},
+			},
+			saasv1alpha1.WorkloadPublishingStrategyUpgrader{
+				EndpointName: "Internal",
+				ServiceName:  "backend-listener-internal",
+				Namespace:    instance.GetNamespace(),
+				ServiceType:  saasv1alpha1.ServiceTypeClusterIP,
+				ServicePortOverrides: []corev1.ServicePort{{
+					Name:       "http",
+					Protocol:   corev1.ProtocolTCP,
+					Port:       80,
+					TargetPort: intstr.FromString("http-internal"),
+				}},
+				// Use 'Create' mode to add the internal endpoint
+				Create: true,
+			},
+		)
+		if err != nil {
+			return err
+		}
+
+		if len(pss.Endpoints) > 0 {
+			instance.Spec.Listener.PublishingStrategies = pss
+			instance.Spec.Listener.Marin3r = nil
+			instance.Spec.Listener.Endpoint = nil
+			instance.Spec.Listener.LoadBalancer = nil
+		}
+
+	}
+
+	return nil
 }
