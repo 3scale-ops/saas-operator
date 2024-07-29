@@ -162,7 +162,7 @@ spec:
         clusterName: system_app
         selector:
           matchLabels:
-            kubernetes.io/service-name: system-app
+            kubernetes.io/service-name: system-app-http-svc
         targetPort: http
       type: endpoint
 
