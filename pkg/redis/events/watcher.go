@@ -38,7 +38,7 @@ var (
 			Namespace: "saas_redis_sentinel",
 			Help:      "+sdown (https://redis.io/topics/sentinel#sentinel-api)",
 		},
-		[]string{"sentinel", "shard", "redis_server"},
+		[]string{"sentinel", "shard", "redis_server_host", "redis_server_alias"},
 	)
 	sdownSentinelCount = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
@@ -46,7 +46,7 @@ var (
 			Namespace: "saas_redis_sentinel",
 			Help:      "+sdown (https://redis.io/topics/sentinel#sentinel-api)",
 		},
-		[]string{"sentinel", "shard", "redis_server"},
+		[]string{"sentinel", "shard", "redis_server_host", "redis_server_alias"},
 	)
 	sdownClearedCount = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
@@ -54,7 +54,7 @@ var (
 			Namespace: "saas_redis_sentinel",
 			Help:      "-sdown (https://redis.io/topics/sentinel#sentinel-api)",
 		},
-		[]string{"sentinel", "shard", "redis_server"},
+		[]string{"sentinel", "shard", "redis_server_host", "redis_server_alias"},
 	)
 	sdownClearedSentinelCount = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
@@ -62,7 +62,7 @@ var (
 			Namespace: "saas_redis_sentinel",
 			Help:      "-sdown (https://redis.io/topics/sentinel#sentinel-api)",
 		},
-		[]string{"sentinel", "shard", "redis_server"},
+		[]string{"sentinel", "shard", "redis_server_host", "redis_server_alias"},
 	)
 )
 
@@ -208,14 +208,16 @@ func (sew *SentinelEventWatcher) metricsFromEvent(rem RedisEventMessage) {
 			sdownSentinelCount.With(
 				prometheus.Labels{
 					"sentinel": sew.sentinelURI, "shard": rem.master.name,
-					"redis_server": fmt.Sprintf("%s:%s", rem.target.ip, rem.target.port),
+					"redis_server_host":  fmt.Sprintf("%s:%s", rem.target.ip, rem.target.port),
+					"redis_server_alias": sew.topology.GetPool().GetServerAlias(fmt.Sprintf("%s:%s", rem.target.ip, rem.target.port)),
 				},
 			).Add(1)
 		default:
 			sdownCount.With(
 				prometheus.Labels{
 					"sentinel": sew.sentinelURI, "shard": rem.master.name,
-					"redis_server": fmt.Sprintf("%s:%s", rem.target.ip, rem.target.port),
+					"redis_server_host":  fmt.Sprintf("%s:%s", rem.target.ip, rem.target.port),
+					"redis_server_alias": sew.topology.GetPool().GetServerAlias(fmt.Sprintf("%s:%s", rem.target.ip, rem.target.port)),
 				},
 			).Add(1)
 		}
@@ -225,14 +227,16 @@ func (sew *SentinelEventWatcher) metricsFromEvent(rem RedisEventMessage) {
 			sdownClearedSentinelCount.With(
 				prometheus.Labels{
 					"sentinel": sew.sentinelURI, "shard": rem.master.name,
-					"redis_server": fmt.Sprintf("%s:%s", rem.target.ip, rem.target.port),
+					"redis_server_host":  fmt.Sprintf("%s:%s", rem.target.ip, rem.target.port),
+					"redis_server_alias": sew.topology.GetPool().GetServerAlias(fmt.Sprintf("%s:%s", rem.target.ip, rem.target.port)),
 				},
 			).Add(1)
 		default:
 			sdownClearedCount.With(
 				prometheus.Labels{
 					"sentinel": sew.sentinelURI, "shard": rem.master.name,
-					"redis_server": fmt.Sprintf("%s:%s", rem.target.ip, rem.target.port),
+					"redis_server_host":  fmt.Sprintf("%s:%s", rem.target.ip, rem.target.port),
+					"redis_server_alias": sew.topology.GetPool().GetServerAlias(fmt.Sprintf("%s:%s", rem.target.ip, rem.target.port)),
 				},
 			).Add(1)
 		}
@@ -258,25 +262,29 @@ func (sew *SentinelEventWatcher) initCounters() {
 				sdownSentinelCount.With(
 					prometheus.Labels{
 						"sentinel": sew.sentinelURI, "shard": shard.Name,
-						"redis_server": server.ID(),
+						"redis_server_host":  server.ID(),
+						"redis_server_alias": sew.topology.GetPool().GetServerAlias(server.ID()),
 					},
 				).Add(0)
 				sdownCount.With(
 					prometheus.Labels{
 						"sentinel": sew.sentinelURI, "shard": shard.Name,
-						"redis_server": server.ID(),
+						"redis_server_host":  server.ID(),
+						"redis_server_alias": sew.topology.GetPool().GetServerAlias(server.ID()),
 					},
 				).Add(0)
 				sdownClearedSentinelCount.With(
 					prometheus.Labels{
 						"sentinel": sew.sentinelURI, "shard": shard.Name,
-						"redis_server": server.ID(),
+						"redis_server_host":  server.ID(),
+						"redis_server_alias": sew.topology.GetPool().GetServerAlias(server.ID()),
 					},
 				).Add(0)
 				sdownClearedCount.With(
 					prometheus.Labels{
 						"sentinel": sew.sentinelURI, "shard": shard.Name,
-						"redis_server": server.ID(),
+						"redis_server_host":  server.ID(),
+						"redis_server_alias": sew.topology.GetPool().GetServerAlias(server.ID()),
 					},
 				).Add(0)
 			}

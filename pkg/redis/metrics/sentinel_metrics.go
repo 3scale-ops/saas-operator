@@ -22,7 +22,7 @@ var (
 			Namespace: "saas_redis_sentinel",
 			Help:      `"sentinel master <name> link-pending-commands"`,
 		},
-		[]string{"sentinel", "shard", "redis_server", "role"},
+		[]string{"sentinel", "shard", "redis_server_host", "redis_server_alias", "role"},
 	)
 	lastOkPingReply = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
@@ -30,7 +30,7 @@ var (
 			Namespace: "saas_redis_sentinel",
 			Help:      `"sentinel master <name> last-ok-ping-reply"`,
 		},
-		[]string{"sentinel", "shard", "redis_server", "role"},
+		[]string{"sentinel", "shard", "redis_server_host", "redis_server_alias", "role"},
 	)
 	roleReportedTime = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
@@ -38,7 +38,7 @@ var (
 			Namespace: "saas_redis_sentinel",
 			Help:      `"sentinel master <name> role-reported-time"`,
 		},
-		[]string{"sentinel", "shard", "redis_server", "role"},
+		[]string{"sentinel", "shard", "redis_server_host", "redis_server_alias", "role"},
 	)
 	numOtherSentinels = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
@@ -46,7 +46,7 @@ var (
 			Namespace: "saas_redis_sentinel",
 			Help:      `"sentinel master <name> num-other-sentinels"`,
 		},
-		[]string{"sentinel", "shard", "redis_server", "role"},
+		[]string{"sentinel", "shard", "redis_server_host", "redis_server_alias", "role"},
 	)
 
 	masterLinkDownTime = prometheus.NewGaugeVec(
@@ -55,7 +55,7 @@ var (
 			Namespace: "saas_redis_sentinel",
 			Help:      `"sentinel slaves master-link-down-time"`,
 		},
-		[]string{"sentinel", "shard", "redis_server", "role"},
+		[]string{"sentinel", "shard", "redis_server_host", "redis_server_alias", "role"},
 	)
 
 	slaveReplOffset = prometheus.NewGaugeVec(
@@ -64,7 +64,7 @@ var (
 			Namespace: "saas_redis_sentinel",
 			Help:      `"sentinel slaves slave-repl-offset"`,
 		},
-		[]string{"sentinel", "shard", "redis_server", "role"},
+		[]string{"sentinel", "shard", "redis_server_host", "redis_server_alias", "role"},
 	)
 )
 
@@ -85,6 +85,7 @@ type SentinelMetricsGatherer struct {
 	refreshInterval time.Duration
 	sentinelURI     string
 	sentinel        *sharded.SentinelServer
+	serverPool      *redis.ServerPool
 	started         bool
 	cancel          context.CancelFunc
 }
@@ -99,6 +100,7 @@ func NewSentinelMetricsGatherer(sentinelURI string, refreshInterval time.Duratio
 		refreshInterval: refreshInterval,
 		sentinelURI:     sentinelURI,
 		sentinel:        sentinel,
+		serverPool:      pool,
 	}, nil
 }
 
@@ -177,21 +179,39 @@ func (smg *SentinelMetricsGatherer) gatherMetrics(ctx context.Context) error {
 	}
 
 	for _, master := range mresult {
+		masterServerHost := fmt.Sprintf("%s:%d", master.IP, master.Port)
+		masterServerAlias := smg.serverPool.GetServerAlias(masterServerHost)
 
-		linkPendingCommands.With(prometheus.Labels{"sentinel": smg.sentinelURI, "shard": master.Name,
-			"redis_server": fmt.Sprintf("%s:%d", master.IP, master.Port), "role": master.RoleReported,
+		linkPendingCommands.With(prometheus.Labels{
+			"sentinel":           smg.sentinelURI,
+			"shard":              master.Name,
+			"redis_server_host":  masterServerHost,
+			"redis_server_alias": masterServerAlias,
+			"role":               master.RoleReported,
 		}).Set(float64(master.LinkPendingCommands))
 
-		lastOkPingReply.With(prometheus.Labels{"sentinel": smg.sentinelURI, "shard": master.Name,
-			"redis_server": fmt.Sprintf("%s:%d", master.IP, master.Port), "role": master.RoleReported,
+		lastOkPingReply.With(prometheus.Labels{
+			"sentinel":           smg.sentinelURI,
+			"shard":              master.Name,
+			"redis_server_host":  masterServerHost,
+			"redis_server_alias": masterServerAlias,
+			"role":               master.RoleReported,
 		}).Set(float64(master.LastOkPingReply))
 
-		roleReportedTime.With(prometheus.Labels{"sentinel": smg.sentinelURI, "shard": master.Name,
-			"redis_server": fmt.Sprintf("%s:%d", master.IP, master.Port), "role": master.RoleReported,
+		roleReportedTime.With(prometheus.Labels{
+			"sentinel":           smg.sentinelURI,
+			"shard":              master.Name,
+			"redis_server_host":  masterServerHost,
+			"redis_server_alias": masterServerAlias,
+			"role":               master.RoleReported,
 		}).Set(float64(master.RoleReportedTime))
 
-		numOtherSentinels.With(prometheus.Labels{"sentinel": smg.sentinelURI, "shard": master.Name,
-			"redis_server": fmt.Sprintf("%s:%d", master.IP, master.Port), "role": master.RoleReported,
+		numOtherSentinels.With(prometheus.Labels{
+			"sentinel":           smg.sentinelURI,
+			"shard":              master.Name,
+			"redis_server_host":  masterServerHost,
+			"redis_server_alias": masterServerAlias,
+			"role":               master.RoleReported,
 		}).Set(float64(master.NumOtherSentinels))
 
 		sresult, err := smg.sentinel.SentinelSlaves(ctx, master.Name)
@@ -202,39 +222,63 @@ func (smg *SentinelMetricsGatherer) gatherMetrics(ctx context.Context) error {
 		// Cleanup any vector that corresponds to the same server but with a
 		// different role to avoid stale metrics after a role switch
 		cleanupMetrics(prometheus.Labels{
-			"sentinel":     smg.sentinelURI,
-			"shard":        master.Name,
-			"redis_server": fmt.Sprintf("%s:%d", master.IP, master.Port),
-			"role":         string(client.Slave),
+			"sentinel":           smg.sentinelURI,
+			"shard":              master.Name,
+			"redis_server_host":  masterServerHost,
+			"redis_server_alias": masterServerAlias,
+			"role":               string(client.Slave),
 		})
 
 		for _, slave := range sresult {
+			slaveServerHost := fmt.Sprintf("%s:%d", slave.IP, slave.Port)
+			slaveServerAlias := smg.serverPool.GetServerAlias(slaveServerHost)
 
-			linkPendingCommands.With(prometheus.Labels{"sentinel": smg.sentinelURI, "shard": master.Name,
-				"redis_server": fmt.Sprintf("%s:%d", slave.IP, slave.Port), "role": slave.RoleReported,
+			linkPendingCommands.With(prometheus.Labels{
+				"sentinel":           smg.sentinelURI,
+				"shard":              master.Name,
+				"redis_server_host":  slaveServerHost,
+				"redis_server_alias": slaveServerAlias,
+				"role":               slave.RoleReported,
 			}).Set(float64(slave.LinkPendingCommands))
 
-			lastOkPingReply.With(prometheus.Labels{"sentinel": smg.sentinelURI, "shard": master.Name,
-				"redis_server": fmt.Sprintf("%s:%d", slave.IP, slave.Port), "role": slave.RoleReported,
+			lastOkPingReply.With(prometheus.Labels{
+				"sentinel":           smg.sentinelURI,
+				"shard":              master.Name,
+				"redis_server_host":  slaveServerHost,
+				"redis_server_alias": slaveServerAlias,
+				"role":               slave.RoleReported,
 			}).Set(float64(slave.LastOkPingReply))
 
-			roleReportedTime.With(prometheus.Labels{"sentinel": smg.sentinelURI, "shard": master.Name,
-				"redis_server": fmt.Sprintf("%s:%d", slave.IP, slave.Port), "role": slave.RoleReported,
+			roleReportedTime.With(prometheus.Labels{
+				"sentinel":           smg.sentinelURI,
+				"shard":              master.Name,
+				"redis_server_host":  slaveServerHost,
+				"redis_server_alias": slaveServerAlias,
+				"role":               slave.RoleReported,
 			}).Set(float64(slave.RoleReportedTime))
 
-			masterLinkDownTime.With(prometheus.Labels{"sentinel": smg.sentinelURI, "shard": master.Name,
-				"redis_server": fmt.Sprintf("%s:%d", slave.IP, slave.Port), "role": slave.RoleReported,
+			masterLinkDownTime.With(prometheus.Labels{
+				"sentinel":           smg.sentinelURI,
+				"shard":              master.Name,
+				"redis_server_host":  slaveServerHost,
+				"redis_server_alias": slaveServerAlias,
+				"role":               slave.RoleReported,
 			}).Set(float64(slave.MasterLinkDownTime))
 
-			slaveReplOffset.With(prometheus.Labels{"sentinel": smg.sentinelURI, "shard": master.Name,
-				"redis_server": fmt.Sprintf("%s:%d", slave.IP, slave.Port), "role": slave.RoleReported,
+			slaveReplOffset.With(prometheus.Labels{
+				"sentinel":           smg.sentinelURI,
+				"shard":              master.Name,
+				"redis_server_host":  slaveServerHost,
+				"redis_server_alias": slaveServerAlias,
+				"role":               slave.RoleReported,
 			}).Set(float64(slave.SlaveReplOffset))
 
 			cleanupMetrics(prometheus.Labels{
-				"sentinel":     smg.sentinelURI,
-				"shard":        master.Name,
-				"redis_server": fmt.Sprintf("%s:%d", slave.IP, slave.Port),
-				"role":         string(client.Master),
+				"sentinel":           smg.sentinelURI,
+				"shard":              master.Name,
+				"redis_server_host":  slaveServerHost,
+				"redis_server_alias": slaveServerAlias,
+				"role":               string(client.Master),
 			})
 		}
 	}

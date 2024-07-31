@@ -103,6 +103,10 @@ func (cluster Cluster) LookupServerByID(hostport string) *RedisServer {
 	return nil
 }
 
+func (cluster Cluster) GetPool() *redis.ServerPool {
+	return cluster.pool
+}
+
 func (cluster *Cluster) Discover(ctx context.Context, options ...DiscoveryOption) error {
 	var merr operatorutils.MultiError
 
