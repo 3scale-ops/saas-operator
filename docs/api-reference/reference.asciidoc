@@ -50,6 +50,7 @@ APISpec is the configuration for main Zync api component
 | *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
+| *`publishingStrategies`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-publishingstrategies[$$PublishingStrategies$$]__ | Describes how the services provided by this workload are exposed to its consumers
 |===
 
 
@@ -131,12 +132,13 @@ ApicastEnvironmentSpec is the configuration for an Apicast environment
 | *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
 | *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
 | *`config`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apicastconfig[$$ApicastConfig$$]__ | Application specific configuration options for the component
-| *`endpoint`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-endpoint[$$Endpoint$$]__ | The external endpoint/s for the component
-| *`marin3r`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]__ | Marin3r configures the Marin3r sidecars for the component
-| *`loadBalancer`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-loadbalancerspec[$$LoadBalancerSpec$$]__ | Configures the AWS load balancer for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 | *`canary`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
+| *`publishingStrategies`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-publishingstrategies[$$PublishingStrategies$$]__ | Describes how the services provided by this workload are exposed to its consumers
+| *`endpoint`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-endpoint[$$Endpoint$$]__ | The external endpoint/s for the component DEPRECATED
+| *`marin3r`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]__ | Marin3r configures the Marin3r sidecars for the component DEPRECATED
+| *`loadBalancer`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-elasticloadbalancerspec[$$ElasticLoadBalancerSpec$$]__ | Configures the AWS load balancer for the component DEPRECATED
 |===
 
 
@@ -247,13 +249,14 @@ AutoSSLSpec defines the desired state of AutoSSL
 | *`resources`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
 | *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
 | *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
-| *`loadBalancer`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-loadbalancerspec[$$LoadBalancerSpec$$]__ | Configures the AWS load balancer for the component
 | *`grafanaDashboard`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-grafanadashboardspec[$$GrafanaDashboardSpec$$]__ | Configures the Grafana Dashboard for the component
 | *`config`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-autosslconfig[$$AutoSSLConfig$$]__ | Application specific configuration options for the component
-| *`endpoint`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-endpoint[$$Endpoint$$]__ | The external endpoint/s for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 | *`canary`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
+| *`publishingStrategies`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-publishingstrategies[$$PublishingStrategies$$]__ | Describes how the services provided by this workload are exposed to its consumers
+| *`endpoint`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-endpoint[$$Endpoint$$]__ | The external endpoint/s for the component DEPRECATED
+| *`loadBalancer`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-elasticloadbalancerspec[$$ElasticLoadBalancerSpec$$]__ | Configures the AWS load balancer for the component DEPRECATED
 |===
 
 
@@ -412,6 +415,7 @@ CORSProxySpec defines the desired state of CORSProxy
 | *`config`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-corsproxyconfig[$$CORSProxyConfig$$]__ | Application specific configuration options for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
+| *`publishingStrategies`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-publishingstrategies[$$PublishingStrategies$$]__ | Describes how the services provided by this workload are exposed to its consumers
 |===
 
 
@@ -443,23 +447,6 @@ Canary allows the definition of a canary Deployment
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-cluster"]
-==== Cluster 
-
-Cluster contains options for an Envoy cluster protobuffer message
-
-.Appears In:
-****
-- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$]
-****
-
-[cols="25a,75a", options="header"]
-|===
-| Field | Description
-| *`host`* __string__ | The upstream host
-| *`port`* __integer__ | The upstream port
-| *`isHttp2`* __boolean__ | Specifies if the upstream cluster is http2 or not (default).
-|===
 
 
 [id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-cronspec"]
@@ -540,14 +527,42 @@ EchoAPISpec defines the desired state of echoapi
 | *`resources`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Horizontal Pod Autoscaler for the component
 | *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
 | *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
-| *`marin3r`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]__ | Marin3r configures the Marin3r sidecars for the component
-| *`loadBalancer`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-nlbloadbalancerspec[$$NLBLoadBalancerSpec$$]__ | Configures the AWS Network load balancer for the component
-| *`endpoint`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-endpoint[$$Endpoint$$]__ | The external endpoint/s for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
+| *`publishingStrategies`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-publishingstrategies[$$PublishingStrategies$$]__ | Describes how the services provided by this workload are exposed to its consumers
+| *`endpoint`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-endpoint[$$Endpoint$$]__ | The external endpoint/s for the component DEPRECATED
+| *`marin3r`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]__ | Marin3r configures the Marin3r sidecars for the component DEPRECATED
+| *`loadBalancer`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-networkloadbalancerspec[$$NetworkLoadBalancerSpec$$]__ | Configures the AWS load balancer for the component DEPRECATED
 |===
 
 
+
+
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-elasticloadbalancerspec"]
+==== ElasticLoadBalancerSpec 
+
+ElasticLoadBalancerSpec configures the AWS load balancer for the component
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-simple[$$Simple$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-workloadpublishingstrategyupgrader[$$WorkloadPublishingStrategyUpgrader$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`proxyProtocol`* __boolean__ | Enables/disbles use of proxy protocol in the load balancer
+| *`crossZoneLoadBalancingEnabled`* __boolean__ | Enables/disables cross zone load balancing
+| *`connectionDrainingEnabled`* __boolean__ | Enables/disables connection draining
+| *`connectionDrainingTimeout`* __integer__ | Sets the timeout for connection draining
+| *`healthcheckHealthyThreshold`* __integer__ | Sets the healthy threshold for the load balancer
+| *`healthcheckUnhealthyThreshold`* __integer__ | Sets the unhealthy threshold for the load balancer
+| *`healthcheckInterval`* __integer__ | Sets the interval between health checks
+| *`healthcheckTimeout`* __integer__ | Sets the timeout for the health check
+|===
 
 
 [id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-endpoint"]
@@ -561,6 +576,7 @@ Endpoint sets the external endpoint for the component
 - xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
 - xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-workloadpublishingstrategyupgrader[$$WorkloadPublishingStrategyUpgrader$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -583,7 +599,7 @@ Endpoint sets the external endpoint for the component
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`generatorVersion`* __string__ | GeneratorVersion specifies the version of a given template. "v1" is the default.
+| *`generatorVersion`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-string[$$string$$]__ | GeneratorVersion specifies the version of a given template. "v1" is the default.
 | *`listenerHttp`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-listenerhttp[$$ListenerHttp$$]__ | ListenerHttp contains options for an HTTP/HTTPS listener
 | *`routeConfiguration`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-routeconfiguration[$$RouteConfiguration$$]__ | RouteConfiguration contains options for an Envoy route_configuration protobuffer message
 | *`cluster`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-cluster[$$Cluster$$]__ | Cluster contains options for an Envoy cluster protobuffer message
@@ -761,29 +777,6 @@ ListenerConfig configures app behavior for Backend Listener
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-listenerhttp"]
-==== ListenerHttp 
-
-ListenerHttp contains options for an HTTP/HTTPS listener
-
-.Appears In:
-****
-- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$]
-****
-
-[cols="25a,75a", options="header"]
-|===
-| Field | Description
-| *`port`* __integer__ | The port where the listener listens for new connections
-| *`proxyProtocol`* __boolean__ | Whether proxy protocol should be enabled or not. Defaults to true.
-| *`routeConfigName`* __string__ | The name of the RouteConfiguration to use in the listener
-| *`certificateSecretName`* __string__ | The name of the Secret containing a valid certificate. If unset the listener will be http, if set https
-| *`rateLimitOptions`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-ratelimitoptions[$$RateLimitOptions$$]__ | Rate limit options for the ratelimit filter of the HTTP connection manager
-| *`defaultHostForHttp10`* __string__ | If this filed is set, http 1.0 will be enabled and this will be the default hostname to use.
-| *`enableHttp2`* __boolean__ | Enable http2 in the listener.Disabled by default.
-| *`allowHeadersWithUnderscores`* __boolean__ | Allow headers with underscores
-| *`maxConnectionDuration`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#duration-v1-meta[$$Duration$$]__ | Max connection duration. If unset no max connection duration will be applied.
-|===
 
 
 [id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-listenerspec"]
@@ -806,37 +799,13 @@ ListenerSpec is the configuration for Backend Listener
 | *`resources`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Resource requirements for the component
 | *`livenessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Liveness probe for the component
 | *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
-| *`endpoint`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-endpoint[$$Endpoint$$]__ | The external endpoint/s for the component
-| *`marin3r`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]__ | Marin3r configures the Marin3r sidecars for the component
-| *`loadBalancer`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-nlbloadbalancerspec[$$NLBLoadBalancerSpec$$]__ | Configures the AWS Network load balancer for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 | *`canary`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
-|===
-
-
-[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-loadbalancerspec"]
-==== LoadBalancerSpec 
-
-LoadBalancerSpec configures the AWS load balancer for the component
-
-.Appears In:
-****
-- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
-- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
-****
-
-[cols="25a,75a", options="header"]
-|===
-| Field | Description
-| *`proxyProtocol`* __boolean__ | Enables/disbles use of proxy protocol in the load balancer
-| *`crossZoneLoadBalancingEnabled`* __boolean__ | Enables/disables cross zone load balancing
-| *`connectionDrainingEnabled`* __boolean__ | Enables/disables connection draining
-| *`connectionDrainingTimeout`* __integer__ | Sets the timeout for connection draining
-| *`healthcheckHealthyThreshold`* __integer__ | Sets the healthy threshold for the load balancer
-| *`healthcheckUnhealthyThreshold`* __integer__ | Sets the unhealthy threshold for the load balancer
-| *`healthcheckInterval`* __integer__ | Sets the interval between health checks
-| *`healthcheckTimeout`* __integer__ | Sets the timeout for the health check
+| *`publishingStrategies`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-publishingstrategies[$$PublishingStrategies$$]__ | Describes how the services provided by this workload are exposed to its consumers
+| *`endpoint`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-endpoint[$$Endpoint$$]__ | The external endpoint/s for the component DEPRECATED
+| *`marin3r`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]__ | Marin3r configures the Marin3r sidecars for the component DEPRECATED
+| *`loadBalancer`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-networkloadbalancerspec[$$NetworkLoadBalancerSpec$$]__ | Configures the AWS load balancer for the component DEPRECATED
 |===
 
 
@@ -906,6 +875,7 @@ MappingServiceSpec defines the desired state of MappingService
 | *`config`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-mappingserviceconfig[$$MappingServiceConfig$$]__ | Application specific configuration options for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
+| *`publishingStrategies`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-publishingstrategies[$$PublishingStrategies$$]__ | Describes how the services provided by this workload are exposed to its consumers
 |===
 
 
@@ -921,16 +891,19 @@ Marin3rSidecarSpec defines the marin3r sidecar for the component
 - xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
 - xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
 - xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-publishingstrategy[$$PublishingStrategy$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-workloadpublishingstrategyupgrader[$$WorkloadPublishingStrategyUpgrader$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
+| *`Simple`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-simple[$$Simple$$]__ | 
 | *`nodeID`* __string__ | The NodeID that identifies the Envoy sidecar to the DiscoveryService
 | *`envoyAPIVersion`* __string__ | The Envoy API version to use
 | *`envoyImage`* __string__ | The Envoy iamge to use
 | *`ports`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-sidecarport[$$SidecarPort$$] array__ | The ports that the sidecar exposes
-| *`resources`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Compute Resources required by this container.
+| *`resources`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-resourcerequirementsspec[$$ResourceRequirementsSpec$$]__ | Compute Resources required by the sidecar container.
 | *`shtdnmgrPort`* __integer__ | The port where Marin3r's shutdown manager listens
 | *`shtdnmgrExtraLifecycleHooks`* __string array__ | Extra containers to sync with the shutdown manager upon pod termination
 | *`extraPodAnnotations`* __object (keys:string, values:string)__ | Extra annotations to pass the Pod to further configure the sidecar container.
@@ -958,15 +931,17 @@ MonitoredShard contains information of one of the shards monitored by the Sentin
 
 
 
-[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-nlbloadbalancerspec"]
-==== NLBLoadBalancerSpec 
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-networkloadbalancerspec"]
+==== NetworkLoadBalancerSpec 
 
-NLBLoadBalancerSpec configures the AWS NLB load balancer for the component
+NetworkLoadBalancerSpec configures the AWS NLB load balancer for the component
 
 .Appears In:
 ****
 - xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
 - xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-simple[$$Simple$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-workloadpublishingstrategyupgrader[$$WorkloadPublishingStrategyUpgrader$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -1043,6 +1018,64 @@ ProbeSpec specifies configuration for a probe
 |===
 
 
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-publishingstrategies"]
+==== PublishingStrategies 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apispec[$$APISpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-apicastenvironmentspec[$$ApicastEnvironmentSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-autosslspec[$$AutoSSLSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-corsproxyspec[$$CORSProxySpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-echoapispec[$$EchoAPISpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-listenerspec[$$ListenerSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-mappingservicespec[$$MappingServiceSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-systemappspec[$$SystemAppSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`mode`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-publishingstrategiesreconcilemode[$$PublishingStrategiesReconcileMode$$]__ | PublishingStrategiesReconcileMode specifies if the list of strategies should be merged with the defautls or replace them entirely. Allowed values are "Merge" or "Replace". "Replace" strategy should be used to enable 2 strategies at the same time for a single endpoint.
+| *`endpoints`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-publishingstrategy[$$PublishingStrategy$$] array__ | Endpoints holds the list of publishing strategies for each workload endpoint.
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-publishingstrategiesreconcilemode"]
+==== PublishingStrategiesReconcileMode (string) 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-publishingstrategies[$$PublishingStrategies$$]
+****
+
+
+
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-publishingstrategy"]
+==== PublishingStrategy 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-publishingstrategies[$$PublishingStrategies$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`strategy`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-strategy[$$Strategy$$]__ | Strategy defines the type of publishing strategy
+| *`name`* __string__ | EndpointName defines the endpoint affected by this publishing strategy
+| *`simple`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-simple[$$Simple$$]__ | Simple holds configuration for the Simple publishing strategy
+| *`marin3rSidecar`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]__ | Marin3rSidecar holds configuration for the Marin3rSidecar publishing strategy
+| *`create`* __boolean__ | Create explicitely tells the controller that this is a new endpoint that should be added. Default is false, causing the controller to error when seeing an unknown endpoint.
+|===
+
+
 [id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-quespec"]
 ==== QueSpec 
 
@@ -1081,28 +1114,12 @@ RateLimitOptions contains options for the ratelimit filter of the http connectio
 |===
 | Field | Description
 | *`domain`* __string__ | The rate limit domain
-| *`failureModeDeny`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-bool[$$bool$$]__ | Whether to allow requests or not if the rate limit service is unavailable
+| *`failureModeDeny`* __boolean__ | Whether to allow requests or not if the rate limit service is unavailable
 | *`timeout`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#duration-v1-meta[$$Duration$$]__ | Max time to wait for a response from the rate limit service
 | *`rateLimitCluster`* __string__ | Location of the rate limit service. Must point to one of the defined clusters.
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-rawconfig"]
-==== RawConfig 
-
-RawConfig is a struct with methods to manage a configuration defined using directly the Envoy config API
-
-.Appears In:
-****
-- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$]
-****
-
-[cols="25a,75a", options="header"]
-|===
-| Field | Description
-| *`type`* __string__ | Type is the type url for the protobuf message
-| *`value`* __xref:{anchor_prefix}-k8s-io-apimachinery-pkg-runtime-rawextension[$$RawExtension$$]__ | Allows defining configuration using directly envoy's config API. WARNING: no validation of this field's value is performed before writting the custom resource to etcd.
-|===
 
 
 [id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-redhatcustomerportalspec"]
@@ -1272,38 +1289,8 @@ ResourceRequirementsSpec defines the resource requirements for the component
 |===
 
 
-[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-routeconfiguration"]
-==== RouteConfiguration 
-
-RouteConfiguration contains options for an Envoy route_configuration protobuffer message
-
-.Appears In:
-****
-- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$]
-****
-
-[cols="25a,75a", options="header"]
-|===
-| Field | Description
-| *`virtualHosts`* __xref:{anchor_prefix}-k8s-io-apimachinery-pkg-runtime-rawextension[$$RawExtension$$] array__ | The virtual_hosts definitions for this route configuration. Virtual hosts must be specified using directly Envoy's API
-|===
 
 
-[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-runtime"]
-==== Runtime 
-
-Runtime contains options for an Envoy runtime protobuffer message
-
-.Appears In:
-****
-- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-envoydynamicconfig[$$EnvoyDynamicConfig$$]
-****
-
-[cols="25a,75a", options="header"]
-|===
-| Field | Description
-| *`listenerNames`* __string array__ | The list of listeners to apply overload protection limits to
-|===
 
 
 [id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-s3options"]
@@ -1557,6 +1544,19 @@ SentinelStatus defines the observed state of Sentinel
 |===
 
 
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-servicetype"]
+==== ServiceType (string) 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-simple[$$Simple$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-workloadpublishingstrategyupgrader[$$WorkloadPublishingStrategyUpgrader$$]
+****
+
+
+
 [id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-shardedredisbackup"]
 ==== ShardedRedisBackup 
 
@@ -1667,6 +1667,41 @@ SidekiqConfig configures app behavior for System Sidekiq
 |===
 
 
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-simple"]
+==== Simple 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-marin3rsidecarspec[$$Marin3rSidecarSpec$$]
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-publishingstrategy[$$PublishingStrategy$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`serviceType`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-servicetype[$$ServiceType$$]__ | ServiceType defines the type of k8s Service to use for exposing the service to its consumers
+| *`externalDnsHostnames`* __string array__ | ExternalDnsHostnames defines the hostnames that ExternalDNS should configure records for external consumners to reach the service Only works with Services of type NLB/ELB
+| *`serviceName`* __string__ | ServiceNameOverride allows the user to override the generated Service name
+| *`servicePorts`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#serviceport-v1-core[$$ServicePort$$] array__ | ServicePortsOverride allows the user to override the ports of a Service. It's a replace operation, so specify all the required ports.
+| *`elasticLoadBalancerConfig`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-elasticloadbalancerspec[$$ElasticLoadBalancerSpec$$]__ | Classic LB configuration
+| *`networkLoadBalancerConfig`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-networkloadbalancerspec[$$NetworkLoadBalancerSpec$$]__ | NLB configuration
+|===
+
+
+[id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-strategy"]
+==== Strategy (string) 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-publishingstrategy[$$PublishingStrategy$$]
+****
+
+
+
 [id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-system"]
 ==== System 
 
@@ -1728,8 +1763,9 @@ SystemAppSpec configures the App component of System
 | *`readinessProbe`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-probespec[$$ProbeSpec$$]__ | Readiness probe for the component
 | *`nodeAffinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#nodeaffinity-v1-core[$$NodeAffinity$$]__ | Describes node affinity scheduling rules for the pod.
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
-| *`canary`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
 | *`terminationGracePeriodSeconds`* __integer__ | Configures the TerminationGracePeriodSeconds
+| *`canary`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
+| *`publishingStrategies`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-publishingstrategies[$$PublishingStrategies$$]__ | Describes how the services provided by this workload are exposed to its consumers
 |===
 
 
@@ -2210,6 +2246,8 @@ WorkerSpec is the configuration for Backend Worker
 | *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#toleration-v1-core[$$Toleration$$] array__ | If specified, the pod's tolerations.
 | *`canary`* __xref:{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-canary[$$Canary$$]__ | Canary defines spec changes for the canary Deployment. If left unset the canary Deployment wil not be created.
 |===
+
+
 
 
 [id="{anchor_prefix}-github-com-3scale-ops-saas-operator-api-v1alpha1-zync"]
