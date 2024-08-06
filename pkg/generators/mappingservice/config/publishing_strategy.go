@@ -16,12 +16,20 @@ func DefaultPublishingStrategy() []service.ServiceDescriptor {
 				EndpointName: "HTTP",
 				Simple:       &saasv1alpha1.Simple{ServiceType: util.Pointer(saasv1alpha1.ServiceTypeClusterIP)},
 			},
-			PortDefinitions: []corev1.ServicePort{{
-				Name:       "mapping",
-				Protocol:   corev1.ProtocolTCP,
-				Port:       80,
-				TargetPort: intstr.FromString("mapping"),
-			}},
+			PortDefinitions: []corev1.ServicePort{
+				{
+					Name:       "mapping",
+					Protocol:   corev1.ProtocolTCP,
+					Port:       80,
+					TargetPort: intstr.FromString("mapping"),
+				},
+				{
+					Name:       "management",
+					Protocol:   corev1.ProtocolTCP,
+					Port:       8090,
+					TargetPort: intstr.FromString("management"),
+				},
+			},
 		},
 	}
 }
